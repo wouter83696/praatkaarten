@@ -271,11 +271,17 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   let filtered = [];   // current order
   let currentIndex = -1;
 
+  // UI chrome (pijlen + sluiten)
+  // Desktop (hover) : knoppen blijven zichtbaar.
+  // Touch          : knoppen verdwijnen na een paar seconden.
+  const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+
   let uiTimer = null;
   function showUI(){
     lb.classList.add('show-ui');
+    if (HAS_HOVER) return; // op desktop niet autohiden
     clearTimeout(uiTimer);
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 1400);
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 3200);
   }
 
   function buildData(questions){
