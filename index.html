@@ -141,48 +141,70 @@
     }
   }
 
-  /* Lightbox question */
-  .panel {
+  /* Lightbox: kaart vergroot + tekst ín de kaart */
+  .panel{
     display: grid;
-    gap: 12px;
-  }
-  .lbQ {
-    background: rgba(255,255,255,.92);
-    border: 1px solid rgba(255,255,255,.35);
-    border-radius: 16px;
-    padding: 12px 14px;
-    box-shadow: 0 10px 26px rgba(0,0,0,.10);
-    font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
-    font-weight: 500;
-    color: #306088;
-    font-size: clamp(18px, 2.8vw + 10px, 30px);
-    line-height: 1.18;
-    user-select: text;
+    gap: 0;
+    position: relative;
   }
 
-  /* Subtle icon buttons + auto-hide */
-  .panel .chev, .panel .close {
-    background: rgba(255,255,255,.92);
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: 999px;
+  .lbCard{
+    position: relative;
+    width: min(520px, 92vw);
+    margin: 0 auto;
+  }
+  #lbImg{
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .lbText{
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 22px 22px;
+    text-align: center;
+    color: #306088;
+    font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
+    font-weight: 500;
+    line-height: 1.14;
+    font-size: clamp(16px, 2.2vw + 8px, 30px);
+    pointer-events: none;
+  }
+
+  @media (max-width: 520px){
+    .lbCard{ width: min(420px, 92vw); }
+    .lbText{ padding: 18px 18px; font-size: clamp(16px, 3.2vw + 6px, 26px); }
+  }
+
+/* Icon buttons: kaal (geen rondje) + auto-hide */
+  .panel .chev, .panel .close{
+    background: transparent;
+    border: 0;
     width: 44px;
     height: 44px;
     display: grid;
     place-items: center;
     opacity: 0;
     transition: opacity .18s ease;
+    padding: 0;
   }
-  .lb.show-ui .chev, .lb.show-ui .close {
+  .lb.show-ui .chev, .lb.show-ui .close{
     opacity: 1;
   }
-  .panel .chev svg, .panel .close svg {
-    width: 18px;
-    height: 18px;
-    stroke: rgba(11,46,74,.80);
-    stroke-width: 2.3;
+  .panel .chev svg, .panel .close svg{
+    width: 22px;
+    height: 22px;
+    stroke: rgba(255,255,255,.92);
+    stroke-width: 2.6;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+  }
+  .panel .chev:hover svg, .panel .close:hover svg{
+    stroke: rgba(255,255,255,1);
   }
 
 </style>
@@ -208,7 +230,7 @@
     <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
 
     <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
-    <img id="lbImg" alt=""><div class="lbQ" id="lbQ"></div>
+    <div class="lbCard" id="lbCard"><img id="lbImg" alt=""><div class="lbText" id="lbText"></div></div>
   </div>
 </div>
 
@@ -220,7 +242,7 @@
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
-  const lbQ = document.getElementById('lbQ');
+  const lbText = document.getElementById('lbText');
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
@@ -292,7 +314,7 @@
 
   function openLb(item){
     lbImg.src = item.bg;
-    lbQ.textContent = item.q || "";
+    lbText.textContent = item.q || "";
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
     showUI();
@@ -305,7 +327,7 @@
     lb.setAttribute('aria-hidden','true');
     lb.classList.remove('open');
     lbImg.src = "";
-    lbQ.textContent = "";
+    lbText.textContent = "";
     currentIndex = -1;
   }
 
