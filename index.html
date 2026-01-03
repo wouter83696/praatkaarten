@@ -224,15 +224,30 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   .panel .chev svg, .panel .close svg{
     width: 22px;
     height: 22px;
-    stroke: rgba(255,255,255,.92);
+    /* donkerder zodat het op de witte kaart zichtbaar is */
+    stroke: rgba(48,96,136,.62);
     stroke-width: 2.6;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
   }
   .panel .chev:hover svg, .panel .close:hover svg{
-    stroke: rgba(255,255,255,1);
+    stroke: rgba(48,96,136,.85);
+  }
+
+  /* FIX: geen extra 'wit kader' rondom de kaart in desktop browsers */
+  .panel{
+    max-width:none !important;
+    width:100% !important;
+    height:100% !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    border-radius:0 !important;
+    overflow:visible !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
   }
 
 </style>
