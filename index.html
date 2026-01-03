@@ -235,6 +235,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     stroke-linejoin: round;
     fill: none;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
+    pointer-events: none; /* click landt op button (Firefox/Safari) */
   }
   .lbCard .chev:hover svg, .lbCard .close:hover svg{
     stroke: rgba(48,96,136,.85);
@@ -399,10 +400,19 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   // - omlaag: sluiten
   let startX = 0, startY = 0, startT = 0;
   let pointerDown = false;
+  let gestureArmed = false;
 
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
+    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
+    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
+    if (e.target.closest && e.target.closest('button')) {
+      gestureArmed = false;
+      showUI();
+      return;
+    }
     pointerDown = true;
+    gestureArmed = true;
     startX = e.clientX;
     startY = e.clientY;
     startT = performance.now();
@@ -413,6 +423,8 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   lb.addEventListener('pointerup', (e) => {
     if(!pointerDown) return;
     pointerDown = false;
+    if(!gestureArmed) return;
+    gestureArmed = false;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     const dt = performance.now() - startT;
@@ -454,6 +466,8 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   }
 
   // events (iconen op de kaart)
+  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
+  lbCard.addEventListener('click', (e) => e.stopPropagation());
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
