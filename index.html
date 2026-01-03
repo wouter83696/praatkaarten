@@ -33,7 +33,7 @@
   .card:hover img{box-shadow:var(--shadowHover);}
 
   /* Lightbox (super simple + stable) */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);}
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
   .lb.open{display:flex;}
   .panel{
     padding: 0;
@@ -191,6 +191,10 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   /* Mobile landscape: altijd 100% in beeld (past op hoogte) */
   @media (hover: none) and (orientation: landscape){
     .lb{ padding: 14px; }
+    /* In landscape op mobiel: verberg de onderste balk zodra de lightbox open is,
+       anders gaat er hoogte verloren en past de kaart niet volledig in beeld. */
+    body.lb-open .controlsBar{ display:none; }
+    body.lb-open .grid{ padding-bottom: 18px; }
     .lbCard{
       /* 85x55 kaartverhouding ≈ 1.545 */
       width: min(92vw, calc((100vh - 28px) * 1.545));
@@ -369,6 +373,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     lbText.textContent = item.q || "";
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
+    document.body.classList.add('lb-open');
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
@@ -381,6 +386,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   function closeLb(){
     lb.setAttribute('aria-hidden','true');
     lb.classList.remove('open');
+    document.body.classList.remove('lb-open');
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
@@ -388,36 +394,44 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     document.body.style.overflow = '';
   }
 
-  // Swipe (mobile/tablet):
+  // Swipe / drag overal (ook op de grijze achtergrond):
   // - links/rechts: vorige/volgende
   // - omlaag: sluiten
-  let sx=0, sy=0, st=0;
-  const SWIPE_MIN_X = 50;
-  const SWIPE_MIN_Y = 80;
-  lbCard.addEventListener('touchstart', (e) => {
-    if(!e.touches || !e.touches.length) return;
-    const t = e.touches[0];
-    sx = t.clientX; sy = t.clientY; st = Date.now();
-    showUI();
-  }, {passive:true});
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
 
-  lbCard.addEventListener('touchend', (e) => {
-    if(!e.changedTouches || !e.changedTouches.length) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-    const dt = Date.now() - st;
-    // snelle, duidelijke swipe
-    if(dt > 900) return;
-    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_MIN_X){
-      if(dx < 0) go(1); else go(-1);
-      showUI();
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    pointerDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    lb.setPointerCapture?.(e.pointerId);
+    showUI();
+  });
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
+      closeLb();
       return;
     }
-    if(Math.abs(dy) > Math.abs(dx) && dy >= SWIPE_MIN_Y){
-      closeLb();
+    if(ax > ay && ax > thrX){
+      if(dx < 0) go(1); else go(-1);
+      showUI();
     }
-  }, {passive:true});
+  });
 
   function openAt(index){
     currentIndex = index;
@@ -439,10 +453,10 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     return arr;
   }
 
-  // events
-  closeBtn.addEventListener('click', closeLb);
-  prevBtn.addEventListener('click', () => go(-1));
-  nextBtn.addEventListener('click', () => go(1));
+  // events (iconen op de kaart)
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('touchstart', showUI, {passive:true});
