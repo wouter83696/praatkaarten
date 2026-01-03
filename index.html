@@ -188,6 +188,18 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     .lbText{ padding: 18px 18px; font-size: clamp(16px, 3.2vw + 6px, 26px); }
   }
 
+  /* Mobile landscape: altijd 100% in beeld (past op hoogte) */
+  @media (hover: none) and (orientation: landscape){
+    .lb{ padding: 14px; }
+    .lbCard{
+      /* 85x55 kaartverhouding ≈ 1.545 */
+      width: min(92vw, calc((100vh - 28px) * 1.545));
+      max-height: calc(100vh - 28px);
+    }
+    #lbImg{ height: auto; }
+    .lbText{ font-size: clamp(15px, 2.2vw + 6px, 24px); padding: 16px 16px; }
+  }
+
 /* Icon buttons: kaal (geen rondje) + auto-hide */
 
   /* Icon posities op de kaart */
@@ -259,6 +271,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
   const lbText = document.getElementById('lbText');
+  const lbCard = document.getElementById('lbCard');
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
@@ -339,6 +352,9 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     lbText.textContent = item.q || "";
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
+    // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
     showUI();
 
     prevBtn.disabled = currentIndex <= 0;
@@ -351,7 +367,40 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
   }
+
+  // Swipe (mobile/tablet):
+  // - links/rechts: vorige/volgende
+  // - omlaag: sluiten
+  let sx=0, sy=0, st=0;
+  const SWIPE_MIN_X = 50;
+  const SWIPE_MIN_Y = 80;
+  lbCard.addEventListener('touchstart', (e) => {
+    if(!e.touches || !e.touches.length) return;
+    const t = e.touches[0];
+    sx = t.clientX; sy = t.clientY; st = Date.now();
+    showUI();
+  }, {passive:true});
+
+  lbCard.addEventListener('touchend', (e) => {
+    if(!e.changedTouches || !e.changedTouches.length) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    const dt = Date.now() - st;
+    // snelle, duidelijke swipe
+    if(dt > 900) return;
+    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_MIN_X){
+      if(dx < 0) go(1); else go(-1);
+      showUI();
+      return;
+    }
+    if(Math.abs(dy) > Math.abs(dx) && dy >= SWIPE_MIN_Y){
+      closeLb();
+    }
+  }, {passive:true});
 
   function openAt(index){
     currentIndex = index;
