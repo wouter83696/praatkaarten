@@ -77,25 +77,26 @@
   
   /* Controls liggen OP de kaart (dus niet ernaast / op het scherm) */
   .chev, .close{
-    position:absolute;
-    border:0;
-    background:transparent;
-    cursor:pointer;
-    user-select:none;
-    opacity:0;
-    transition:opacity .18s ease;
-    color:rgba(30, 78, 118, .55);
-    -webkit-tap-highlight-color:transparent;
-  }
+  position:absolute;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  user-select:none;
+  opacity:0;
+  transition:opacity .18s ease,color .18s ease;
+  color:rgba(30,78,118,.65);
+  -webkit-tap-highlight-color:transparent;
+}
   .chev{
-    top:50%;
-    transform:translateY(-50%);
-    font-size:44px;
-    line-height:1;
-    padding:10px 12px;
-  }
-  .chev.left{left:10px}
-  .chev.right{right:10px}
+  bottom:10px;
+  top:auto;
+  transform:none;
+  font-size:44px;
+  line-height:1;
+  padding:10px 12px;
+}
+.chev.left{left:10px}
+.chev.right{right:10px}
   .close{
     top:10px;
     right:10px;
@@ -105,7 +106,7 @@
     padding:10px 12px;
   }
   .lb.show-ui .chev,
-  .lb.show-ui .close{opacity:.85;}
+.lb.show-ui .close{opacity:.9;}
   .lb.show-ui .chev:hover,
   .lb.show-ui .close:hover{opacity:1;color:rgba(30, 78, 118, .75);}
 
