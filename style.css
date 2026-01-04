@@ -1,377 +1,288 @@
-:root {
-    --gap:18px;
-    --radius:16px;
-    --shadow:0 14px 50px rgba(0,0,0,.12);
-    --shadowHover:0 18px 70px rgba(0,0,0,.16);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:#fff;font-family:system-ui}
-  .controlsBar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.86);backdrop-filter:blur(10px);}
-  .controlsBar .inner{max-width:1600px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;}
-  .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);} 
-  .btn:hover{background:rgba(0,0,0,.04);} 
-  .btn:active{transform:translateY(1px);} 
-  .btnGroup{display:flex;align-items:center;gap:0;} 
-  .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
-  .btn:active{transform:translateY(1px);}
-  .help{color:rgba(11,18,32,.55);font-size:13px;white-space:normal;}
-  .grid{display:grid;gap:var(--gap);padding:18px 28px 120px;max-width:1600px;margin:auto;grid-template-columns:repeat(2,minmax(0,1fr));}
-  @media (min-width: 720px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
-  @media (min-width: 980px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
-  @media (min-width: 1240px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr));} }
-
-  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;}
-  .card:hover{transform:translateY(-2px);}
-  .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
-  .card:hover img{box-shadow:var(--shadowHover);}
-
-  /* Lightbox (super simple + stable) */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
-  .lb.open{display:flex;}
-  .panel{
-    padding: 0;
-max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shadow:0 24px 90px rgba(0,0,0,.28);overflow:hidden;position:relative;}
-  .panel img{width:100%;height:auto;display:block;}
-  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);cursor:pointer;font-size:18px;line-height:1;}
-
-  
-  .chev{
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:40px;
-    line-height:1;
-    color:rgba(180,180,180,.9);
-    background:transparent;
-    border:0;
-    padding:12px;
-    cursor:pointer;
-    opacity:0;
-    transition:opacity .25s ease;
-    user-select:none;
-  }
-  .chev.left{left:12px}
-  .chev.right{right:12px}
-  .lb.show-ui .chev{opacity:.9}
-
-
-  .close{
-    opacity:0;
-    transition:opacity .25s ease;
-  }
-  .lb.show-ui .close{opacity:.9}
-
-
-  /* Unified chrome behavior: arrows + close auto-hide */
-  .chev, .close{
-    opacity:0;
-    transition:opacity .25s ease;
-  }
-  .lb.show-ui .chev,
-  .lb.show-ui .close{
-    opacity:1;
-  }
-
-  /* Make close visually match chevrons */
-  .close{
-    position:absolute;
-    top:16px;
-    right:16px;
-    font-size:26px;
-    line-height:1;
-    color:rgba(180,180,180,.9);
-    background:transparent;
-    border:0;
-    padding:10px;
-    cursor:pointer;
-  }
-
-
-  /* Close icon styled like chevrons */
-  .close{
-    font-size:34px;
-    font-weight:300;
-    line-height:1;
-    color:rgba(180,180,180,.9);
-    background:transparent;
-    border:0;
-    padding:10px;
-    cursor:pointer;
-  }
-
-
-  /* --- 6 SVG templates + tekst overlay --- */
-  .card {
-    position: relative;
-    padding: 0;
-  }
-  .card .cardInner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  .card img.bg {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  .card .q {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 18px 18px;
-    text-align: center;
-    color: #306088;
-    font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
-    font-weight: 400;
-    line-height: 1.15;
-    font-size: clamp(12px, 0.9vw + 10px, 16px);
-  }
-  @media (max-width: 520px) {
-    .card .q {
-      padding: 14px 14px;
-      font-size: 12.5px;
-      line-height: 1.12;
-    }
-  }
-
-  /* Lightbox: kaart vergroot + tekst ín de kaart */
-  .panel{
-    padding: 0;
-
-    display: grid;
-    gap: 0;
-    position: relative;
-  }
-
-  .lbCard{
-    position: relative;
-    width: min(560px, 92vw);
-    margin: 0 auto;
-    border-radius: 22px;
-    overflow: hidden;
-    background: #fff;
-    box-shadow: 0 18px 45px rgba(0,0,0,.20);
-  }
-  #lbImg{
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 22px;
-  }
-  .lbText{
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 22px 24px;
-    text-align: center;
-    color: #306088;
-    font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
-    font-weight: 400;
-    line-height: 1.14;
-    font-size: clamp(16px, 2.0vw + 10px, 30px);
-    pointer-events: none;
-    transform: translateY(8px); /* optische centrering */
-  }
-
-  /* Thema-label (subtiel in hoek, alleen bij hover / UI) */
-  .themeTag{
-    position:absolute;
-    top:12px;
-    left:12px;
-    z-index:6;
-    padding:6px 10px;
-    border-radius:999px;
-    font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
-    font-size:12px;
-    font-weight: 400;
-    letter-spacing:.2px;
-    color:rgba(48,96,136,.88);
-    background:rgba(255,255,255,.68);
-    backdrop-filter: blur(8px);
-    box-shadow:0 8px 22px rgba(0,0,0,.12);
-    opacity:0;
-    transform:translateY(-2px);
-    transition:opacity .18s ease, transform .18s ease;
-    pointer-events:none;
-  }
-  @media (hover:hover){
-    .lbCard:hover .themeTag{opacity:1; transform:translateY(0);}
-  }
-  @media (hover:none){
-    /* op touch: label alleen zichtbaar als UI zichtbaar is */
-    .lb.show-ui .themeTag{opacity:1; transform:translateY(0);}
-  }
-
-  @media (max-width: 520px){
-    .lbCard{ width: min(480px, 92vw); }
-    .lbText{ padding: 18px 18px; font-size: clamp(16px, 3.2vw + 6px, 26px); }
-  }
-
-  /* Mobile landscape: altijd 100% in beeld (past op hoogte) */
-  @media (hover: none) and (orientation: landscape){
-    .lb{ padding: 14px; }
-    /* In landscape op mobiel: verberg de onderste balk zodra de lightbox open is,
-       anders gaat er hoogte verloren en past de kaart niet volledig in beeld. */
-    body.lb-open .controlsBar{ display:none; }
-    body.lb-open .grid{ padding-bottom: 18px; }
-    .lbCard{
-      /* 85x55 kaartverhouding ≈ 1.545 */
-      width: min(92vw, calc((100vh - 28px) * 1.545));
-      max-height: calc(100vh - 28px);
-    }
-    #lbImg{ height: auto; }
-    .lbText{ font-size: clamp(15px, 2.2vw + 6px, 24px); padding: 16px 16px; }
-  }
-
-/* Icon buttons: kaal (geen rondje) + auto-hide */
-
-  /* Icon posities OP de kaart (dus binnen .lbCard) */
-  .lbCard .close{ position: absolute; top: 10px; right: 10px; z-index: 6; }
-  .lbCard .chev.left{ position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
-  .lbCard .chev.right{ position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
-
-  .lbCard .chev, .lbCard .close{
-    background: transparent;
-    border: 0;
-    width: 44px;
-    height: 44px;
-    display: grid;
-    place-items: center;
-    opacity: 0;
-    transition: opacity .18s ease;
-    padding: 0;
-  }
-  .lb.show-ui .chev, .lb.show-ui .close{
-    opacity: 1;
-  }
-  .lbCard .chev svg, .lbCard .close svg{
-    width: 22px;
-    height: 22px;
-    /* donkerder zodat het op de witte kaart zichtbaar is */
-    stroke: rgba(48,96,136,.62);
-    stroke-width: 2.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    fill: none;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
-    pointer-events: none; /* click landt op button (Firefox/Safari) */
-  }
-  .lbCard .chev:hover svg, .lbCard .close:hover svg{
-    stroke: rgba(48,96,136,.85);
-  }
-
-  /* FIX: geen extra 'wit kader' rondom de kaart in desktop browsers */
-  .panel{
-    max-width:none !important;
-    width:100% !important;
-    height:100% !important;
-    background:transparent !important;
-    box-shadow:none !important;
-    border-radius:0 !important;
-    overflow:visible !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-  }
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
 /* ===============================
-   OVERRIDES (v8)
+   VARS
    =============================== */
 
-/* kaarttekst: REGULAR */
-.card .qText,
+:root{
+  --gap:18px;
+  --radius:16px;
+  --shadow:0 14px 50px rgba(0,0,0,.12);
+  --shadowHover:0 18px 70px rgba(0,0,0,.16);
+
+  --textBlue: rgba(48,96,136,.95);
+  --uiBlue: rgba(48,96,136,.85);
+}
+
+*{box-sizing:border-box}
+
+/* ===============================
+   BASE
+   =============================== */
+
+body{
+  margin:0;
+  background:#fff;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-text-size-adjust:100%;
+  text-rendering:optimizeLegibility;
+}
+
+/* ===============================
+   CONTROLS
+   =============================== */
+
+.controlsBar{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:50;
+  padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(10px);
+}
+
+.controlsBar .inner{
+  max-width:1600px;
+  margin:0 auto;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.btn{
+  appearance:none;
+  border:0;
+  background:transparent;
+  border-radius:999px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.2;
+  cursor:pointer;
+  color:rgba(11,18,32,.78);
+}
+
+.btn:hover{background:rgba(0,0,0,.04);}
+.btn:active{transform:translateY(1px);}
+
+.btnGroup{display:flex;align-items:center;gap:0;}
+.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
+
+.help{
+  color:rgba(11,18,32,.55);
+  font-size:13px;
+  line-height:1.35;
+  white-space:normal;
+}
+
+/* ===============================
+   GRID
+   =============================== */
+
+.grid{
+  display:grid;
+  gap:var(--gap);
+  padding:18px 28px 120px;
+  max-width:1600px;
+  margin:auto;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+@media (min-width:720px){
+  .grid{grid-template-columns:repeat(3,1fr);}
+}
+@media (min-width:980px){
+  .grid{grid-template-columns:repeat(4,1fr);}
+}
+@media (min-width:1240px){
+  .grid{grid-template-columns:repeat(6,1fr);}
+}
+
+/* ===============================
+   KAARTEN
+   =============================== */
+
+.card{
+  position:relative;
+  border:0;
+  background:transparent;
+  padding:0;
+  cursor:zoom-in;
+  transition:transform .14s ease;
+}
+
+.card:hover{transform:translateY(-2px);}
+
+.card img{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  transition:box-shadow .14s ease;
+}
+
+.card:hover img{box-shadow:var(--shadowHover);}
+
+/* ===============================
+   TEKST OP KLEINE KAARTJES
+   =============================== */
+
+.card .q{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  text-align:center;
+
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+  font-size:10.5px;
+  line-height:1.38;
+  letter-spacing:-0.008em;
+
+  color:var(--textBlue);
+  font-synthesis:none;
+
+  transform:translateY(2px);
+}
+
+@media (max-width:520px){
+  .card .q{
+    padding:14px;
+    font-size:9.75px;
+    line-height:1.34;
+    letter-spacing:-0.006em;
+  }
+}
+
+/* ===============================
+   LIGHTBOX
+   =============================== */
+
+.lb{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(8px);
+}
+
+.lb.open{display:flex;}
+
+.panel{
+  width:100%;
+  height:100%;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.lbCard{
+  position:relative;
+  width:min(560px,92vw);
+  border-radius:22px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 18px 45px rgba(0,0,0,.20);
+}
+
+#lbImg{
+  width:100%;
+  display:block;
+}
+
+/* ===============================
+   TEKST OP GROTE KAART (SUBTIEL)
+   =============================== */
+
 .lbText{
-  font-weight: 400 !important;
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:22px 24px;
+  text-align:center;
+
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+
+  font-size:clamp(15px,1.4vw + 8px,22px);
+  line-height:1.26;
+  letter-spacing:-0.006em;
+
+  color:var(--textBlue);
+
+  transform:translateY(6px);
+  pointer-events:none;
 }
 
-/* geen thema in lightbox */
-#themeTag{ display:none !important; }
+/* ===============================
+   ICONS
+   =============================== */
 
-/* geen iOS tap highlight + geen focus ring */
-button, .chev, .close{
-  -webkit-tap-highlight-color: transparent;
-  tap-highlight-color: transparent;
-  outline: none !important;
-  box-shadow: none !important;
+.chev,
+.close{
+  position:absolute;
+  background:transparent;
+  border:0;
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  color:var(--uiBlue);
+  cursor:pointer;
+  opacity:0;
 }
-button:focus, button:focus-visible,
-.chev:focus, .chev:focus-visible,
-.close:focus, .close:focus-visible{
+
+.lb.show-ui .chev,
+.lb.show-ui .close{opacity:1;}
+
+.chev.left{left:10px;top:50%;transform:translateY(-50%);}
+.chev.right{right:10px;top:50%;transform:translateY(-50%);}
+.close{top:10px;right:10px;}
+
+.chev svg,
+.close svg{
+  width:22px;
+  height:22px;
+  stroke:currentColor;
+  stroke-width:2.6;
+  fill:none;
+  pointer-events:none;
+}
+
+/* ===============================
+   FIXES
+   =============================== */
+
+.themeTag,
+#themeTag{display:none !important;}
+
+button,
+.chev,
+.close{
+  -webkit-tap-highlight-color:transparent;
+  tap-highlight-color:transparent;
   outline:none !important;
   box-shadow:none !important;
 }
 
-/* UI chrome (pijlen + kruisje) direct weg / direct zichtbaar */
-.chev, .close{
-  transition: none !important;
-  animation: none !important;
-}
-
-
-
 /* ===============================
-   FIX: GEEN (WIT) RONDJE/VIERKANT BIJ KRUISJE & ICONS
-   - iOS/Safari tap highlight uit
-   - geen achtergrond / blur / radius
+   🔥 DEFINITIEVE FIX
+   Verberg onderste balk zodra lightbox open is
+   (werkt ook op iOS Safari / GitHub Pages)
    =============================== */
 
-.close,
-.lbCard .close,
-.chev,
-.lbCard .chev,
-.icon-btn,
-.nav-btn,
-.close-btn {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-  tap-highlight-color: transparent !important;
+body:has(.lb.open) .controlsBar{
+  display:none !important;
 }
 
-.close::before,
-.close::after,
-.lbCard .close::before,
-.lbCard .close::after {
-  content: none !important;
-}
-
-.close svg,
-.lbCard .close svg,
-.chev svg,
-.lbCard .chev svg {
-  background: transparent !important;
-  filter: none !important;
-}
-
-/* Zorg dat de iconen altijd dezelfde kleur hebben */
-.close svg path,
-.close svg line,
-.close svg polyline,
-.chev svg path,
-.chev svg line,
-.chev svg polyline {
-  stroke: currentColor !important;
-}
-
-
-
-/* ===============================
-   LANDSCAPE MOBIEL: verberg onderste balk als lightbox open is
-   (orientation is soms flaky op iOS, daarom ook max-height)
-   =============================== */
-@media (hover: none) and (orientation: landscape){
-  body.lb-open .controlsBar{ display:none !important; }
-  body.lb-open{ overflow:hidden; }
-}
-@media (hover: none) and (max-height: 430px){
-  body.lb-open .controlsBar{ display:none !important; }
-  body.lb-open{ overflow:hidden; }
+body:has(.lb.open){
+  overflow:hidden;
 }
