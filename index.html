@@ -283,8 +283,6 @@ button,
 }
 
 
-/* ===== FIXES (v6) ===== */
-
 /* 0) Zorg dat de pagina-achtergrond écht tot in de hoeken doorloopt */
 html, body{
   min-height:100%;
@@ -328,6 +326,37 @@ html, body{
 @media (max-height: 520px) and (orientation: landscape){
   .controlsBar{ display:none !important; }
   body{ padding-bottom: 0 !important; }
+}
+
+
+/* ===== FIXES (v6-fris) =====
+   Alleen achtergrond frisser maken.
+   Geen invloed op kaarten, afronding, lightbox-logica.
+*/
+
+/* Fris, schoon canvas */
+html, body{
+  min-height:100%;
+  background:#FFFFFF !important;
+}
+
+/* Heel subtiele frisse paper-touch (bijna onzichtbaar) */
+body{
+  background-image:
+    radial-gradient(1600px 1100px at 25% 10%, rgba(0,0,0,0.008), transparent 55%),
+    radial-gradient(1600px 1100px at 75% 90%, rgba(0,0,0,0.006), transparent 55%);
+}
+
+/* Zorg dat niets anders erdoorheen kleurt */
+.page, .wrap, .container, main,
+.grid, .cards, .cardGrid{
+  background: transparent !important;
+}
+
+/* Geen pseudo-achtergronden */
+html::before, html::after,
+body::before, body::after{
+  content:none !important;
 }
 
 </style>
