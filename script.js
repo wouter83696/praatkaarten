@@ -101,6 +101,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
   function closeLb(){
     lb.setAttribute('aria-hidden','true');
     lb.classList.remove('open');
+    lb.classList.remove('is-swiping');
     document.body.classList.remove('lb-open');
     lbImg.src = "";
     lbText.textContent = "";
@@ -114,6 +115,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
   // - omlaag: sluiten
   let startX = 0, startY = 0, startT = 0;
   let pointerDown = false;
+    lb.classList.remove('is-swiping');
   let gestureArmed = false;
 
   lb.addEventListener('pointerdown', (e) => {
@@ -134,9 +136,18 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     showUI();
   });
 
-  lb.addEventListener('pointerup', (e) => {
+  
+lb.addEventListener('pointermove', (e) => {
+  if(!pointerDown) return;
+  if(!gestureArmed) return;
+  // Tijdens echte swipe/drag: iconen tijdelijk verbergen
+  lb.classList.add('is-swiping');
+}, {passive:true});
+
+lb.addEventListener('pointerup', (e) => {
     if(!pointerDown) return;
     pointerDown = false;
+    lb.classList.remove('is-swiping');
     if(!gestureArmed) return;
     gestureArmed = false;
     const dx = e.clientX - startX;
@@ -190,9 +201,12 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
 
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('touchstart', showUI, {passive:true});
-  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); else showUI(); });
-
-  document.addEventListener('keydown', (e) => {
+  lb.addEventListener('click', (e) => {
+    // Klik buiten de kaart (op de blur/achtergrond) = sluiten
+    if(!lbCard.contains(e.target)) { closeLb(); return; }
+    showUI();
+  });
+document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.key === 'Escape') closeLb();
     if(e.key === 'ArrowLeft') go(-1);

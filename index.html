@@ -24,8 +24,8 @@
   --uiBlue: rgba(48,96,136,.85);
 
   /* WARM "INKT" (bruin-grijs) voor cursor + iconen */
-  --uiInk: rgba(120,120,115,.9);
-  --uiInkSoft: rgba(120,120,115,.55);
+  --uiInk: rgba(145,145,140,.9);
+  --uiInkSoft: rgba(145,145,140,.5);
 }
 
 *{box-sizing:border-box}
@@ -509,6 +509,11 @@ body{
   transition:opacity .8s ease;
 display:block;}
 }
+
+
+/* Hide icons during swipe/drag (phone) */
+.lb.is-swiping .chev,
+.lb.is-swiping .close{opacity:0 !important;}
 </style>
 </head>
 <body>
