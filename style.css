@@ -1,298 +1,361 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
-/* =========================================================
-   PRAATKAARTEN — style.css (met warm grijs/bruin voor X + pijlen)
-   Doel:
-   - Cursor (overlay) + kruisje/pijlen NIET blauw maar warm grijs/bruin
-   - Hinttekst alleen op telefoon portrait
-   ========================================================= */
-
 /* ===============================
    VARS
    =============================== */
 :root{
   --gap:18px;
   --radius:16px;
-
-  --shadow:0 14px 40px rgba(0,0,0,.12);
-  --shadowHover:0 18px 55px rgba(0,0,0,.16);
+  --shadow:0 14px 50px rgba(0,0,0,.12);
+  --shadowHover:0 18px 70px rgba(0,0,0,.16);
 
   --textBlue: rgba(48,96,136,.95);
-  --uiBlue: rgba(48,96,136,.85);
 
-  /* WARM "INKT" (bruin-grijs) */
-  --uiInk: rgba(90,86,80,.92);
-  --uiInkSoft: rgba(90,86,80,.55);
+  /* warm inkt (iconen) */
+  --uiInk: rgba(145,145,140,.9);
 }
 
-*{box-sizing:border-box}
+/* ===============================
+   BASE
+   =============================== */
+*{ box-sizing:border-box; }
 
-html,body{
-  margin:0;
+html, body{
   min-height:100%;
+  margin:0;
   background:#fff;
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
+  text-rendering:optimizeLegibility;
 }
 
 /* ===============================
-   KAARTEN (basis)
-   =============================== */
-.card{
-  background:#fff;
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-}
-
-@media (hover:hover){
-  .card:hover{
-    box-shadow:var(--shadowHover);
-    transform:translateY(-2px);
-  }
-}
-
-/* ===============================
-   OVERLAY / LIGHTBOX
-   =============================== */
-.lb,
-.lightbox,
-.modalOverlay,
-.overlay{
-  cursor:crosshair;
-}
-
-.lb{
-  position:fixed;
-  inset:0;
-  background:rgba(255,255,255,.45);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  z-index:999;
-}
-
-/* Actieve kaart in overlay */
-.lb .card{
-  box-shadow:
-    0 8px 18px rgba(0,0,0,.14),
-    0 32px 60px rgba(0,0,0,.18);
-}
-
-/* ===============================
-   ONDERSTE BALK
+   CONTROLS BAR
    =============================== */
 .controlsBar{
   position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  z-index:1000;
+  left:0; right:0; bottom:0;
+  z-index:50;
+
+  padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
 }
 
 .controlsBar .inner{
-  max-width:1100px;
+  max-width:1600px;
   margin:0 auto;
-  padding:14px 20px;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:16px;
 }
 
-/* links */
 .controlsBar .btnGroup{
   display:flex;
-  gap:14px;
   align-items:center;
+  justify-content:flex-start;
+  gap:12px;
 }
 
-/* hint standaard uit */
-.controlsBar .help{
-  display:none;
-  font-size:.9em;
-  opacity:.70;
-  white-space:nowrap;
-  transition:opacity .8s ease;
+.sep{
+  width:1px;
+  height:18px;
+  background:rgba(0,0,0,.14);
+  margin:0 2px;
 }
-.controlsBar .help.is-hidden{
-  opacity:0;
+
+.btn{
+  appearance:none;
+  border:0;
+  background:transparent;
+  border-radius:999px;
+  padding:10px 10px;
+  font-size:13px;
+  line-height:1.2;
+  cursor:pointer;
+  color:rgba(11,18,32,.78);
+}
+
+.btn:hover{ background:rgba(0,0,0,.04); }
+.btn:active{ transform:translateY(1px); }
+
+/* Hint in balk (rechts) */
+.navHintMini{
+  margin-left:auto;
+  opacity:0;              /* standaard onzichtbaar; JS zet body.show-hint */
+  color:rgba(11,18,32,.55);
+  font-size:12.5px;
+  line-height:1.2;
+  white-space:nowrap;
+  pointer-events:none;
+  transition:opacity .35s ease;
+}
+
+/* Alleen tonen als lightbox open is én hint actief is */
+body.lb-open.show-hint .navHintMini{ opacity:.72; }
+body.lb-open .navHintMini{ opacity:0; }
+
+/* Mobiel/tablet: hint rechtsonder als “toast” */
+@media (hover:none) and (pointer:coarse){
+  .navHintMini{
+    position:fixed;
+    right:14px;
+    bottom:14px;
+    margin:0;
+    padding:8px 10px;
+    background:rgba(243,245,238,.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.10);
+    color:rgba(11,18,32,.62);
+    z-index:9999;
+  }
+}
+
+/* Balk weg in landscape op telefoon (coarse pointer) */
+@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom:0 !important; }
+}
+
+/* ===============================
+   GRID
+   =============================== */
+.grid{
+  display:grid;
+  gap:var(--gap);
+  padding:18px 28px 120px; /* ruimte voor balk */
+  max-width:1600px;
+  margin:auto;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+@media (min-width:720px){
+  .grid{ grid-template-columns:repeat(3,1fr); }
+}
+@media (min-width:980px){
+  .grid{ grid-template-columns:repeat(4,1fr); }
+}
+@media (min-width:1240px){
+  .grid{ grid-template-columns:repeat(6,1fr); }
+}
+
+/* ===============================
+   KAARTEN
+   =============================== */
+.card{
+  position:relative;
+  border:0;
+  background:transparent;
+  padding:0;
+  cursor:zoom-in;
+  transition:transform .14s ease;
+}
+
+.card:hover{ transform:translateY(-2px); }
+
+.card img{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  transition:box-shadow .14s ease;
+}
+
+.card:hover img{ box-shadow:var(--shadowHover); }
+
+/* Tekst op kleine kaartjes */
+.card .q{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  text-align:center;
+
+  font-weight:400;
+  font-size:10.5px;
+  line-height:1.38;
+  letter-spacing:-0.008em;
+
+  color:var(--textBlue);
+  font-synthesis:none;
+
+  /* optische centrering */
+  transform:translateY(2px);
+}
+
+@media (max-width:520px){
+  .card .q{
+    padding:14px;
+    font-size:9.75px;
+    line-height:1.34;
+    letter-spacing:-0.006em;
+  }
+}
+
+/* ===============================
+   LIGHTBOX
+   =============================== */
+.lb{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+
+  background:rgba(255,255,255,.10);
+  touch-action:none;
+}
+
+.lb.open{ display:flex; }
+
+/* geblurde achtergrond */
+.lbBg{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+
+  background-image:var(--lb-bg-url);
+  background-size:cover;
+  background-position:center;
+
+  transform:translateX(var(--lb-bg-shift, 0px)) scale(1.08);
+  transition:transform .18s ease;
+
+  filter:blur(18px);
+  opacity:.38;
+
+  pointer-events:none;
+  z-index:0;
+}
+.lb.is-swiping .lbBg{ transition:none; }
+
+.lb::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+  background:rgba(255,255,255,.22);
+  pointer-events:none;
+  z-index:0;
+}
+
+.panel, .lbCard, .chev, .close{
+  position:relative;
+  z-index:1;
+}
+
+.panel{
+  width:100%;
+  height:100%;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.lbCard{
+  position:relative;
+  width:min(560px,92vw);
+  border-radius:22px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 18px 45px rgba(0,0,0,.20);
+}
+
+#lbImg{
+  width:100%;
+  display:block;
+}
+
+.lbText{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:22px 24px;
+  text-align:center;
+
+  font-weight:400;
+  font-size:clamp(16px,2vw + 10px,30px);
+  line-height:1.28;
+  letter-spacing:-0.006em;
+
+  color:var(--textBlue);
+
+  /* optische centrering groot */
+  transform:translateY(6px);
   pointer-events:none;
 }
 
-/* Telefoon portrait: hint aan + links/rechts fullwidth */
-@media (hover:none) and (pointer:coarse) and (orientation:portrait){
-  .controlsBar .inner{
-    width:100%;
-    max-width:none;
-    padding-left:clamp(14px, 3vw, 28px);
-    padding-right:clamp(14px, 3vw, 28px);
-  }
-  .controlsBar .help{
-    display:block;
-    margin-left:auto;
-    text-align:right;
-  }
-}
-
-/* Telefoon landscape: balk weg */
-@media (hover:none) and (pointer:coarse) and (orientation:landscape){
-  .controlsBar{ display:none; }
-}
-
-/* =========================================================
-   ✅ KRUISJE + PIJLEN + NAV: warm grijs/bruin i.p.v. blauw
-   (robuste selectors, zodat het pakt ongeacht classnames)
-   ========================================================= */
-
-/* Alles wat als "controls" fungeert in overlay */
-.lb button,
-.lb [role="button"],
-.lb .close,
-.lb .closeBtn,
-.lb .navBtn,
-.lb .iconBtn,
-.lb .prev,
-.lb .next,
-.lb .arrow,
-.lb .nav,
-.lb .navPrev,
-.lb .navNext,
-.lb [aria-label*="Close" i],
-.lb [aria-label*="Sluit" i],
-.lb [data-action="close"],
-.lb [data-action="prev"],
-.lb [data-action="next"],
-.lightbox button,
-.lightbox [role="button"]{
-  color:var(--uiInk) !important;
-}
-
-/* Als pijlen/kruisje SVG zijn: forceer stroke/fill naar currentColor */
-.lb svg,
-.lightbox svg{
-  stroke:currentColor !important;
-  fill:none !important;
-}
-
-.lb svg path,
-.lightbox svg path{
-  stroke:currentColor !important;
-  fill:currentColor !important; /* ok als het een gevuld icoon is */
-}
-
-/* Als pijlen/kruisje als teksttekens worden getoond (‹ › ×) */
-.lb .close,
-.lb .prev,
-.lb .next,
-.lb .arrow,
-.lb .navBtn,
-.lb .iconBtn{
-  color:var(--uiInk) !important;
-}
-
-/* Hover iets donkerder (desktop) */
-@media (hover:hover){
-  .lb button:hover,
-  .lb [role="button"]:hover,
-  .lb .close:hover,
-  .lb .prev:hover,
-  .lb .next:hover,
-  .lb .arrow:hover{
-    color:rgba(70,66,60,.95) !important;
-  }
-}
-
-/* Focus ring (toegankelijk, rustig) */
-.lb button:focus-visible,
-.lb [role="button"]:focus-visible,
-.controlsBar button:focus-visible{
-  outline:2px solid var(--uiInkSoft);
-  outline-offset:2px;
-  border-radius:10px;
-}
-
 /* ===============================
-   Buttons in bottom bar (ook warm)
+   ICONS (desktop)
    =============================== */
-.controlsBar button,
-.controlsBar a{
+.chev,
+.close{
+  position:absolute;
+  background:transparent;
+  border:0;
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
   color:var(--uiInk);
+  cursor:pointer;
+  opacity:0;
 }
 
-.controlsBar button svg,
-.controlsBar a svg{
-  stroke:currentColor !important;
-  fill:none !important;
+.lb.show-ui .chev,
+.lb.show-ui .close{ opacity:1; }
+
+.chev.left{ left:10px; top:50%; transform:translateY(-50%); }
+.chev.right{ right:10px; top:50%; transform:translateY(-50%); }
+.close{ top:10px; right:10px; }
+
+.chev svg,
+.close svg{
+  width:22px;
+  height:22px;
+  stroke:currentColor;
+  stroke-width:2.6;
+  fill:none;
+  pointer-events:none;
 }
+
+/* Touch: geen pijlen, wel kruisje (zoals jij wilde eerder) */
+@media (hover:none) and (pointer:coarse){
+  .chev{ display:none !important; }
+  .lb.show-ui .close{ opacity:1; }
+}
+
+/* Verberg iconen tijdens swipe/drag */
+.lb.is-swiping .chev,
+.lb.is-swiping .close{ opacity:0 !important; }
 
 /* ===============================
-   MOBILE (touch)
-   - Balk: WEL in portrait, WEG in landscape
+   TAP HIGHLIGHT / FOCUS FIX
    =============================== */
-@media (pointer: coarse) and (orientation: landscape){
-  .controlsBar{ display:none !important; }
+button, .chev, .close{
+  -webkit-tap-highlight-color:transparent;
+  tap-highlight-color:transparent;
+  outline:none !important;
+  box-shadow:none !important;
 }
 
-@media (pointer: coarse){
-  .lb .chev,
-  .lb .close,
-  .lb button,
-  .lb [role="button"],
-  .lightbox button,
-  .lightbox [role="button"]{
-    display:none !important;
-    opacity:0 !important;
-    pointer-events:none !important;
-  }
-}
-
-/* ===============================
-   NAV HINT (rechts, kort zichtbaar bij openen)
-   (alleen relevant als je in HTML een .nav-hint in de overlay plaatst)
-   =============================== */
-.nav-hint{
-  position: fixed;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 13px;
-  line-height: 1.4;
-  color: rgba(0,0,0,.55);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .4s ease;
-  z-index: 999;
-  text-align: right;
-}
-.lb.open .nav-hint{ opacity: 1; }
-.lb.hide-hint .nav-hint{ opacity: 0; }
-
-/* =========================================================
-   FIX: Hussel | Reset compact links (desktop + mobiel)
-   - Voorkomt dat de balk de knoppen uit elkaar trekt
-   ========================================================= */
-.controlsBar .inner{
-  justify-content:flex-start !important;
-}
-
-/* Knoppen als één compact cluster */
-.controlsBar .btnGroup{
-  gap:6px !important;
-}
-
-/* Subtiele scheider (|) zonder grote tussenruimte */
-.controlsBar .sep{
-  height:16px !important;
-  margin:0 4px !important;
-  background:rgba(0,0,0,.18) !important;
-}
-
-/* =========================================================
-   DEFINITIEVE FIX — Hussel | Reset links & compact
-   (overschrijft ALLES erboven)
-   ========================================================= */
-
-.controlsBar{
-  width:100% !important;
-}
-
-.
+/* eventuele thema-tags uit oudere versies */
+.themeTag, #themeTag{ display:none !important; }
