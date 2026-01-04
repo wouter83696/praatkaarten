@@ -161,6 +161,13 @@
     .lb.open .lbTheme{opacity:.9;}
   }
 
+
+  /* FIX18: controls/thema alleen klikbaar als ze zichtbaar zijn */
+  .chev, .close, .lbTheme{pointer-events:none;}
+  .lb.show-ui .chev,
+  .lb.show-ui .close,
+  .lb.show-ui .lbTheme{pointer-events:auto;}
+
 </style>
 </head>
 <body>
@@ -227,7 +234,7 @@
   function showUI(){
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
-    const hideMs = canHover ? 650 : 2500;
+    const hideMs = canHover ? 600 : 700;
     uiTimer = setTimeout(() => lb.classList.remove('show-ui'), hideMs);
   }
 
