@@ -1,4 +1,4 @@
-const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
+const THEMES = ["verkennen","verbinden","bewegen","duiden","verhelderen","vertragen"];
 
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
@@ -310,7 +310,7 @@ document.addEventListener('keydown', (e) => {
   });
 
   (async function init(){
-    const res = await fetch('questions.json');
+    const res = await fetch('questions.json?v=17');
     const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();
