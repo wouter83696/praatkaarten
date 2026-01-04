@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
   :root {
     --gap:18px;
     --radius:16px;
@@ -42,7 +43,7 @@
     padding: 0;
 max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shadow:0 24px 90px rgba(0,0,0,.28);overflow:hidden;position:relative;}
   .panel img{width:100%;height:auto;display:block;}
-  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);cursor:pointer;font-size:18px;line-height:1;}
+  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:0;border:0;background:transparent;backdrop-filter:blur(6px);cursor:pointer;font-size:18px;line-height:1;}
 
   
   .chev{
@@ -225,20 +226,16 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   .lbCard .chev.left{ position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
   .lbCard .chev.right{ position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
 
-  /* Icon buttons: stabiel op iOS (geen compositor/glitch).
-     Gebruik een subtiele vaste achtergrond i.p.v. filters. */
   .lbCard .chev, .lbCard .close{
-    background: rgba(255,255,255,.82);
+    background:transparent;
     border: 0;
     width: 44px;
     height: 44px;
-    border-radius: 999px;
     display: grid;
     place-items: center;
     opacity: 0;
     transition: opacity .18s ease;
     padding: 0;
-    -webkit-tap-highlight-color: transparent;
   }
   .lb.show-ui .chev, .lb.show-ui .close{
     opacity: 1;
@@ -247,15 +244,13 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     width: 22px;
     height: 22px;
     /* donkerder zodat het op de witte kaart zichtbaar is */
-    stroke: rgba(48,96,136,.68);
+    stroke: rgba(48,96,136,.62);
     stroke-width: 2.6;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
     pointer-events: none; /* click landt op button (Firefox/Safari) */
-    shape-rendering: geometricPrecision;
-    vector-effect: non-scaling-stroke;
-    transform: translateZ(0);
   }
   .lbCard .chev:hover svg, .lbCard .close:hover svg{
     stroke: rgba(48,96,136,.85);
@@ -273,6 +268,27 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
+  }
+
+
+
+  /* === iOS/Safari: geen wit rondje / highlight rond icons === */
+  .close, .chev{
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    outline: none;
+  }
+  .close:focus, .close:focus-visible,
+  .chev:focus, .chev:focus-visible{
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  /* Verberg eventueel thema-label in de lightbox (als het nog ergens bestaat) */
+  .lb .theme, .lb .theme-label, .lb .card-theme,
+  .lb [class*="theme"]{
+    display:none !important;
+    opacity:0 !important;
+    visibility:hidden !important;
   }
 
 </style>
@@ -307,6 +323,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
 
 
 <script>
+
   const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
 
   const grid = document.getElementById('grid');
@@ -409,11 +426,9 @@ lb.setAttribute('aria-hidden','false');
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     showUI();
-
-    // Doorlopend navigeren: nooit disablen (laatste -> eerste, eerste -> laatste)
     prevBtn.disabled = false;
     nextBtn.disabled = false;
-  }
+}
 
   function closeLb(){
     lb.setAttribute('aria-hidden','true');
@@ -485,7 +500,6 @@ lb.setAttribute('aria-hidden','false');
     if (currentIndex < 0) return;
     const total = filtered.length;
     if (!total) return;
-    // Doorlopend: wrap-around
     let next = (currentIndex + delta) % total;
     if (next < 0) next += total;
     openAt(next);
@@ -534,6 +548,7 @@ lb.setAttribute('aria-hidden','false');
     filtered = data.slice();
     render(filtered);
   })();
+
 </script>
 
 
