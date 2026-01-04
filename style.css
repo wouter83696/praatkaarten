@@ -285,3 +285,14 @@ html,body{
   margin:0 4px !important;
   background:rgba(0,0,0,.18) !important;
 }
+
+/* =========================================================
+   DEFINITIEVE FIX — Hussel | Reset links & compact
+   (overschrijft ALLES erboven)
+   ========================================================= */
+
+.controlsBar{
+  width:100% !important;
+}
+
+.
