@@ -124,7 +124,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     text-align: center;
     color: #306088;
     font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.15;
     font-size: clamp(12px, 0.9vw + 10px, 16px);
   }
@@ -169,7 +169,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     text-align: center;
     color: #306088;
     font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.14;
     font-size: clamp(16px, 2.0vw + 10px, 30px);
     pointer-events: none;
@@ -186,7 +186,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     border-radius:999px;
     font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
     font-size:12px;
-    font-weight: 400;
+    font-weight:500;
     letter-spacing:.2px;
     color:rgba(48,96,136,.88);
     background:rgba(255,255,255,.68);
@@ -308,70 +308,4 @@ button:focus, button:focus-visible,
 .chev, .close{
   transition: none !important;
   animation: none !important;
-}
-
-
-
-/* ===============================
-   FIX: GEEN (WIT) RONDJE/VIERKANT BIJ KRUISJE & ICONS
-   - iOS/Safari tap highlight uit
-   - geen achtergrond / blur / radius
-   =============================== */
-
-.close,
-.lbCard .close,
-.chev,
-.lbCard .chev,
-.icon-btn,
-.nav-btn,
-.close-btn {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-  tap-highlight-color: transparent !important;
-}
-
-.close::before,
-.close::after,
-.lbCard .close::before,
-.lbCard .close::after {
-  content: none !important;
-}
-
-.close svg,
-.lbCard .close svg,
-.chev svg,
-.lbCard .chev svg {
-  background: transparent !important;
-  filter: none !important;
-}
-
-/* Zorg dat de iconen altijd dezelfde kleur hebben */
-.close svg path,
-.close svg line,
-.close svg polyline,
-.chev svg path,
-.chev svg line,
-.chev svg polyline {
-  stroke: currentColor !important;
-}
-
-
-
-/* ===============================
-   LANDSCAPE MOBIEL: verberg onderste balk als lightbox open is
-   (orientation is soms flaky op iOS, daarom ook max-height)
-   =============================== */
-@media (hover: none) and (orientation: landscape){
-  body.lb-open .controlsBar{ display:none !important; }
-  body.lb-open{ overflow:hidden; }
-}
-@media (hover: none) and (max-height: 430px){
-  body.lb-open .controlsBar{ display:none !important; }
-  body.lb-open{ overflow:hidden; }
 }
