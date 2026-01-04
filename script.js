@@ -232,20 +232,65 @@ document.addEventListener('keydown', (e) => {
   })();
 
 
-// ===== INSTRUCTION FADE (phone portrait only) =====
+
+window.closeLb = closeLb;
+
+/* ===== MOBILE TAP-TO-CLOSE (definitief) =====
+   - Telefoon: swipe links/rechts = nav
+   - Tap (geen swipe) = sluit overlay
+*/
 (function(){
-  let done = false;
-  function isPhonePortrait(){
-    return window.matchMedia &&
-      window.matchMedia('(hover: none) and (pointer: coarse) and (orientation: portrait)').matches;
-  }
-  function run(){
-    if(done) return;
-    if(!isPhonePortrait()) return;
-    const hint = document.querySelector('.controlsBar .help');
-    if(!hint) return;
-    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
-    done = true;
-  }
-  window.addEventListener('load', run, { once:true });
+  const lb = document.getElementById('lb') || document.querySelector('.lb') || document.querySelector('.lightbox');
+  if(!lb) return;
+
+  const isTouchPhone = () =>
+    window.matchMedia &&
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  let sx=0, sy=0, moved=false;
+  const SWIPE_X = 40;   // px
+  const TAP_SLOP = 10;  // px
+
+  lb.addEventListener('touchstart', (e) => {
+    if(!isTouchPhone()) return;
+    if(!lb.classList.contains('open')) return;
+    const t = e.touches[0];
+    sx = t.clientX; sy = t.clientY;
+    moved = false;
+  }, {passive:true});
+
+  lb.addEventListener('touchmove', (e) => {
+    if(!isTouchPhone()) return;
+    if(!lb.classList.contains('open')) return;
+    const t = e.touches[0];
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    if(Math.abs(dx) > TAP_SLOP || Math.abs(dy) > TAP_SLOP) moved = true;
+  }, {passive:true});
+
+  lb.addEventListener('touchend', (e) => {
+    if(!isTouchPhone()) return;
+    if(!lb.classList.contains('open')) return;
+    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+    if(!t) return;
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+
+    // horizontale swipe
+    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_X){
+      if(typeof window.nextCard === 'function' && typeof window.prevCard === 'function'){
+        (dx < 0) ? window.nextCard() : window.prevCard();
+      }else{
+        // fallback: dispatch arrow keys if functions not exposed
+        window.dispatchEvent(new KeyboardEvent('keydown', {key: dx < 0 ? 'ArrowRight' : 'ArrowLeft'}));
+      }
+      return;
+    }
+
+    // tap: sluiten (ook als je op de kaart tikt)
+    if(!moved){
+      if(typeof window.closeLb === 'function') window.closeLb();
+      else lb.classList.remove('open');
+    }
+  }, {passive:true});
 })();
