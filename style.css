@@ -1,65 +1,49 @@
-/* =========================================
-   BASIS & VARIABELEN
-   ========================================= */
-
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
+/* =========================================================
+   PRAATKAARTEN — style.css (met warm grijs/bruin voor X + pijlen)
+   Doel:
+   - Cursor (overlay) + kruisje/pijlen NIET blauw maar warm grijs/bruin
+   - Hinttekst alleen op telefoon portrait
+   ========================================================= */
+
+/* ===============================
+   VARS
+   =============================== */
 :root{
   --gap:18px;
   --radius:16px;
 
-  /* Schaduw – rustig / drukwerkachtig */
   --shadow:0 14px 40px rgba(0,0,0,.12);
   --shadowHover:0 18px 55px rgba(0,0,0,.16);
 
-  /* Tekst / UI */
   --textBlue: rgba(48,96,136,.95);
   --uiBlue: rgba(48,96,136,.85);
 
-  /* Cursor & iconen (warm grijs/bruin) */
+  /* WARM "INKT" (bruin-grijs) */
   --uiInk: rgba(90,86,80,.92);
   --uiInkSoft: rgba(90,86,80,.55);
 }
 
-*{ box-sizing:border-box; }
+*{box-sizing:border-box}
 
-html, body{
+html,body{
   margin:0;
   min-height:100%;
-  background:#FFFFFF;
+  background:#fff;
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
 }
 
-/* =========================================
-   ACHTERGROND – fris & egaal
-   ========================================= */
-
-body{
-  background-image:none;
-}
-
-.page,
-.wrap,
-.container,
-main,
-.grid,
-.cards,
-.cardGrid{
-  background:transparent !important;
-}
-
-/* =========================================
-   KAARTEN
-   ========================================= */
-
+/* ===============================
+   KAARTEN (basis)
+   =============================== */
 .card{
   background:#fff;
   border-radius:var(--radius);
   box-shadow:var(--shadow);
 }
 
-/* desktop hover */
 @media (hover:hover){
   .card:hover{
     box-shadow:var(--shadowHover);
@@ -67,9 +51,15 @@ main,
   }
 }
 
-/* =========================================
-   LIGHTBOX / OVERLAY
-   ========================================= */
+/* ===============================
+   OVERLAY / LIGHTBOX
+   =============================== */
+.lb,
+.lightbox,
+.modalOverlay,
+.overlay{
+  cursor:crosshair;
+}
 
 .lb{
   position:fixed;
@@ -77,21 +67,19 @@ main,
   background:rgba(255,255,255,.45);
   backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
-  cursor:crosshair;
   z-index:999;
 }
 
-/* actieve kaart in overlay */
+/* Actieve kaart in overlay */
 .lb .card{
   box-shadow:
     0 8px 18px rgba(0,0,0,.14),
     0 32px 60px rgba(0,0,0,.18);
 }
 
-/* =========================================
+/* ===============================
    ONDERSTE BALK
-   ========================================= */
-
+   =============================== */
 .controlsBar{
   position:fixed;
   bottom:0;
@@ -107,42 +95,37 @@ main,
   display:flex;
   align-items:center;
   justify-content:space-between;
+  gap:16px;
 }
 
-/* knoppen links */
+/* links */
 .controlsBar .btnGroup{
   display:flex;
   gap:14px;
+  align-items:center;
 }
 
-/* uitleg (standaard UIT) */
+/* hint standaard uit */
 .controlsBar .help{
   display:none;
   font-size:.9em;
-  opacity:.7;
+  opacity:.70;
   white-space:nowrap;
   transition:opacity .8s ease;
 }
-
 .controlsBar .help.is-hidden{
   opacity:0;
   pointer-events:none;
 }
 
-/* =========================================
-   TELEFOON – PORTRAIT
-   ========================================= */
-
+/* Telefoon portrait: hint aan + links/rechts fullwidth */
 @media (hover:none) and (pointer:coarse) and (orientation:portrait){
-
   .controlsBar .inner{
     width:100%;
     max-width:none;
     padding-left:clamp(14px, 3vw, 28px);
     padding-right:clamp(14px, 3vw, 28px);
   }
-
-  /* uitleg tonen */
   .controlsBar .help{
     display:block;
     margin-left:auto;
@@ -150,66 +133,94 @@ main,
   }
 }
 
-/* =========================================
-   TELEFOON – LANDSCAPE → balk weg
-   ========================================= */
-
+/* Telefoon landscape: balk weg */
 @media (hover:none) and (pointer:coarse) and (orientation:landscape){
-  .controlsBar{
-    display:none;
-  }
+  .controlsBar{ display:none; }
 }
 
-/* =========================================
-   CURSOR & ICONEN – warm grijs/bruin
-   ========================================= */
+/* =========================================================
+   ✅ KRUISJE + PIJLEN + NAV: warm grijs/bruin i.p.v. blauw
+   (robuste selectors, zodat het pakt ongeacht classnames)
+   ========================================================= */
 
-.controlsBar button,
-.iconBtn,
-.navBtn,
-.closeBtn{
-  color:var(--uiInk);
+/* Alles wat als "controls" fungeert in overlay */
+.lb button,
+.lb [role="button"],
+.lb .close,
+.lb .closeBtn,
+.lb .navBtn,
+.lb .iconBtn,
+.lb .prev,
+.lb .next,
+.lb .arrow,
+.lb .nav,
+.lb .navPrev,
+.lb .navNext,
+.lb [aria-label*="Close" i],
+.lb [aria-label*="Sluit" i],
+.lb [data-action="close"],
+.lb [data-action="prev"],
+.lb [data-action="next"],
+.lightbox button,
+.lightbox [role="button"]{
+  color:var(--uiInk) !important;
 }
 
-.controlsBar button svg,
-.iconBtn svg,
-.navBtn svg,
-.closeBtn svg{
-  stroke:var(--uiInk) !important;
+/* Als pijlen/kruisje SVG zijn: forceer stroke/fill naar currentColor */
+.lb svg,
+.lightbox svg{
+  stroke:currentColor !important;
   fill:none !important;
 }
 
-.controlsBar button svg path,
-.iconBtn svg path,
-.navBtn svg path,
-.closeBtn svg path{
-  stroke:var(--uiInk) !important;
-  fill:var(--uiInk) !important;
+.lb svg path,
+.lightbox svg path{
+  stroke:currentColor !important;
+  fill:currentColor !important; /* ok als het een gevuld icoon is */
 }
 
-/* hover desktop */
+/* Als pijlen/kruisje als teksttekens worden getoond (‹ › ×) */
+.lb .close,
+.lb .prev,
+.lb .next,
+.lb .arrow,
+.lb .navBtn,
+.lb .iconBtn{
+  color:var(--uiInk) !important;
+}
+
+/* Hover iets donkerder (desktop) */
 @media (hover:hover){
-  .controlsBar button:hover,
-  .iconBtn:hover,
-  .navBtn:hover,
-  .closeBtn:hover{
-    color:rgba(70,66,60,.95);
-  }
-
-  .controlsBar button:hover svg,
-  .iconBtn:hover svg,
-  .navBtn:hover svg,
-  .closeBtn:hover svg{
-    stroke:rgba(70,66,60,.95) !important;
+  .lb button:hover,
+  .lb [role="button"]:hover,
+  .lb .close:hover,
+  .lb .prev:hover,
+  .lb .next:hover,
+  .lb .arrow:hover{
+    color:rgba(70,66,60,.95) !important;
   }
 }
 
-/* focus (toegankelijk maar rustig) */
-.controlsBar button:focus-visible,
-.iconBtn:focus-visible,
-.navBtn:focus-visible,
-.closeBtn:focus-visible{
+/* Focus ring (toegankelijk, rustig) */
+.lb button:focus-visible,
+.lb [role="button"]:focus-visible,
+.controlsBar button:focus-visible{
   outline:2px solid var(--uiInkSoft);
   outline-offset:2px;
   border-radius:10px;
 }
+
+/* ===============================
+   Buttons in bottom bar (ook warm)
+   =============================== */
+.controlsBar button,
+.controlsBar a{
+  color:var(--uiInk);
+}
+
+.controlsBar button svg,
+.controlsBar a svg{
+  stroke:currentColor !important;
+  fill:none !important;
+}
+
