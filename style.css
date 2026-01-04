@@ -12,8 +12,6 @@
 
   --textBlue: rgba(48,96,136,.95);
   --uiBlue: rgba(48,96,136,.85);
-
-  --pageBg:#F3F5EE;
 }
 
 *{box-sizing:border-box}
@@ -22,11 +20,9 @@
    BASE
    =============================== */
 
-html{ background:var(--pageBg); }
-
 body{
   margin:0;
-  background:var(--pageBg);
+  background:#fff;
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
   text-rendering:optimizeLegibility;
@@ -38,15 +34,10 @@ body{
 
 .controlsBar{
   position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
+  left:0;right:0;bottom:0;
   z-index:50;
-
-  display:block; /* 🔒 forceer zichtbaar als default */
-
   padding:12px 18px calc(12px + env(safe-area-inset-bottom));
-  background:rgba(243,245,238,.92);
+  background:rgba(255,255,255,.86);
   backdrop-filter:blur(10px);
 }
 
@@ -91,7 +82,7 @@ body{
 .grid{
   display:grid;
   gap:var(--gap);
-  padding:18px 28px 120px; /* ruimte voor controlsBar */
+  padding:18px 28px 120px;
   max-width:1600px;
   margin:auto;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -179,7 +170,6 @@ body{
   padding:22px;
   background:rgba(0,0,0,.45);
   backdrop-filter:blur(8px);
-  z-index:100; /* boven controls */
 }
 
 .lb.open{display:flex;}
@@ -203,14 +193,12 @@ body{
 }
 
 #lbImg{
-  position:relative;
-  z-index:1;
   width:100%;
   display:block;
 }
 
 /* ===============================
-   TEKST OP GROTE KAART
+   TEKST OP GROTE KAART (SUBTIEL)
    =============================== */
 
 .lbText{
@@ -232,7 +220,6 @@ body{
 
   transform:translateY(6px);
   pointer-events:none;
-  z-index:2;
 }
 
 /* ===============================
@@ -250,9 +237,7 @@ body{
   place-items:center;
   color:var(--uiBlue);
   cursor:pointer;
-
   opacity:0;
-  z-index:5;
 }
 
 .lb.show-ui .chev,
@@ -289,12 +274,15 @@ button,
 }
 
 /* ===============================
-   MOBILE LANDSCAPE FIX
-   - verberg onderste balk ALLEEN
-     bij open lightbox op mobiel
+   🔥 DEFINITIEVE FIX
+   Verberg onderste balk zodra lightbox open is
+   (werkt ook op iOS Safari / GitHub Pages)
    =============================== */
 
-@media (hover: none) and (orientation: landscape){
-  body.lb-open .controlsBar{ display:none !important; }
-  body.lb-open{ overflow:hidden; }
+body:has(.lb.open) .controlsBar{
+  display:none !important;
+}
+
+body:has(.lb.open){
+  overflow:hidden;
 }
