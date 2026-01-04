@@ -283,28 +283,52 @@ button,
 }
 
 
-/* ===== FIXES (v5) =====
-   - Balk: WEL in portrait, WEG in landscape (telefoon)
-   - Fix: gebruik geen max-width (want landscape is vaak >760px)
-*/
+/* ===== FIXES (v6) ===== */
 
-/* default: balk zichtbaar */
+/* 0) Zorg dat de pagina-achtergrond écht tot in de hoeken doorloopt */
+html, body{
+  min-height:100%;
+  background:#F3F5EE; /* zelfde als je page bg */
+}
+
+/* als er een wrapper is met witte achtergrond, maak die transparant */
+.page, .wrap, .container, main{
+  background: transparent;
+}
+
+/* 1) Grid/hoofdlayout altijd minstens volledige hoogte */
+.grid, .cards, .cardGrid{
+  min-height: 100vh;
+}
+
+/* 2) Lightbox blur: altijd full-screen, ook op iOS/Safari */
+.lb{
+  position: fixed;
+  inset: 0;
+  touch-action:none;
+  background: rgba(255,255,255,.14);
+}
+.lb::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.14);
+  pointer-events:none;
+}
+
+/* 3) Balk: WEL in portrait, WEG in landscape (telefoon)
+      (geen max-width; detecteer telefoon via coarse pointer) */
 .controlsBar{ display:flex; }
-
-/* TELEFOON LANDSCAPE: balk weg (detecteer via coarse pointer + hover none + lage hoogte) */
 @media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
   body{ padding-bottom: 0 !important; }
 }
-
-/* extra safety: als viewport laag is (landscape), ook verbergen */
 @media (max-height: 520px) and (orientation: landscape){
   .controlsBar{ display:none !important; }
   body{ padding-bottom: 0 !important; }
 }
-
-
-.lb{ touch-action:none; -webkit-user-select:none; user-select:none; }
 
 </style>
 </head>
