@@ -415,6 +415,18 @@ body{
   white-space:nowrap;
 }
 
+
+/* ===== FIXES (v6-fade) =====
+   Instructietekst vervaagt automatisch na openen
+*/
+.controlsBar .right{
+  transition: opacity .8s ease;
+}
+.controlsBar .right.is-hidden{
+  opacity: 0;
+  pointer-events: none;
+}
+
 </style>
 </head>
 <body>
@@ -661,6 +673,18 @@ lb.setAttribute('aria-hidden','false');
   resetBtn.addEventListener('click', () => {
     filtered = data.slice();
     render(filtered);
+
+/* ===== INSTRUCTION FADE (v6-fade) ===== */
+(function(){
+  function fadeHint(){
+    const hint = document.querySelector('.controlsBar .right');
+    if(!hint) return;
+    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
+  }
+  // run once on load
+  window.addEventListener('load', fadeHint, { once:true });
+})();
+
   });
 
   (async function init(){
