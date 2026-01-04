@@ -1,228 +1,124 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
+/* =========================================================
+   PRAATKAARTEN — style.css (met warm grijs/bruin voor X + pijlen)
+   Doel:
+   - Cursor (overlay) + kruisje/pijlen NIET blauw maar warm grijs/bruin
+   - Hinttekst alleen op telefoon portrait
+   ========================================================= */
+
+/* ===============================
+   VARS
+   =============================== */
 :root{
   --gap:18px;
   --radius:16px;
 
-  /* drukwerk-achtige schaduw */
-  --shadow: 0 1px 1px rgba(0,0,0,.06), 0 6px 14px rgba(0,0,0,.08);
-  --shadowHover: 0 2px 3px rgba(0,0,0,.07), 0 10px 22px rgba(0,0,0,.10);
+  --shadow:0 14px 40px rgba(0,0,0,.12);
+  --shadowHover:0 18px 55px rgba(0,0,0,.16);
 
-  /* papier */
-  --paper: #ffffff;
+  --textBlue: rgba(48,96,136,.95);
+  --uiBlue: rgba(48,96,136,.85);
 
-  /* “inkt” (warm bruin-grijs) voor cursor + iconen */
+  /* WARM "INKT" (bruin-grijs) */
   --uiInk: rgba(90,86,80,.92);
   --uiInkSoft: rgba(90,86,80,.55);
-
-  /* kaart-tekst */
-  --text: rgba(48,96,136,.95);
-  --muted: rgba(48,96,136,.70);
 }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
-body{
+*{box-sizing:border-box}
+
+html,body{
   margin:0;
-  background: var(--paper);
+  min-height:100%;
+  background:#fff;
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
-  color: var(--text);
 }
 
-/* ======= GRID ======= */
-.page{
-  min-height:100%;
-  padding: 24px 18px 84px;
-}
-.grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--gap);
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.tile{
+/* ===============================
+   KAARTEN (basis)
+   =============================== */
+.card{
   background:#fff;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 18px 18px 16px;
-  cursor:pointer;
-  user-select:none;
-  transition: transform .2s ease, box-shadow .2s ease;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
 }
+
 @media (hover:hover){
-  .tile:hover{
-    transform: translateY(-2px);
-    box-shadow: var(--shadowHover);
+  .card:hover{
+    box-shadow:var(--shadowHover);
+    transform:translateY(-2px);
   }
 }
-.tile .theme{
-  font-weight:500;
-  letter-spacing:.02em;
-  font-size: 14px;
-  color: var(--muted);
-  margin-bottom: 10px;
-  text-transform: uppercase;
-}
-.tile .q{
-  font-size: 16px;
-  line-height: 1.25;
+
+/* ===============================
+   OVERLAY / LIGHTBOX
+   =============================== */
+.lb,
+.lightbox,
+.modalOverlay,
+.overlay{
+  cursor:crosshair;
 }
 
-/* ======= OVERLAY / LIGHTBOX ======= */
 .lb{
   position:fixed;
   inset:0;
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
   z-index:999;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding: 64px 18px 96px;
-  background: rgba(255,255,255,.45);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  cursor: crosshair;
 }
-.lb.open{ display:flex; }
 
+/* Actieve kaart in overlay */
 .lb .card{
-  width: min(680px, 96vw);
-  background:#fff;
-  border-radius: var(--radius);
-  box-shadow: 0 8px 18px rgba(0,0,0,.14), 0 32px 60px rgba(0,0,0,.18);
-  padding: 26px 26px 24px;
-  cursor: default;
-  position:relative;
-  user-select:none;
-}
-.lb .card .theme{
-  font-weight:500;
-  letter-spacing:.02em;
-  font-size: 14px;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 14px;
-}
-.lb .card .q{
-  font-size: 22px;
-  line-height: 1.25;
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.14),
+    0 32px 60px rgba(0,0,0,.18);
 }
 
-/* ======= ICON BUTTONS (INKT) ======= */
-.iconRow{
-  position:absolute;
-  top: 14px;
-  right: 14px;
-  display:flex;
-  gap: 10px;
-}
-.iconBtn{
-  border:0;
-  background:transparent;
-  padding: 8px;
-  border-radius: 12px;
-  color: var(--uiInk);
-  cursor:pointer;
-}
-.iconBtn svg{
-  width:22px;height:22px;
-  stroke: currentColor;
-  fill:none;
-  stroke-width:2.2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-@media (hover:hover){
-  .iconBtn:hover{ background: rgba(0,0,0,.04); }
-}
-.iconBtn:focus-visible{
-  outline: 2px solid var(--uiInkSoft);
-  outline-offset: 2px;
-}
-
-/* pijlen (in card) */
-.navRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 10px;
-  margin-top: 18px;
-}
-.navBtn{
-  border:0;
-  background:transparent;
-  padding: 10px 10px;
-  border-radius: 12px;
-  color: var(--uiInk);
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-weight:500;
-}
-.navBtn svg{ width:22px;height:22px; stroke: currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-@media (hover:hover){
-  .navBtn:hover{ background: rgba(0,0,0,.04); }
-}
-.navBtn:focus-visible{
-  outline: 2px solid var(--uiInkSoft);
-  outline-offset: 2px;
-}
-
-/* ======= CONTROLS BAR ======= */
+/* ===============================
+   ONDERSTE BALK
+   =============================== */
 .controlsBar{
   position:fixed;
-  left:0; right:0; bottom:0;
+  bottom:0;
+  left:0;
+  right:0;
   z-index:1000;
 }
+
 .controlsBar .inner{
   max-width:1100px;
-  margin: 0 auto;
-  padding: 12px 18px;
+  margin:0 auto;
+  padding:14px 20px;
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:16px;
 }
-.btnGroup{
+
+/* links */
+.controlsBar .btnGroup{
   display:flex;
-  gap: 14px;
+  gap:14px;
   align-items:center;
 }
-.ctrlBtn{
-  border:0;
-  background:transparent;
-  color: var(--uiInk);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight:500;
-  padding: 10px 12px;
-  border-radius: 12px;
-  cursor:pointer;
-}
-@media (hover:hover){
-  .ctrlBtn:hover{ background: rgba(0,0,0,.04); }
-}
-.ctrlBtn:focus-visible{
-  outline: 2px solid var(--uiInkSoft);
-  outline-offset: 2px;
-}
 
-.help{
+/* hint standaard uit */
+.controlsBar .help{
   display:none;
-  color: var(--uiInk);
+  font-size:.9em;
   opacity:.70;
-  font-size: 14px;
   white-space:nowrap;
-  transition: opacity .8s ease;
+  transition:opacity .8s ease;
 }
-.help.is-hidden{
+.controlsBar .help.is-hidden{
   opacity:0;
   pointer-events:none;
 }
 
-/* Telefoon portrait: hint aan */
+/* Telefoon portrait: hint aan + links/rechts fullwidth */
 @media (hover:none) and (pointer:coarse) and (orientation:portrait){
   .controlsBar .inner{
     width:100%;
@@ -230,16 +126,101 @@ body{
     padding-left:clamp(14px, 3vw, 28px);
     padding-right:clamp(14px, 3vw, 28px);
   }
-  .help{ display:block; margin-left:auto; text-align:right; }
+  .controlsBar .help{
+    display:block;
+    margin-left:auto;
+    text-align:right;
+  }
 }
 
-/* Telefoon landscape: bar weg */
+/* Telefoon landscape: balk weg */
 @media (hover:none) and (pointer:coarse) and (orientation:landscape){
   .controlsBar{ display:none; }
-  .page{ padding-bottom: 18px; }
 }
 
-/* ======= reduce motion ======= */
-@media (prefers-reduced-motion: reduce){
-  *{ transition:none !important; animation:none !important; }
+/* =========================================================
+   ✅ KRUISJE + PIJLEN + NAV: warm grijs/bruin i.p.v. blauw
+   (robuste selectors, zodat het pakt ongeacht classnames)
+   ========================================================= */
+
+/* Alles wat als "controls" fungeert in overlay */
+.lb button,
+.lb [role="button"],
+.lb .close,
+.lb .closeBtn,
+.lb .navBtn,
+.lb .iconBtn,
+.lb .prev,
+.lb .next,
+.lb .arrow,
+.lb .nav,
+.lb .navPrev,
+.lb .navNext,
+.lb [aria-label*="Close" i],
+.lb [aria-label*="Sluit" i],
+.lb [data-action="close"],
+.lb [data-action="prev"],
+.lb [data-action="next"],
+.lightbox button,
+.lightbox [role="button"]{
+  color:var(--uiInk) !important;
 }
+
+/* Als pijlen/kruisje SVG zijn: forceer stroke/fill naar currentColor */
+.lb svg,
+.lightbox svg{
+  stroke:currentColor !important;
+  fill:none !important;
+}
+
+.lb svg path,
+.lightbox svg path{
+  stroke:currentColor !important;
+  fill:currentColor !important; /* ok als het een gevuld icoon is */
+}
+
+/* Als pijlen/kruisje als teksttekens worden getoond (‹ › ×) */
+.lb .close,
+.lb .prev,
+.lb .next,
+.lb .arrow,
+.lb .navBtn,
+.lb .iconBtn{
+  color:var(--uiInk) !important;
+}
+
+/* Hover iets donkerder (desktop) */
+@media (hover:hover){
+  .lb button:hover,
+  .lb [role="button"]:hover,
+  .lb .close:hover,
+  .lb .prev:hover,
+  .lb .next:hover,
+  .lb .arrow:hover{
+    color:rgba(70,66,60,.95) !important;
+  }
+}
+
+/* Focus ring (toegankelijk, rustig) */
+.lb button:focus-visible,
+.lb [role="button"]:focus-visible,
+.controlsBar button:focus-visible{
+  outline:2px solid var(--uiInkSoft);
+  outline-offset:2px;
+  border-radius:10px;
+}
+
+/* ===============================
+   Buttons in bottom bar (ook warm)
+   =============================== */
+.controlsBar button,
+.controlsBar a{
+  color:var(--uiInk);
+}
+
+.controlsBar button svg,
+.controlsBar a svg{
+  stroke:currentColor !important;
+  fill:none !important;
+}
+

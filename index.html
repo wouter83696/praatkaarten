@@ -1,61 +1,766 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>Praatkaarten</title>
-  <link rel="stylesheet" href="style.css?v=1"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praatkaarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
+
+/* ===============================
+   VARS
+   =============================== */
+
+:root{
+  --gap:18px;
+  --radius:16px;
+  --shadow:0 14px 50px rgba(0,0,0,.12);
+  --shadowHover:0 18px 70px rgba(0,0,0,.16);
+
+  --textBlue: rgba(48,96,136,.95);
+  --uiBlue: rgba(48,96,136,.85);
+}
+
+*{box-sizing:border-box}
+
+/* ===============================
+   BASE
+   =============================== */
+
+body{
+  margin:0;
+  background:#fff;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-text-size-adjust:100%;
+  text-rendering:optimizeLegibility;
+}
+
+/* ===============================
+   CONTROLS
+   =============================== */
+
+.controlsBar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(10px);
+}
+
+.controlsBar .inner{
+  max-width:1600px;
+  margin:0 auto;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.btn{
+  appearance:none;
+  border:0;
+  background:transparent;
+  border-radius:999px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.2;
+  cursor:pointer;
+  color:rgba(11,18,32,.78);
+}
+
+.btn:hover{background:rgba(0,0,0,.04);}
+.btn:active{transform:translateY(1px);}
+
+.btnGroup{display:flex;align-items:center;gap:0;}
+.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
+
+.help{
+  color:rgba(11,18,32,.55);
+  font-size:13px;
+  line-height:1.35;
+  white-space:normal;
+}
+
+/* ===============================
+   GRID
+   =============================== */
+
+.grid{
+  display:grid;
+  gap:var(--gap);
+  padding:18px 28px 120px;
+  max-width:1600px;
+  margin:auto;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+@media (min-width:720px){
+  .grid{grid-template-columns:repeat(3,1fr);}
+}
+@media (min-width:980px){
+  .grid{grid-template-columns:repeat(4,1fr);}
+}
+@media (min-width:1240px){
+  .grid{grid-template-columns:repeat(6,1fr);}
+}
+
+/* ===============================
+   KAARTEN
+   =============================== */
+
+.card{
+  position:relative;
+  border:0;
+  background:transparent;
+  padding:0;
+  cursor:zoom-in;
+  transition:transform .14s ease;
+}
+
+.card:hover{transform:translateY(-2px);}
+
+.card img{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  transition:box-shadow .14s ease;
+}
+
+.card:hover img{box-shadow:var(--shadowHover);}
+
+/* ===============================
+   TEKST OP KLEINE KAARTJES
+   =============================== */
+
+.card .q{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  text-align:center;
+
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+  font-size:10.5px;
+  line-height:1.38;
+  letter-spacing:-0.008em;
+
+  color:var(--textBlue);
+  font-synthesis:none;
+
+  /* optische centrering */
+  transform:translateY(2px);
+}
+
+@media (max-width:520px){
+  .card .q{
+    padding:14px;
+    font-size:9.75px;
+    line-height:1.34;
+    letter-spacing:-0.006em;
+  }
+}
+
+/* ===============================
+   LIGHTBOX
+   =============================== */
+
+.lb{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+
+  /* alleen blur (geen donkere overlay) */
+  background:rgba(255,255,255,.02);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+
+.lb.open{display:flex;}
+
+.panel{
+  width:100%;
+  height:100%;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.lbCard{
+  position:relative;
+  width:min(560px,92vw);
+  border-radius:22px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 18px 45px rgba(0,0,0,.20);
+}
+
+#lbImg{
+  width:100%;
+  display:block;
+}
+
+.lbText{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:22px 24px;
+  text-align:center;
+
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+  font-size:clamp(16px,2vw + 10px,30px);
+  line-height:1.28;
+  letter-spacing:-0.006em;
+
+  color:var(--textBlue);
+
+  /* optische centrering groot */
+  transform:translateY(6px);
+  pointer-events:none;
+}
+
+/* ===============================
+   ICONS
+   =============================== */
+
+.chev,
+.close{
+  position:absolute;
+  background:transparent;
+  border:0;
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  color:var(--uiBlue);
+  cursor:pointer;
+
+  opacity:0;
+}
+
+.lb.show-ui .chev,
+.lb.show-ui .close{opacity:1;}
+
+.chev.left{left:10px;top:50%;transform:translateY(-50%);}
+.chev.right{right:10px;top:50%;transform:translateY(-50%);}
+.close{top:10px;right:10px;}
+
+.chev svg,
+.close svg{
+  width:22px;
+  height:22px;
+  stroke:currentColor;
+  stroke-width:2.6;
+  fill:none;
+  pointer-events:none;
+}
+
+/* ===============================
+   FIXES
+   =============================== */
+
+.themeTag,
+#themeTag{display:none !important;}
+
+button,
+.chev,
+.close{
+  -webkit-tap-highlight-color:transparent;
+  tap-highlight-color:transparent;
+  outline:none !important;
+  box-shadow:none !important;
+}
+
+
+/* 0) Zorg dat de pagina-achtergrond écht tot in de hoeken doorloopt */
+html, body{
+  min-height:100%;
+  background:#F3F5EE; /* zelfde als je page bg */
+}
+
+/* als er een wrapper is met witte achtergrond, maak die transparant */
+.page, .wrap, .container, main{
+  background: transparent;
+}
+
+/* 1) Grid/hoofdlayout altijd minstens volledige hoogte */
+.grid, .cards, .cardGrid{
+  min-height: 100vh;
+}
+
+/* 2) Lightbox blur: altijd full-screen, ook op iOS/Safari */
+.lb{
+  position: fixed;
+  inset: 0;
+  touch-action:none;
+  background: rgba(255,255,255,.14);
+}
+.lb::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.14);
+  pointer-events:none;
+}
+
+/* 3) Balk: WEL in portrait, WEG in landscape (telefoon)
+      (geen max-width; detecteer telefoon via coarse pointer) */
+.controlsBar{ display:flex; }
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+@media (max-height: 520px) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+
+
+/* Fris, schoon canvas */
+html, body{
+  min-height:100%;
+  background:#FFFFFF !important;
+}
+
+/* Heel subtiele frisse paper-touch (bijna onzichtbaar) */
+body{
+  background-image:
+    radial-gradient(1600px 1100px at 25% 10%, rgba(0,0,0,0.008), transparent 55%),
+    radial-gradient(1600px 1100px at 75% 90%, rgba(0,0,0,0.006), transparent 55%);
+}
+
+/* Zorg dat niets anders erdoorheen kleurt */
+.page, .wrap, .container, main,
+.grid, .cards, .cardGrid{
+  background: transparent !important;
+}
+
+/* Geen pseudo-achtergronden */
+html::before, html::after,
+body::before, body::after{
+  content:none !important;
+}
+
+
+/* ===== FIXES (v6-fris-fix) =====
+   Dit pakt het échte probleem:
+   de grid/container had een beige/groene achtergrond.
+   Alles nu één fris wit vlak.
+*/
+
+/* Pagina echt wit */
+html, body{
+  background:#FFFFFF !important;
+}
+
+/* GRID / kaart-achtergrond NEUTRALISEREN */
+.grid,
+.cards,
+.cardGrid,
+#grid,
+#cards{
+  background: #FFFFFF !important;
+}
+
+/* Geen gradients of tinten */
+body{
+  background-image: none !important;
+}
+
+/* Wrappers transparant */
+.page, .wrap, .container, main{
+  background: transparent !important;
+}
+
+
+.controlsBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.controlsBar .left{
+  display:flex;
+  gap:14px;
+}
+
+.controlsBar .right{
+  margin-left:auto;
+  opacity:.7;
+  font-size:0.9em;
+}
+
+/* rustiger: tekst alleen, geen nadruk */
+.controlsBar .right span{
+  white-space:nowrap;
+}
+
+
+.controlsBar .right{
+  transition: opacity .8s ease;
+}
+.controlsBar .right.is-hidden{
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+.controlsBar .inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+/* links */
+.controlsBar .btnGroup{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+/* rechts */
+.controlsBar .help{
+  margin-left:auto;
+  opacity:.70;
+  font-size:0.9em;
+  white-space:nowrap;
+  transition: opacity .8s ease;
+}
+.controlsBar .help.is-hidden{
+  opacity:0;
+  pointer-events:none;
+}
+
+
+/* ===== FIXES (v6-fade-fix2) =====
+   Hussel/Reset écht links in de browser:
+   - forceer full-width op de balk
+   - override eventuele bestaande justify/align regels met !important
+*/
+
+.controlsBar{
+  width:100% !important;
+  left:0 !important;
+  right:0 !important;
+}
+
+.controlsBar .inner{
+  width:100% !important;
+  max-width:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px;
+  padding-left: clamp(14px, 3vw, 28px);
+  padding-right: clamp(14px, 3vw, 28px);
+}
+
+.controlsBar .btnGroup{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:14px;
+  margin-right:auto !important;
+}
+
+.controlsBar .help{
+  margin-left:auto !important;
+  text-align:right;
+  opacity:.70;
+  font-size:0.9em;
+  white-space:nowrap;
+  transition: opacity .8s ease;
+}
+.controlsBar .help.is-hidden{
+  opacity:0;
+  pointer-events:none;
+}
+
+</style>
 </head>
 <body>
-  <main class="page">
-    <div id="grid" class="grid" aria-label="Kaarten overzicht"></div>
-  </main>
 
-  <!-- Overlay -->
-  <div id="lb" class="lb" aria-hidden="true">
-    <div class="card" role="dialog" aria-modal="true" aria-label="Praatkaart">
-      <div class="iconRow">
-        <button class="iconBtn" id="btnClose" aria-label="Sluit">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 6L18 18M18 6L6 18"></path>
-          </svg>
-        </button>
-      </div>
+<div class="controlsBar">
+  <div class="inner">
+    <div class="btnGroup">
+      <button class="btn" id="shuffle" type="button">Hussel</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" id="reset" type="button">Reset</button>
+    </div>
+    <div class="help">Swipe of klik door de kaarten</div>
+  </div>
+</div>
 
-      <div class="theme" id="overlayTheme">THEMA</div>
-      <div class="q" id="overlayQuestion">Vraag</div>
+<div class="grid" id="grid"></div>
 
-      <div class="navRow">
-        <button class="navBtn" id="btnPrev" aria-label="Vorige">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M15 18l-6-6 6-6"></path>
-          </svg>
-          <span>Vorige</span>
-        </button>
-
-        <div id="pos" style="opacity:.55; font-weight:500; color:var(--uiInk);">1/1</div>
-
-        <button class="navBtn" id="btnNext" aria-label="Volgende">
-          <span>Volgende</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 6l6 6-6 6"></path>
-          </svg>
-        </button>
-      </div>
+<div class="lb" id="lb" aria-hidden="true">
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="lbCard" id="lbCard">
+<button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+      <img id="lbImg" alt="">
+      <div class="lbText" id="lbText"></div>
     </div>
   </div>
+</div>
 
-  <!-- Bottom controls -->
-  <div class="controlsBar" aria-label="Bediening">
-    <div class="inner">
-      <div class="btnGroup">
-        <button class="ctrlBtn" id="btnShuffle">Hussel</button>
-        <button class="ctrlBtn" id="btnReset">Reset</button>
-      </div>
-      <div class="help">Swipe of klik door de kaarten</div>
-    </div>
-  </div>
 
-  <script src="script.js?v=1"></script>
+
+<script>
+  const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
+
+  const grid = document.getElementById('grid');
+  const lb = document.getElementById('lb');
+  const lbImg = document.getElementById('lbImg');
+  const lbText = document.getElementById('lbText');
+  const lbCard = document.getElementById('lbCard');
+const closeBtn = document.getElementById('close');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+
+  const shuffleBtn = document.getElementById('shuffle');
+  const resetBtn = document.getElementById('reset');
+
+  let data = [];       // full list
+  let filtered = [];   // current order
+  let currentIndex = -1;
+
+  // UI chrome (pijlen + sluiten)
+  // - Touch: iets langer zichtbaar
+  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
+  const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  const HIDE_MS_DESKTOP = 2200;
+  const HIDE_MS_TOUCH   = 3200;
+
+  let uiTimer = null;
+  function showUI(){
+    lb.classList.add('show-ui');
+    clearTimeout(uiTimer);
+    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
+  }
+
+  function buildData(questions){
+    const out = [];
+    for (const theme of THEMES){
+      const qs = questions[theme] || [];
+      for (let i=0; i<qs.length; i++){
+        out.push({
+          theme,
+          num: i+1,
+          q: qs[i],
+          bg: `cards/${theme}.svg`,
+          id: `${theme}-${String(i+1).padStart(2,'0')}`
+        });
+      }
+    }
+    return out;
+  }
+
+  function render(items){
+    grid.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    items.forEach((item, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'card';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', item.id);
+
+      const inner = document.createElement('div');
+      inner.className = 'cardInner';
+
+      const img = document.createElement('img');
+      img.className = 'bg';
+      img.src = item.bg;
+      img.alt = "";
+
+      const q = document.createElement('div');
+      q.className = 'q';
+      q.textContent = item.q;
+
+      inner.appendChild(img);
+      inner.appendChild(q);
+      btn.appendChild(inner);
+
+      btn.addEventListener('click', () => openAt(idx));
+      frag.appendChild(btn);
+    });
+
+    grid.appendChild(frag);
+  }
+
+  function openLb(item){
+    lbImg.src = item.bg;
+    lbText.textContent = item.q || "";
+    // Thema-label (bij hover in hoek)
+    const pretty = {
+      verkennen: 'Verkennen',
+      verbinden: 'Verbinden',
+      bewegen: 'Bewegen',
+      duiden: 'Duiden',
+      verdiepen: 'Verdiepen',
+      vertragen: 'Vertragen'
+    };
+lb.setAttribute('aria-hidden','false');
+    lb.classList.add('open');
+    document.body.classList.add('lb-open');
+    // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    showUI();
+
+    prevBtn.disabled = currentIndex <= 0;
+    nextBtn.disabled = currentIndex >= filtered.length - 1;
+  }
+
+  function closeLb(){
+    lb.setAttribute('aria-hidden','true');
+    lb.classList.remove('open');
+    document.body.classList.remove('lb-open');
+    lbImg.src = "";
+    lbText.textContent = "";
+    currentIndex = -1;
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
+  // Swipe / drag overal (ook op de grijze achtergrond):
+  // - links/rechts: vorige/volgende
+  // - omlaag: sluiten
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
+  let gestureArmed = false;
+
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
+    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
+    if (e.target.closest && e.target.closest('button')) {
+      gestureArmed = false;
+      showUI();
+      return;
+    }
+    pointerDown = true;
+    gestureArmed = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    lb.setPointerCapture?.(e.pointerId);
+    showUI();
+  });
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    if(!gestureArmed) return;
+    gestureArmed = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
+      closeLb();
+      return;
+    }
+    if(ax > ay && ax > thrX){
+      if(dx < 0) go(1); else go(-1);
+      showUI();
+    }
+  });
+
+  function openAt(index){
+    currentIndex = index;
+    openLb(filtered[currentIndex]);
+  }
+
+  function go(delta){
+    if (currentIndex < 0) return;
+    const next = currentIndex + delta;
+    if (next < 0 || next >= filtered.length) return;
+    openAt(next);
+  }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  // events (iconen op de kaart)
+  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
+  lbCard.addEventListener('click', (e) => e.stopPropagation());
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
+
+  lb.addEventListener('mousemove', showUI);
+  lb.addEventListener('touchstart', showUI, {passive:true});
+  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); else showUI(); });
+
+  document.addEventListener('keydown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.key === 'Escape') closeLb();
+    if(e.key === 'ArrowLeft') go(-1);
+    if(e.key === 'ArrowRight') go(1);
+  });
+
+  shuffleBtn.addEventListener('click', () => {
+    filtered = shuffle(filtered.slice());
+    render(filtered);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    filtered = data.slice();
+    render(filtered);
+
+});
+
+  (async function init(){
+    const res = await fetch('questions.json');
+    const questions = await res.json();
+    data = buildData(questions);
+    filtered = data.slice();
+    render(filtered);
+  })();
+
+/* ===== INSTRUCTION FADE (v6-fade-fix) ===== */
+(function(){
+  function fadeHint(){
+    const hint = document.querySelector('.controlsBar .help');
+    if(!hint) return;
+    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
+  }
+  window.addEventListener('load', fadeHint, { once:true });
+})();
+
+</script>
+
+
+
 </body>
 </html>
