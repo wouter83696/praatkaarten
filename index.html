@@ -225,16 +225,20 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   .lbCard .chev.left{ position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
   .lbCard .chev.right{ position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
 
+  /* Icon buttons: stabiel op iOS (geen compositor/glitch).
+     Gebruik een subtiele vaste achtergrond i.p.v. filters. */
   .lbCard .chev, .lbCard .close{
-    background: transparent;
+    background: rgba(255,255,255,.82);
     border: 0;
     width: 44px;
     height: 44px;
+    border-radius: 999px;
     display: grid;
     place-items: center;
     opacity: 0;
     transition: opacity .18s ease;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
   }
   .lb.show-ui .chev, .lb.show-ui .close{
     opacity: 1;
@@ -243,13 +247,15 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     width: 22px;
     height: 22px;
     /* donkerder zodat het op de witte kaart zichtbaar is */
-    stroke: rgba(48,96,136,.62);
+    stroke: rgba(48,96,136,.68);
     stroke-width: 2.6;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
     pointer-events: none; /* click landt op button (Firefox/Safari) */
+    shape-rendering: geometricPrecision;
+    vector-effect: non-scaling-stroke;
+    transform: translateZ(0);
   }
   .lbCard .chev:hover svg, .lbCard .close:hover svg{
     stroke: rgba(48,96,136,.85);
@@ -404,8 +410,9 @@ lb.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
     showUI();
 
-    prevBtn.disabled = currentIndex <= 0;
-    nextBtn.disabled = currentIndex >= filtered.length - 1;
+    // Doorlopend navigeren: nooit disablen (laatste -> eerste, eerste -> laatste)
+    prevBtn.disabled = false;
+    nextBtn.disabled = false;
   }
 
   function closeLb(){
@@ -476,8 +483,11 @@ lb.setAttribute('aria-hidden','false');
 
   function go(delta){
     if (currentIndex < 0) return;
-    const next = currentIndex + delta;
-    if (next < 0 || next >= filtered.length) return;
+    const total = filtered.length;
+    if (!total) return;
+    // Doorlopend: wrap-around
+    let next = (currentIndex + delta) % total;
+    if (next < 0) next += total;
     openAt(next);
   }
 
