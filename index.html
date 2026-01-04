@@ -283,10 +283,6 @@ button,
 }
 
 
-/* ===== FIXES (v9) =====
-   Volledig egale WITTE achtergrond (geen kleurverschil, geen gradients).
-*/
-
 /* 1) Absolute basis: alles wit */
 html, body{
   min-height: 100%;
@@ -332,6 +328,86 @@ body::before, body::after{
   body{ padding-bottom: 0 !important; }
 }
 @media (max-height: 520px) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+
+
+/* ===== FIXES (v12) =====
+   Gebaseerd op v9 (geen gedoe met afronding), maar met de rustige drukwerk-look van v11:
+   - papierwit + hele subtiele shading
+   - verfijnde schaduw (zonder border-radius/overflow te beïnvloeden)
+*/
+
+/* 1) Papierwit */
+html, body{
+  min-height: 100%;
+  background: #FCFCFA !important; /* net-warm papierwit */
+}
+
+/* 2) Subtiele papier-shading (geen zichtbare vlekken) */
+body{
+  background-image:
+    radial-gradient(1400px 900px at 30% 15%, rgba(0,0,0,0.018), transparent 45%),
+    radial-gradient(1400px 900px at 70% 85%, rgba(0,0,0,0.012), transparent 45%) !important;
+}
+
+/* 3) Zorg dat niets anders de achtergrond overneemt */
+body::before, body::after,
+html::before, html::after{
+  content: none !important;
+}
+.page, .wrap, .container, main,
+.grid, .cards, .cardGrid{
+  background: transparent !important;
+}
+
+/* 4) Kaart-schaduw (drukwerk-achtig) — let op: we raken GEEN border-radius/overflow aan */
+.card, .tile, .cardItem{
+  box-shadow:
+    0 1px 1px rgba(0,0,0,.06),
+    0 6px 14px rgba(0,0,0,.08) !important;
+}
+
+/* Desktop hover: minimaal */
+@media (hover:hover){
+  .card:hover, .tile:hover, .cardItem:hover{
+    box-shadow:
+      0 2px 3px rgba(0,0,0,.07),
+      0 10px 22px rgba(0,0,0,.10) !important;
+  }
+}
+
+/* 5) Lightbox blur neutraal (papier) */
+.lb{
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+  background: rgba(252,252,250,.65) !important;
+}
+.lb::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(252,252,250,.65);
+  pointer-events:none;
+}
+/* Lightbox kaart iets meer diepte */
+.lb .card, .lb .tile, .lb .cardItem{
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.10),
+    0 28px 50px rgba(0,0,0,.16) !important;
+}
+
+/* 6) Balk: portrait zichtbaar, landscape (telefoon) weg */
+.controlsBar{ display:flex; }
+@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+@media (max-height:520px) and (orientation:landscape){
   .controlsBar{ display:none !important; }
   body{ padding-bottom: 0 !important; }
 }
