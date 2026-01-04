@@ -272,3 +272,12 @@ button,
   outline:none !important;
   box-shadow:none !important;
 }
+
+/* ===============================
+   MOBILE LANDSCAPE FIX
+   - verberg onderste balk als lightbox open is
+   =============================== */
+@media (hover: none) and (orientation: landscape){
+  body.lb-open .controlsBar{display:none !important;}
+  body.lb-open{overflow:hidden;}
+}
