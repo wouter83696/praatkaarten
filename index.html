@@ -183,35 +183,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     transform: translateY(8px); /* optische centrering */
   }
 
-  /* Thema-label (subtiel in hoek, alleen bij hover / UI) */
-  .themeTag{
-    position:absolute;
-    top:12px;
-    left:12px;
-    z-index:6;
-    padding:6px 10px;
-    border-radius:999px;
-    font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
-    font-size:12px;
-    font-weight:500;
-    letter-spacing:.2px;
-    color:rgba(48,96,136,.88);
-    background:rgba(255,255,255,.68);
-    backdrop-filter: blur(8px);
-    box-shadow:0 8px 22px rgba(0,0,0,.12);
-    opacity:0;
-    transform:translateY(-2px);
-    transition:opacity .18s ease, transform .18s ease;
-    pointer-events:none;
-  }
-  @media (hover:hover){
-    .lbCard:hover .themeTag{opacity:1; transform:translateY(0);}
-  }
-  @media (hover:none){
-    /* op touch: label alleen zichtbaar als UI zichtbaar is */
-    .lb.show-ui .themeTag{opacity:1; transform:translateY(0);}
-  }
-
   @media (max-width: 520px){
     .lbCard{ width: min(480px, 92vw); }
     .lbText{ padding: 18px 18px; font-size: clamp(16px, 3.2vw + 6px, 26px); }
@@ -264,7 +235,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     stroke-linejoin: round;
     fill: none;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
-    pointer-events: none; /* click landt op button (Firefox/Safari) */
   }
   .lbCard .chev:hover svg, .lbCard .close:hover svg{
     stroke: rgba(48,96,136,.85);
@@ -304,7 +274,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
 <div class="lb" id="lb" aria-hidden="true">
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
-      <div class="themeTag" id="themeTag" aria-hidden="true"></div>
       <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
@@ -324,7 +293,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   const lbImg = document.getElementById('lbImg');
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
-  const themeTag = document.getElementById('themeTag');
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
@@ -338,18 +306,16 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   let currentIndex = -1;
 
   // UI chrome (pijlen + sluiten)
-  // - Touch: iets langer zichtbaar
-  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
+  // Desktop (hover) : knoppen blijven zichtbaar.
+  // Touch          : knoppen verdwijnen na een paar seconden.
   const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
-  const HIDE_MS_DESKTOP = 2200;
-  const HIDE_MS_TOUCH   = 3200;
 
   let uiTimer = null;
   function showUI(){
     lb.classList.add('show-ui');
+    if (HAS_HOVER) return; // op desktop niet autohiden
     clearTimeout(uiTimer);
-    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 3200);
   }
 
   function buildData(questions){
@@ -405,16 +371,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   function openLb(item){
     lbImg.src = item.bg;
     lbText.textContent = item.q || "";
-    // Thema-label (bij hover in hoek)
-    const pretty = {
-      verkennen: 'Verkennen',
-      verbinden: 'Verbinden',
-      bewegen: 'Bewegen',
-      duiden: 'Duiden',
-      verdiepen: 'Verdiepen',
-      vertragen: 'Vertragen'
-    };
-    themeTag.textContent = pretty[item.theme] || item.theme;
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
     document.body.classList.add('lb-open');
@@ -443,19 +399,10 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   // - omlaag: sluiten
   let startX = 0, startY = 0, startT = 0;
   let pointerDown = false;
-  let gestureArmed = false;
 
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
-    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
-    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
-    if (e.target.closest && e.target.closest('button')) {
-      gestureArmed = false;
-      showUI();
-      return;
-    }
     pointerDown = true;
-    gestureArmed = true;
     startX = e.clientX;
     startY = e.clientY;
     startT = performance.now();
@@ -466,8 +413,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   lb.addEventListener('pointerup', (e) => {
     if(!pointerDown) return;
     pointerDown = false;
-    if(!gestureArmed) return;
-    gestureArmed = false;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     const dt = performance.now() - startT;
@@ -509,8 +454,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   }
 
   // events (iconen op de kaart)
-  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
-  lbCard.addEventListener('click', (e) => e.stopPropagation());
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
