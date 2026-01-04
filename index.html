@@ -27,13 +27,17 @@
   @media (min-width: 980px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
   @media (min-width: 1240px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr));} }
 
-  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;}
+  /*
+    iOS/Safari bugfix: SVG thumbnails in <img> can collapse to 0 height
+    when the container has no explicit height/aspect-ratio.
+  */
+  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;aspect-ratio:85/55;}
   .card:hover{transform:translateY(-2px);}
-  .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
+  .card img{width:100%;height:100%;display:block;object-fit:contain;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
   .card:hover img{box-shadow:var(--shadowHover);}
 
   /* Lightbox (super simple + stable) */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);}
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
   .lb.open{display:flex;}
   .panel{
     padding: 0;
@@ -111,6 +115,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   .card {
     position: relative;
     padding: 0;
+    aspect-ratio: 85 / 55;
   }
   .card .cardInner {
     position: relative;
@@ -119,8 +124,9 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   }
   .card img.bg {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
+    object-fit: contain;
   }
   .card .q {
     position: absolute;
@@ -191,6 +197,10 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   /* Mobile landscape: altijd 100% in beeld (past op hoogte) */
   @media (hover: none) and (orientation: landscape){
     .lb{ padding: 14px; }
+    /* In landscape op mobiel: verberg de onderste balk zodra de lightbox open is,
+       anders gaat er hoogte verloren en past de kaart niet volledig in beeld. */
+    body.lb-open .controlsBar{ display:none; }
+    body.lb-open .grid{ padding-bottom: 18px; }
     .lbCard{
       /* 85x55 kaartverhouding ≈ 1.545 */
       width: min(92vw, calc((100vh - 28px) * 1.545));
@@ -231,6 +241,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     stroke-linejoin: round;
     fill: none;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
+    pointer-events: none; /* click landt op button (Firefox/Safari) */
   }
   .lbCard .chev:hover svg, .lbCard .close:hover svg{
     stroke: rgba(48,96,136,.85);
@@ -369,6 +380,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     lbText.textContent = item.q || "";
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
+    document.body.classList.add('lb-open');
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
@@ -381,6 +393,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   function closeLb(){
     lb.setAttribute('aria-hidden','true');
     lb.classList.remove('open');
+    document.body.classList.remove('lb-open');
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
@@ -388,36 +401,55 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     document.body.style.overflow = '';
   }
 
-  // Swipe (mobile/tablet):
+  // Swipe / drag overal (ook op de grijze achtergrond):
   // - links/rechts: vorige/volgende
   // - omlaag: sluiten
-  let sx=0, sy=0, st=0;
-  const SWIPE_MIN_X = 50;
-  const SWIPE_MIN_Y = 80;
-  lbCard.addEventListener('touchstart', (e) => {
-    if(!e.touches || !e.touches.length) return;
-    const t = e.touches[0];
-    sx = t.clientX; sy = t.clientY; st = Date.now();
-    showUI();
-  }, {passive:true});
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
+  let gestureArmed = false;
 
-  lbCard.addEventListener('touchend', (e) => {
-    if(!e.changedTouches || !e.changedTouches.length) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-    const dt = Date.now() - st;
-    // snelle, duidelijke swipe
-    if(dt > 900) return;
-    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_MIN_X){
-      if(dx < 0) go(1); else go(-1);
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
+    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
+    if (e.target.closest && e.target.closest('button')) {
+      gestureArmed = false;
       showUI();
       return;
     }
-    if(Math.abs(dy) > Math.abs(dx) && dy >= SWIPE_MIN_Y){
+    pointerDown = true;
+    gestureArmed = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    lb.setPointerCapture?.(e.pointerId);
+    showUI();
+  });
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    if(!gestureArmed) return;
+    gestureArmed = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
       closeLb();
+      return;
     }
-  }, {passive:true});
+    if(ax > ay && ax > thrX){
+      if(dx < 0) go(1); else go(-1);
+      showUI();
+    }
+  });
 
   function openAt(index){
     currentIndex = index;
@@ -439,10 +471,12 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     return arr;
   }
 
-  // events
-  closeBtn.addEventListener('click', closeLb);
-  prevBtn.addEventListener('click', () => go(-1));
-  nextBtn.addEventListener('click', () => go(1));
+  // events (iconen op de kaart)
+  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
+  lbCard.addEventListener('click', (e) => e.stopPropagation());
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('touchstart', showUI, {passive:true});
@@ -465,9 +499,69 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     render(filtered);
   });
 
+    const QUESTIONS_FALLBACK = {
+  "verkennen": [
+    "Wat zien we op dit moment gebeuren in onze samenwerking?",
+    "Wat valt ons op in onze manier van samenwerken?",
+    "Herkennen we patronen in onze manier van samenwerken?",
+    "Waar zijn we aan gewend geraakt?",
+    "Wat kijken we liever niet onder ogen?",
+    "Wat zien we wel, maar spreken we niet uit?"
+  ],
+  "verbinden": [
+    "Wanneer voelt onze samenwerking prettig en effectief?",
+    "Wanneer voel jij je echt onderdeel van het team?",
+    "Wat helpt ons om verschillen bespreekbaar te maken?",
+    "Wanneer stemmen we expliciet met elkaar af?",
+    "Wanneer passen we ons aan, terwijl dat eigenlijk schuurt?",
+    "Wat spreken we niet uit om de rust te bewaren?"
+  ],
+  "bewegen": [
+    "Wat doen we met ideeën die ontstaan?",
+    "Wanneer komt er beweging in het team?",
+    "Wat helpt ons om van praten naar doen te gaan?",
+    "Welke ideeën blijven liggen, en waarom?",
+    "Wat houdt ons tegen om in actie te komen?",
+    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
+  ],
+  "duiden": [
+    "Wat proberen we als team samen goed te doen?",
+    "Wanneer helpt afstemming ons, en wanneer werkt het ons juist tegen?",
+    "Welke kwaliteiten komen in ons team goed tot hun recht, en welke minder?",
+    "Wanneer komen misverstanden in onze samenwerking naar boven?",
+    "Wat speelt er onder de oppervlakte in ons team, maar komt zelden op tafel?",
+    "Welke overtuigingen nemen we mee in ons handelen, zonder ze uit te spreken?"
+  ],
+  "verdiepen": [
+    "Wanneer weten we als team: dit is een besluit?",
+    "Wat helpt om rollen en verantwoordelijkheden helder te maken?",
+    "Wanneer helpt het om regie expliciet te koppelen aan een rol of taak?",
+    "Waar blijft regie nu liggen?",
+    "Wat laten we onduidelijk, terwijl het richting vraagt?",
+    "Wat houdt ons nu tegen om een volgende stap te zetten?"
+  ],
+  "vertragen": [
+    "Wat valt ons op als we bewust vertragen of afstand nemen?",
+    "Wat verandert er als we niet meteen reageren?",
+    "Wat gebeurt er wanneer we ons niet laten meeslepen door de waan van de dag?",
+    "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
+    "Welke patronen worden sterker onder druk?",
+    "Welke rol nemen we automatisch aan wanneer de spanning toeneemt?"
+  ]
+};
+
   (async function init(){
-    const res = await fetch('questions.json');
-    const questions = await res.json();
+    let questions = QUESTIONS_FALLBACK;
+    try {
+      // Werkt op GitHub Pages / webservers
+      const res = await fetch('questions.json', { cache: 'no-store' });
+      if (res.ok) {
+        questions = await res.json();
+      }
+    } catch (e) {
+      // Als je dit lokaal opent (file://), kan fetch blokkeren in iOS/Safari.
+      // Dan vallen we terug op de ingebouwde data.
+    }
     data = buildData(questions);
     filtered = data.slice();
     render(filtered);
