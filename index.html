@@ -283,40 +283,37 @@ button,
 }
 
 
-/* ===== FIXES (v8) =====
-   Achtergrond: 1 rustige egale kleur (geen gradients/vlekken) + full-bleed tot in de hoeken.
+/* ===== FIXES (v9) =====
+   Volledig egale WITTE achtergrond (geen kleurverschil, geen gradients).
 */
 
-:root{
-  --pageBg: #F4F5F2; /* rustige warm-neutrale off-white (matcht je kaarten beter) */
-}
-
-/* forceer overal dezelfde achtergrond */
+/* 1) Absolute basis: alles wit */
 html, body{
-  min-height:100%;
-  background: var(--pageBg) !important;
+  min-height: 100%;
+  background: #FFFFFF !important;
 }
 
-/* kill eventuele gradients/achtergrond-afbeeldingen die ‘vlekken’ geven */
+/* 2) Kill alle mogelijke achtergronden/overlays */
 body{
   background-image: none !important;
 }
-body::before, body::after,
-html::before, html::after{
+html::before, html::after,
+body::before, body::after{
   content: none !important;
 }
 
-/* als er wrappers zijn met eigen bg: maak transparant zodat pageBg altijd zichtbaar is */
-.page, .wrap, .container, main, .grid, .cards, .cardGrid{
+/* 3) Alle wrappers transparant zodat wit overal doorloopt */
+.page, .wrap, .container, main,
+.grid, .cards, .cardGrid{
   background: transparent !important;
 }
 
-/* Lightbox blur: full-screen, neutraal (geen groen) */
+/* 4) Lightbox: subtiele neutrale blur op WIT */
 .lb{
   position: fixed;
   inset: 0;
-  touch-action:none;
-  background: rgba(244,245,242,.40) !important;
+  touch-action: none;
+  background: rgba(255,255,255,.55) !important;
 }
 .lb::before{
   content:"";
@@ -324,11 +321,11 @@ html::before, html::after{
   inset:0;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(244,245,242,.40);
+  background: rgba(255,255,255,.55);
   pointer-events:none;
 }
 
-/* Balk: portrait zichtbaar, landscape (telefoon) weg */
+/* 5) Balk: portrait zichtbaar, landscape (telefoon) weg */
 .controlsBar{ display:flex; }
 @media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
