@@ -222,10 +222,7 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100dvh;
   min-height:100dvh;
   display:none;
-  /* Als een kaart hoger is dan het scherm, kunnen we in de lightbox scrollen */
-  overflow:auto;
-  -webkit-overflow-scrolling:touch;
-  align-items:flex-start;
+  align-items:center;
   justify-content:center;
   padding:22px;
 
@@ -245,11 +242,7 @@ body.lb-open .navHintMini{ opacity:0; }
   background-image: var(--lb-bg-url);
   background-size: cover;
   background-position: center;
-  transform: translate3d(
-    var(--lb-bg-shift-x, var(--lb-bg-shift, 0px)),
-    var(--lb-bg-shift-y, 0px),
-    0
-  ) scale(1.08);
+  transform: translateX(var(--lb-bg-shift, 0px)) scale(1.08);
   transition: transform .18s ease;
   filter: blur(18px);
   opacity: .38;
@@ -280,12 +273,10 @@ body.lb-open .navHintMini{ opacity:0; }
 
 .panel{
   width:100%;
-  height:auto;
-  min-height:100%;
+  height:100%;
   background:transparent;
   display:flex;
-  /* mee met scroll: start bovenaan */
-  align-items:flex-start;
+  align-items:center;
   justify-content:center;
 }
 
@@ -296,8 +287,6 @@ body.lb-open .navHintMini{ opacity:0; }
   overflow:hidden;
   background:#fff;
   box-shadow:0 18px 45px rgba(0,0,0,.20);
-  /* ruimte rondom zodat je boven/onder kunt 'landen' bij scrollen */
-  margin:22px auto;
 }
 
 #lbImg{
@@ -787,10 +776,6 @@ const closeBtn = document.getElementById('close');
     // Laat de geblurde achtergrond mee wisselen met de huidige kaart
     lb.style.setProperty('--lb-bg-url', `url(${item.bg})`);
     lb.style.setProperty('--lb-bg-shift', '0px');
-    lb.style.setProperty('--lb-bg-shift-y', '0px');
-    // start altijd bovenaan (handig als je net een lange kaart had)
-    lb.scrollTop = 0;
-    syncBgScroll();
     lbText.textContent = item.q || "";
     // Thema-label (bij hover in hoek)
     const pretty = {
@@ -822,7 +807,6 @@ lb.setAttribute('aria-hidden','false');
     lbText.textContent = "";
     lb.style.setProperty('--lb-bg-url', 'none');
     lb.style.setProperty('--lb-bg-shift', '0px');
-    lb.style.setProperty('--lb-bg-shift-y', '0px');
     currentIndex = -1;
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
@@ -830,16 +814,6 @@ lb.setAttribute('aria-hidden','false');
     document.body.classList.remove('show-hint');
     if(navHint) navHint.setAttribute('aria-hidden','true');
   }
-
-  // ===== Background scroll sync =====
-  // Als je in de lightbox scrollt (bij een hoge kaart), beweegt de geblurde achtergrond subtiel mee.
-  function syncBgScroll(){
-    if(!lb.classList.contains('open')) return;
-    const y = lb.scrollTop || 0;
-    // kleine parallax (negatief = achtergrond naar boven als jij naar beneden scrollt)
-    lb.style.setProperty('--lb-bg-shift-y', `${-y * 0.18}px`);
-  }
-  lb.addEventListener('scroll', syncBgScroll, {passive:true});
 
   // Swipe / drag overal (ook op de grijze achtergrond):
   // - links/rechts: vorige/volgende
