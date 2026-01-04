@@ -21,14 +21,24 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
 
   // Nav hint (rechts): kort zichtbaar bij openen
   let hintTimer = null;
+  const HINT_KEY = 'pk_nav_hint_shown';
   function showNavHint(){
     if(!navHint) return;
-    lb.classList.remove('hide-hint');
+    document.body.classList.add('show-hint');
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => lb.classList.add('hide-hint'), 3000);
+    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 4500);
+  }
+  function maybeShowNavHintOnce(){
+    // Alleen tonen wanneer de viewer via touch/pen is geopend (dus niet met muis/desktop)
+    if(lastPointerType === 'mouse') return;
+    try{
+      if(sessionStorage.getItem(HINT_KEY) === '1') return;
+      sessionStorage.setItem(HINT_KEY,'1');
+    }catch(_e){}
+    showNavHint();
   }
 
-  // UI chrome (pijlen + sluiten)
+// UI chrome (pijlen + sluiten)
   // - Touch: iets langer zichtbaar
   // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
   const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
@@ -103,7 +113,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     showUI();
-    showNavHint();
+    maybeShowNavHintOnce();
 
     prevBtn.disabled = currentIndex <= 0;
     nextBtn.disabled = currentIndex >= filtered.length - 1;
@@ -120,6 +130,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     clearTimeout(hintTimer);
+    document.body.classList.remove('show-hint');
   }
 
   // Swipe / drag overal (ook op de grijze achtergrond):
@@ -206,6 +217,31 @@ lb.addEventListener('pointerup', (e) => {
     if (next >= total) next = 0;
     openAt(next);
   }
+
+
+  // Touch fallback (iOS/Safari): als Pointer Events niet (goed) werken, toch tap-to-close.
+  let tStartX = 0, tStartY = 0;
+  lb.addEventListener('touchstart', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if (e.target.closest && e.target.closest('button')) return;
+    const t = e.touches && e.touches[0];
+    if(!t) return;
+    tStartX = t.clientX;
+    tStartY = t.clientY;
+  }, {passive:true});
+
+  lb.addEventListener('touchend', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if (e.target.closest && e.target.closest('button')) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    if(!t) return;
+    const ax = Math.abs(t.clientX - tStartX);
+    const ay = Math.abs(t.clientY - tStartY);
+    // Alleen echte tap, geen swipe/drag
+    if(ax < 10 && ay < 10){
+      closeLb();
+    }
+  }, {passive:true});
 
   function shuffle(arr){
     for(let i=arr.length-1;i>0;i--){

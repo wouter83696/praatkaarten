@@ -590,11 +590,16 @@ display:block;}
   body{ padding-bottom: 0 !important; }
 }
 @media (hover: none) and (pointer: coarse){
-  .lb .chev,
-  .lb .close{
+  /* Telefoon/tablet: geen pijlen, WEL het kruisje (zoals overal op je site) */
+  .lb .chev{
     display:none !important;
     opacity:0 !important;
     pointer-events:none !important;
+  }
+  .lb .close{
+    display:grid !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
   }
 }
 </style>
