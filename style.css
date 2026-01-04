@@ -33,9 +33,7 @@ body{
    =============================== */
 
 .controlsBar{
-  position:fixed;
-  left:0;right:0;bottom:0;
-  z-index:50;
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
   padding:12px 18px calc(12px + env(safe-area-inset-bottom));
   background:rgba(255,255,255,.86);
   backdrop-filter:blur(10px);
@@ -145,6 +143,7 @@ body{
   color:var(--textBlue);
   font-synthesis:none;
 
+  /* optische centrering */
   transform:translateY(2px);
 }
 
@@ -197,10 +196,6 @@ body{
   display:block;
 }
 
-/* ===============================
-   TEKST OP GROTE KAART (SUBTIEL)
-   =============================== */
-
 .lbText{
   position:absolute;
   inset:0;
@@ -211,13 +206,13 @@ body{
 
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
   font-weight:400;
-
-  font-size:clamp(15px,1.4vw + 8px,22px);
-  line-height:1.26;
+  font-size:clamp(16px,2vw + 10px,30px);
+  line-height:1.28;
   letter-spacing:-0.006em;
 
   color:var(--textBlue);
 
+  /* optische centrering groot */
   transform:translateY(6px);
   pointer-events:none;
 }
@@ -237,6 +232,7 @@ body{
   place-items:center;
   color:var(--uiBlue);
   cursor:pointer;
+
   opacity:0;
 }
 
@@ -271,18 +267,4 @@ button,
   tap-highlight-color:transparent;
   outline:none !important;
   box-shadow:none !important;
-}
-
-/* ===============================
-   🔥 DEFINITIEVE FIX
-   Verberg onderste balk zodra lightbox open is
-   (werkt ook op iOS Safari / GitHub Pages)
-   =============================== */
-
-body:has(.lb.open) .controlsBar{
-  display:none !important;
-}
-
-body:has(.lb.open){
-  overflow:hidden;
 }
