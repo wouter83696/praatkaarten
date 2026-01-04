@@ -1,218 +1,187 @@
-const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
+/* Praatkaarten — script.js
+   - laadt questions.json
+   - bouwt deck (thema + vraag)
+   - grid tiles + overlay
+   - swipe, toetsen, klik buiten kaart = sluiten
+*/
 
-  const grid = document.getElementById('grid');
-  const lb = document.getElementById('lb');
-  const lbImg = document.getElementById('lbImg');
-  const lbText = document.getElementById('lbText');
-  const lbCard = document.getElementById('lbCard');
-  const themeTag = document.getElementById('themeTag');
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 
-  const closeBtn = document.getElementById('close');
-  const prevBtn = document.getElementById('prev');
-  const nextBtn = document.getElementById('next');
+const THEME_ORDER = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
 
-  const shuffleBtn = document.getElementById('shuffle');
-  const resetBtn = document.getElementById('reset');
+let deck = [];
+let deckOriginal = [];
+let currentIndex = 0;
 
-  let data = [];       // full list
-  let filtered = [];   // current order
-  let currentIndex = -1;
+function titleCase(s){
+  return (s||"").toUpperCase();
+}
 
-  // UI chrome (pijlen + sluiten)
-  // - Touch: iets langer zichtbaar
-  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
-  const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
-  const HIDE_MS_DESKTOP = 600;
-  const HIDE_MS_TOUCH   = 900;
-
-  let uiTimer = null;
-  function showUI(){
-    lb.classList.add('show-ui');
-    clearTimeout(uiTimer);
-    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
   }
+  return array;
+}
 
-  function buildData(questions){
-    const out = [];
-    for (const theme of THEMES){
-      const qs = questions[theme] || [];
-      for (let i=0; i<qs.length; i++){
-        out.push({
-          theme,
-          num: i+1,
-          q: qs[i],
-          bg: `cards/${theme}.svg`,
-          id: `${theme}-${String(i+1).padStart(2,'0')}`
-        });
+function buildDeck(q){
+  const out = [];
+  for(const theme of THEME_ORDER){
+    const arr = q[theme] || [];
+    for(const question of arr){
+      out.push({ theme, question });
+    }
+  }
+  return out;
+}
+
+function renderGrid(){
+  const grid = $("#grid");
+  grid.innerHTML = "";
+  deck.forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = "tile";
+    div.tabIndex = 0;
+    div.setAttribute("role","button");
+    div.setAttribute("aria-label", `${titleCase(item.theme)} kaart openen`);
+    div.innerHTML = `
+      <div class="theme">${titleCase(item.theme)}</div>
+      <div class="q">${item.question}</div>
+    `;
+    div.addEventListener("click", () => openAt(idx));
+    div.addEventListener("keydown", (e) => {
+      if(e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        openAt(idx);
       }
-    }
-    return out;
-  }
-
-  function render(items){
-    grid.innerHTML = "";
-    const frag = document.createDocumentFragment();
-
-    items.forEach((item, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'card';
-      btn.type = 'button';
-      btn.setAttribute('aria-label', item.id);
-
-      const inner = document.createElement('div');
-      inner.className = 'cardInner';
-
-      const img = document.createElement('img');
-      img.className = 'bg';
-      img.src = item.bg;
-      img.alt = "";
-
-      const q = document.createElement('div');
-      q.className = 'q';
-      q.textContent = item.q;
-
-      inner.appendChild(img);
-      inner.appendChild(q);
-      btn.appendChild(inner);
-
-      btn.addEventListener('click', () => openAt(idx));
-      frag.appendChild(btn);
     });
+    grid.appendChild(div);
+  });
+}
 
-    grid.appendChild(frag);
-  }
+function renderOverlay(){
+  const item = deck[currentIndex];
+  $("#overlayTheme").textContent = titleCase(item.theme);
+  $("#overlayQuestion").textContent = item.question;
+  $("#pos").textContent = `${currentIndex+1}/${deck.length}`;
+}
 
-  function openLb(item){
-    lbImg.src = item.bg;
-    lbText.textContent = item.q || "";
-    lb.setAttribute('aria-hidden','false');
-    lb.classList.add('open');
-    document.body.classList.add('lb-open');
-    // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    showUI();
+function openAt(idx){
+  currentIndex = Math.max(0, Math.min(deck.length-1, idx));
+  renderOverlay();
+  $("#lb").classList.add("open");
 
-    prevBtn.disabled = currentIndex <= 0;
-    nextBtn.disabled = currentIndex >= filtered.length - 1;
-  }
+  // hint fade: alleen telefoon portrait, maar we trigger op load ook
+  maybeFadeHint();
+}
 
-  function closeLb(){
-    lb.setAttribute('aria-hidden','true');
-    lb.classList.remove('open');
-    document.body.classList.remove('lb-open');
-    lbImg.src = "";
-    lbText.textContent = "";
-    currentIndex = -1;
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-  }
+function closeOverlay(){
+  $("#lb").classList.remove("open");
+}
 
-  // Swipe / drag overal (ook op de grijze achtergrond):
-  // - links/rechts: vorige/volgende
-  // - omlaag: sluiten
-  let startX = 0, startY = 0, startT = 0;
-  let pointerDown = false;
-  let gestureArmed = false;
+function prev(){
+  currentIndex = (currentIndex - 1 + deck.length) % deck.length;
+  renderOverlay();
+}
+function next(){
+  currentIndex = (currentIndex + 1) % deck.length;
+  renderOverlay();
+}
 
-  lb.addEventListener('pointerdown', (e) => {
-    if(!lb.classList.contains('open')) return;
-    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
-    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
-    if (e.target.closest && e.target.closest('button')) {
-      gestureArmed = false;
-      showUI();
-      return;
+function isPhonePortrait(){
+  return window.matchMedia &&
+    window.matchMedia('(hover: none) and (pointer: coarse) and (orientation: portrait)').matches;
+}
+
+let hintFaded = false;
+function maybeFadeHint(){
+  if(hintFaded) return;
+  if(!isPhonePortrait()) return;
+  const hint = $(".help");
+  if(!hint) return;
+  setTimeout(() => {
+    hint.classList.add("is-hidden");
+    hintFaded = true;
+  }, 3500);
+}
+
+function attachEvents(){
+  // overlay close on outside click
+  $("#lb").addEventListener("click", (e) => {
+    // click on backdrop closes; click on card does not
+    if(e.target.id === "lb") closeOverlay();
+  });
+
+  // buttons
+  $("#btnClose").addEventListener("click", closeOverlay);
+  $("#btnPrev").addEventListener("click", prev);
+  $("#btnNext").addEventListener("click", next);
+
+  // keyboard
+  window.addEventListener("keydown", (e) => {
+    const open = $("#lb").classList.contains("open");
+    if(!open) return;
+    if(e.key === "Escape") closeOverlay();
+    if(e.key === "ArrowLeft") prev();
+    if(e.key === "ArrowRight") next();
+  });
+
+  // bottom bar
+  $("#btnShuffle").addEventListener("click", () => {
+    deck = shuffle([...deck]);
+    renderGrid();
+  });
+  $("#btnReset").addEventListener("click", () => {
+    deck = [...deckOriginal];
+    renderGrid();
+  });
+
+  // swipe gestures (works on overlay anywhere)
+  let sx=0, sy=0, active=false;
+  const threshold = 40;
+
+  const start = (x,y) => { sx=x; sy=y; active=true; };
+  const end = (x,y) => {
+    if(!active) return;
+    active=false;
+    const dx = x - sx;
+    const dy = y - sy;
+    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold){
+      if(dx < 0) next();
+      else prev();
     }
-    pointerDown = true;
-    gestureArmed = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    startT = performance.now();
-    lb.setPointerCapture?.(e.pointerId);
-    showUI();
-  });
+  };
 
-  lb.addEventListener('pointerup', (e) => {
-    if(!pointerDown) return;
-    pointerDown = false;
-    if(!gestureArmed) return;
-    gestureArmed = false;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    const dt = performance.now() - startT;
-    const ax = Math.abs(dx);
-    const ay = Math.abs(dy);
+  // We listen on the overlay (lb) AND document so user can swipe "naast" de kaart
+  const listenEl = document;
+  listenEl.addEventListener("touchstart", (e) => {
+    if(!$("#lb").classList.contains("open")) return;
+    const t = e.touches[0];
+    start(t.clientX, t.clientY);
+  }, {passive:true});
+  listenEl.addEventListener("touchend", (e) => {
+    if(!$("#lb").classList.contains("open")) return;
+    const t = (e.changedTouches && e.changedTouches[0]) || null;
+    if(!t) return;
+    end(t.clientX, t.clientY);
+  }, {passive:true});
+}
 
-    const fast = dt < 420;
-    const thrX = fast ? 40 : 60;
-    const thrY = fast ? 50 : 80;
+async function init(){
+  const res = await fetch("./questions.json", { cache: "no-store" });
+  const q = await res.json();
+  deckOriginal = buildDeck(q);
+  deck = [...deckOriginal];
+  renderGrid();
+  attachEvents();
 
-    if(ay > ax && dy > thrY){
-      closeLb();
-      return;
-    }
-    if(ax > ay && ax > thrX){
-      if(dx < 0) go(1); else go(-1);
-      showUI();
-    }
-  });
+  // hint fade on first page load if on phone portrait
+  maybeFadeHint();
+}
 
-  function openAt(index){
-    currentIndex = index;
-    openLb(filtered[currentIndex]);
-  }
-
-  function go(delta){
-    if (currentIndex < 0) return;
-    const total = filtered.length;
-    let next = currentIndex + delta;
-    if (next < 0) next = total - 1;
-    if (next >= total) next = 0;
-    openAt(next);
-  }
-
-  function shuffle(arr){
-    for(let i=arr.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-    return arr;
-  }
-
-  // events (iconen op de kaart)
-  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
-  lbCard.addEventListener('click', (e) => e.stopPropagation());
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
-  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
-  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
-
-  lb.addEventListener('mousemove', showUI);
-  lb.addEventListener('touchstart', showUI, {passive:true});
-  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); else showUI(); });
-
-  document.addEventListener('keydown', (e) => {
-    if(!lb.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLb();
-    if(e.key === 'ArrowLeft') go(-1);
-    if(e.key === 'ArrowRight') go(1);
-  });
-
-  shuffleBtn.addEventListener('click', () => {
-    filtered = shuffle(filtered.slice());
-    render(filtered);
-  });
-
-  resetBtn.addEventListener('click', () => {
-    filtered = data.slice();
-    render(filtered);
-  });
-
-  (async function init(){
-    const res = await fetch('questions.json');
-    const questions = await res.json();
-    data = buildData(questions);
-    filtered = data.slice();
-    render(filtered);
-  })();
+init().catch(err => {
+  console.error(err);
+  alert("Kon questions.json niet laden of verwerken. Check structuur/bestandsnaam.");
+});
