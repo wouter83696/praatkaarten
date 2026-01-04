@@ -419,12 +419,6 @@ body{
 }
 
 
-/* ===== FIXES (v6-fade-fix) =====
-   Onderste balk layout + fade werkt echt:
-   - Hussel/Reset links (btnGroup)
-   - hulptekst rechts (.help)
-*/
-
 .controlsBar .inner{
   display:flex;
   align-items:center;
@@ -442,6 +436,51 @@ body{
 /* rechts */
 .controlsBar .help{
   margin-left:auto;
+  opacity:.70;
+  font-size:0.9em;
+  white-space:nowrap;
+  transition: opacity .8s ease;
+}
+.controlsBar .help.is-hidden{
+  opacity:0;
+  pointer-events:none;
+}
+
+
+/* ===== FIXES (v6-fade-fix2) =====
+   Hussel/Reset écht links in de browser:
+   - forceer full-width op de balk
+   - override eventuele bestaande justify/align regels met !important
+*/
+
+.controlsBar{
+  width:100% !important;
+  left:0 !important;
+  right:0 !important;
+}
+
+.controlsBar .inner{
+  width:100% !important;
+  max-width:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px;
+  padding-left: clamp(14px, 3vw, 28px);
+  padding-right: clamp(14px, 3vw, 28px);
+}
+
+.controlsBar .btnGroup{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:14px;
+  margin-right:auto !important;
+}
+
+.controlsBar .help{
+  margin-left:auto !important;
+  text-align:right;
   opacity:.70;
   font-size:0.9em;
   white-space:nowrap;
