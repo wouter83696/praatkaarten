@@ -124,7 +124,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     text-align: center;
     color: #306088;
     font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
-    font-weight: 400;
+    font-weight: 500;
     line-height: 1.15;
     font-size: clamp(12px, 0.9vw + 10px, 14px);
   }
