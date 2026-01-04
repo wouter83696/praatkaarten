@@ -34,10 +34,28 @@
     body.lb-open .grid{ padding-bottom: 18px; }
   }
 
-  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;}
+  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;position:relative;}
   .card:hover{transform:translateY(-2px);}
   .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
   .card:hover img{box-shadow:var(--shadowHover);}
+
+  /* Thema-label op kleine kaarten (zelfde look als de tekst in de onderste balk) */
+  .card::after{
+    content:attr(data-theme);
+    position:absolute;
+    right:10px;
+    bottom:10px;
+    font-size:13px;
+    line-height:1;
+    color:rgba(11,18,32,.55);
+    font-family:system-ui;
+    letter-spacing:.2px;
+    opacity:.55;
+    transition:opacity .14s ease;
+    pointer-events:none;
+  }
+  .card:hover::after{opacity:.85;}
+
 
   /* Lightbox */
   .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
@@ -59,25 +77,26 @@
   
   /* Controls liggen OP de kaart (dus niet ernaast / op het scherm) */
   .chev, .close{
-    position:absolute;
-    border:0;
-    background:transparent;
-    cursor:pointer;
-    user-select:none;
-    opacity:0;
-    transition:opacity .18s ease;
-    color:rgba(30, 78, 118, .75);
-    -webkit-tap-highlight-color:transparent;
-  }
+  position:absolute;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  user-select:none;
+  opacity:0;
+  transition:opacity .18s ease,color .18s ease;
+  color:rgba(30,78,118,.65);
+  -webkit-tap-highlight-color:transparent;
+}
   .chev{
-    top:50%;
-    transform:translateY(-50%);
-    font-size:44px;
-    line-height:1;
-    padding:10px 12px;
-  }
-  .chev.left{left:10px}
-  .chev.right{right:10px}
+  bottom:10px;
+  top:auto;
+  transform:none;
+  font-size:44px;
+  line-height:1;
+  padding:10px 12px;
+}
+.chev.left{left:10px}
+.chev.right{right:10px}
   .close{
     top:10px;
     right:10px;
@@ -87,7 +106,10 @@
     padding:10px 12px;
   }
   .lb.show-ui .chev,
-  .lb.show-ui .close{opacity:1;}
+.lb.show-ui .close{opacity:.9;}
+  .lb.show-ui .chev:hover,
+  .lb.show-ui .close:hover{opacity:1;color:rgba(30, 78, 118, .75);}
+
 
 </style>
 </head>
@@ -163,6 +185,20 @@
 
   const initial = Array.from(grid.children).map(n => n.outerHTML);
 
+  function titleCase(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function applyThemes(){
+    for(const btn of cards()){
+      const src = btn.getAttribute('data-src')||'';
+      const m = src.match(/cards\/([a-zA-ZÀ-ſ-]+?)(?:-\d+)?\.svg$/);
+      if(!m) continue;
+      const raw = m[1].split('-')[0];
+      btn.dataset.theme = titleCase(raw);
+    }
+  }
+
+  // init theme labels
+  applyThemes();
+
   const canHover = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
   let currentIndex = -1;
   let uiTimer = null;
@@ -174,8 +210,8 @@
   function showUI(){
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
-    if(canHover) return; // desktop: altijd zichtbaar
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 3200);
+    const hideMs = canHover ? 900 : 1100; // sneller weg, maar nog wel leesbaar
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), hideMs);
   }
 
   function openLbAt(index){
@@ -228,6 +264,7 @@
   });
   document.getElementById('reset').addEventListener('click', () => {
     grid.innerHTML = initial.join('');
+    applyThemes();
     window.scrollTo({top:0, behavior:'smooth'});
   });
 
@@ -249,6 +286,7 @@
 
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
+    if(e.target.closest('.chev, .close')) return;
     pointerDown = true;
     startX = e.clientX;
     startY = e.clientY;
