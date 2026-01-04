@@ -54,7 +54,6 @@
     transition:opacity .14s ease;
     pointer-events:none;
   }
-  .card:hover::after{opacity:.9;}
   .card:hover::after{opacity:.85;}
 
 
@@ -84,14 +83,13 @@
     cursor:pointer;
     user-select:none;
     opacity:0;
-    transition:opacity .18s ease,color .18s ease;
-    color:rgba(30,78,118,.65);
+    transition:opacity .18s ease;
+    color:rgba(30, 78, 118, .55);
     -webkit-tap-highlight-color:transparent;
   }
   .chev{
-    bottom:10px;
-    top:auto;
-    transform:none;
+    top:50%;
+    transform:translateY(-50%);
     font-size:44px;
     line-height:1;
     padding:10px 12px;
@@ -107,7 +105,7 @@
     padding:10px 12px;
   }
   .lb.show-ui .chev,
-  .lb.show-ui .close{opacity:.9;}
+  .lb.show-ui .close{opacity:.85;}
   .lb.show-ui .chev:hover,
   .lb.show-ui .close:hover{opacity:1;color:rgba(30, 78, 118, .75);}
 
