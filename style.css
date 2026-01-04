@@ -275,9 +275,16 @@ button,
 
 /* ===============================
    MOBILE LANDSCAPE FIX
-   - verberg onderste balk als lightbox open is
+   - verberg onderste balk alleen
+     bij open lightbox op mobiel
    =============================== */
+
 @media (hover: none) and (orientation: landscape){
-  body.lb-open .controlsBar{display:none !important;}
-  body.lb-open{overflow:hidden;}
+  body.lb-open .controlsBar{
+    display:none !important;
+  }
+  body.lb-open{
+    overflow:hidden;
+  }
 }
+
