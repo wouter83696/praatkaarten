@@ -266,3 +266,22 @@ html,body{
 .lb.open .nav-hint{ opacity: 1; }
 .lb.hide-hint .nav-hint{ opacity: 0; }
 
+/* =========================================================
+   FIX: Hussel | Reset compact links (desktop + mobiel)
+   - Voorkomt dat de balk de knoppen uit elkaar trekt
+   ========================================================= */
+.controlsBar .inner{
+  justify-content:flex-start !important;
+}
+
+/* Knoppen als één compact cluster */
+.controlsBar .btnGroup{
+  gap:6px !important;
+}
+
+/* Subtiele scheider (|) zonder grote tussenruimte */
+.controlsBar .sep{
+  height:16px !important;
+  margin:0 4px !important;
+  background:rgba(0,0,0,.18) !important;
+}
