@@ -6,6 +6,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
+  const navHint = document.getElementById('navHint');
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
@@ -17,6 +18,15 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
   let data = [];       // full list
   let filtered = [];   // current order
   let currentIndex = -1;
+
+  // Nav hint (rechts): kort zichtbaar bij openen
+  let hintTimer = null;
+  function showNavHint(){
+    if(!navHint) return;
+    lb.classList.remove('hide-hint');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => lb.classList.add('hide-hint'), 3000);
+  }
 
   // UI chrome (pijlen + sluiten)
   // - Touch: iets langer zichtbaar
@@ -93,6 +103,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     showUI();
+    showNavHint();
 
     prevBtn.disabled = currentIndex <= 0;
     nextBtn.disabled = currentIndex >= filtered.length - 1;
@@ -108,6 +119,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     currentIndex = -1;
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
+    clearTimeout(hintTimer);
   }
 
   // Swipe / drag overal (ook op de grijze achtergrond):

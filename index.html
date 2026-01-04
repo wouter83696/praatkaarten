@@ -275,6 +275,26 @@ body{
 }
 
 /* ===============================
+   NAV HINT (alleen bij grote kaart)
+   =============================== */
+.nav-hint{
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(0,0,0,.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s ease;
+  z-index: 999;
+  text-align: right;
+}
+.lb.open .nav-hint{ opacity: 1; }
+.lb.hide-hint .nav-hint{ opacity: 0; }
+
+/* ===============================
    FIXES
    =============================== */
 
@@ -520,8 +540,17 @@ display:block;}
    - Swipe blijft werken
    - Tap-to-close wordt in script.js gedaan
    =============================== */
-@media (pointer: coarse){
+/* ===============================
+   MOBILE (touch):
+   - Balk WEL in portrait
+   - Balk WEG in landscape
+   - Geen pijlen/kruisje
+   =============================== */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+@media (hover: none) and (pointer: coarse){
   .lb .chev,
   .lb .close{
     display:none !important;
@@ -546,6 +575,7 @@ display:block;}
 <div class="grid" id="grid"></div>
 
 <div class="lb" id="lb" aria-hidden="true">
+  <div class="nav-hint" id="navHint">veeg om te bladeren • tik om te sluiten</div>
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -567,6 +597,7 @@ display:block;}
   const lbImg = document.getElementById('lbImg');
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
+  const navHint = document.getElementById('navHint');
 const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
@@ -577,6 +608,15 @@ const closeBtn = document.getElementById('close');
   let data = [];       // full list
   let filtered = [];   // current order
   let currentIndex = -1;
+
+  // Nav hint (rechts): kort zichtbaar bij openen
+  let hintTimer = null;
+  function showNavHint(){
+    if(!navHint) return;
+    lb.classList.remove('hide-hint');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => lb.classList.add('hide-hint'), 3000);
+  }
 
   // UI chrome (pijlen + sluiten)
   // - Touch: iets langer zichtbaar
@@ -662,6 +702,7 @@ lb.setAttribute('aria-hidden','false');
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     showUI();
+    showNavHint();
 
     prevBtn.disabled = currentIndex <= 0;
     nextBtn.disabled = currentIndex >= filtered.length - 1;
@@ -676,6 +717,7 @@ lb.setAttribute('aria-hidden','false');
     currentIndex = -1;
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
+    clearTimeout(hintTimer);
   }
 
   // Swipe / drag overal (ook op de grijze achtergrond):

@@ -225,9 +225,10 @@ html,body{
 }
 
 /* ===============================
-   MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
+   MOBILE (touch)
+   - Balk: WEL in portrait, WEG in landscape
    =============================== */
-@media (pointer: coarse) and (orientation: portrait){
+@media (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
 }
 
@@ -243,4 +244,25 @@ html,body{
     pointer-events:none !important;
   }
 }
+
+/* ===============================
+   NAV HINT (rechts, kort zichtbaar bij openen)
+   (alleen relevant als je in HTML een .nav-hint in de overlay plaatst)
+   =============================== */
+.nav-hint{
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(0,0,0,.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s ease;
+  z-index: 999;
+  text-align: right;
+}
+.lb.open .nav-hint{ opacity: 1; }
+.lb.hide-hint .nav-hint{ opacity: 0; }
 
