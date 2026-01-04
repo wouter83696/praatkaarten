@@ -69,24 +69,13 @@
   .card:hover .cardInner{box-shadow:var(--shadowHover)}
   .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .q{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    padding:14px 16px;text-align:center;color:var(--ink);
-    font-weight:600;line-height:1.18;
-    font-size:15px; /* balans zoals fix9 */
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:14px 16px;text-align:center;
+    color:var(--ink);font-weight:600;line-height:1.18;
+    font-size:14px;
   }
-  @media (max-width:520px){ .q{font-size:13.5px} }
-
-  /* Hover-thema kleine kaart – exact subtiel */
-  .card::after{
-    content: attr(data-theme-label);
-    position:absolute;left:12px;bottom:10px;
-    font-size:13px;line-height:1;
-    color:rgba(30,78,118,.55);
-    opacity:0;transition:opacity .18s ease;
-    pointer-events:none;
-  }
-  .card:hover::after,
-  .card:focus-visible::after{opacity:.9;}
+  @media (max-width:520px){ .q{font-size:13px;} }
 
   /* Lightbox */
   .lb{
@@ -106,8 +95,20 @@
     box-shadow:0 24px 90px rgba(0,0,0,.22);
   }
   .panel .cardInner{border-radius:22px;box-shadow:none;height:100%}
-  .panel .q{font-size:28px;padding:26px 30px}
-  @media (max-width:700px){ .panel .q{font-size:20px;padding:18px 18px} }
+  .panel .q{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:14px 16px;text-align:center;
+    color:var(--ink);font-weight:600;line-height:1.18;
+    font-size:14px;
+  }
+  @media (max-width:700px){ .panel .q{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:14px 16px;text-align:center;
+    color:var(--ink);font-weight:600;line-height:1.18;
+    font-size:14px;
+  } }
 
   /* Thema linksboven op grote kaart (zoals fix9) */
   .lbTheme{
@@ -140,8 +141,12 @@
     padding:10px 12px;
   }
   .chev{
-    bottom:10px;top:auto;transform:none;
-    font-size:44px;line-height:1;padding:10px 12px;
+    bottom:10px;
+    top:auto;
+    transform:none;
+    font-size:44px;
+    line-height:1;
+    padding:10px 12px;
   }
   .chev.left{left:10px}
   .chev.right{right:10px}
