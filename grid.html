@@ -27,82 +27,67 @@
   @media (min-width: 980px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
   @media (min-width: 1240px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr));} }
 
+  /* Mobiel landscape: verberg de onderste balk als de lightbox open is,
+     anders past de kaart niet volledig in beeld. */
+  @media (hover: none) and (orientation: landscape){
+    body.lb-open .controlsBar{ display:none; }
+    body.lb-open .grid{ padding-bottom: 18px; }
+  }
+
   .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;}
   .card:hover{transform:translateY(-2px);}
   .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
   .card:hover img{box-shadow:var(--shadowHover);}
 
-  /* Lightbox (super simple + stable) */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);}
+  /* Lightbox */
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
   .lb.open{display:flex;}
-  .panel{max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shadow:0 24px 90px rgba(0,0,0,.28);overflow:hidden;position:relative;}
-  .panel img{width:100%;height:auto;display:block;}
-  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);cursor:pointer;font-size:18px;line-height:1;}
+
+  /* De kaart is de enige "card". Geen extra witte panel eromheen. */
+  .panel{
+    position:relative;
+    width:min(92vw, 860px);
+    aspect-ratio:85/55;
+    max-height:calc(92vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius:22px;
+    overflow:hidden;
+    background:transparent;
+    box-shadow:0 24px 90px rgba(0,0,0,.28);
+  }
+  .panel img{width:100%;height:100%;display:block;object-fit:contain;background:transparent;}
 
   
-  .chev{
+  /* Controls liggen OP de kaart (dus niet ernaast / op het scherm) */
+  .chev, .close{
     position:absolute;
+    border:0;
+    background:transparent;
+    cursor:pointer;
+    user-select:none;
+    opacity:0;
+    transition:opacity .18s ease;
+    color:rgba(30, 78, 118, .75);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .chev{
     top:50%;
     transform:translateY(-50%);
-    font-size:40px;
+    font-size:44px;
     line-height:1;
-    color:rgba(180,180,180,.9);
-    background:transparent;
-    border:0;
-    padding:12px;
-    cursor:pointer;
-    opacity:0;
-    transition:opacity .25s ease;
-    user-select:none;
+    padding:10px 12px;
   }
-  .chev.left{left:12px}
-  .chev.right{right:12px}
-  .lb.show-ui .chev{opacity:.9}
-
-
+  .chev.left{left:10px}
+  .chev.right{right:10px}
   .close{
-    opacity:0;
-    transition:opacity .25s ease;
-  }
-  .lb.show-ui .close{opacity:.9}
-
-
-  /* Unified chrome behavior: arrows + close auto-hide */
-  .chev, .close{
-    opacity:0;
-    transition:opacity .25s ease;
-  }
-  .lb.show-ui .chev,
-  .lb.show-ui .close{
-    opacity:1;
-  }
-
-  /* Make close visually match chevrons */
-  .close{
-    position:absolute;
-    top:16px;
-    right:16px;
-    font-size:26px;
-    line-height:1;
-    color:rgba(180,180,180,.9);
-    background:transparent;
-    border:0;
-    padding:10px;
-    cursor:pointer;
-  }
-
-
-  /* Close icon styled like chevrons */
-  .close{
+    top:10px;
+    right:10px;
     font-size:34px;
     font-weight:300;
     line-height:1;
-    color:rgba(180,180,180,.9);
-    background:transparent;
-    border:0;
-    padding:10px;
-    cursor:pointer;
+    padding:10px 12px;
   }
+  .lb.show-ui .chev,
+  .lb.show-ui .close{opacity:1;}
 
 </style>
 </head>
@@ -169,34 +154,67 @@
 </div>
 
 <script>
-  // Alleen lightbox + hussel, geen render-dependency
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
   const closeBtn = document.getElementById('close');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
 
   const initial = Array.from(grid.children).map(n => n.outerHTML);
 
-  function openLb(src){
-    lbImg.src = src;
-    lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
+  const canHover = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  let currentIndex = -1;
+  let uiTimer = null;
+
+  function cards(){
+    return Array.from(grid.querySelectorAll('button.card'));
   }
+
+  function showUI(){
+    lb.classList.add('show-ui');
+    clearTimeout(uiTimer);
+    if(canHover) return; // desktop: altijd zichtbaar
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 3200);
+  }
+
+  function openLbAt(index){
+    const list = cards();
+    currentIndex = ((index % list.length) + list.length) % list.length;
+    lbImg.src = list[currentIndex].getAttribute('data-src');
+    lb.classList.add('open');
+    document.body.classList.add('lb-open');
+    document.body.style.overflow = 'hidden';
+    showUI();
+  }
+
   function closeLb(){
     lb.classList.remove('open');
+    lb.classList.remove('show-ui');
+    document.body.classList.remove('lb-open');
     lbImg.src = '';
     document.body.style.overflow = '';
+    currentIndex = -1;
+  }
+
+  function go(delta){
+    const list = cards();
+    if(!list.length || currentIndex < 0) return;
+    currentIndex = (currentIndex + delta + list.length) % list.length;
+    lbImg.src = list[currentIndex].getAttribute('data-src');
+    showUI();
   }
 
   grid.addEventListener('click', (e) => {
     const btn = e.target.closest('button.card');
     if(!btn) return;
-    openLb(btn.getAttribute('data-src'));
+    const list = cards();
+    const idx = list.indexOf(btn);
+    if(idx > -1) openLbAt(idx);
   });
 
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
-  closeBtn.addEventListener('click', closeLb);
-  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && lb.classList.contains('open')) closeLb(); });
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
 
   function shuffle(nodes){
     for(let i=nodes.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nodes[i],nodes[j]]=[nodes[j],nodes[i]]; }
@@ -213,42 +231,6 @@
     window.scrollTo({top:0, behavior:'smooth'});
   });
 
-  // Subtle navigation (links/rechts) in lightbox
-  const cards = Array.from(grid.querySelectorAll('button.card'));
-  const prevBtn = document.getElementById('prev');
-  const nextBtn = document.getElementById('next');
-  let currentIndex = -1;
-  let uiTimer = null;
-
-  function showUI(){
-      lb.classList.add('show-ui');
-      clearTimeout(uiTimer);
-      uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 1400);
-    }
-
-  function openLbAt(index){
-    currentIndex = index;
-    openLb(cards[currentIndex].getAttribute('data-src'));
-    showUI();
-  }
-
-  function go(delta){
-    if(currentIndex < 0) return;
-    currentIndex = (currentIndex + delta + cards.length) % cards.length;
-    lbImg.src = cards[currentIndex].getAttribute('data-src');
-    showUI();
-  }
-
-  // Override existing open to capture index
-  grid.addEventListener('click', (e) => {
-    const btn = e.target.closest('button.card');
-    if(!btn) return;
-    const idx = cards.indexOf(btn);
-    if(idx > -1){
-      openLbAt(idx);
-    }
-  });
-
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
 
@@ -259,19 +241,49 @@
     if(e.key === 'ArrowRight') go(1);
   });
 
-  // Swipe (simple)
-  let sx = 0;
-  lb.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, {passive:true});
-  lb.addEventListener('touchend', (e) => {
-    const dx = e.changedTouches[0].clientX - sx;
-    if(Math.abs(dx) > 40){
-      go(dx > 0 ? -1 : 1);
-    }
-  }, {passive:true});
+  // Swipe / drag overal (ook op de grijze achtergrond):
+  // - links/rechts = vorige/volgende
+  // - omlaag = sluiten
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
 
-  // Show UI on interaction
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    pointerDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    lb.setPointerCapture?.(e.pointerId);
+    showUI();
+  });
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    // snelle veeg of duidelijke afstand
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
+      closeLb();
+      return;
+    }
+    if(ax > ay && ax > thrX){
+      go(dx > 0 ? -1 : 1);
+      return;
+    }
+  });
+
+  // UI tonen bij interactie
   lb.addEventListener('mousemove', showUI);
-  lb.addEventListener('touchstart', showUI, {passive:true});
+  lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
 </script>
 
