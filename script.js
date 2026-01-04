@@ -216,3 +216,22 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     filtered = data.slice();
     render(filtered);
   })();
+
+
+// ===== INSTRUCTION FADE (phone portrait only) =====
+(function(){
+  let done = false;
+  function isPhonePortrait(){
+    return window.matchMedia &&
+      window.matchMedia('(hover: none) and (pointer: coarse) and (orientation: portrait)').matches;
+  }
+  function run(){
+    if(done) return;
+    if(!isPhonePortrait()) return;
+    const hint = document.querySelector('.controlsBar .help');
+    if(!hint) return;
+    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
+    done = true;
+  }
+  window.addEventListener('load', run, { once:true });
+})();

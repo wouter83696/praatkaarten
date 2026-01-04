@@ -22,6 +22,10 @@
 
   --textBlue: rgba(48,96,136,.95);
   --uiBlue: rgba(48,96,136,.85);
+
+  /* WARM "INKT" (bruin-grijs) voor cursor + iconen */
+  --uiInk: rgba(90,86,80,.92);
+  --uiInkSoft: rgba(90,86,80,.55);
 }
 
 *{box-sizing:border-box}
@@ -77,10 +81,14 @@ body{
 .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
 
 .help{
+  transition:opacity .8s ease;
+
+  display:none;
+
   color:rgba(11,18,32,.55);
   font-size:13px;
   line-height:1.35;
-  white-space:normal;
+  white-space:nowrap;
 }
 
 /* ===============================
@@ -243,7 +251,7 @@ body{
   height:44px;
   display:grid;
   place-items:center;
-  color:var(--uiBlue);
+  color:var(--uiInk);
   cursor:pointer;
 
   opacity:0;
@@ -435,6 +443,8 @@ body{
 
 /* rechts */
 .controlsBar .help{
+  transition:opacity .8s ease;
+
   margin-left:auto;
   opacity:.70;
   font-size:0.9em;
@@ -479,6 +489,8 @@ body{
 }
 
 .controlsBar .help{
+  transition:opacity .8s ease;
+
   margin-left:auto !important;
   text-align:right;
   opacity:.70;
@@ -491,6 +503,12 @@ body{
   pointer-events:none;
 }
 
+
+@media (hover:none) and (pointer:coarse) and (orientation:portrait){
+  .help{
+  transition:opacity .8s ease;
+display:block;}
+}
 </style>
 </head>
 <body>
