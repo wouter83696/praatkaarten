@@ -189,35 +189,13 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   }
 
   /* Thema-label (subtiel in hoek, alleen bij hover / UI) */
-  .themeTag{
-    
-    display:none !important; /* verwijderd in grote kaart */
-position:absolute;
-    top:12px;
-    left:12px;
-    z-index:6;
-    padding:6px 10px;
-    border-radius:999px;
-    font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
-    font-size:12px;
-    font-weight:500;
-    letter-spacing:.2px;
-    color:rgba(48,96,136,.88);
-    background:rgba(255,255,255,.68);
-    backdrop-filter: blur(8px);
-    box-shadow:0 8px 22px rgba(0,0,0,.12);
-    opacity:0;
-    transform:translateY(-2px);
-    transition:opacity .18s ease, transform .18s ease;
-    pointer-events:none;
-  }
-  @media (hover:hover){
-    .lbCard:hover .themeTag{opacity:1; transform:translateY(0);}
-  }
+@media (hover:hover){
+    .lbCard:hover
+}
   @media (hover:none){
     /* op touch: label alleen zichtbaar als UI zichtbaar is */
-    .lb.show-ui .themeTag{opacity:1; transform:translateY(0);}
-  }
+    .lb.show-ui
+}
 
   @media (max-width: 520px){
     .lbCard{ width: min(480px, 92vw); }
@@ -311,8 +289,7 @@ position:absolute;
 <div class="lb" id="lb" aria-hidden="true">
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
-      <div class="themeTag" id="themeTag" aria-hidden="true"></div>
-      <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+<button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
       <img id="lbImg" alt="">
@@ -331,9 +308,7 @@ position:absolute;
   const lbImg = document.getElementById('lbImg');
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
-  const themeTag = document.getElementById('themeTag');
-
-  const closeBtn = document.getElementById('close');
+const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
@@ -421,8 +396,7 @@ position:absolute;
       verdiepen: 'Verdiepen',
       vertragen: 'Vertragen'
     };
-    themeTag.textContent = pretty[item.theme] || item.theme;
-    lb.setAttribute('aria-hidden','false');
+lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
     document.body.classList.add('lb-open');
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
