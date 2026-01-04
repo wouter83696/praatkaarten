@@ -11,7 +11,7 @@
     --shadow:0 14px 50px rgba(0,0,0,.12);
     --shadowHover:0 18px 70px rgba(0,0,0,.16);
     --ink: rgba(30, 78, 118, 1);
-    --ui: rgba(30, 78, 118, .62); /* fix9-blauw */
+    --ui: rgba(30, 78, 118, .62); /* fix9 blauw */
     --bar: rgba(11,18,32,.55);
   }
   *{box-sizing:border-box}
@@ -50,7 +50,6 @@
   @media (min-width: 980px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
   @media (min-width: 1240px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr));} }
 
-  /* Mobiel landscape: verberg onderste balk als lightbox open is */
   @media (hover: none) and (orientation: landscape){
     body.lb-open .controlsBar{ display:none; }
     body.lb-open .grid{ padding-bottom: 18px; }
@@ -68,17 +67,16 @@
     overflow:hidden;position:relative;background:#fff;
   }
   .card:hover .cardInner{box-shadow:var(--shadowHover)}
-
   .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .q{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     padding:14px 16px;text-align:center;color:var(--ink);
-    font-weight:600;line-height:1.18;font-size:16px;
+    font-weight:600;line-height:1.18;
+    font-size:15px; /* balans zoals fix9 */
   }
-  @media (max-width:520px){ .q{font-size:14px} }
-  @media (min-width:980px){ .q{font-size:15px} }
+  @media (max-width:520px){ .q{font-size:13.5px} }
 
-  /* Hover-thema op kleine kaart: exact "groot-kaart" stijl (subtiel, fix9 timing) */
+  /* Hover-thema kleine kaart – exact subtiel */
   .card::after{
     content: attr(data-theme-label);
     position:absolute;left:12px;bottom:10px;
@@ -94,7 +92,8 @@
   .lb{
     position:fixed;inset:0;width:100vw;height:100vh;
     display:none;align-items:center;justify-content:center;
-    background:rgba(0,0,0,.28);backdrop-filter:blur(6px);
+    background:rgba(0,0,0,.28);
+    backdrop-filter:blur(6px);
     touch-action:none;z-index:9999;
   }
   .lb.open{display:flex}
@@ -107,25 +106,61 @@
     box-shadow:0 24px 90px rgba(0,0,0,.22);
   }
   .panel .cardInner{border-radius:22px;box-shadow:none;height:100%}
-  .panel .q{font-size:30px;padding:26px 30px}
-  @media (max-width:700px){ .panel .q{font-size:22px;padding:18px 18px} }
+  .panel .q{font-size:28px;padding:26px 30px}
+  @media (max-width:700px){ .panel .q{font-size:20px;padding:18px 18px} }
+
+  /* Thema linksboven op grote kaart (zoals fix9) */
+  .lbTheme{
+    position:absolute;
+    left:14px;
+    top:12px;
+    z-index:6;
+    font-size:13px;
+    line-height:1;
+    color:rgba(30,78,118,.55);
+    opacity:0;
+    transition:opacity .18s ease;
+    pointer-events:none;
+  }
+  .lb.show-ui .lbTheme{opacity:.9;}
 
   /* Controls op de kaart */
   .chev, .close{
     position:absolute;border:0;background:transparent;
     cursor:pointer;user-select:none;
     opacity:0;transition:opacity .18s ease,color .18s ease;
-    color:var(--ui);-webkit-tap-highlight-color:transparent;
+    color:var(--ui);
+    -webkit-tap-highlight-color:transparent;
+    z-index:7; /* boven alles, ook op mobiel */
+    pointer-events:auto;
   }
-  .close{top:10px;right:10px;font-size:34px;font-weight:300;line-height:1;padding:10px 12px}
-  .chev{bottom:10px;top:auto;transform:none;font-size:44px;line-height:1;padding:10px 12px}
+  .close{
+    top:10px;right:10px;
+    font-size:34px;font-weight:300;line-height:1;
+    padding:10px 12px;
+  }
+  .chev{
+    bottom:10px;top:auto;transform:none;
+    font-size:44px;line-height:1;padding:10px 12px;
+  }
   .chev.left{left:10px}
   .chev.right{right:10px}
 
   .lb.show-ui .chev,
-  .lb.show-ui .close{opacity:.9}
+  .lb.show-ui .close{opacity:.85}
   .lb.show-ui .chev:hover,
   .lb.show-ui .close:hover{opacity:1;color:rgba(30,78,118,.78)}
+
+  /* Zorg dat de kaartlaag nooit de knoppen 'eet' */
+  #lbCard{position:absolute;inset:0;z-index:1;pointer-events:none;}
+  .panel{position:relative;}
+  /* Op touch: controls/thema altijd zichtbaar (anders kun je ze niet tikken) */
+  @media (hover: none) and (pointer: coarse){
+    .lb.open .chev,
+    .lb.open .close{opacity:.9;}
+    .lb.open .lbTheme{opacity:.9;}
+  }
+
 </style>
 </head>
 <body>
@@ -145,6 +180,7 @@
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="panel" role="dialog" aria-modal="true">
+    <div class="lbTheme" id="lbTheme"></div>
     <button class="chev left" id="prev" aria-label="Vorige">‹</button>
     <button class="chev right" id="next" aria-label="Volgende">›</button>
     <button class="close" id="close" type="button" aria-label="Sluiten">×</button>
@@ -157,12 +193,13 @@
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbCard = document.getElementById('lbCard');
+  const lbTheme = document.getElementById('lbTheme');
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
-  if(!grid || !lb || !lbCard || !closeBtn || !prevBtn || !nextBtn || !shuffleBtn || !resetBtn) return;
+  if(!grid || !lb || !lbCard || !lbTheme || !closeBtn || !prevBtn || !nextBtn || !shuffleBtn || !resetBtn) return;
 
   const resp = await fetch('questions.json', {cache:'no-store'});
   const q = await resp.json();
@@ -190,7 +227,7 @@
   function showUI(){
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
-    const hideMs = canHover ? 650 : 850;
+    const hideMs = canHover ? 650 : 2500;
     uiTimer = setTimeout(() => lb.classList.remove('show-ui'), hideMs);
   }
 
@@ -228,6 +265,7 @@
 
   function renderLightbox(){
     const it = items[currentIndex];
+    lbTheme.textContent = it.themeLabel;
     lbCard.innerHTML = `
       <div class="cardInner">
         <img class="bg" src="${it.bg}" alt="">
@@ -250,6 +288,7 @@
     document.body.classList.remove('lb-open');
     document.body.style.overflow = '';
     lbCard.innerHTML = '';
+    lbTheme.textContent = '';
     currentIndex = -1;
   }
   function go(delta){
@@ -282,7 +321,12 @@
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
+  prevBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); go(-1); }, {passive:false});
+  nextBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); go(1); }, {passive:false});
+  closeBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); closeLb(); }, {passive:false});
 
+
+  // Alleen sluiten als je echt op de overlay klikt (niet op de kaart)
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
 
   document.addEventListener('keydown', (e) => {
@@ -292,7 +336,7 @@
     if(e.key === 'ArrowRight') go(1);
   });
 
-  // Swipe overal (overlay + kaart), maar niet op knoppen
+  // Swipe overal (overlay + kaart), niet op knoppen
   let startX=0, startY=0, startT=0, down=false;
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
@@ -316,6 +360,7 @@
     if(ax > ay && ax > thrX){ go(dx > 0 ? -1 : 1); return; }
   });
 
+  // UI tonen bij interactie
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
