@@ -282,6 +282,34 @@ button,
   box-shadow:none !important;
 }
 
+
+/* ===== FIXES (v3) ===== */
+
+/* 1) iOS/Safari: backdrop-filter heeft vaak nét iets meer opacity nodig */
+.lb{
+  touch-action: none;                 /* swipe/drag niet laten kapen door browser */
+  -webkit-user-select: none;
+  user-select: none;
+  background: rgba(255,255,255,.14);  /* iets meer zodat blur overal pakt */
+}
+/* fallback blur-layer voor browsers die backdrop-filter alleen op pseudo doen */
+.lb::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.14);
+  pointer-events:none;
+}
+.panel, .lbCard{ position:relative; z-index:1; }
+
+/* 2) Onderste balk weg in portrait (telefoon) */
+@media (max-width: 760px) and (orientation: portrait){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+
 </style>
 </head>
 <body>
@@ -537,6 +565,66 @@ lb.setAttribute('aria-hidden','false');
     filtered = data.slice();
     render(filtered);
   })();
+
+// ===== TOUCH-FALLBACK (v3) =====
+// Sommige mobiele browsers (met name iOS Safari) zijn grillig met pointer-events voor swipe.
+// Daarom zetten we een extra touchstart/touchend fallback op de lightbox-overlay.
+(function(){
+  const lb = document.querySelector('.lb');
+  if(!lb) return;
+
+  let tStartX=0, tStartY=0, tStartT=0;
+  let touchArmed=false;
+
+  lb.addEventListener('touchstart', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    const t=e.touches[0];
+    // start je op een button? dan geen swipe (zelfde logica als pointerdown)
+    const target = e.target;
+    if (target && target.closest && target.closest('button')) { touchArmed=false; return; }
+
+    touchArmed=true;
+    tStartX=t.clientX; tStartY=t.clientY; tStartT=performance.now();
+  }, {passive:true});
+
+  lb.addEventListener('touchmove', (e)=>{
+    // voorkom dat de pagina gaat scrollen terwijl de overlay open is
+    if(!lb.classList.contains('open')) return;
+    if(!touchArmed) return;
+    e.preventDefault();
+  }, {passive:false});
+
+  lb.addEventListener('touchend', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    if(!touchArmed) return;
+    touchArmed=false;
+
+    const t=e.changedTouches[0];
+    const dx=t.clientX - tStartX;
+    const dy=t.clientY - tStartY;
+    const dt=performance.now() - tStartT;
+
+    const ax=Math.abs(dx), ay=Math.abs(dy);
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    // probeer dezelfde functies te gebruiken als je bestaande code (als ze bestaan)
+    const closeFn = (typeof closeLb === 'function') ? closeLb : null;
+    const nextFn  = (typeof nextCard === 'function') ? nextCard : (typeof next === 'function' ? next : null);
+    const prevFn  = (typeof prevCard === 'function') ? prevCard : (typeof prev === 'function' ? prev : null);
+
+    if(ay > ax && dy > thrY){
+      if(closeFn) closeFn();
+      return;
+    }
+    if(ax > ay && ax > thrX){
+      if(dx < 0){ if(nextFn) nextFn(); }
+      else{ if(prevFn) prevFn(); }
+    }
+  }, {passive:true});
+})();
+
 </script>
 
 
