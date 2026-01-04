@@ -108,6 +108,24 @@ body{
 /* Alleen tonen als lightbox open is én hint actief is */
 body.lb-open.show-hint .navHintMini{ opacity:.72; }
 body.lb-open .navHintMini{ opacity:0; }
+/* Mobiel/tablet: toon hint rechts-onder in beeld (alleen bij eerste keer vergroten) */
+@media (hover:none) and (pointer:coarse){
+  .navHintMini{
+    position:fixed;
+    right:14px;
+    bottom:14px;
+    margin:0;
+    padding:8px 10px;
+    background:rgba(243,245,238,.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.10);
+    color:rgba(11,18,32,.62);
+    font-size:12.5px;
+    z-index:9999;
+  }
+}
 
 /* ===============================
    GRID
@@ -322,6 +340,11 @@ body.lb-open .navHintMini{ opacity:0; }
 .chev.left{left:10px;top:50%;transform:translateY(-50%);}
 .chev.right{right:10px;top:50%;transform:translateY(-50%);}
 .close{top:10px;right:10px;}
+/* Touch (telefoon/tablet): alleen kruisje tonen (geen pijlen/cursors) */
+@media (hover:none) and (pointer:coarse){
+  .chev{ display:none !important; }
+  .lb.show-ui .close{ opacity:1; }
+}
 
 .chev svg,
 .close svg{
@@ -590,16 +613,11 @@ display:block;}
   body{ padding-bottom: 0 !important; }
 }
 @media (hover: none) and (pointer: coarse){
-  /* Telefoon/tablet: geen pijlen, WEL het kruisje (zoals overal op je site) */
-  .lb .chev{
+  .lb .chev,
+  .lb .close{
     display:none !important;
     opacity:0 !important;
     pointer-events:none !important;
-  }
-  .lb .close{
-    display:grid !important;
-    opacity:1 !important;
-    pointer-events:auto !important;
   }
 }
 </style>
@@ -658,6 +676,7 @@ const closeBtn = document.getElementById('close');
   // Let op: sommige desktops (touch-laptops / browser emulation) kunnen '(pointer: coarse)' teruggeven.
   // Daarom combineren we media queries met de echte interactie (pointerType).
   const MQ_TOUCHLIKE = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  const MQ_MOBILEVIEW = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
   let openPointerType = 'mouse';
   // Onthoud waarmee de gebruiker de viewer opent (touch vs mouse).
   grid.addEventListener('pointerdown', (e) => { openPointerType = e.pointerType || 'mouse'; }, {passive:true});
@@ -667,7 +686,7 @@ const closeBtn = document.getElementById('close');
   function showNavHint(){
     if(!navHint) return;
     // Toon alleen als dit echt een touch-ervaring is (telefoon/tablet) óf als de viewer geopend is via touch.
-    if(!(MQ_TOUCHLIKE || openPointerType === 'touch')) return;
+    if(!(MQ_MOBILEVIEW && (MQ_TOUCHLIKE || openPointerType === 'touch'))) return;
     try{
       if(sessionStorage.getItem(HINT_KEY) === '1') return;
       sessionStorage.setItem(HINT_KEY, '1');
@@ -684,7 +703,7 @@ const closeBtn = document.getElementById('close');
     hintTimer = setTimeout(() => {
       document.body.classList.remove('show-hint');
       navHint.setAttribute('aria-hidden','true');
-    }, 2200);
+    }, 2600);
   }
 
   // UI chrome (pijlen + sluiten)
