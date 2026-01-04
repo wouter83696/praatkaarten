@@ -283,33 +283,35 @@ button,
 }
 
 
-/* 1) Absolute basis: alles wit */
+/* ===== FIXES (v7) =====
+   Rustiger, neutralere achtergrond (minder groen) + blur-overlay subtieler.
+*/
+:root{
+  --pageBg: #F5F6F7;        /* rustige neutrale achtergrond */
+  --pageBg2:#EEF1F3;        /* heel subtiele gradient-variant */
+}
+
 html, body{
-  min-height: 100%;
-  background: #FFFFFF !important;
+  min-height:100%;
+  background: var(--pageBg);
 }
 
-/* 2) Kill alle mogelijke achtergronden/overlays */
+/* subtiele achtergrond i.p.v. ‘groen waas’ */
 body{
-  background-image: none !important;
-}
-html::before, html::after,
-body::before, body::after{
-  content: none !important;
+  background: radial-gradient(1200px 700px at 20% 10%, var(--pageBg2), var(--pageBg));
 }
 
-/* 3) Alle wrappers transparant zodat wit overal doorloopt */
-.page, .wrap, .container, main,
-.grid, .cards, .cardGrid{
+/* wrappers nooit wit/groen ‘kappen’ */
+.page, .wrap, .container, main{
   background: transparent !important;
 }
 
-/* 4) Lightbox: subtiele neutrale blur op WIT */
+/* lightbox blur: full-screen en zachter (minder kleurzweem) */
 .lb{
   position: fixed;
   inset: 0;
-  touch-action: none;
-  background: rgba(255,255,255,.55) !important;
+  touch-action:none;
+  background: rgba(245,246,247,.35); /* match page bg */
 }
 .lb::before{
   content:"";
@@ -317,159 +319,17 @@ body::before, body::after{
   inset:0;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(255,255,255,.55);
+  background: rgba(245,246,247,.35);
   pointer-events:none;
 }
 
-/* 5) Balk: portrait zichtbaar, landscape (telefoon) weg */
+/* Balk: portrait = zichtbaar, landscape telefoon = weg */
 .controlsBar{ display:flex; }
 @media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
   body{ padding-bottom: 0 !important; }
 }
 @media (max-height: 520px) and (orientation: landscape){
-  .controlsBar{ display:none !important; }
-  body{ padding-bottom: 0 !important; }
-}
-
-
-/* 1) Papierwit */
-html, body{
-  min-height: 100%;
-  background: #FCFCFA !important; /* net-warm papierwit */
-}
-
-/* 2) Subtiele papier-shading (geen zichtbare vlekken) */
-body{
-  background-image:
-    radial-gradient(1400px 900px at 30% 15%, rgba(0,0,0,0.018), transparent 45%),
-    radial-gradient(1400px 900px at 70% 85%, rgba(0,0,0,0.012), transparent 45%) !important;
-}
-
-/* 3) Zorg dat niets anders de achtergrond overneemt */
-body::before, body::after,
-html::before, html::after{
-  content: none !important;
-}
-.page, .wrap, .container, main,
-.grid, .cards, .cardGrid{
-  background: transparent !important;
-}
-
-/* 4) Kaart-schaduw (drukwerk-achtig) — let op: we raken GEEN border-radius/overflow aan */
-.card, .tile, .cardItem{
-  box-shadow:
-    0 1px 1px rgba(0,0,0,.06),
-    0 6px 14px rgba(0,0,0,.08) !important;
-}
-
-/* Desktop hover: minimaal */
-@media (hover:hover){
-  .card:hover, .tile:hover, .cardItem:hover{
-    box-shadow:
-      0 2px 3px rgba(0,0,0,.07),
-      0 10px 22px rgba(0,0,0,.10) !important;
-  }
-}
-
-/* 5) Lightbox blur neutraal (papier) */
-.lb{
-  position: fixed;
-  inset: 0;
-  touch-action: none;
-  background: rgba(252,252,250,.65) !important;
-}
-.lb::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  background: rgba(252,252,250,.65);
-  pointer-events:none;
-}
-/* Lightbox kaart iets meer diepte */
-.lb .card, .lb .tile, .lb .cardItem{
-  box-shadow:
-    0 4px 10px rgba(0,0,0,.10),
-    0 28px 50px rgba(0,0,0,.16) !important;
-}
-
-/* 6) Balk: portrait zichtbaar, landscape (telefoon) weg */
-.controlsBar{ display:flex; }
-@media (hover:none) and (pointer:coarse) and (orientation:landscape){
-  .controlsBar{ display:none !important; }
-  body{ padding-bottom: 0 !important; }
-}
-@media (max-height:520px) and (orientation:landscape){
-  .controlsBar{ display:none !important; }
-  body{ padding-bottom: 0 !important; }
-}
-
-
-/* ===== FIXES (v13) =====
-   Openingsbeeld mooier: kaartjes blijven deels zichtbaar op achtergrond
-   (minder melkachtig, meer transparantie).
-*/
-
-/* Pagina blijft papierachtig */
-html, body{
-  min-height:100%;
-  background:#FCFCFA !important;
-}
-
-body{
-  background-image:
-    radial-gradient(1400px 900px at 30% 15%, rgba(0,0,0,0.018), transparent 45%),
-    radial-gradient(1400px 900px at 70% 85%, rgba(0,0,0,0.012), transparent 45%);
-}
-
-/* Wrappers transparant */
-.page, .wrap, .container, main,
-.grid, .cards, .cardGrid{
-  background: transparent !important;
-}
-
-/* KAART-SCHADUW: drukwerkachtig (zoals v12) */
-.card, .tile, .cardItem{
-  box-shadow:
-    0 1px 1px rgba(0,0,0,.06),
-    0 6px 14px rgba(0,0,0,.08);
-}
-
-/* LIGHTBOX OVERLAY
-   Minder wit, zodat grid zichtbaar blijft */
-.lb{
-  position: fixed;
-  inset: 0;
-  touch-action: none;
-  background: rgba(252,252,250,.38); /* transparanter */
-}
-
-.lb::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  backdrop-filter: blur(10px); /* iets minder blur */
-  -webkit-backdrop-filter: blur(10px);
-  background: rgba(252,252,250,.38);
-  pointer-events:none;
-}
-
-/* Lightbox kaart duidelijk los */
-.lb .card, .lb .tile, .lb .cardItem{
-  box-shadow:
-    0 6px 16px rgba(0,0,0,.12),
-    0 30px 55px rgba(0,0,0,.18);
-}
-
-/* Balk: portrait zichtbaar, landscape telefoon weg */
-.controlsBar{ display:flex; }
-@media (hover:none) and (pointer:coarse) and (orientation:landscape){
-  .controlsBar{ display:none !important; }
-  body{ padding-bottom: 0 !important; }
-}
-@media (max-height:520px) and (orientation:landscape){
   .controlsBar{ display:none !important; }
   body{ padding-bottom: 0 !important; }
 }
