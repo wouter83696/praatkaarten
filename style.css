@@ -1,100 +1,87 @@
+/* ===============================
+   FONT
+   =============================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400&display=swap');
+
 html {
-  font-size: 14px;
-  -webkit-text-size-adjust: 100%;
+  font-size: 15px;
 }
 
 body {
   margin: 0;
-  font-family: 'IBM Plex Sans', system-ui, sans-serif;
-  background: #f5f6f7;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  color: #1f3b6d;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-  padding: 16px;
-}
+/* ===============================
+   KAARTTEKST
+   =============================== */
 
-.card {
-  position: relative;
-  aspect-ratio: 85 / 55;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #ddd;
-  cursor: pointer;
-}
-
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.card .q {
-  position: absolute;
-  inset: 10px;
-  font-size: 10.5px;
-  font-weight: 400;
-  line-height: 1.35;
-  color: #0f2f5c;
-  pointer-events: none;
-}
-
-.lightbox {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.lightbox.open {
-  display: flex;
-}
-
-.lightbox .big {
-  width: min(90vw, 520px);
-  aspect-ratio: 85 / 55;
-}
-
+.card .q,
 .lightbox .q {
-  inset: 20px;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight: 400;          /* REGULAR */
   font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  font-synthesis: none;      /* voorkomt Safari-gedoe */
 }
 
-.arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 28px;
-  color: #fff;
-  cursor: pointer;
-  user-select: none;
+@media (max-width: 768px) {
+  .card .q,
+  .lightbox .q {
+    font-size: 10.5px;
+  }
 }
 
-.arrow.left { left: 24px; }
-.arrow.right { right: 24px; }
+/* ===============================
+   GEEN WITTE RING / HALO
+   (desktop + iOS)
+   =============================== */
 
-.close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 28px;
-  color: #fff;
-  background: transparent !important;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+button,
+.icon-btn,
+.nav-btn,
+.close-btn {
   appearance: none;
-}
-
-.close:hover,
-.close:focus,
-.close:active {
-  background: transparent !important;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
   outline: none;
   box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+
+/* focus via muis/touch → geen ring */
+button:focus:not(:focus-visible),
+.icon-btn:focus:not(:focus-visible),
+.nav-btn:focus:not(:focus-visible),
+.close-btn:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+/* keyboard focus (ook onzichtbaar, maar correct) */
+button:focus-visible,
+.icon-btn:focus-visible,
+.nav-btn:focus-visible,
+.close-btn:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ===============================
+   SVG ICONS CLEAN
+   =============================== */
+
+.icon-btn svg,
+.nav-btn svg,
+.close-btn svg {
+  background: transparent;
+  filter: none;
 }
