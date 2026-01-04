@@ -58,7 +58,7 @@
 
 
   /* Lightbox */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.28);backdrop-filter:blur(6px);touch-action:none;}
   .lb.open{display:flex;}
 
   /* De kaart is de enige "card". Geen extra witte panel eromheen. */
@@ -88,8 +88,9 @@
     -webkit-tap-highlight-color:transparent;
   }
   .chev{
-    top:50%;
-    transform:translateY(-50%);
+    bottom:10px;
+    top:auto;
+    transform:none;
     font-size:44px;
     line-height:1;
     padding:10px 12px;
