@@ -181,18 +181,59 @@ body{
 .lb{
   position:fixed;
   inset:0;
+  /* iOS/Safari: zorg dat de blur écht het volledige (dynamische) viewport pakt */
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
   display:none;
   align-items:center;
   justify-content:center;
   padding:22px;
 
-  /* alleen blur (geen donkere overlay) */
-  background:rgba(255,255,255,.02);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
+  /* basis-overlay; echte "meebewegende" blur zit in .lbBg */
+  background:rgba(255,255,255,.10);
 }
 
 .lb.open{display:flex;}
+
+/* Meebewegende, geblurde achtergrond (zelfde SVG als huidige kaart) */
+.lbBg{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+  background-image: var(--lb-bg-url);
+  background-size: cover;
+  background-position: center;
+  transform: translateX(var(--lb-bg-shift, 0px)) scale(1.08);
+  transition: transform .18s ease;
+  filter: blur(18px);
+  opacity: .38;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* tijdens het swipen moet de bg direct meebewegen (zonder easing) */
+.lb.is-swiping .lbBg{ transition:none; }
+
+.lb::before{
+  /* witte glaze bovenop de bg, zodat het rustig blijft */
+  content:"";
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+  background: rgba(255,255,255,.22);
+  pointer-events:none;
+  z-index:0;
+}
+
+.panel, .lbCard, .nav-hint, .chev, .close{
+  position:relative;
+  z-index:1;
+}
 
 .panel{
   width:100%;
@@ -575,6 +616,7 @@ display:block;}
 <div class="grid" id="grid"></div>
 
 <div class="lb" id="lb" aria-hidden="true">
+  <div class="lbBg" aria-hidden="true"></div>
   <div class="nav-hint" id="navHint">veeg om te bladeren • tik om te sluiten</div>
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
@@ -685,6 +727,9 @@ const closeBtn = document.getElementById('close');
 
   function openLb(item){
     lbImg.src = item.bg;
+    // Laat de geblurde achtergrond mee wisselen met de huidige kaart
+    lb.style.setProperty('--lb-bg-url', `url(${item.bg})`);
+    lb.style.setProperty('--lb-bg-shift', '0px');
     lbText.textContent = item.q || "";
     // Thema-label (bij hover in hoek)
     const pretty = {
@@ -714,6 +759,8 @@ lb.setAttribute('aria-hidden','false');
     document.body.classList.remove('lb-open');
     lbImg.src = "";
     lbText.textContent = "";
+    lb.style.setProperty('--lb-bg-url', 'none');
+    lb.style.setProperty('--lb-bg-shift', '0px');
     currentIndex = -1;
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
@@ -752,12 +799,17 @@ lb.setAttribute('aria-hidden','false');
     if(!pointerDown) return;
     if(!gestureArmed) return;
     lb.classList.add('is-swiping');
+    // Subtiel: achtergrond "glijdt" mee tijdens horizontale swipe
+    const dx = e.clientX - startX;
+    lb.style.setProperty('--lb-bg-shift', `${dx * 0.18}px`);
   }, {passive:true});
 
   lb.addEventListener('pointerup', (e) => {
     if(!pointerDown) return;
     pointerDown = false;
     lb.classList.remove('is-swiping');
+    // Snap rustig terug
+    lb.style.setProperty('--lb-bg-shift', '0px');
     if(!gestureArmed) return;
     gestureArmed = false;
     const dx = e.clientX - startX;
