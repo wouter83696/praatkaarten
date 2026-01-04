@@ -235,12 +235,15 @@ document.addEventListener('keydown', (e) => {
 
 window.closeLb = closeLb;
 
-/* ===== MOBILE TAP-TO-CLOSE (definitief) =====
-   - Telefoon: swipe links/rechts = nav
+
+window.go = go;
+
+/* ===== MOBILE TAP-TO-CLOSE (v2) =====
+   - Telefoon: swipe links/rechts = nav (go)
    - Tap (geen swipe) = sluit overlay
 */
 (function(){
-  const lb = document.getElementById('lb') || document.querySelector('.lb') || document.querySelector('.lightbox');
+  const lb = document.getElementById('lb');
   if(!lb) return;
 
   const isTouchPhone = () =>
@@ -278,11 +281,8 @@ window.closeLb = closeLb;
 
     // horizontale swipe
     if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_X){
-      if(typeof window.nextCard === 'function' && typeof window.prevCard === 'function'){
-        (dx < 0) ? window.nextCard() : window.prevCard();
-      }else{
-        // fallback: dispatch arrow keys if functions not exposed
-        window.dispatchEvent(new KeyboardEvent('keydown', {key: dx < 0 ? 'ArrowRight' : 'ArrowLeft'}));
+      if(typeof window.go === 'function'){
+        window.go(dx < 0 ? 1 : -1);
       }
       return;
     }
