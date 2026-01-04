@@ -649,10 +649,22 @@ const closeBtn = document.getElementById('close');
   let filtered = [];   // current order
   let currentIndex = -1;
 
-  // Nav hint (rechts): kort zichtbaar bij openen
+  // Nav hint (rechts): alleen op mobiel en alleen de 1e keer dat je een kaart groot opent
+  const IS_TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  const HINT_KEY = 'praatkaarten_hint_shown_v1';
   let hintTimer = null;
   function showNavHint(){
     if(!navHint) return;
+    if(!IS_TOUCH) return;
+    try{
+      if(sessionStorage.getItem(HINT_KEY) === '1') return;
+      sessionStorage.setItem(HINT_KEY, '1');
+    }catch(e){
+      // als sessionStorage niet kan, gewoon één keer per page-load tonen
+      if(window.__pkHintShown) return;
+      window.__pkHintShown = true;
+    }
+
     // toon hint in menubalk (rechts), alleen zolang de lightbox open is
     document.body.classList.add('show-hint');
     navHint.setAttribute('aria-hidden','false');
