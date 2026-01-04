@@ -359,32 +359,3 @@ button, .chev, .close{
 
 /* eventuele thema-tags uit oudere versies */
 .themeTag, #themeTag{ display:none !important; }
-
-
-/* ===== FIX: Hussel/Reset compact links, hint rechts ===== */
-.controlsBar .inner{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:flex-start !important; /* NIET space-between */
-  gap:12px !important;
-}
-
-.controlsBar .btnGroup{
-  display:flex !important;
-  align-items:center !important;
-  gap:12px !important;
-  margin:0 !important;
-}
-
-#navHint{
-  margin-left:auto !important; /* duwt hint naar rechts */
-}
-
-/* Zorg dat navHint geen "lege ruimte" blijft duwen als hij verborgen is */
-.navHintMini{
-  visibility:hidden;            /* neemt geen focus/interaction, maar wél plek */
-}
-
-body.lb-open.show-hint .navHintMini{
-  visibility:visible;
-}
