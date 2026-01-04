@@ -39,23 +39,48 @@
     padding: 0;
 max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shadow:0 24px 90px rgba(0,0,0,.28);overflow:hidden;position:relative;}
   .panel img{width:100%;height:auto;display:block;}
-  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);cursor:pointer;font-size:18px;line-height:1;}
+  .close{
+    position:absolute;
+    top:12px;
+    right:12px;
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:transparent;
+    border:0;
+    padding:0;
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .25s ease;
+    -webkit-appearance:none;
+    appearance:none;
+    outline:none;
+  }
 
   
   .chev{
     position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:40px;
-    line-height:1;
+    bottom:10px;
+    top:auto;
+    transform:none;
+    width:56px;
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     color:rgba(180,180,180,.9);
     background:transparent;
     border:0;
-    padding:12px;
+    padding:0;
     cursor:pointer;
     opacity:0;
     transition:opacity .25s ease;
     user-select:none;
+    -webkit-appearance:none;
+    appearance:none;
+    outline:none;
   }
   .chev.left{left:12px}
   .chev.right{right:12px}
@@ -67,6 +92,8 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     transition:opacity .25s ease;
   }
   .lb.show-ui .close{opacity:.9}
+  .chev svg, .close svg{background:transparent !important; display:block;}
+
 
 
   /* Unified chrome behavior: arrows + close auto-hide */
