@@ -32,33 +32,14 @@
   .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
   .card:hover img{box-shadow:var(--shadowHover);}
 
-  .card{position:relative;}
-  /* Thema-label op kleine kaarten (zelfde look als tekst in de onderste balk) */
-  .card::after{
-    content:attr(data-theme);
-    position:absolute;
-    right:10px;
-    bottom:10px;
-    font-size:14px;
-    line-height:1;
-    letter-spacing:.2px;
-    color:rgba(35,35,35,.55);
-    opacity:0;
-    pointer-events:none;
-    font-weight:500;
-  }
-  .card:hover::after,
-  .card:focus-visible::after{opacity:.85;}
-
-
   /* Lightbox (super simple + stable) */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.28);backdrop-filter:blur(10px);touch-action:none;}
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
   .lb.open{display:flex;}
   .panel{
     padding: 0;
 max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shadow:0 24px 90px rgba(0,0,0,.28);overflow:hidden;position:relative;}
   .panel img{width:100%;height:auto;display:block;}
-  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;border:0;background:transparent;backdrop-filter:none;cursor:pointer;font-size:18px;line-height:1;}
+  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);cursor:pointer;font-size:18px;line-height:1;}
 
   
   .chev{
@@ -256,8 +237,8 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
 
   /* Icon posities OP de kaart (dus binnen .lbCard) */
   .lbCard .close{ position: absolute; top: 10px; right: 10px; z-index: 6; }
-  .lbCard .chev.left{ position:absolute; left:12px; bottom:12px; top:auto; transform:none; z-index:6; }
-  .lbCard .chev.right{ position:absolute; right:12px; bottom:12px; top:auto; transform:none; z-index:6; }
+  .lbCard .chev.left{ position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
+  .lbCard .chev.right{ position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
 
   .lbCard .chev, .lbCard .close{
     background: transparent;
@@ -360,8 +341,8 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   // - Touch: iets langer zichtbaar
   // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
   const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
-  const HIDE_MS_DESKTOP = 900;
-  const HIDE_MS_TOUCH   = 1100;
+  const HIDE_MS_DESKTOP = 2200;
+  const HIDE_MS_TOUCH   = 3200;
 
   let uiTimer = null;
   function showUI(){
@@ -397,7 +378,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
       btn.className = 'card';
       btn.type = 'button';
       btn.setAttribute('aria-label', item.id);
-      btn.dataset.theme = pretty[item.theme] || item.theme;
 
       const inner = document.createElement('div');
       inner.className = 'cardInner';
