@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Praatkaarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --gap:18px;
@@ -12,7 +15,7 @@
     --shadowHover:0 18px 70px rgba(0,0,0,.16);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:#fff;font-family:system-ui}
+  body{margin:0;background:#fff;font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; -webkit-text-size-adjust:100%; text-size-adjust:100%;}
   .controlsBar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.86);backdrop-filter:blur(10px);}
   .controlsBar .inner{max-width:1600px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;}
   .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);} 
@@ -132,14 +135,16 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     color: #306088;
     font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
     font-weight: 500;
-    line-height: 1.15;
-    font-size: clamp(12px, 0.9vw + 10px, 16px);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    /* echt kleiner, en niet weer 'opblazen' op brede schermen */
+    font-size: clamp(10px, 0.55vw + 7px, 12px);
   }
   @media (max-width: 520px) {
     .card .q {
       padding: 14px 14px;
-      font-size: 12.5px;
-      line-height: 1.12;
+      font-size: 10.5px;
+      line-height: 1.32;
     }
   }
 
@@ -183,8 +188,34 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     transform: translateY(8px); /* optische centrering */
   }
 
-  /* Thema-label in lightbox: UIT (je wilde geen hover-label in de grote kaart) */
-  .themeTag{display:none !important;}
+  /* Thema-label (subtiel in hoek, alleen bij hover / UI) */
+  .themeTag{
+    position:absolute;
+    top:12px;
+    left:12px;
+    z-index:6;
+    padding:6px 10px;
+    border-radius:999px;
+    font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.2px;
+    color:rgba(48,96,136,.88);
+    background:rgba(255,255,255,.68);
+    backdrop-filter: blur(8px);
+    box-shadow:0 8px 22px rgba(0,0,0,.12);
+    opacity:0;
+    transform:translateY(-2px);
+    transition:opacity .18s ease, transform .18s ease;
+    pointer-events:none;
+  }
+  @media (hover:hover){
+    .lbCard:hover .themeTag{opacity:1; transform:translateY(0);}
+  }
+  @media (hover:none){
+    /* op touch: label alleen zichtbaar als UI zichtbaar is */
+    .lb.show-ui .themeTag{opacity:1; transform:translateY(0);}
+  }
 
   @media (max-width: 520px){
     .lbCard{ width: min(480px, 92vw); }
@@ -211,9 +242,8 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
 
   /* Icon posities OP de kaart (dus binnen .lbCard) */
   .lbCard .close{ position: absolute; top: 10px; right: 10px; z-index: 6; }
-  /* Pijlen niet in het midden: zet ze onderin links/rechts */
-  .lbCard .chev.left{ position: absolute; left: 10px; bottom: 10px; top: auto !important; transform: none !important; z-index: 6; }
-  .lbCard .chev.right{ position: absolute; right: 10px; bottom: 10px; top: auto !important; transform: none !important; z-index: 6; }
+  .lbCard .chev.left{ position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
+  .lbCard .chev.right{ position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
 
   .lbCard .chev, .lbCard .close{
     background: transparent;
