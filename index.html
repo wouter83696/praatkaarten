@@ -386,12 +386,6 @@ body{
 }
 
 
-/* ===== FIXES (v6-bar) =====
-   Onderste balk:
-   - Hussel / Reset links
-   - instructietekst rechts
-*/
-
 .controlsBar{
   display:flex;
   align-items:center;
@@ -416,15 +410,46 @@ body{
 }
 
 
-/* ===== FIXES (v6-fade) =====
-   Instructietekst vervaagt automatisch na openen
-*/
 .controlsBar .right{
   transition: opacity .8s ease;
 }
 .controlsBar .right.is-hidden{
   opacity: 0;
   pointer-events: none;
+}
+
+
+/* ===== FIXES (v6-fade-fix) =====
+   Onderste balk layout + fade werkt echt:
+   - Hussel/Reset links (btnGroup)
+   - hulptekst rechts (.help)
+*/
+
+.controlsBar .inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+/* links */
+.controlsBar .btnGroup{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+/* rechts */
+.controlsBar .help{
+  margin-left:auto;
+  opacity:.70;
+  font-size:0.9em;
+  white-space:nowrap;
+  transition: opacity .8s ease;
+}
+.controlsBar .help.is-hidden{
+  opacity:0;
+  pointer-events:none;
 }
 
 </style>
@@ -674,18 +699,7 @@ lb.setAttribute('aria-hidden','false');
     filtered = data.slice();
     render(filtered);
 
-/* ===== INSTRUCTION FADE (v6-fade) ===== */
-(function(){
-  function fadeHint(){
-    const hint = document.querySelector('.controlsBar .right');
-    if(!hint) return;
-    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
-  }
-  // run once on load
-  window.addEventListener('load', fadeHint, { once:true });
-})();
-
-  });
+});
 
   (async function init(){
     const res = await fetch('questions.json');
@@ -694,6 +708,17 @@ lb.setAttribute('aria-hidden','false');
     filtered = data.slice();
     render(filtered);
   })();
+
+/* ===== INSTRUCTION FADE (v6-fade-fix) ===== */
+(function(){
+  function fadeHint(){
+    const hint = document.querySelector('.controlsBar .help');
+    if(!hint) return;
+    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
+  }
+  window.addEventListener('load', fadeHint, { once:true });
+})();
+
 </script>
 
 
