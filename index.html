@@ -329,11 +329,6 @@ html, body{
 }
 
 
-/* ===== FIXES (v6-fris) =====
-   Alleen achtergrond frisser maken.
-   Geen invloed op kaarten, afronding, lightbox-logica.
-*/
-
 /* Fris, schoon canvas */
 html, body{
   min-height:100%;
@@ -359,6 +354,67 @@ body::before, body::after{
   content:none !important;
 }
 
+
+/* ===== FIXES (v6-fris-fix) =====
+   Dit pakt het échte probleem:
+   de grid/container had een beige/groene achtergrond.
+   Alles nu één fris wit vlak.
+*/
+
+/* Pagina echt wit */
+html, body{
+  background:#FFFFFF !important;
+}
+
+/* GRID / kaart-achtergrond NEUTRALISEREN */
+.grid,
+.cards,
+.cardGrid,
+#grid,
+#cards{
+  background: #FFFFFF !important;
+}
+
+/* Geen gradients of tinten */
+body{
+  background-image: none !important;
+}
+
+/* Wrappers transparant */
+.page, .wrap, .container, main{
+  background: transparent !important;
+}
+
+
+/* ===== FIXES (v6-bar) =====
+   Onderste balk:
+   - Hussel / Reset links
+   - instructietekst rechts
+*/
+
+.controlsBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.controlsBar .left{
+  display:flex;
+  gap:14px;
+}
+
+.controlsBar .right{
+  margin-left:auto;
+  opacity:.7;
+  font-size:0.9em;
+}
+
+/* rustiger: tekst alleen, geen nadruk */
+.controlsBar .right span{
+  white-space:nowrap;
+}
+
 </style>
 </head>
 <body>
@@ -370,7 +426,7 @@ body::before, body::after{
       <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="reset" type="button">Reset</button>
     </div>
-    <div class="help">Klik om te vergroten • ESC sluit</div>
+    <div class="help">Swipe of klik door de kaarten</div>
   </div>
 </div>
 
