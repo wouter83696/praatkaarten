@@ -283,35 +283,40 @@ button,
 }
 
 
-/* ===== FIXES (v7) =====
-   Rustiger, neutralere achtergrond (minder groen) + blur-overlay subtieler.
+/* ===== FIXES (v8) =====
+   Achtergrond: 1 rustige egale kleur (geen gradients/vlekken) + full-bleed tot in de hoeken.
 */
+
 :root{
-  --pageBg: #F5F6F7;        /* rustige neutrale achtergrond */
-  --pageBg2:#EEF1F3;        /* heel subtiele gradient-variant */
+  --pageBg: #F4F5F2; /* rustige warm-neutrale off-white (matcht je kaarten beter) */
 }
 
+/* forceer overal dezelfde achtergrond */
 html, body{
   min-height:100%;
-  background: var(--pageBg);
+  background: var(--pageBg) !important;
 }
 
-/* subtiele achtergrond i.p.v. ‘groen waas’ */
+/* kill eventuele gradients/achtergrond-afbeeldingen die ‘vlekken’ geven */
 body{
-  background: radial-gradient(1200px 700px at 20% 10%, var(--pageBg2), var(--pageBg));
+  background-image: none !important;
+}
+body::before, body::after,
+html::before, html::after{
+  content: none !important;
 }
 
-/* wrappers nooit wit/groen ‘kappen’ */
-.page, .wrap, .container, main{
+/* als er wrappers zijn met eigen bg: maak transparant zodat pageBg altijd zichtbaar is */
+.page, .wrap, .container, main, .grid, .cards, .cardGrid{
   background: transparent !important;
 }
 
-/* lightbox blur: full-screen en zachter (minder kleurzweem) */
+/* Lightbox blur: full-screen, neutraal (geen groen) */
 .lb{
   position: fixed;
   inset: 0;
   touch-action:none;
-  background: rgba(245,246,247,.35); /* match page bg */
+  background: rgba(244,245,242,.40) !important;
 }
 .lb::before{
   content:"";
@@ -319,11 +324,11 @@ body{
   inset:0;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(245,246,247,.35);
+  background: rgba(244,245,242,.40);
   pointer-events:none;
 }
 
-/* Balk: portrait = zichtbaar, landscape telefoon = weg */
+/* Balk: portrait zichtbaar, landscape (telefoon) weg */
 .controlsBar{ display:flex; }
 @media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
