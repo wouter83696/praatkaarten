@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Praatkaarten</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --gap:18px;
@@ -15,8 +12,7 @@
     --shadowHover:0 18px 70px rgba(0,0,0,.16);
   }
   *{box-sizing:border-box}
-  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
-  body{margin:0;background:#fff;font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
+  body{margin:0;background:#fff;font-family:system-ui}
   .controlsBar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.86);backdrop-filter:blur(10px);}
   .controlsBar .inner{max-width:1600px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;}
   .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);} 
@@ -52,7 +48,7 @@
     font-size:13px;
     line-height:1;
     color:rgba(11,18,32,.55);
-    font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-family:system-ui;
     letter-spacing:.2px;
     opacity:.55;
     transition:opacity .14s ease;
