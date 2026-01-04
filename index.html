@@ -1,33 +1,558 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Praatkaarten</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praatkaarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gap:18px;
+    --radius:16px;
+    --shadow:0 14px 50px rgba(0,0,0,.12);
+    --shadowHover:0 18px 70px rgba(0,0,0,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#fff;font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; -webkit-text-size-adjust:100%; text-size-adjust:100%;}
+  .controlsBar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.86);backdrop-filter:blur(10px);}
+  .controlsBar .inner{max-width:1600px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;}
+  .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);} 
+  .btn:hover{background:rgba(0,0,0,.04);} 
+  .btn:active{transform:translateY(1px);} 
+  .btnGroup{display:flex;align-items:center;gap:0;} 
+  .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
+  .btn:active{transform:translateY(1px);}
+  .help{color:rgba(11,18,32,.55);font-size:13px;white-space:normal;}
+  .grid{display:grid;gap:var(--gap);padding:18px 28px 120px;max-width:1600px;margin:auto;grid-template-columns:repeat(2,minmax(0,1fr));}
+  @media (min-width: 720px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
+  @media (min-width: 980px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
+  @media (min-width: 1240px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr));} }
 
-  <!-- IBM Plex Sans Regular -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400&display=swap" rel="stylesheet">
+  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;}
+  .card:hover{transform:translateY(-2px);}
+  .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
+  .card:hover img{box-shadow:var(--shadowHover);}
 
-  <link rel="stylesheet" href="style.css" />
+  /* Lightbox (super simple + stable) */
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
+  .lb.open{display:flex;}
+  .panel{
+    padding: 0;
+max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shadow:0 24px 90px rgba(0,0,0,.28);overflow:hidden;position:relative;}
+  .panel img{width:100%;height:auto;display:block;}
+  .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;border:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);cursor:pointer;font-size:18px;line-height:1;}
+
+  
+  .chev{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:40px;
+    line-height:1;
+    color:rgba(180,180,180,.9);
+    background:transparent;
+    border:0;
+    padding:12px;
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .25s ease;
+    user-select:none;
+  }
+  .chev.left{left:12px}
+  .chev.right{right:12px}
+  .lb.show-ui .chev{opacity:.9}
+
+
+  .close{
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .lb.show-ui .close{opacity:.9}
+
+
+  /* Unified chrome behavior: arrows + close auto-hide */
+  .chev, .close{
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .lb.show-ui .chev,
+  .lb.show-ui .close{
+    opacity:1;
+  }
+
+  /* Make close visually match chevrons */
+  .close{
+    position:absolute;
+    top:16px;
+    right:16px;
+    font-size:26px;
+    line-height:1;
+    color:rgba(180,180,180,.9);
+    background:transparent;
+    border:0;
+    padding:10px;
+    cursor:pointer;
+  }
+
+
+  /* Close icon styled like chevrons */
+  .close{
+    font-size:34px;
+    font-weight:300;
+    line-height:1;
+    color:rgba(180,180,180,.9);
+    background:transparent;
+    border:0;
+    padding:10px;
+    cursor:pointer;
+  }
+
+
+  /* --- 6 SVG templates + tekst overlay --- */
+  .card {
+    position: relative;
+    padding: 0;
+  }
+  .card .cardInner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .card img.bg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .card .q {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 18px 18px;
+    text-align: center;
+    color: #306088;
+    font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    /* echt kleiner, en niet weer 'opblazen' op brede schermen */
+    font-size: clamp(10px, 0.55vw + 7px, 12px);
+  }
+  @media (max-width: 520px) {
+    .card .q {
+      padding: 14px 14px;
+      font-size: 10.5px;
+      line-height: 1.32;
+    }
+  }
+
+  /* Lightbox: kaart vergroot + tekst ín de kaart */
+  .panel{
+    padding: 0;
+
+    display: grid;
+    gap: 0;
+    position: relative;
+  }
+
+  .lbCard{
+    position: relative;
+    width: min(560px, 92vw);
+    margin: 0 auto;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 18px 45px rgba(0,0,0,.20);
+  }
+  #lbImg{
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 22px;
+  }
+  .lbText{
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 22px 24px;
+    text-align: center;
+    color: #306088;
+    font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
+    font-weight: 500;
+    line-height: 1.14;
+    font-size: clamp(16px, 2.0vw + 10px, 30px);
+    pointer-events: none;
+    transform: translateY(8px); /* optische centrering */
+  }
+
+  /* Thema-label (subtiel in hoek, alleen bij hover / UI) */
+  .themeTag{
+    
+    display:none !important; /* verwijderd in grote kaart */
+position:absolute;
+    top:12px;
+    left:12px;
+    z-index:6;
+    padding:6px 10px;
+    border-radius:999px;
+    font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.2px;
+    color:rgba(48,96,136,.88);
+    background:rgba(255,255,255,.68);
+    backdrop-filter: blur(8px);
+    box-shadow:0 8px 22px rgba(0,0,0,.12);
+    opacity:0;
+    transform:translateY(-2px);
+    transition:opacity .18s ease, transform .18s ease;
+    pointer-events:none;
+  }
+  @media (hover:hover){
+    .lbCard:hover .themeTag{opacity:1; transform:translateY(0);}
+  }
+  @media (hover:none){
+    /* op touch: label alleen zichtbaar als UI zichtbaar is */
+    .lb.show-ui .themeTag{opacity:1; transform:translateY(0);}
+  }
+
+  @media (max-width: 520px){
+    .lbCard{ width: min(480px, 92vw); }
+    .lbText{ padding: 18px 18px; font-size: clamp(16px, 3.2vw + 6px, 26px); }
+  }
+
+  /* Mobile landscape: altijd 100% in beeld (past op hoogte) */
+  @media (hover: none) and (orientation: landscape){
+    .lb{ padding: 14px; }
+    /* In landscape op mobiel: verberg de onderste balk zodra de lightbox open is,
+       anders gaat er hoogte verloren en past de kaart niet volledig in beeld. */
+    body.lb-open .controlsBar{ display:none; }
+    body.lb-open .grid{ padding-bottom: 18px; }
+    .lbCard{
+      /* 85x55 kaartverhouding ≈ 1.545 */
+      width: min(92vw, calc((100vh - 28px) * 1.545));
+      max-height: calc(100vh - 28px);
+    }
+    #lbImg{ height: auto; }
+    .lbText{ font-size: clamp(15px, 2.2vw + 6px, 24px); padding: 16px 16px; }
+  }
+
+/* Icon buttons: kaal (geen rondje) + auto-hide */
+
+  /* Icon posities OP de kaart (dus binnen .lbCard) */
+  .lbCard .close{ position: absolute; top: 10px; right: 10px; z-index: 6; }
+  .lbCard .chev.left{ position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
+  .lbCard .chev.right{ position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 6; }
+
+  .lbCard .chev, .lbCard .close{
+    background: transparent;
+    border: 0;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transition: opacity .18s ease;
+    padding: 0;
+  }
+  .lb.show-ui .chev, .lb.show-ui .close{
+    opacity: 1;
+  }
+  .lbCard .chev svg, .lbCard .close svg{
+    width: 22px;
+    height: 22px;
+    /* donkerder zodat het op de witte kaart zichtbaar is */
+    stroke: rgba(48,96,136,.62);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
+    pointer-events: none; /* click landt op button (Firefox/Safari) */
+  }
+  .lbCard .chev:hover svg, .lbCard .close:hover svg{
+    stroke: rgba(48,96,136,.85);
+  }
+
+  /* FIX: geen extra 'wit kader' rondom de kaart in desktop browsers */
+  .panel{
+    max-width:none !important;
+    width:100% !important;
+    height:100% !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    border-radius:0 !important;
+    overflow:visible !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+
+</style>
 </head>
 <body>
 
-<div class="grid" id="grid"></div>
-
-<div class="lightbox" id="lightbox">
-  <button class="close" id="close">×</button>
-  <div class="arrow left" id="prev">‹</div>
-
-  <div class="card big">
-    <img id="bigImage" />
-    <div class="q" id="bigText"></div>
+<div class="controlsBar">
+  <div class="inner">
+    <div class="btnGroup">
+      <button class="btn" id="shuffle" type="button">Hussel</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" id="reset" type="button">Reset</button>
+    </div>
+    <div class="help">Klik om te vergroten • ESC sluit</div>
   </div>
-
-  <div class="arrow right" id="next">›</div>
 </div>
 
-<script src="script.js"></script>
+<div class="grid" id="grid"></div>
+
+<div class="lb" id="lb" aria-hidden="true">
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="lbCard" id="lbCard">
+      <div class="themeTag" id="themeTag" aria-hidden="true"></div>
+      <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+      <img id="lbImg" alt="">
+      <div class="lbText" id="lbText"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
+
+  const grid = document.getElementById('grid');
+  const lb = document.getElementById('lb');
+  const lbImg = document.getElementById('lbImg');
+  const lbText = document.getElementById('lbText');
+  const lbCard = document.getElementById('lbCard');
+  const themeTag = document.getElementById('themeTag');
+
+  const closeBtn = document.getElementById('close');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+
+  const shuffleBtn = document.getElementById('shuffle');
+  const resetBtn = document.getElementById('reset');
+
+  let data = [];       // full list
+  let filtered = [];   // current order
+  let currentIndex = -1;
+
+  // UI chrome (pijlen + sluiten)
+  // - Touch: iets langer zichtbaar
+  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
+  const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  const HIDE_MS_DESKTOP = 2200;
+  const HIDE_MS_TOUCH   = 3200;
+
+  let uiTimer = null;
+  function showUI(){
+    lb.classList.add('show-ui');
+    clearTimeout(uiTimer);
+    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
+  }
+
+  function buildData(questions){
+    const out = [];
+    for (const theme of THEMES){
+      const qs = questions[theme] || [];
+      for (let i=0; i<qs.length; i++){
+        out.push({
+          theme,
+          num: i+1,
+          q: qs[i],
+          bg: `cards/${theme}.svg`,
+          id: `${theme}-${String(i+1).padStart(2,'0')}`
+        });
+      }
+    }
+    return out;
+  }
+
+  function render(items){
+    grid.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    items.forEach((item, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'card';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', item.id);
+
+      const inner = document.createElement('div');
+      inner.className = 'cardInner';
+
+      const img = document.createElement('img');
+      img.className = 'bg';
+      img.src = item.bg;
+      img.alt = "";
+
+      const q = document.createElement('div');
+      q.className = 'q';
+      q.textContent = item.q;
+
+      inner.appendChild(img);
+      inner.appendChild(q);
+      btn.appendChild(inner);
+
+      btn.addEventListener('click', () => openAt(idx));
+      frag.appendChild(btn);
+    });
+
+    grid.appendChild(frag);
+  }
+
+  function openLb(item){
+    lbImg.src = item.bg;
+    lbText.textContent = item.q || "";
+    // Thema-label (bij hover in hoek)
+    const pretty = {
+      verkennen: 'Verkennen',
+      verbinden: 'Verbinden',
+      bewegen: 'Bewegen',
+      duiden: 'Duiden',
+      verdiepen: 'Verdiepen',
+      vertragen: 'Vertragen'
+    };
+    themeTag.textContent = pretty[item.theme] || item.theme;
+    lb.setAttribute('aria-hidden','false');
+    lb.classList.add('open');
+    document.body.classList.add('lb-open');
+    // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    showUI();
+
+    prevBtn.disabled = currentIndex <= 0;
+    nextBtn.disabled = currentIndex >= filtered.length - 1;
+  }
+
+  function closeLb(){
+    lb.setAttribute('aria-hidden','true');
+    lb.classList.remove('open');
+    document.body.classList.remove('lb-open');
+    lbImg.src = "";
+    lbText.textContent = "";
+    currentIndex = -1;
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }
+
+  // Swipe / drag overal (ook op de grijze achtergrond):
+  // - links/rechts: vorige/volgende
+  // - omlaag: sluiten
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
+  let gestureArmed = false;
+
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
+    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
+    if (e.target.closest && e.target.closest('button')) {
+      gestureArmed = false;
+      showUI();
+      return;
+    }
+    pointerDown = true;
+    gestureArmed = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    lb.setPointerCapture?.(e.pointerId);
+    showUI();
+  });
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    if(!gestureArmed) return;
+    gestureArmed = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
+      closeLb();
+      return;
+    }
+    if(ax > ay && ax > thrX){
+      if(dx < 0) go(1); else go(-1);
+      showUI();
+    }
+  });
+
+  function openAt(index){
+    currentIndex = index;
+    openLb(filtered[currentIndex]);
+  }
+
+  function go(delta){
+    if (currentIndex < 0) return;
+    const next = currentIndex + delta;
+    if (next < 0 || next >= filtered.length) return;
+    openAt(next);
+  }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  // events (iconen op de kaart)
+  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
+  lbCard.addEventListener('click', (e) => e.stopPropagation());
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
+
+  lb.addEventListener('mousemove', showUI);
+  lb.addEventListener('touchstart', showUI, {passive:true});
+  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); else showUI(); });
+
+  document.addEventListener('keydown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.key === 'Escape') closeLb();
+    if(e.key === 'ArrowLeft') go(-1);
+    if(e.key === 'ArrowRight') go(1);
+  });
+
+  shuffleBtn.addEventListener('click', () => {
+    filtered = shuffle(filtered.slice());
+    render(filtered);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    filtered = data.slice();
+    render(filtered);
+  });
+
+  (async function init(){
+    const res = await fetch('questions.json');
+    const questions = await res.json();
+    data = buildData(questions);
+    filtered = data.slice();
+    render(filtered);
+  })();
+</script>
+
+
+
 </body>
 </html>
