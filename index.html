@@ -283,30 +283,35 @@ button,
 }
 
 
-/* ===== FIXES (v6) ===== */
+/* ===== FIXES (v7) =====
+   Rustiger, neutralere achtergrond (minder groen) + blur-overlay subtieler.
+*/
+:root{
+  --pageBg: #F5F6F7;        /* rustige neutrale achtergrond */
+  --pageBg2:#EEF1F3;        /* heel subtiele gradient-variant */
+}
 
-/* 0) Zorg dat de pagina-achtergrond écht tot in de hoeken doorloopt */
 html, body{
   min-height:100%;
-  background:#F3F5EE; /* zelfde als je page bg */
+  background: var(--pageBg);
 }
 
-/* als er een wrapper is met witte achtergrond, maak die transparant */
+/* subtiele achtergrond i.p.v. ‘groen waas’ */
+body{
+  background: radial-gradient(1200px 700px at 20% 10%, var(--pageBg2), var(--pageBg));
+}
+
+/* wrappers nooit wit/groen ‘kappen’ */
 .page, .wrap, .container, main{
-  background: transparent;
+  background: transparent !important;
 }
 
-/* 1) Grid/hoofdlayout altijd minstens volledige hoogte */
-.grid, .cards, .cardGrid{
-  min-height: 100vh;
-}
-
-/* 2) Lightbox blur: altijd full-screen, ook op iOS/Safari */
+/* lightbox blur: full-screen en zachter (minder kleurzweem) */
 .lb{
   position: fixed;
   inset: 0;
   touch-action:none;
-  background: rgba(255,255,255,.14);
+  background: rgba(245,246,247,.35); /* match page bg */
 }
 .lb::before{
   content:"";
@@ -314,12 +319,11 @@ html, body{
   inset:0;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(255,255,255,.14);
+  background: rgba(245,246,247,.35);
   pointer-events:none;
 }
 
-/* 3) Balk: WEL in portrait, WEG in landscape (telefoon)
-      (geen max-width; detecteer telefoon via coarse pointer) */
+/* Balk: portrait = zichtbaar, landscape telefoon = weg */
 .controlsBar{ display:flex; }
 @media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
