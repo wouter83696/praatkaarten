@@ -224,3 +224,20 @@ html,body{
   fill:none !important;
 }
 
+/* ===============================
+   MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
+   =============================== */
+@media (pointer: coarse){
+  .controlsBar{ display:none !important; }
+  .lb .chev,
+  .lb .close,
+  .lb button,
+  .lb [role="button"],
+  .lightbox button,
+  .lightbox [role="button"]{
+    display:none !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+}
+

@@ -514,6 +514,21 @@ display:block;}
 /* Hide icons during swipe/drag (phone) */
 .lb.is-swiping .chev,
 .lb.is-swiping .close{opacity:0 !important;}
+
+/* ===============================
+   MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
+   - Swipe blijft werken
+   - Tap-to-close wordt in script.js gedaan
+   =============================== */
+@media (pointer: coarse){
+  .controlsBar{ display:none !important; }
+  .lb .chev,
+  .lb .close{
+    display:none !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -669,9 +684,11 @@ lb.setAttribute('aria-hidden','false');
   let startX = 0, startY = 0, startT = 0;
   let pointerDown = false;
   let gestureArmed = false;
+  let lastPointerType = 'mouse';
 
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
+    lastPointerType = e.pointerType || 'mouse';
     // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
     // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
     if (e.target.closest && e.target.closest('button')) {
@@ -688,9 +705,17 @@ lb.setAttribute('aria-hidden','false');
     showUI();
   });
 
+  // Tijdens echte swipe/drag: iconen tijdelijk verbergen
+  lb.addEventListener('pointermove', (e) => {
+    if(!pointerDown) return;
+    if(!gestureArmed) return;
+    lb.classList.add('is-swiping');
+  }, {passive:true});
+
   lb.addEventListener('pointerup', (e) => {
     if(!pointerDown) return;
     pointerDown = false;
+    lb.classList.remove('is-swiping');
     if(!gestureArmed) return;
     gestureArmed = false;
     const dx = e.clientX - startX;
@@ -710,6 +735,13 @@ lb.setAttribute('aria-hidden','false');
     if(ax > ay && ax > thrX){
       if(dx < 0) go(1); else go(-1);
       showUI();
+      return;
+    }
+
+    // ✅ Tap-to-close op touch: ook als je op de kaart zelf tapt
+    if(lastPointerType !== 'mouse' && ax < 10 && ay < 10){
+      closeLb();
+      return;
     }
   });
 
@@ -734,15 +766,27 @@ lb.setAttribute('aria-hidden','false');
   }
 
   // events (iconen op de kaart)
-  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
-  lbCard.addEventListener('click', (e) => e.stopPropagation());
+  // Desktop: klik op kaart doet niets (alleen UI tonen)
+  // Touch: tap op kaart sluit (tap-to-close)
+  lbCard.addEventListener('click', (e) => {
+    if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
+      e.stopPropagation();
+      closeLb();
+      return;
+    }
+    e.stopPropagation();
+  });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('touchstart', showUI, {passive:true});
-  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); else showUI(); });
+  lb.addEventListener('click', (e) => {
+    // Klik buiten de kaart (op de blur/achtergrond) = sluiten
+    if(e.target === lb) { closeLb(); return; }
+    showUI();
+  });
 
   document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;

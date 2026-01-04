@@ -113,13 +113,16 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
   // Swipe / drag overal (ook op de grijze achtergrond):
   // - links/rechts: vorige/volgende
   // - omlaag: sluiten
+  // - tap (touch): sluiten
   let startX = 0, startY = 0, startT = 0;
   let pointerDown = false;
-    lb.classList.remove('is-swiping');
+  lb.classList.remove('is-swiping');
   let gestureArmed = false;
+  let lastPointerType = 'mouse';
 
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
+    lastPointerType = e.pointerType || 'mouse';
     // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
     // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
     if (e.target.closest && e.target.closest('button')) {
@@ -167,6 +170,14 @@ lb.addEventListener('pointerup', (e) => {
     if(ax > ay && ax > thrX){
       if(dx < 0) go(1); else go(-1);
       showUI();
+      return;
+    }
+
+    // ✅ Tap-to-close op touch: ook als je op de kaart zelf tapt
+    // (geen swipe, geen drag)
+    if(lastPointerType !== 'mouse' && ax < 10 && ay < 10){
+      closeLb();
+      return;
     }
   });
 
@@ -193,8 +204,16 @@ lb.addEventListener('pointerup', (e) => {
   }
 
   // events (iconen op de kaart)
-  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
-  lbCard.addEventListener('click', (e) => e.stopPropagation());
+  // Belangrijk: desktop = klik op kaart doet niets (alleen UI tonen),
+  // touch = tap op kaart sluit (tap-to-close).
+  lbCard.addEventListener('click', (e) => {
+    if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
+      e.stopPropagation();
+      closeLb();
+      return;
+    }
+    e.stopPropagation();
+  });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
@@ -204,6 +223,9 @@ lb.addEventListener('pointerup', (e) => {
   lb.addEventListener('click', (e) => {
     // Klik buiten de kaart (op de blur/achtergrond) = sluiten
     if(!lbCard.contains(e.target)) { closeLb(); return; }
+
+    // Touch: klik op kaart wordt al door lbCard afgehandeld (tap-to-close)
+    // Desktop: alleen UI tonen
     showUI();
   });
 document.addEventListener('keydown', (e) => {
