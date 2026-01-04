@@ -176,26 +176,38 @@ body{
   display:none;
   align-items:center;
   justify-content:center;
-  padding:22px;
-
-  /* alleen blur (geen donkere overlay) */
-  background:rgba(255,255,255,.02);
+  padding:0;              /* padding verplaatst naar .panel, voorkomt 'gap' */
+  background:transparent; /* blur-laag zit in ::before */
+}
+.lb::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.55); /* alleen 'waas' (geen donkere overlay) */
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
 }
 
-.lb.open{display:flex;}
+
+
+
 
 .panel{
+  position:relative;
+  z-index:1;
   width:100%;
   height:100%;
   background:transparent;
   display:flex;
   align-items:center;
   justify-content:center;
+
+  padding:22px;
 }
 
 .lbCard{
+  position:relative;
+  z-index:1;
   position:relative;
   width:min(560px,92vw);
   border-radius:22px;
