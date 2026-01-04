@@ -34,9 +34,13 @@
     body.lb-open .grid{ padding-bottom: 18px; }
   }
 
-  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;}
+  /*
+    iOS/Safari bugfix: SVG thumbnails in <img> can collapse to 0 height
+    when the container has no explicit height/aspect-ratio.
+  */
+  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;aspect-ratio:85/55;}
   .card:hover{transform:translateY(-2px);}
-  .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
+  .card img{width:100%;height:100%;display:block;object-fit:contain;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
   .card:hover img{box-shadow:var(--shadowHover);}
 
   /* Lightbox */
