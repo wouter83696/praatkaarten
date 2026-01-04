@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Praatkaarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --gap:18px;
@@ -12,7 +15,8 @@
     --shadowHover:0 18px 70px rgba(0,0,0,.16);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:#fff;font-family:system-ui}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{margin:0;background:#fff;font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
   .controlsBar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.86);backdrop-filter:blur(10px);}
   .controlsBar .inner{max-width:1600px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;}
   .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);} 
@@ -33,7 +37,7 @@
   .card:hover img{box-shadow:var(--shadowHover);}
 
   /* Lightbox (super simple + stable) */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);}
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
   .lb.open{display:flex;}
   .panel{
     padding: 0;
@@ -132,14 +136,15 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     color: #306088;
     font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
     font-weight: 500;
-    line-height: 1.15;
-    font-size: clamp(12px, 0.9vw + 10px, 16px);
+    /* rustiger zoals jouw screenshot */
+    line-height: 1.18;
+    font-size: clamp(11px, 0.55vw + 9px, 14px);
   }
   @media (max-width: 520px) {
     .card .q {
       padding: 14px 14px;
-      font-size: 12.5px;
-      line-height: 1.12;
+      font-size: 11.75px;
+      line-height: 1.16;
     }
   }
 
@@ -183,6 +188,35 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     transform: translateY(8px); /* optische centrering */
   }
 
+  /* Thema-label (subtiel in hoek, alleen bij hover / UI) */
+  .themeTag{
+    position:absolute;
+    top:12px;
+    left:12px;
+    z-index:6;
+    padding:6px 10px;
+    border-radius:999px;
+    font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.2px;
+    color:rgba(48,96,136,.88);
+    background:rgba(255,255,255,.68);
+    backdrop-filter: blur(8px);
+    box-shadow:0 8px 22px rgba(0,0,0,.12);
+    opacity:0;
+    transform:translateY(-2px);
+    transition:opacity .18s ease, transform .18s ease;
+    pointer-events:none;
+  }
+  @media (hover:hover){
+    .lbCard:hover .themeTag{opacity:1; transform:translateY(0);}
+  }
+  @media (hover:none){
+    /* op touch: label alleen zichtbaar als UI zichtbaar is */
+    .lb.show-ui .themeTag{opacity:1; transform:translateY(0);}
+  }
+
   @media (max-width: 520px){
     .lbCard{ width: min(480px, 92vw); }
     .lbText{ padding: 18px 18px; font-size: clamp(16px, 3.2vw + 6px, 26px); }
@@ -191,6 +225,10 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   /* Mobile landscape: altijd 100% in beeld (past op hoogte) */
   @media (hover: none) and (orientation: landscape){
     .lb{ padding: 14px; }
+    /* In landscape op mobiel: verberg de onderste balk zodra de lightbox open is,
+       anders gaat er hoogte verloren en past de kaart niet volledig in beeld. */
+    body.lb-open .controlsBar{ display:none; }
+    body.lb-open .grid{ padding-bottom: 18px; }
     .lbCard{
       /* 85x55 kaartverhouding ≈ 1.545 */
       width: min(92vw, calc((100vh - 28px) * 1.545));
@@ -231,6 +269,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     stroke-linejoin: round;
     fill: none;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,.22));
+    pointer-events: none; /* click landt op button (Firefox/Safari) */
   }
   .lbCard .chev:hover svg, .lbCard .close:hover svg{
     stroke: rgba(48,96,136,.85);
@@ -270,6 +309,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
 <div class="lb" id="lb" aria-hidden="true">
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
+      <div class="themeTag" id="themeTag" aria-hidden="true"></div>
       <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
@@ -289,6 +329,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   const lbImg = document.getElementById('lbImg');
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
+  const themeTag = document.getElementById('themeTag');
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
@@ -302,16 +343,18 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   let currentIndex = -1;
 
   // UI chrome (pijlen + sluiten)
-  // Desktop (hover) : knoppen blijven zichtbaar.
-  // Touch          : knoppen verdwijnen na een paar seconden.
+  // - Touch: iets langer zichtbaar
+  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
   const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  const HIDE_MS_DESKTOP = 2200;
+  const HIDE_MS_TOUCH   = 3200;
 
   let uiTimer = null;
   function showUI(){
     lb.classList.add('show-ui');
-    if (HAS_HOVER) return; // op desktop niet autohiden
     clearTimeout(uiTimer);
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 3200);
+    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
   }
 
   function buildData(questions){
@@ -367,8 +410,19 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   function openLb(item){
     lbImg.src = item.bg;
     lbText.textContent = item.q || "";
+    // Thema-label (bij hover in hoek)
+    const pretty = {
+      verkennen: 'Verkennen',
+      verbinden: 'Verbinden',
+      bewegen: 'Bewegen',
+      duiden: 'Duiden',
+      verdiepen: 'Verdiepen',
+      vertragen: 'Vertragen'
+    };
+    themeTag.textContent = pretty[item.theme] || item.theme;
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
+    document.body.classList.add('lb-open');
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
@@ -381,6 +435,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   function closeLb(){
     lb.setAttribute('aria-hidden','true');
     lb.classList.remove('open');
+    document.body.classList.remove('lb-open');
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
@@ -388,36 +443,55 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     document.body.style.overflow = '';
   }
 
-  // Swipe (mobile/tablet):
+  // Swipe / drag overal (ook op de grijze achtergrond):
   // - links/rechts: vorige/volgende
   // - omlaag: sluiten
-  let sx=0, sy=0, st=0;
-  const SWIPE_MIN_X = 50;
-  const SWIPE_MIN_Y = 80;
-  lbCard.addEventListener('touchstart', (e) => {
-    if(!e.touches || !e.touches.length) return;
-    const t = e.touches[0];
-    sx = t.clientX; sy = t.clientY; st = Date.now();
-    showUI();
-  }, {passive:true});
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
+  let gestureArmed = false;
 
-  lbCard.addEventListener('touchend', (e) => {
-    if(!e.changedTouches || !e.changedTouches.length) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-    const dt = Date.now() - st;
-    // snelle, duidelijke swipe
-    if(dt > 900) return;
-    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) >= SWIPE_MIN_X){
-      if(dx < 0) go(1); else go(-1);
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
+    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
+    if (e.target.closest && e.target.closest('button')) {
+      gestureArmed = false;
       showUI();
       return;
     }
-    if(Math.abs(dy) > Math.abs(dx) && dy >= SWIPE_MIN_Y){
+    pointerDown = true;
+    gestureArmed = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    lb.setPointerCapture?.(e.pointerId);
+    showUI();
+  });
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    if(!gestureArmed) return;
+    gestureArmed = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
       closeLb();
+      return;
     }
-  }, {passive:true});
+    if(ax > ay && ax > thrX){
+      if(dx < 0) go(1); else go(-1);
+      showUI();
+    }
+  });
 
   function openAt(index){
     currentIndex = index;
@@ -439,10 +513,12 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     return arr;
   }
 
-  // events
-  closeBtn.addEventListener('click', closeLb);
-  prevBtn.addEventListener('click', () => go(-1));
-  nextBtn.addEventListener('click', () => go(1));
+  // events (iconen op de kaart)
+  // Belangrijk: klikken op de kaart (of knoppen) mag nooit als "klik op achtergrond" tellen (Firefox/Safari).
+  lbCard.addEventListener('click', (e) => e.stopPropagation());
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('touchstart', showUI, {passive:true});
