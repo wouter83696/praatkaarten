@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Praatkaarten</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --gap:18px;
@@ -15,9 +12,7 @@
     --shadowHover:0 18px 70px rgba(0,0,0,.16);
   }
   *{box-sizing:border-box}
-  html{font-size:15px;}
-  @media (max-width: 768px){ html{font-size:14px;} }
-  body{margin:0;background:#fff;font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+  body{margin:0;background:#fff;font-family:system-ui}
   .controlsBar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.86);backdrop-filter:blur(10px);}
   .controlsBar .inner{max-width:1600px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;}
   .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);} 
@@ -32,13 +27,9 @@
   @media (min-width: 980px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
   @media (min-width: 1240px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr));} }
 
-  /*
-    iOS/Safari bugfix: SVG thumbnails in <img> can collapse to 0 height
-    when the container has no explicit height/aspect-ratio.
-  */
-  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;aspect-ratio:85/55;}
+  .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;}
   .card:hover{transform:translateY(-2px);}
-  .card img{width:100%;height:100%;display:block;object-fit:contain;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
+  .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
   .card:hover img{box-shadow:var(--shadowHover);}
 
   /* Lightbox (super simple + stable) */
@@ -120,7 +111,6 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   .card {
     position: relative;
     padding: 0;
-    aspect-ratio: 85 / 55;
   }
   .card .cardInner {
     position: relative;
@@ -129,9 +119,8 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   }
   .card img.bg {
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
-    object-fit: contain;
   }
   .card .q {
     position: absolute;
@@ -143,16 +132,14 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     color: #306088;
     font-family: "IBM Plex Sans", Inter, Arial, sans-serif;
     font-weight: 500;
-    letter-spacing: -0.01em;
-    line-height: 1.35;
-    font-size: clamp(12px, 0.55vw + 8px, 14px);
-    transform: translateY(4px); /* optische centrering (zoals je kaartjes) */
+    line-height: 1.15;
+    font-size: clamp(12px, 0.9vw + 10px, 16px);
   }
   @media (max-width: 520px) {
     .card .q {
       padding: 14px 14px;
-      font-size: 12.25px;
-      line-height: 1.32;
+      font-size: 12.5px;
+      line-height: 1.12;
     }
   }
 
@@ -194,6 +181,35 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     font-size: clamp(16px, 2.0vw + 10px, 30px);
     pointer-events: none;
     transform: translateY(8px); /* optische centrering */
+  }
+
+  /* Thema-label (subtiel in hoek, alleen bij hover / UI) */
+  .themeTag{
+    position:absolute;
+    top:12px;
+    left:12px;
+    z-index:6;
+    padding:6px 10px;
+    border-radius:999px;
+    font-family:"IBM Plex Sans", Inter, Arial, sans-serif;
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.2px;
+    color:rgba(48,96,136,.88);
+    background:rgba(255,255,255,.68);
+    backdrop-filter: blur(8px);
+    box-shadow:0 8px 22px rgba(0,0,0,.12);
+    opacity:0;
+    transform:translateY(-2px);
+    transition:opacity .18s ease, transform .18s ease;
+    pointer-events:none;
+  }
+  @media (hover:hover){
+    .lbCard:hover .themeTag{opacity:1; transform:translateY(0);}
+  }
+  @media (hover:none){
+    /* op touch: label alleen zichtbaar als UI zichtbaar is */
+    .lb.show-ui .themeTag{opacity:1; transform:translateY(0);}
   }
 
   @media (max-width: 520px){
@@ -288,6 +304,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
 <div class="lb" id="lb" aria-hidden="true">
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
+      <div class="themeTag" id="themeTag" aria-hidden="true"></div>
       <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
@@ -307,6 +324,7 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   const lbImg = document.getElementById('lbImg');
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
+  const themeTag = document.getElementById('themeTag');
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
@@ -320,16 +338,18 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   let currentIndex = -1;
 
   // UI chrome (pijlen + sluiten)
-  // Desktop (hover) : knoppen blijven zichtbaar.
-  // Touch          : knoppen verdwijnen na een paar seconden.
+  // - Touch: iets langer zichtbaar
+  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
   const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  const HIDE_MS_DESKTOP = 2200;
+  const HIDE_MS_TOUCH   = 3200;
 
   let uiTimer = null;
   function showUI(){
     lb.classList.add('show-ui');
-    if (HAS_HOVER) return; // op desktop niet autohiden
     clearTimeout(uiTimer);
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), 3200);
+    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
   }
 
   function buildData(questions){
@@ -385,6 +405,16 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
   function openLb(item){
     lbImg.src = item.bg;
     lbText.textContent = item.q || "";
+    // Thema-label (bij hover in hoek)
+    const pretty = {
+      verkennen: 'Verkennen',
+      verbinden: 'Verbinden',
+      bewegen: 'Bewegen',
+      duiden: 'Duiden',
+      verdiepen: 'Verdiepen',
+      vertragen: 'Vertragen'
+    };
+    themeTag.textContent = pretty[item.theme] || item.theme;
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
     document.body.classList.add('lb-open');
@@ -506,69 +536,9 @@ max-width:min(700px,90vw);width:100%;background:#fff;border-radius:22px;box-shad
     render(filtered);
   });
 
-    const QUESTIONS_FALLBACK = {
-  "verkennen": [
-    "Wat zien we op dit moment gebeuren in onze samenwerking?",
-    "Wat valt ons op in onze manier van samenwerken?",
-    "Herkennen we patronen in onze manier van samenwerken?",
-    "Waar zijn we aan gewend geraakt?",
-    "Wat kijken we liever niet onder ogen?",
-    "Wat zien we wel, maar spreken we niet uit?"
-  ],
-  "verbinden": [
-    "Wanneer voelt onze samenwerking prettig en effectief?",
-    "Wanneer voel jij je echt onderdeel van het team?",
-    "Wat helpt ons om verschillen bespreekbaar te maken?",
-    "Wanneer stemmen we expliciet met elkaar af?",
-    "Wanneer passen we ons aan, terwijl dat eigenlijk schuurt?",
-    "Wat spreken we niet uit om de rust te bewaren?"
-  ],
-  "bewegen": [
-    "Wat doen we met ideeën die ontstaan?",
-    "Wanneer komt er beweging in het team?",
-    "Wat helpt ons om van praten naar doen te gaan?",
-    "Welke ideeën blijven liggen, en waarom?",
-    "Wat houdt ons tegen om in actie te komen?",
-    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
-  ],
-  "duiden": [
-    "Wat proberen we als team samen goed te doen?",
-    "Wanneer helpt afstemming ons, en wanneer werkt het ons juist tegen?",
-    "Welke kwaliteiten komen in ons team goed tot hun recht, en welke minder?",
-    "Wanneer komen misverstanden in onze samenwerking naar boven?",
-    "Wat speelt er onder de oppervlakte in ons team, maar komt zelden op tafel?",
-    "Welke overtuigingen nemen we mee in ons handelen, zonder ze uit te spreken?"
-  ],
-  "verdiepen": [
-    "Wanneer weten we als team: dit is een besluit?",
-    "Wat helpt om rollen en verantwoordelijkheden helder te maken?",
-    "Wanneer helpt het om regie expliciet te koppelen aan een rol of taak?",
-    "Waar blijft regie nu liggen?",
-    "Wat laten we onduidelijk, terwijl het richting vraagt?",
-    "Wat houdt ons nu tegen om een volgende stap te zetten?"
-  ],
-  "vertragen": [
-    "Wat valt ons op als we bewust vertragen of afstand nemen?",
-    "Wat verandert er als we niet meteen reageren?",
-    "Wat gebeurt er wanneer we ons niet laten meeslepen door de waan van de dag?",
-    "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
-    "Welke patronen worden sterker onder druk?",
-    "Welke rol nemen we automatisch aan wanneer de spanning toeneemt?"
-  ]
-};
-
   (async function init(){
-    let questions = QUESTIONS_FALLBACK;
-    try {
-      // Werkt op GitHub Pages / webservers
-      const res = await fetch('questions.json', { cache: 'no-store' });
-      if (res.ok) {
-        questions = await res.json();
-      }
-    } catch (e) {
-      // Als je dit lokaal opent (file://), kan fetch blokkeren in iOS/Safari.
-      // Dan vallen we terug op de ingebouwde data.
-    }
+    const res = await fetch('questions.json');
+    const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();
     render(filtered);
