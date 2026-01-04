@@ -282,6 +282,18 @@ button,
   box-shadow:none !important;
 }
 
+
+/* =========================================
+   DEFINITIEVE FIX (robust)
+   - controlsBar verdwijnt zodra lightbox open is
+   - werkt op iOS Safari (16.4+), Chrome, Firefox
+   ========================================= */
+body:has(.lb.open) .controlsBar{
+  display:none !important;
+}
+body:has(.lb.open){
+  overflow:hidden;
+}
 </style>
 </head>
 <body>
@@ -411,7 +423,6 @@ const closeBtn = document.getElementById('close');
     };
 lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    document.body.classList.add('lb-open');
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
@@ -424,7 +435,6 @@ lb.setAttribute('aria-hidden','false');
   function closeLb(){
     lb.setAttribute('aria-hidden','true');
     lb.classList.remove('open');
-    document.body.classList.remove('lb-open');
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
@@ -537,6 +547,17 @@ lb.setAttribute('aria-hidden','false');
     filtered = data.slice();
     render(filtered);
   })();
+
+// ✅ klik naast de kaart (op de overlay) = sluiten
+lb.addEventListener("click", (e) => {
+  if (e.target === lb) closeLightbox();
+});
+
+// ❌ klik op de kaart zelf mag niet sluiten
+const lbCardEl = document.querySelector(".lbCard");
+if (lbCardEl) {
+  lbCardEl.addEventListener("click", (e) => e.stopPropagation());
+}
 </script>
 
 
