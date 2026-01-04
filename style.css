@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
-:root {
+:root{
   --gap:18px;
   --radius:16px;
   --shadow:0 14px 50px rgba(0,0,0,.12);
@@ -17,6 +17,7 @@ body{
   background:#fff;
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
+  text-rendering:optimizeLegibility;
 }
 
 /* ===============================
@@ -35,14 +36,22 @@ body{
 }
 .btn{
   appearance:none;border:0;background:transparent;border-radius:999px;
-  padding:10px;font-size:13px;cursor:pointer;
+  padding:10px;
+  font-size:13px;
+  line-height:1.2;
+  cursor:pointer;
   color:rgba(11,18,32,.78);
 }
 .btn:hover{background:rgba(0,0,0,.04);}
 .btn:active{transform:translateY(1px);}
 .btnGroup{display:flex;align-items:center;gap:0;}
 .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
-.help{color:rgba(11,18,32,.55);font-size:13px;white-space:normal;}
+.help{
+  color:rgba(11,18,32,.55);
+  font-size:13px;
+  line-height:1.35; /* iets rustiger */
+  white-space:normal;
+}
 
 /* ===============================
    GRID
@@ -91,13 +100,11 @@ body{
 
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
 
-  /* 👇 KEUZE HIER */
-  font-weight:400;          /* REGULAR (aanrader) */
-  /* font-weight:500; */    /* ← zet deze aan als je Medium wilt */
-
+  /* typografie: rustiger */
+  font-weight:400;          /* REGULAR */
   font-size:10.5px;
-  line-height:1.22;
-  letter-spacing:-0.01em;
+  line-height:1.38;         /* was 1.22 → rustiger */
+  letter-spacing:-0.008em;  /* iets minder strak dan -0.01em */
 
   color:var(--textBlue);
   font-synthesis:none;
@@ -107,7 +114,8 @@ body{
   .card .q{
     padding:14px;
     font-size:9.75px;
-    line-height:1.18;
+    line-height:1.34;       /* was 1.18 → rustiger op mobiel */
+    letter-spacing:-0.006em;
   }
 }
 
@@ -147,55 +155,4 @@ body{
 
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
   font-weight:400;
-  font-size:clamp(16px,2vw + 10px,30px);
-  line-height:1.18;
-  color:var(--textBlue);
-
-  transform:translateY(8px);
-  pointer-events:none;
-}
-
-/* ===============================
-   ICONS (PIJLEN + KRUIS)
-   =============================== */
-
-.chev,.close{
-  position:absolute;
-  background:transparent;border:0;
-  width:44px;height:44px;
-  display:grid;place-items:center;
-  color:var(--uiBlue);
-  cursor:pointer;
-
-  opacity:0;
-  transition:none;
-}
-
-.lb.show-ui .chev,
-.lb.show-ui .close{opacity:1;}
-
-.chev.left{left:10px;top:50%;transform:translateY(-50%);}
-.chev.right{right:10px;top:50%;transform:translateY(-50%);}
-.close{top:10px;right:10px;}
-
-.chev svg,.close svg{
-  width:22px;height:22px;
-  stroke:currentColor;
-  stroke-width:2.6;
-  fill:none;
-  pointer-events:none;
-  filter:none;
-}
-
-/* ===============================
-   FIXES
-   =============================== */
-
-.themeTag,#themeTag{display:none !important;}
-
-button,.chev,.close{
-  -webkit-tap-highlight-color:transparent;
-  tap-highlight-color:transparent;
-  outline:none !important;
-  box-shadow:none !important;
-}
+  font-size:clamp(16px,2vw + 10px,30px)
