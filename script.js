@@ -26,7 +26,7 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     if(!navHint) return;
     document.body.classList.add('show-hint');
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 4500);
+    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 8000);
   }
   function maybeShowNavHintOnce(){
     // Alleen tonen wanneer de viewer via touch/pen is geopend (dus niet met muis/desktop)
