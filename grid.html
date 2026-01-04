@@ -5,32 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Praatkaarten</title>
 <style>
-  :root{
+  :root {
     --gap:18px;
     --radius:16px;
     --shadow:0 14px 50px rgba(0,0,0,.12);
     --shadowHover:0 18px 70px rgba(0,0,0,.16);
-    --ink: rgba(30, 78, 118, 1);
-    --ui: rgba(30, 78, 118, .52);
-    --bar: rgba(11,18,32,.55);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:#fff;font-family:system-ui;-webkit-font-smoothing:antialiased}
+  body{margin:0;background:#fff;font-family:system-ui}
   .controlsBar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.86);backdrop-filter:blur(10px);}
   .controlsBar .inner{max-width:1600px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;}
-  .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);}
-  .btn:hover{background:rgba(0,0,0,.04);}
-  .btn:active{transform:translateY(1px);}
-  .btnGroup{display:flex;align-items:center;gap:0;}
+  .btn{appearance:none;border:0;background:transparent;border-radius:999px;padding:10px 10px;font-size:13px;cursor:pointer;color:rgba(11,18,32,.78);} 
+  .btn:hover{background:rgba(0,0,0,.04);} 
+  .btn:active{transform:translateY(1px);} 
+  .btnGroup{display:flex;align-items:center;gap:0;} 
   .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
+  .btn:active{transform:translateY(1px);}
   .help{color:rgba(11,18,32,.55);font-size:13px;white-space:normal;}
-
   .grid{display:grid;gap:var(--gap);padding:18px 28px 120px;max-width:1600px;margin:auto;grid-template-columns:repeat(2,minmax(0,1fr));}
   @media (min-width: 720px){ .grid{grid-template-columns:repeat(3,minmax(0,1fr));} }
   @media (min-width: 980px){ .grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
   @media (min-width: 1240px){ .grid{grid-template-columns:repeat(6,minmax(0,1fr));} }
 
-  /* Mobiel landscape: verberg de onderste balk als de lightbox open is */
+  /* Mobiel landscape: verberg de onderste balk als de lightbox open is,
+     anders past de kaart niet volledig in beeld. */
   @media (hover: none) and (orientation: landscape){
     body.lb-open .controlsBar{ display:none; }
     body.lb-open .grid{ padding-bottom: 18px; }
@@ -38,72 +36,47 @@
 
   .card{border:0;background:transparent;padding:0;cursor:zoom-in;transition:transform .14s ease;position:relative;}
   .card:hover{transform:translateY(-2px);}
+  .card img{width:100%;height:auto;display:block;border-radius:var(--radius);box-shadow:var(--shadow);transition:box-shadow .14s ease;background:#fff;}
+  .card:hover img{box-shadow:var(--shadowHover);}
 
-  .cardInner{
-    width:100%;
-    aspect-ratio:85/55;
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    transition:box-shadow .14s ease;
-    overflow:hidden;
-    position:relative;
-    background:#fff;
-  }
-  .card:hover .cardInner{box-shadow:var(--shadowHover);}
-
-  .bg{
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-  }
-  .q{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    padding:14px 16px;
-    text-align:center;
-    color:var(--ink);
-    font-weight:600;
-    line-height:1.18;
-    font-size:16px;
-  }
-  @media (max-width:520px){ .q{font-size:14px} }
-  @media (min-width:980px){ .q{font-size:15px} }
-
-  /* Thema-label op kleine kaarten: subtiel zoals balktekst */
-  .themeTag{
+  /* Thema-label op kleine kaarten (zelfde look als de tekst in de onderste balk) */
+  .card::after{
+    content:attr(data-theme);
     position:absolute;
     right:10px;
     bottom:10px;
     font-size:13px;
     line-height:1;
-    color:var(--bar);
+    color:rgba(11,18,32,.55);
+    font-family:system-ui;
     letter-spacing:.2px;
-    opacity:0;
+    opacity:.55;
     transition:opacity .14s ease;
     pointer-events:none;
   }
-  .card:hover .themeTag,
-  .card:focus-visible .themeTag{opacity:.85;}
+  .card:hover::after{opacity:.9;}
+  .card:hover::after{opacity:.85;}
+
 
   /* Lightbox */
-  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.28);backdrop-filter:blur(6px);touch-action:none;}
+  .lb{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px);touch-action:none;}
   .lb.open{display:flex;}
+
+  /* De kaart is de enige "card". Geen extra witte panel eromheen. */
   .panel{
     position:relative;
-    width:min(92vw, 920px);
+    width:min(92vw, 860px);
     aspect-ratio:85/55;
     max-height:calc(92vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     border-radius:22px;
     overflow:hidden;
     background:transparent;
-    box-shadow:0 24px 90px rgba(0,0,0,.22);
+    box-shadow:0 24px 90px rgba(0,0,0,.28);
   }
-  .panel .cardInner{border-radius:22px; box-shadow:none; height:100%;}
-  .panel .q{font-size:30px; padding:26px 30px; max-width:100%;}
-  @media (max-width:700px){ .panel .q{font-size:22px; padding:18px 18px;} }
+  .panel img{width:100%;height:100%;display:block;object-fit:contain;background:transparent;}
 
-  /* Controls op de kaart */
+  
+  /* Controls liggen OP de kaart (dus niet ernaast / op het scherm) */
   .chev, .close{
     position:absolute;
     border:0;
@@ -111,19 +84,10 @@
     cursor:pointer;
     user-select:none;
     opacity:0;
-    transition:opacity .14s ease, color .14s ease;
-    color:var(--ui);
+    transition:opacity .18s ease,color .18s ease;
+    color:rgba(30,78,118,.65);
     -webkit-tap-highlight-color:transparent;
   }
-  .close{
-    top:10px;
-    right:10px;
-    font-size:34px;
-    font-weight:300;
-    line-height:1;
-    padding:10px 12px;
-  }
-  /* pijlen onderaan links/rechts (grote kaart) */
   .chev{
     bottom:10px;
     top:auto;
@@ -134,11 +98,19 @@
   }
   .chev.left{left:10px}
   .chev.right{right:10px}
-
+  .close{
+    top:10px;
+    right:10px;
+    font-size:34px;
+    font-weight:300;
+    line-height:1;
+    padding:10px 12px;
+  }
   .lb.show-ui .chev,
-  .lb.show-ui .close{opacity:.62;}
+  .lb.show-ui .close{opacity:.9;}
   .lb.show-ui .chev:hover,
-  .lb.show-ui .close:hover{opacity:1;color:rgba(30,78,118,.78);}
+  .lb.show-ui .close:hover{opacity:1;color:rgba(30, 78, 118, .75);}
+
 
 </style>
 </head>
@@ -155,196 +127,203 @@
   </div>
 </div>
 
-<div class="grid" id="grid" aria-label="Kaarten"></div>
+<div class="grid" id="grid">
+    <button class="card" data-src="cards/erkennen-01.svg" aria-label="erkennen-01.svg"><img src="cards/erkennen-01.svg" alt=""></button>
+    <button class="card" data-src="cards/erkennen-02.svg" aria-label="erkennen-02.svg"><img src="cards/erkennen-02.svg" alt=""></button>
+    <button class="card" data-src="cards/erkennen-03.svg" aria-label="erkennen-03.svg"><img src="cards/erkennen-03.svg" alt=""></button>
+    <button class="card" data-src="cards/erkennen-04.svg" aria-label="erkennen-04.svg"><img src="cards/erkennen-04.svg" alt=""></button>
+    <button class="card" data-src="cards/erkennen-05.svg" aria-label="erkennen-05.svg"><img src="cards/erkennen-05.svg" alt=""></button>
+    <button class="card" data-src="cards/erkennen-06.svg" aria-label="erkennen-06.svg"><img src="cards/erkennen-06.svg" alt=""></button>
+    <button class="card" data-src="cards/verbinden-01.svg" aria-label="verbinden-01.svg"><img src="cards/verbinden-01.svg" alt=""></button>
+    <button class="card" data-src="cards/verbinden-02.svg" aria-label="verbinden-02.svg"><img src="cards/verbinden-02.svg" alt=""></button>
+    <button class="card" data-src="cards/verbinden-03.svg" aria-label="verbinden-03.svg"><img src="cards/verbinden-03.svg" alt=""></button>
+    <button class="card" data-src="cards/verbinden-04.svg" aria-label="verbinden-04.svg"><img src="cards/verbinden-04.svg" alt=""></button>
+    <button class="card" data-src="cards/verbinden-05.svg" aria-label="verbinden-05.svg"><img src="cards/verbinden-05.svg" alt=""></button>
+    <button class="card" data-src="cards/verbinden-06.svg" aria-label="verbinden-06.svg"><img src="cards/verbinden-06.svg" alt=""></button>
+    <button class="card" data-src="cards/bewegen-01.svg" aria-label="bewegen-01.svg"><img src="cards/bewegen-01.svg" alt=""></button>
+    <button class="card" data-src="cards/bewegen-02.svg" aria-label="bewegen-02.svg"><img src="cards/bewegen-02.svg" alt=""></button>
+    <button class="card" data-src="cards/bewegen-03.svg" aria-label="bewegen-03.svg"><img src="cards/bewegen-03.svg" alt=""></button>
+    <button class="card" data-src="cards/bewegen-04.svg" aria-label="bewegen-04.svg"><img src="cards/bewegen-04.svg" alt=""></button>
+    <button class="card" data-src="cards/bewegen-05.svg" aria-label="bewegen-05.svg"><img src="cards/bewegen-05.svg" alt=""></button>
+    <button class="card" data-src="cards/bewegen-06.svg" aria-label="bewegen-06.svg"><img src="cards/bewegen-06.svg" alt=""></button>
+    <button class="card" data-src="cards/duiden-01.svg" aria-label="duiden-01.svg"><img src="cards/duiden-01.svg" alt=""></button>
+    <button class="card" data-src="cards/duiden-02.svg" aria-label="duiden-02.svg"><img src="cards/duiden-02.svg" alt=""></button>
+    <button class="card" data-src="cards/duiden-03.svg" aria-label="duiden-03.svg"><img src="cards/duiden-03.svg" alt=""></button>
+    <button class="card" data-src="cards/duiden-04.svg" aria-label="duiden-04.svg"><img src="cards/duiden-04.svg" alt=""></button>
+    <button class="card" data-src="cards/duiden-05.svg" aria-label="duiden-05.svg"><img src="cards/duiden-05.svg" alt=""></button>
+    <button class="card" data-src="cards/duiden-06.svg" aria-label="duiden-06.svg"><img src="cards/duiden-06.svg" alt=""></button>
+    <button class="card" data-src="cards/verdiepen-01.svg" aria-label="verdiepen-01.svg"><img src="cards/verdiepen-01.svg" alt=""></button>
+    <button class="card" data-src="cards/verdiepen-02.svg" aria-label="verdiepen-02.svg"><img src="cards/verdiepen-02.svg" alt=""></button>
+    <button class="card" data-src="cards/verdiepen-03.svg" aria-label="verdiepen-03.svg"><img src="cards/verdiepen-03.svg" alt=""></button>
+    <button class="card" data-src="cards/verdiepen-04.svg" aria-label="verdiepen-04.svg"><img src="cards/verdiepen-04.svg" alt=""></button>
+    <button class="card" data-src="cards/verdiepen-05.svg" aria-label="verdiepen-05.svg"><img src="cards/verdiepen-05.svg" alt=""></button>
+    <button class="card" data-src="cards/verdiepen-06.svg" aria-label="verdiepen-06.svg"><img src="cards/verdiepen-06.svg" alt=""></button>
+    <button class="card" data-src="cards/vertragen-01.svg" aria-label="vertragen-01.svg"><img src="cards/vertragen-01.svg" alt=""></button>
+    <button class="card" data-src="cards/vertragen-02.svg" aria-label="vertragen-02.svg"><img src="cards/vertragen-02.svg" alt=""></button>
+    <button class="card" data-src="cards/vertragen-03.svg" aria-label="vertragen-03.svg"><img src="cards/vertragen-03.svg" alt=""></button>
+    <button class="card" data-src="cards/vertragen-04.svg" aria-label="vertragen-04.svg"><img src="cards/vertragen-04.svg" alt=""></button>
+    <button class="card" data-src="cards/vertragen-05.svg" aria-label="vertragen-05.svg"><img src="cards/vertragen-05.svg" alt=""></button>
+    <button class="card" data-src="cards/vertragen-06.svg" aria-label="vertragen-06.svg"><img src="cards/vertragen-06.svg" alt=""></button>
+</div>
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="panel" role="dialog" aria-modal="true">
     <button class="chev left" id="prev" aria-label="Vorige">‹</button>
     <button class="chev right" id="next" aria-label="Volgende">›</button>
+
     <button class="close" id="close" type="button" aria-label="Sluiten">×</button>
-    <div id="lbCard"></div>
+    <img id="lbImg" alt="">
   </div>
 </div>
 
 <script>
-(async () => {
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
-  const lbCard = document.getElementById('lbCard');
+  const lbImg = document.getElementById('lbImg');
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
-  const shuffleBtn = document.getElementById('shuffle');
-  const resetBtn = document.getElementById('reset');
 
-  // Fail-safe: if anything critical missing, do nothing (no blank page crash)
-  if(!grid || !lb || !lbCard || !closeBtn || !prevBtn || !nextBtn || !shuffleBtn || !resetBtn) return;
+  const initial = Array.from(grid.children).map(n => n.outerHTML);
 
-  const resp = await fetch('questions.json', {cache:'no-store'});
-  const q = await resp.json();
-
-  const order = ['verkennen','verbinden','bewegen','duiden','verdiepen','vertragen'];
-  const titleCase = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-
-  let items = [];
-  for(const theme of order){
-    const arr = Array.isArray(q[theme]) ? q[theme] : [];
-    arr.forEach((text, i) => {
-      items.push({
-        theme,
-        themeLabel: titleCase(theme),
-        q: String(text),
-        bg: `cards/${theme}.svg`
-      });
-    });
+  function titleCase(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function applyThemes(){
+    for(const btn of cards()){
+      const src = btn.getAttribute('data-src')||'';
+      const m = src.match(/cards\/([a-zA-ZÀ-ſ-]+?)(?:-\d+)?\.svg$/);
+      if(!m) continue;
+      const raw = m[1].split('-')[0];
+      btn.dataset.theme = titleCase(raw);
+    }
   }
 
-  const initial = items.slice();
-  let currentIndex = -1;
+  // init theme labels
+  applyThemes();
 
   const canHover = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  let currentIndex = -1;
   let uiTimer = null;
+
+  function cards(){
+    return Array.from(grid.querySelectorAll('button.card'));
+  }
+
   function showUI(){
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
-    const hideMs = canHover ? 650 : 850; // snel weg
+    const hideMs = canHover ? 900 : 1100; // sneller weg, maar nog wel leesbaar
     uiTimer = setTimeout(() => lb.classList.remove('show-ui'), hideMs);
   }
 
-  function cardEl(item){
-    const btn = document.createElement('button');
-    btn.className = 'card';
-    btn.type = 'button';
-    btn.setAttribute('aria-label', item.themeLabel);
-    btn.innerHTML = `
-      <div class="cardInner">
-        <img class="bg" src="${item.bg}" alt="">
-        <div class="q">${escapeHtml(item.q)}</div>
-        <div class="themeTag">${item.themeLabel}</div>
-      </div>
-    `;
-    return btn;
-  }
-
-  function render(list){
-    grid.innerHTML = '';
-    list.forEach((it, idx) => {
-      const el = cardEl(it);
-      el.addEventListener('click', () => openLbAt(idx));
-      grid.appendChild(el);
-    });
-  }
-
-  function openLbAt(idx){
-    currentIndex = ((idx % items.length) + items.length) % items.length;
-    const it = items[currentIndex];
-    lbCard.innerHTML = `
-      <div class="cardInner">
-        <img class="bg" src="${it.bg}" alt="">
-        <div class="q">${escapeHtml(it.q)}</div>
-      </div>
-    `;
+  function openLbAt(index){
+    const list = cards();
+    currentIndex = ((index % list.length) + list.length) % list.length;
+    lbImg.src = list[currentIndex].getAttribute('data-src');
     lb.classList.add('open');
     document.body.classList.add('lb-open');
     document.body.style.overflow = 'hidden';
     showUI();
   }
+
   function closeLb(){
     lb.classList.remove('open');
     lb.classList.remove('show-ui');
     document.body.classList.remove('lb-open');
+    lbImg.src = '';
     document.body.style.overflow = '';
-    lbCard.innerHTML = '';
     currentIndex = -1;
   }
+
   function go(delta){
-    if(currentIndex < 0) return;
-    currentIndex = (currentIndex + delta + items.length) % items.length;
-    const it = items[currentIndex];
-    lbCard.innerHTML = `
-      <div class="cardInner">
-        <img class="bg" src="${it.bg}" alt="">
-        <div class="q">${escapeHtml(it.q)}</div>
-      </div>
-    `;
+    const list = cards();
+    if(!list.length || currentIndex < 0) return;
+    currentIndex = (currentIndex + delta + list.length) % list.length;
+    lbImg.src = list[currentIndex].getAttribute('data-src');
     showUI();
   }
 
-  function shuffle(arr){
-    const a = arr.slice();
-    for(let i=a.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [a[i],a[j]]=[a[j],a[i]];
-    }
-    return a;
-  }
-
-  shuffleBtn.addEventListener('click', () => {
-    const shuffled = shuffle(items);
-    // keep items order for navigation consistent with grid you see:
-    items = shuffled;
-    render(items);
-    window.scrollTo({top:0, behavior:'smooth'});
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.card');
+    if(!btn) return;
+    const list = cards();
+    const idx = list.indexOf(btn);
+    if(idx > -1) openLbAt(idx);
   });
 
-  resetBtn.addEventListener('click', () => {
-    items = initial.slice();
-    render(items);
-    window.scrollTo({top:0, behavior:'smooth'});
-  });
-
+  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+
+  function shuffle(nodes){
+    for(let i=nodes.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nodes[i],nodes[j]]=[nodes[j],nodes[i]]; }
+    return nodes;
+  }
+  document.getElementById('shuffle').addEventListener('click', () => {
+    const nodes = Array.from(grid.children);
+    shuffle(nodes);
+    nodes.forEach(n => grid.appendChild(n));
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    grid.innerHTML = initial.join('');
+    applyThemes();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
 
-  // click on background closes
-  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
-
+  // Keyboard
   document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLb();
     if(e.key === 'ArrowLeft') go(-1);
     if(e.key === 'ArrowRight') go(1);
   });
 
-  // swipe anywhere (overlay + card), ignore buttons
-  let startX=0, startY=0, startT=0, down=false;
+  // Swipe / drag overal (ook op de grijze achtergrond):
+  // - links/rechts = vorige/volgende
+  // - omlaag = sluiten
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
+
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.target.closest('.chev, .close')) return;
-    down = true;
-    startX = e.clientX; startY = e.clientY; startT = performance.now();
+    pointerDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
     lb.setPointerCapture?.(e.pointerId);
     showUI();
   });
+
   lb.addEventListener('pointerup', (e) => {
-    if(!down) return;
-    down = false;
+    if(!pointerDown) return;
+    pointerDown = false;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     const dt = performance.now() - startT;
-    const ax = Math.abs(dx), ay = Math.abs(dy);
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    // snelle veeg of duidelijke afstand
     const fast = dt < 420;
     const thrX = fast ? 40 : 60;
     const thrY = fast ? 50 : 80;
-    if(ay > ax && dy > thrY){ closeLb(); return; }
-    if(ax > ay && ax > thrX){ go(dx > 0 ? -1 : 1); return; }
+
+    if(ay > ax && dy > thrY){
+      closeLb();
+      return;
+    }
+    if(ax > ay && ax > thrX){
+      go(dx > 0 ? -1 : 1);
+      return;
+    }
   });
 
+  // UI tonen bij interactie
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'",'&#39;');
-  }
-
-  render(items);
-})();
 </script>
 
 </body>
