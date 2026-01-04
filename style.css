@@ -12,6 +12,8 @@
 
   --textBlue: rgba(48,96,136,.95);
   --uiBlue: rgba(48,96,136,.85);
+
+  --pageBg:#F3F5EE;
 }
 
 *{box-sizing:border-box}
@@ -20,9 +22,11 @@
    BASE
    =============================== */
 
+html{ background:var(--pageBg); }
+
 body{
   margin:0;
-  background:#F3F5EE;
+  background:var(--pageBg);
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
   text-rendering:optimizeLegibility;
@@ -33,9 +37,16 @@ body{
    =============================== */
 
 .controlsBar{
-  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:50;
+
+  display:block; /* 🔒 forceer zichtbaar als default */
+
   padding:12px 18px calc(12px + env(safe-area-inset-bottom));
-  background:rgba(255,255,255,.86);
+  background:rgba(243,245,238,.92);
   backdrop-filter:blur(10px);
 }
 
@@ -80,7 +91,7 @@ body{
 .grid{
   display:grid;
   gap:var(--gap);
-  padding:18px 28px 120px;
+  padding:18px 28px 120px; /* ruimte voor controlsBar */
   max-width:1600px;
   margin:auto;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -168,6 +179,7 @@ body{
   padding:22px;
   background:rgba(0,0,0,.45);
   backdrop-filter:blur(8px);
+  z-index:100; /* boven controls */
 }
 
 .lb.open{display:flex;}
@@ -191,12 +203,14 @@ body{
 }
 
 #lbImg{
+  position:relative;
+  z-index:1;
   width:100%;
   display:block;
 }
 
 /* ===============================
-   TEKST OP GROTE KAART (SUBTIEL)
+   TEKST OP GROTE KAART
    =============================== */
 
 .lbText{
@@ -210,7 +224,6 @@ body{
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
   font-weight:400;
 
-  /* 🔽 ENIGE WIJZIGING T.O.V. VOORHEEN */
   font-size:clamp(15px,1.4vw + 8px,22px);
   line-height:1.26;
   letter-spacing:-0.006em;
@@ -219,6 +232,7 @@ body{
 
   transform:translateY(6px);
   pointer-events:none;
+  z-index:2;
 }
 
 /* ===============================
@@ -238,6 +252,7 @@ body{
   cursor:pointer;
 
   opacity:0;
+  z-index:5;
 }
 
 .lb.show-ui .chev,
@@ -275,16 +290,11 @@ button,
 
 /* ===============================
    MOBILE LANDSCAPE FIX
-   - verberg onderste balk alleen
+   - verberg onderste balk ALLEEN
      bij open lightbox op mobiel
    =============================== */
 
 @media (hover: none) and (orientation: landscape){
-  body.lb-open .controlsBar{
-    display:none !important;
-  }
-  body.lb-open{
-    overflow:hidden;
-  }
+  body.lb-open .controlsBar{ display:none !important; }
+  body.lb-open{ overflow:hidden; }
 }
-
