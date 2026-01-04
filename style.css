@@ -1,270 +1,215 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
+/* =========================================
+   BASIS & VARIABELEN
+   ========================================= */
 
-/* ===============================
-   VARS
-   =============================== */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
 :root{
   --gap:18px;
   --radius:16px;
-  --shadow:0 14px 50px rgba(0,0,0,.12);
-  --shadowHover:0 18px 70px rgba(0,0,0,.16);
 
+  /* Schaduw – rustig / drukwerkachtig */
+  --shadow:0 14px 40px rgba(0,0,0,.12);
+  --shadowHover:0 18px 55px rgba(0,0,0,.16);
+
+  /* Tekst / UI */
   --textBlue: rgba(48,96,136,.95);
   --uiBlue: rgba(48,96,136,.85);
+
+  /* Cursor & iconen (warm grijs/bruin) */
+  --uiInk: rgba(90,86,80,.92);
+  --uiInkSoft: rgba(90,86,80,.55);
 }
 
-*{box-sizing:border-box}
+*{ box-sizing:border-box; }
 
-/* ===============================
-   BASE
-   =============================== */
-
-body{
+html, body{
   margin:0;
-  background:#fff;
+  min-height:100%;
+  background:#FFFFFF;
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
-  text-rendering:optimizeLegibility;
 }
 
-/* ===============================
-   CONTROLS
-   =============================== */
+/* =========================================
+   ACHTERGROND – fris & egaal
+   ========================================= */
 
-.controlsBar{
-  position:fixed;left:0;right:0;bottom:0;z-index:50;
-  padding:12px 18px calc(12px + env(safe-area-inset-bottom));
-  background:rgba(255,255,255,.86);
-  backdrop-filter:blur(10px);
+body{
+  background-image:none;
 }
 
-.controlsBar .inner{
-  max-width:1600px;
-  margin:0 auto;
-  display:flex;
-  gap:12px;
-  align-items:center;
-  justify-content:space-between;
+.page,
+.wrap,
+.container,
+main,
+.grid,
+.cards,
+.cardGrid{
+  background:transparent !important;
 }
 
-.btn{
-  appearance:none;
-  border:0;
-  background:transparent;
-  border-radius:999px;
-  padding:10px;
-  font-size:13px;
-  line-height:1.2;
-  cursor:pointer;
-  color:rgba(11,18,32,.78);
-}
-
-.btn:hover{background:rgba(0,0,0,.04);}
-.btn:active{transform:translateY(1px);}
-
-.btnGroup{display:flex;align-items:center;gap:0;}
-.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 8px;}
-
-.help{
-  color:rgba(11,18,32,.55);
-  font-size:13px;
-  line-height:1.35;
-  white-space:normal;
-}
-
-/* ===============================
-   GRID
-   =============================== */
-
-.grid{
-  display:grid;
-  gap:var(--gap);
-  padding:18px 28px 120px;
-  max-width:1600px;
-  margin:auto;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
-@media (min-width:720px){
-  .grid{grid-template-columns:repeat(3,1fr);}
-}
-@media (min-width:980px){
-  .grid{grid-template-columns:repeat(4,1fr);}
-}
-@media (min-width:1240px){
-  .grid{grid-template-columns:repeat(6,1fr);}
-}
-
-/* ===============================
+/* =========================================
    KAARTEN
-   =============================== */
+   ========================================= */
 
 .card{
-  position:relative;
-  border:0;
-  background:transparent;
-  padding:0;
-  cursor:zoom-in;
-  transition:transform .14s ease;
-}
-
-.card:hover{transform:translateY(-2px);}
-
-.card img{
-  width:100%;
-  height:auto;
-  display:block;
+  background:#fff;
   border-radius:var(--radius);
   box-shadow:var(--shadow);
-  transition:box-shadow .14s ease;
 }
 
-.card:hover img{box-shadow:var(--shadowHover);}
-
-/* ===============================
-   TEKST OP KLEINE KAARTJES
-   =============================== */
-
-.card .q{
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
-  padding:18px;
-  text-align:center;
-
-  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  font-weight:400;
-  font-size:10.5px;
-  line-height:1.38;
-  letter-spacing:-0.008em;
-
-  color:var(--textBlue);
-  font-synthesis:none;
-
-  /* optische centrering */
-  transform:translateY(2px);
-}
-
-@media (max-width:520px){
-  .card .q{
-    padding:14px;
-    font-size:9.75px;
-    line-height:1.34;
-    letter-spacing:-0.006em;
+/* desktop hover */
+@media (hover:hover){
+  .card:hover{
+    box-shadow:var(--shadowHover);
+    transform:translateY(-2px);
   }
 }
 
-/* ===============================
-   LIGHTBOX
-   =============================== */
+/* =========================================
+   LIGHTBOX / OVERLAY
+   ========================================= */
 
 .lb{
   position:fixed;
   inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:22px;
-  background:rgba(0,0,0,.45);
-  backdrop-filter:blur(8px);
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  cursor:crosshair;
+  z-index:999;
 }
 
-.lb.open{display:flex;}
+/* actieve kaart in overlay */
+.lb .card{
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.14),
+    0 32px 60px rgba(0,0,0,.18);
+}
 
-.panel{
-  width:100%;
-  height:100%;
-  background:transparent;
+/* =========================================
+   ONDERSTE BALK
+   ========================================= */
+
+.controlsBar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:1000;
+}
+
+.controlsBar .inner{
+  max-width:1100px;
+  margin:0 auto;
+  padding:14px 20px;
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:space-between;
 }
 
-.lbCard{
-  position:relative;
-  width:min(560px,92vw);
-  border-radius:22px;
-  overflow:hidden;
-  background:#fff;
-  box-shadow:0 18px 45px rgba(0,0,0,.20);
+/* knoppen links */
+.controlsBar .btnGroup{
+  display:flex;
+  gap:14px;
 }
 
-#lbImg{
-  width:100%;
-  display:block;
+/* uitleg (standaard UIT) */
+.controlsBar .help{
+  display:none;
+  font-size:.9em;
+  opacity:.7;
+  white-space:nowrap;
+  transition:opacity .8s ease;
 }
 
-.lbText{
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
-  padding:22px 24px;
-  text-align:center;
-
-  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  font-weight:400;
-  font-size:clamp(16px,2vw + 10px,30px);
-  line-height:1.28;
-  letter-spacing:-0.006em;
-
-  color:var(--textBlue);
-
-  /* optische centrering groot */
-  transform:translateY(6px);
-  pointer-events:none;
-}
-
-/* ===============================
-   ICONS
-   =============================== */
-
-.chev,
-.close{
-  position:absolute;
-  background:transparent;
-  border:0;
-  width:44px;
-  height:44px;
-  display:grid;
-  place-items:center;
-  color:var(--uiBlue);
-  cursor:pointer;
-
+.controlsBar .help.is-hidden{
   opacity:0;
-}
-
-.lb.show-ui .chev,
-.lb.show-ui .close{opacity:1;}
-
-.chev.left{left:10px;top:50%;transform:translateY(-50%);}
-.chev.right{right:10px;top:50%;transform:translateY(-50%);}
-.close{top:10px;right:10px;}
-
-.chev svg,
-.close svg{
-  width:22px;
-  height:22px;
-  stroke:currentColor;
-  stroke-width:2.6;
-  fill:none;
   pointer-events:none;
 }
 
-/* ===============================
-   FIXES
-   =============================== */
+/* =========================================
+   TELEFOON – PORTRAIT
+   ========================================= */
 
-.themeTag,
-#themeTag{display:none !important;}
+@media (hover:none) and (pointer:coarse) and (orientation:portrait){
 
-button,
-.chev,
-.close{
-  -webkit-tap-highlight-color:transparent;
-  tap-highlight-color:transparent;
-  outline:none !important;
-  box-shadow:none !important;
+  .controlsBar .inner{
+    width:100%;
+    max-width:none;
+    padding-left:clamp(14px, 3vw, 28px);
+    padding-right:clamp(14px, 3vw, 28px);
+  }
+
+  /* uitleg tonen */
+  .controlsBar .help{
+    display:block;
+    margin-left:auto;
+    text-align:right;
+  }
+}
+
+/* =========================================
+   TELEFOON – LANDSCAPE → balk weg
+   ========================================= */
+
+@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+  .controlsBar{
+    display:none;
+  }
+}
+
+/* =========================================
+   CURSOR & ICONEN – warm grijs/bruin
+   ========================================= */
+
+.controlsBar button,
+.iconBtn,
+.navBtn,
+.closeBtn{
+  color:var(--uiInk);
+}
+
+.controlsBar button svg,
+.iconBtn svg,
+.navBtn svg,
+.closeBtn svg{
+  stroke:var(--uiInk) !important;
+  fill:none !important;
+}
+
+.controlsBar button svg path,
+.iconBtn svg path,
+.navBtn svg path,
+.closeBtn svg path{
+  stroke:var(--uiInk) !important;
+  fill:var(--uiInk) !important;
+}
+
+/* hover desktop */
+@media (hover:hover){
+  .controlsBar button:hover,
+  .iconBtn:hover,
+  .navBtn:hover,
+  .closeBtn:hover{
+    color:rgba(70,66,60,.95);
+  }
+
+  .controlsBar button:hover svg,
+  .iconBtn:hover svg,
+  .navBtn:hover svg,
+  .closeBtn:hover svg{
+    stroke:rgba(70,66,60,.95) !important;
+  }
+}
+
+/* focus (toegankelijk maar rustig) */
+.controlsBar button:focus-visible,
+.iconBtn:focus-visible,
+.navBtn:focus-visible,
+.closeBtn:focus-visible{
+  outline:2px solid var(--uiInkSoft);
+  outline-offset:2px;
+  border-radius:10px;
 }
