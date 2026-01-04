@@ -608,7 +608,7 @@ display:block;}
       <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="reset" type="button">Reset</button>
     </div>
-    <div class="navHintMini" id="navHint" aria-hidden="true">veeg ↔︎ • tik</div>
+    <div class="navHintMini" id="navHint" aria-hidden="true">← → swipe</div>
 </div>
 </div>
 
@@ -649,13 +649,20 @@ const closeBtn = document.getElementById('close');
   let filtered = [];   // current order
   let currentIndex = -1;
 
-  // Nav hint (rechts): alleen op mobiel en alleen de 1e keer dat je een kaart groot opent
-  const IS_TOUCH = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  // Nav hint (rechts): alleen op touch-apparaten (telefoon/tablet) en alleen de 1e keer dat je een kaart groot opent.
+  // Let op: sommige desktops (touch-laptops / browser emulation) kunnen '(pointer: coarse)' teruggeven.
+  // Daarom combineren we media queries met de echte interactie (pointerType).
+  const MQ_TOUCHLIKE = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  let openPointerType = 'mouse';
+  // Onthoud waarmee de gebruiker de viewer opent (touch vs mouse).
+  grid.addEventListener('pointerdown', (e) => { openPointerType = e.pointerType || 'mouse'; }, {passive:true});
+  grid.addEventListener('touchstart', () => { openPointerType = 'touch'; }, {passive:true});
   const HINT_KEY = 'praatkaarten_hint_shown_v1';
   let hintTimer = null;
   function showNavHint(){
     if(!navHint) return;
-    if(!IS_TOUCH) return;
+    // Toon alleen als dit echt een touch-ervaring is (telefoon/tablet) óf als de viewer geopend is via touch.
+    if(!(MQ_TOUCHLIKE || openPointerType === 'touch')) return;
     try{
       if(sessionStorage.getItem(HINT_KEY) === '1') return;
       sessionStorage.setItem(HINT_KEY, '1');
