@@ -346,6 +346,30 @@ body.lb-open .navHintMini{ opacity:0; }
   .lb.show-ui .close{ opacity:1; }
 }
 
+
+/* Robuuste touch-detectie (JS zet html.is-touch) */
+html.is-touch .chev{ display:none !important; }
+html.is-touch .lb.show-ui .close{ opacity:1; }
+
+/* Hint ook op touch devices die niet aan (hover:none) & (pointer:coarse) voldoen */
+html.is-touch body.lb-open.show-hint .navHintMini{ opacity:.72; }
+html.is-touch body.lb-open .navHintMini{ opacity:0; }
+
+/* Op touch: hint altijd rechts-onder in beeld */
+html.is-touch .navHintMini{
+  position:fixed;
+  right:14px;
+  bottom:14px;
+  margin:0;
+  padding:8px 10px;
+  background:rgba(243,245,238,.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border:1px solid rgba(0,0,0,.06);
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.10);
+}
+
 .chev svg,
 .close svg{
   width:22px;

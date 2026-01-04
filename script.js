@@ -12,6 +12,22 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
+  // Touch-detectie die ook werkt op iOS/Safari en hybride devices
+  const IS_TOUCH_LIKE = (() => {
+    try{
+      const hasPoints = (navigator.maxTouchPoints || 0) > 0;
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      const touchEvent = ('ontouchstart' in window);
+      return hasPoints || coarse || touchEvent;
+    }catch(_e){
+      return ('ontouchstart' in window);
+    }
+  })();
+
+  // CSS-hook zodat we touch/hybride devices robuust kunnen stylen
+  if (IS_TOUCH_LIKE) document.documentElement.classList.add('is-touch');
+
+
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
 
@@ -29,8 +45,8 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 4500);
   }
   function maybeShowNavHintOnce(){
-    // Alleen tonen wanneer de viewer via touch/pen is geopend (dus niet met muis/desktop)
-    if(lastPointerType === 'mouse') return;
+    // Toon alleen op touch/pen (of touch-achtige devices waar pointerType soms 'mouse' blijft)
+    if(lastPointerType === 'mouse' && !IS_TOUCH_LIKE) return;
     try{
       if(sessionStorage.getItem(HINT_KEY) === '1') return;
       sessionStorage.setItem(HINT_KEY,'1');

@@ -2,6 +2,20 @@ const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
   const closeBtn = document.getElementById('close');
+
+  // Touch-detectie (iOS/Safari proof)
+  const IS_TOUCH_LIKE = (() => {
+    try{
+      const hasPoints = (navigator.maxTouchPoints || 0) > 0;
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      const touchEvent = ('ontouchstart' in window);
+      return hasPoints || coarse || touchEvent;
+    }catch(_e){
+      return ('ontouchstart' in window);
+    }
+  })();
+  if (IS_TOUCH_LIKE) document.documentElement.classList.add('is-touch');
+
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
