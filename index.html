@@ -283,30 +283,28 @@ button,
 }
 
 
-/* ===== FIXES (v4) ===== */
+/* ===== FIXES (v5) =====
+   - Balk: WEL in portrait, WEG in landscape (telefoon)
+   - Fix: gebruik geen max-width (want landscape is vaak >760px)
+*/
 
-html, body { height:100%; overscroll-behavior: none; }
+/* default: balk zichtbaar */
+.controlsBar{ display:flex; }
 
-/* Zorg dat swipe/pointer-events op iOS niet door scroll worden gekaapt */
-.lb{ touch-action:none; -webkit-user-select:none; user-select:none; }
-
-/* iOS/Safari: backdrop-filter is soms 'patchy' -> pseudo-element blur-laag */
-.lb::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background: rgba(255,255,255,.12);
-  pointer-events:none;
-}
-.lb > *{ position:relative; z-index:1; }
-
-/* Onderste balk verbergen in LANDSCAPE (telefoon) */
-@media (max-width: 760px) and (orientation: landscape){
+/* TELEFOON LANDSCAPE: balk weg (detecteer via coarse pointer + hover none + lage hoogte) */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
   body{ padding-bottom: 0 !important; }
 }
+
+/* extra safety: als viewport laag is (landscape), ook verbergen */
+@media (max-height: 520px) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+
+
+.lb{ touch-action:none; -webkit-user-select:none; user-select:none; }
 
 </style>
 </head>
@@ -563,59 +561,6 @@ lb.setAttribute('aria-hidden','false');
     filtered = data.slice();
     render(filtered);
   })();
-
-
-// ===== TOUCH-SWIPE-FALLBACK (v4) =====
-// iOS Safari is soms inconsistent met pointer-events; daarom ook touchend swipe-detectie.
-(function(){
-  const lb = document.querySelector('.lb');
-  if(!lb) return;
-
-  let sx=0, sy=0, st=0;
-  let armed=false;
-
-  lb.addEventListener('touchstart', (e)=>{
-    if(!lb.classList.contains('open')) return;
-    const t=e.touches[0];
-    // start op UI-knop? dan geen swipe
-    const target=e.target;
-    if(target && target.closest && target.closest('button')){ armed=false; return; }
-    armed=true;
-    sx=t.clientX; sy=t.clientY; st=performance.now();
-  }, {passive:true});
-
-  lb.addEventListener('touchmove', (e)=>{
-    if(!lb.classList.contains('open')) return;
-    if(!armed) return;
-    // voorkom scrollen terwijl overlay open is
-    e.preventDefault();
-  }, {passive:false});
-
-  lb.addEventListener('touchend', (e)=>{
-    if(!lb.classList.contains('open')) return;
-    if(!armed) return;
-    armed=false;
-
-    const t=e.changedTouches[0];
-    const dx=t.clientX - sx;
-    const dy=t.clientY - sy;
-    const dt=performance.now()-st;
-
-    const ax=Math.abs(dx), ay=Math.abs(dy);
-    const fast = dt < 420;
-    const thrX = fast ? 40 : 60;
-    const thrY = fast ? 50 : 80;
-
-    if(ay > ax && dy > thrY){
-      closeLb();
-      return;
-    }
-    if(ax > ay && ax > thrX){
-      if(dx < 0) go(1); else go(-1);
-    }
-  }, {passive:true});
-})();
-
 </script>
 
 
