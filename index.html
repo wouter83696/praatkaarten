@@ -92,6 +92,24 @@ body{
 }
 
 /* ===============================
+   NAV HINT IN MENUBALK (alleen bij grote kaart)
+   =============================== */
+.navHintMini{
+  margin-left:auto;
+  opacity:0;
+  color:rgba(11,18,32,.55);
+  font-size:12.5px;
+  line-height:1.2;
+  white-space:nowrap;
+  pointer-events:none;
+  transition:opacity .35s ease;
+}
+
+/* Alleen tonen als lightbox open is én hint actief is */
+body.lb-open.show-hint .navHintMini{ opacity:.72; }
+body.lb-open .navHintMini{ opacity:0; }
+
+/* ===============================
    GRID
    =============================== */
 
@@ -230,7 +248,7 @@ body{
   z-index:0;
 }
 
-.panel, .lbCard, .nav-hint, .chev, .close{
+.panel, .lbCard, .chev, .close{
   position:relative;
   z-index:1;
 }
@@ -314,26 +332,6 @@ body{
   fill:none;
   pointer-events:none;
 }
-
-/* ===============================
-   NAV HINT (alleen bij grote kaart)
-   =============================== */
-.nav-hint{
-  position: fixed;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 13px;
-  line-height: 1.4;
-  color: rgba(0,0,0,.55);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .4s ease;
-  z-index: 999;
-  text-align: right;
-}
-.lb.open .nav-hint{ opacity: 1; }
-.lb.hide-hint .nav-hint{ opacity: 0; }
 
 /* ===============================
    FIXES
@@ -610,6 +608,7 @@ display:block;}
       <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="reset" type="button">Reset</button>
     </div>
+    <div class="navHintMini" id="navHint" aria-hidden="true">veeg ↔︎ • tik</div>
 </div>
 </div>
 
@@ -617,7 +616,6 @@ display:block;}
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="lbBg" aria-hidden="true"></div>
-  <div class="nav-hint" id="navHint">veeg om te bladeren • tik om te sluiten</div>
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -655,9 +653,14 @@ const closeBtn = document.getElementById('close');
   let hintTimer = null;
   function showNavHint(){
     if(!navHint) return;
-    lb.classList.remove('hide-hint');
+    // toon hint in menubalk (rechts), alleen zolang de lightbox open is
+    document.body.classList.add('show-hint');
+    navHint.setAttribute('aria-hidden','false');
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => lb.classList.add('hide-hint'), 3000);
+    hintTimer = setTimeout(() => {
+      document.body.classList.remove('show-hint');
+      navHint.setAttribute('aria-hidden','true');
+    }, 2200);
   }
 
   // UI chrome (pijlen + sluiten)
@@ -765,6 +768,8 @@ lb.setAttribute('aria-hidden','false');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     clearTimeout(hintTimer);
+    document.body.classList.remove('show-hint');
+    if(navHint) navHint.setAttribute('aria-hidden','true');
   }
 
   // Swipe / drag overal (ook op de grijze achtergrond):
