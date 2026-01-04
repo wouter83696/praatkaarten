@@ -283,82 +283,57 @@ button,
 }
 
 
-/* ===== FIXES (v11) =====
-   Nog meer DRUKWERK-achtig:
-   - warmer papierwit
-   - minder 'zweven', meer liggend op papier
-   - zachtere, bredere schaduwen
+/* ===== FIXES (v9) =====
+   Volledig egale WITTE achtergrond (geen kleurverschil, geen gradients).
 */
 
-/* 1) Warm papierwit (offset papier, heel subtiel) */
+/* 1) Absolute basis: alles wit */
 html, body{
-  min-height:100%;
-  background:#FCFCFA !important; /* net geen puur wit */
+  min-height: 100%;
+  background: #FFFFFF !important;
 }
 
+/* 2) Kill alle mogelijke achtergronden/overlays */
 body{
-  background-image:
-    radial-gradient(1400px 900px at 30% 15%, rgba(0,0,0,0.018), transparent 45%),
-    radial-gradient(1400px 900px at 70% 85%, rgba(0,0,0,0.012), transparent 45%);
+  background-image: none !important;
+}
+html::before, html::after,
+body::before, body::after{
+  content: none !important;
 }
 
-/* 2) Kaarten: drukwerk-achtige schaduw (contact + zachte rand) */
-.card, .tile, .cardItem{
-  background:#fff;
-  box-shadow:
-    0 1px 1px rgba(0,0,0,.06),   /* contact met papier */
-    0 6px 14px rgba(0,0,0,.08); /* zachte rand */
-  transition: box-shadow .25s ease;
-}
-
-/* hover: bijna niets, alsof je papier optilt */
-@media (hover:hover){
-  .card:hover, .tile:hover, .cardItem:hover{
-    box-shadow:
-      0 2px 3px rgba(0,0,0,.07),
-      0 10px 22px rgba(0,0,0,.10);
-  }
-}
-
-/* 3) Lightbox: kaart lijkt op tafel te liggen */
-.lb .card, .lb .tile, .lb .cardItem{
-  box-shadow:
-    0 4px 10px rgba(0,0,0,.10),
-    0 28px 50px rgba(0,0,0,.16);
-}
-
-/* 4) Alles transparant zodat papierwit overal doorloopt */
+/* 3) Alle wrappers transparant zodat wit overal doorloopt */
 .page, .wrap, .container, main,
 .grid, .cards, .cardGrid{
   background: transparent !important;
 }
 
-/* 5) Lightbox achtergrond: melkachtig papier */
+/* 4) Lightbox: subtiele neutrale blur op WIT */
 .lb{
   position: fixed;
   inset: 0;
-  touch-action:none;
-  background: rgba(252,252,250,.65);
+  touch-action: none;
+  background: rgba(255,255,255,.55) !important;
 }
 .lb::before{
   content:"";
   position:absolute;
   inset:0;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  background: rgba(252,252,250,.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.55);
   pointer-events:none;
 }
 
-/* 6) Balk: portrait zichtbaar, landscape telefoon weg */
+/* 5) Balk: portrait zichtbaar, landscape (telefoon) weg */
 .controlsBar{ display:flex; }
-@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .controlsBar{ display:none !important; }
-  body{ padding-bottom:0 !important; }
+  body{ padding-bottom: 0 !important; }
 }
-@media (max-height:520px) and (orientation:landscape){
+@media (max-height: 520px) and (orientation: landscape){
   .controlsBar{ display:none !important; }
-  body{ padding-bottom:0 !important; }
+  body{ padding-bottom: 0 !important; }
 }
 
 </style>
