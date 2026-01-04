@@ -227,8 +227,11 @@ html,body{
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    =============================== */
-@media (pointer: coarse){
+@media (pointer: coarse) and (orientation: portrait){
   .controlsBar{ display:none !important; }
+}
+
+@media (pointer: coarse){
   .lb .chev,
   .lb .close,
   .lb button,
