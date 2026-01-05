@@ -48,7 +48,8 @@ body{
 
 .controlsBar{
   position:fixed;left:0;right:0;bottom:0;z-index:50;
-  padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+  /* iets strakker naar links, maar nog met ademruimte */
+  padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   background:rgba(255,255,255,.86);
   backdrop-filter:blur(10px);
 }
@@ -78,9 +79,9 @@ body{
 .btn:active{transform:translateY(1px);}
 
 .btnGroup{display:flex;align-items:center;gap:0;}
-/* compacter: streepje + reset dichter tegen hussel */
-.btnGroup .btn{padding:10px 6px;}
-.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 4px;}
+/* strak: hussel | reset compacter, divider subtiel */
+.btnGroup .btn{padding:10px 4px;}
+.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 1px;opacity:.35;}
 
 .help{
   transition:opacity .8s ease;
@@ -538,7 +539,8 @@ body{
 .controlsBar .btnGroup{
   display:flex;
   align-items:center;
-  gap:14px;
+  /* strak: geen extra ruimte tussen Hussel | Reset */
+  gap:0;
 }
 
 /* rechts */
@@ -576,15 +578,17 @@ body{
   align-items:center !important;
   justify-content:space-between !important;
   gap:16px;
-  padding-left: clamp(14px, 3vw, 28px);
-  padding-right: clamp(14px, 3vw, 28px);
+  /* iets strakker tegen de linker (en rechter) rand */
+  padding-left: clamp(8px, 2vw, 14px);
+  padding-right: clamp(8px, 2vw, 14px);
 }
 
 .controlsBar .btnGroup{
   display:flex !important;
   align-items:center !important;
   justify-content:flex-start !important;
-  gap:14px;
+  /* strak: geen extra ruimte tussen Hussel | Reset */
+  gap:0 !important;
   margin-right:auto !important;
 }
 
