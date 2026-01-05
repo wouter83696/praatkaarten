@@ -115,8 +115,9 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     showUI();
     maybeShowNavHintOnce();
 
-    prevBtn.disabled = currentIndex <= 0;
-    nextBtn.disabled = currentIndex >= filtered.length - 1;
+    // Oneindig doorlopen: pijlen nooit uitschakelen
+    if(prevBtn) prevBtn.disabled = false;
+    if(nextBtn) nextBtn.disabled = false;
   }
 
   function closeLb(){

@@ -218,6 +218,34 @@ html,body{
   color:var(--uiInk);
 }
 
+/* =========================================================
+   ✅ Eindfix: Hussel + Reset strak links, dicht bij elkaar
+   - voorkomt dat een (onzichtbare) hint ruimte blijft innemen
+   - geen 'space-between' maar links uitlijnen
+   ========================================================= */
+
+/* Maak de balk full-width zonder centrering via max-width */
+.controlsBar .inner{
+  max-width:none;
+  margin:0;
+  justify-content:flex-start;
+}
+
+/* Hussel + Reset compacter */
+.controlsBar .btnGroup{
+  gap:6px;
+}
+
+.controlsBar .sep{
+  margin:0 6px;
+  height:16px;
+}
+
+/* Desktop: hint helemaal uit layout halen */
+@media (hover:hover) and (pointer:fine){
+  .controlsBar .help{ display:none !important; }
+}
+
 .controlsBar button svg,
 .controlsBar a svg{
   stroke:currentColor !important;
@@ -291,8 +319,27 @@ html,body{
    (overschrijft ALLES erboven)
    ========================================================= */
 
+/* Zorg dat de balk niet kunstmatig gecentreerd wordt */
 .controlsBar{
-  width:100% !important;
+  left:0 !important;
+  right:0 !important;
 }
 
-.
+.controlsBar .inner{
+  max-width:none !important;
+  margin:0 !important;
+  justify-content:flex-start !important;
+}
+
+.controlsBar .btnGroup{
+  gap:6px !important;
+}
+
+.controlsBar .sep{
+  margin:0 6px !important;
+}
+
+/* Op desktop hoeft de swipe-hint geen layout-ruimte te pakken */
+@media (hover: hover) and (pointer: fine){
+  .controlsBar .help{ display:none !important; }
+}
