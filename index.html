@@ -635,7 +635,7 @@ display:block;}
       <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="reset" type="button">Reset</button>
     </div>
-    <div class="navHintMini" id="navHint" aria-hidden="true">← → swipe</div>
+    <div class="navHintMini" id="navHint" aria-hidden="true">← → swipe | tap to close </div>
 </div>
 </div>
 
@@ -707,7 +707,7 @@ const closeBtn = document.getElementById('close');
     hintTimer = setTimeout(() => {
       document.body.classList.remove('show-hint');
       navHint.setAttribute('aria-hidden','true');
-    }, 2600);
+    }, 8000);
   }
 
   // UI chrome (pijlen + sluiten)
