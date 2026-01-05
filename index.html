@@ -252,6 +252,12 @@ body.lb-open .navHintMini{ opacity:0; }
   opacity: .38;
   pointer-events:none;
   z-index:0;
+  /* robuuste viewport hoogte (rotatie / browser-UI) */
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: 100vh;
+  min-height: 100vh;
+
 }
 
 /* tijdens het swipen moet de bg direct meebewegen (zonder easing) */
@@ -268,6 +274,12 @@ body.lb-open .navHintMini{ opacity:0; }
   background: rgba(255,255,255,.22);
   pointer-events:none;
   z-index:0;
+  /* robuuste viewport hoogte (rotatie / browser-UI) */
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: 100vh;
+  min-height: 100vh;
+
 }
 
 .panel, .lbCard, .chev, .close{
@@ -657,7 +669,20 @@ display:block;}
 
 
 <script>
-  const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
+  
+  // Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
+  function setVh(){
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  setVh();
+  window.addEventListener('resize', setVh);
+  window.addEventListener('orientationchange', setVh);
+  if (window.visualViewport){
+    window.visualViewport.addEventListener('resize', setVh);
+  }
+
+const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertragen"];
 
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
