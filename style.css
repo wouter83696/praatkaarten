@@ -343,37 +343,3 @@ html,body{
 @media (hover: hover) and (pointer: fine){
   .controlsBar .help{ display:none !important; }
 }
-
-
-/* ===== CONTROLS LINKS STRAK + STREEPJE ZONDER RUIMTE ===== */
-
-.controlsBar{
-  left:0 !important;
-  right:auto !important;
-  padding-left:12px;
-}
-
-.controlsBar .inner{
-  max-width:none !important;
-  margin:0 !important;
-  display:flex !important;
-  justify-content:flex-start !important;
-}
-
-.controlsBar .btnGroup{
-  display:flex !important;
-  align-items:center !important;
-  gap:0 !important;
-}
-
-.controlsBar .btn.shuffle::after{
-  content:"–";
-  margin:0 4px;
-  opacity:.7;
-}
-
-.controlsBar .btn{
-  padding:8px 6px !important;
-  line-height:1 !important;
-  letter-spacing:0 !important;
-}
