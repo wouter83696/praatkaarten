@@ -1,4 +1,4 @@
-const THEMES = ["verkennen","verhelderen","verbinden","verdiepen","vertragen","bewegen"];
+const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
