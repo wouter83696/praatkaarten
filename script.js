@@ -143,6 +143,17 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
   let gestureArmed = false;
   let lastPointerType = 'mouse';
 
+  // Voorkom dat de 'synthetic click' na een touch-tap doorvalt naar de grid
+  // (klassieker: je sluit de lightbox, maar de klik opent direct weer een kaart).
+  let suppressClickUntil = 0;
+
+  function closeFromTap(e){
+    suppressClickUntil = performance.now() + 450;
+    try{ e?.preventDefault?.(); }catch(_e){}
+    try{ e?.stopPropagation?.(); }catch(_e){}
+    closeLb();
+  }
+
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
     lastPointerType = e.pointerType || 'mouse';
@@ -212,7 +223,7 @@ lb.addEventListener('pointerup', (e) => {
     // ✅ Tap-to-close op touch: ook als je op de kaart zelf tapt
     // (geen swipe, geen drag)
     if(lastPointerType !== 'mouse' && ax < 10 && ay < 10){
-      closeLb();
+      closeFromTap(e);
       return;
     }
   });
@@ -252,7 +263,7 @@ lb.addEventListener('pointerup', (e) => {
     const ay = Math.abs(t.clientY - tStartY);
     // Alleen echte tap, geen swipe/drag
     if(ax < 10 && ay < 10){
-      closeLb();
+      closeFromTap(e);
     }
   }, {passive:true});
 
@@ -269,8 +280,7 @@ lb.addEventListener('pointerup', (e) => {
   // touch = tap op kaart sluit (tap-to-close).
   lbCard.addEventListener('click', (e) => {
     if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
-      e.stopPropagation();
-      closeLb();
+      closeFromTap(e);
       return;
     }
     e.stopPropagation();
@@ -283,12 +293,28 @@ lb.addEventListener('pointerup', (e) => {
   lb.addEventListener('touchstart', showUI, {passive:true});
   lb.addEventListener('click', (e) => {
     // Klik buiten de kaart (op de blur/achtergrond) = sluiten
-    if(!lbCard.contains(e.target)) { closeLb(); return; }
+    if(!lbCard.contains(e.target)) {
+      if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
+        closeFromTap(e);
+      } else {
+        closeLb();
+      }
+      return;
+    }
 
     // Touch: klik op kaart wordt al door lbCard afgehandeld (tap-to-close)
     // Desktop: alleen UI tonen
     showUI();
   });
+
+  // Onderdruk 'click-through' direct na een touch-tap-close.
+  // Dit voorkomt dat er meteen weer een kaart opent op de plek waar je tikt.
+  document.addEventListener('click', (e) => {
+    if (performance.now() < suppressClickUntil) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, true);
 document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.key === 'Escape') closeLb();

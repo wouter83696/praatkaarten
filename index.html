@@ -827,6 +827,17 @@ lb.setAttribute('aria-hidden','false');
   let gestureArmed = false;
   let lastPointerType = 'mouse';
 
+  // Voorkom dat de 'synthetic click' na een touch-tap doorvalt naar de grid
+  // (klassieker: je sluit de lightbox, maar de klik opent direct weer een kaart).
+  let suppressClickUntil = 0;
+
+  function closeFromTap(e){
+    suppressClickUntil = performance.now() + 450;
+    try{ e?.preventDefault?.(); }catch(_e){}
+    try{ e?.stopPropagation?.(); }catch(_e){}
+    closeLb();
+  }
+
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
     lastPointerType = e.pointerType || 'mouse';
@@ -901,7 +912,7 @@ lb.setAttribute('aria-hidden','false');
 
     // ✅ Tap-to-close op touch: ook als je op de kaart zelf tapt
     if(lastPointerType !== 'mouse' && ax < 10 && ay < 10){
-      closeLb();
+      closeFromTap(e);
       return;
     }
   });
@@ -933,8 +944,7 @@ lb.setAttribute('aria-hidden','false');
   // Touch: tap op kaart sluit (tap-to-close)
   lbCard.addEventListener('click', (e) => {
     if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
-      e.stopPropagation();
-      closeLb();
+      closeFromTap(e);
       return;
     }
     e.stopPropagation();
@@ -947,9 +957,24 @@ lb.setAttribute('aria-hidden','false');
   lb.addEventListener('touchstart', showUI, {passive:true});
   lb.addEventListener('click', (e) => {
     // Klik buiten de kaart (op de blur/achtergrond) = sluiten
-    if(e.target === lb) { closeLb(); return; }
+    if(e.target === lb) {
+      if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
+        closeFromTap(e);
+      } else {
+        closeLb();
+      }
+      return;
+    }
     showUI();
   });
+
+  // Onderdruk 'click-through' direct na een touch-tap-close.
+  document.addEventListener('click', (e) => {
+    if (performance.now() < suppressClickUntil) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, true);
 
   document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
