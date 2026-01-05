@@ -7,22 +7,6 @@
     "Wat krijgt nu minder aandacht?",
     "Blijven er dingen onbesproken?"
   ],
-  "verbinden": [
-    "Waar worden we enthousiast van?",
-    "Wanneer voel jij je echt onderdeel van het team?",
-    "Mogen er verschillen bestaan in ons team?",
-    "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
-    "Wat helpt ons om onszelf te laten zien in de samenwerking?",
-    "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?"
-  ],
-  "bewegen": [
-    "Wat doen we met ideeën die ontstaan?",
-    "Wanneer komt er beweging in het team?",
-    "Wat helpt ons om van praten naar doen te gaan?",
-    "Welke ideeën blijven liggen, en waarom?",
-    "Wat houdt ons tegen om in actie te komen?",
-    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
-  ],
   "duiden": [
     "Wat proberen we als team goed te doen?",
     "Wat nemen we wel of niet als vanzelfsprekend aan?",
@@ -30,6 +14,14 @@
     "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?",
     "Welke patronen blijven we terugzien in onze samenwerking?",
     "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?"
+  ],
+  "verbinden": [
+    "Waar worden we enthousiast van?",
+    "Wanneer voel jij je echt onderdeel van het team?",
+    "Mogen er verschillen bestaan in ons team?",
+    "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
+    "Wat helpt ons om onszelf te laten zien in de samenwerking?",
+    "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?"
   ],
   "vertragen": [
     "Wanneer nemen we in onze samenwerking eigenlijk de tijd?",
@@ -39,12 +31,12 @@
     "Welke rol nemen we automatisch aan in momenten van spanning?",
     "Wanneer merken we dat vertragen helpend zou zijn?"
   ],
-  "verdiepen": [
-    "Wanneer weten we als team: dit is een besluit?",
-    "Waar ervaren we onduidelijkheid over rollen en verantwoordelijkheden?",
-    "In welke situaties is het nodig om expliciet te maken wie waarvoor aan zet is?",
-    "Wat is voor ons op dit moment nog niet helder?",
-    "Wat vraagt verheldering voordat we verder kunnen?",
-    "Waar helpt het om samen meer helderheid te creëren?"
+  "bewegen": [
+    "Wat doen we met ideeën die ontstaan?",
+    "Wanneer komt er beweging in het team?",
+    "Wat helpt ons om van praten naar doen te gaan?",
+    "Welke ideeën blijven liggen, en waarom?",
+    "Wat houdt ons tegen om in actie te komen?",
+    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
   ]
 }
