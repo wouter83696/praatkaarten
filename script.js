@@ -158,7 +158,11 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
     startX = e.clientX;
     startY = e.clientY;
     startT = performance.now();
-    lb.setPointerCapture?.(e.pointerId);
+    // Op touch willen we native verticaal scrollen (zeker bij lange kaarten).
+    // Pointer-capture kan dat soms "stroef" maken, dus alleen gebruiken bij mouse/pen.
+    if(lastPointerType !== 'touch'){
+      lb.setPointerCapture?.(e.pointerId);
+    }
     showUI();
   });
 
@@ -166,8 +170,17 @@ const THEMES = ["verkennen","verbinden","bewegen","duiden","verdiepen","vertrage
 lb.addEventListener('pointermove', (e) => {
   if(!pointerDown) return;
   if(!gestureArmed) return;
-  // Tijdens echte swipe/drag: iconen tijdelijk verbergen
-  lb.classList.add('is-swiping');
+
+  const dx = e.clientX - startX;
+  const dy = e.clientY - startY;
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+
+  // Alleen "swipe"-modus als het echt horizontaal is.
+  // Dit voorkomt dat verticaal scrollen soms als swipe/tap wordt gezien.
+  if(ax > ay && ax > 12){
+    lb.classList.add('is-swiping');
+  }
 }, {passive:true});
 
 lb.addEventListener('pointerup', (e) => {
@@ -307,60 +320,3 @@ window.closeLb = closeLb;
 
 
 window.go = go;
-
-/* ===== MOBILE TAP-TO-CLOSE (v2) =====
-   - Telefoon: swipe links/rechts = nav (go)
-   - Tap (geen swipe) = sluit overlay
-*/
-(function(){
-  const lb = document.getElementById('lb');
-  if(!lb) return;
-
-  const isTouchPhone = () =>
-    window.matchMedia &&
-    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-
-  let sx=0, sy=0, moved=false;
-  const SWIPE_X = 40;   // px
-  const TAP_SLOP = 10;  // px
-
-  lb.addEventListener('touchstart', (e) => {
-    if(!isTouchPhone()) return;
-    if(!lb.classList.contains('open')) return;
-    const t = e.touches[0];
-    sx = t.clientX; sy = t.clientY;
-    moved = false;
-  }, {passive:true});
-
-  lb.addEventListener('touchmove', (e) => {
-    if(!isTouchPhone()) return;
-    if(!lb.classList.contains('open')) return;
-    const t = e.touches[0];
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-    if(Math.abs(dx) > TAP_SLOP || Math.abs(dy) > TAP_SLOP) moved = true;
-  }, {passive:true});
-
-  lb.addEventListener('touchend', (e) => {
-    if(!isTouchPhone()) return;
-    if(!lb.classList.contains('open')) return;
-    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
-    if(!t) return;
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-
-    // horizontale swipe
-    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_X){
-      if(typeof window.go === 'function'){
-        window.go(dx < 0 ? 1 : -1);
-      }
-      return;
-    }
-
-    // tap: sluiten (ook als je op de kaart tikt)
-    if(!moved){
-      if(typeof window.closeLb === 'function') window.closeLb();
-      else lb.classList.remove('open');
-    }
-  }, {passive:true});
-})();
