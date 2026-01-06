@@ -40,14 +40,16 @@ body{
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
   text-rendering:optimizeLegibility;
+  padding-bottom:72px;
 }
+
 
 /* ===============================
    CONTROLS
    =============================== */
 
 .controlsBar{
-  position:static;left:0;right:0;bottom:0;z-index:2000;
+  position:fixed;left:0;right:0;bottom:0;z-index:2000;
   /* iets strakker naar links, maar nog met ademruimte */
   padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   background:rgba(255,255,255,.86);
@@ -689,13 +691,13 @@ display:block;}
    =============================== */
 body.hm-open{overflow:hidden}
 .helpModal{
-  position:static;
+  position:fixed;
   inset:0;
   display:none;
   align-items:center;
   justify-content:center;
   padding:12px;
-  z-index:90;
+  z-index:3001;
   background:rgba(255,255,255,.14);
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
