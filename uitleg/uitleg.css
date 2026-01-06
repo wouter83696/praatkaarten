@@ -1,0 +1,8 @@
+:root{--ink:#222}
+body{margin:0;font-family:IBM Plex Sans}
+.wrap{padding:16px}
+.cover img{max-width:240px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{text-align:center}
+.card img{width:100%}
+.desc{font-size:13px;color:#555;margin-top:6px}
