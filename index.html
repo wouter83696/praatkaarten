@@ -364,7 +364,8 @@ body.lb-open .navHintMini{ opacity:0; }
 }
 
 /* Help mode: tekst niet over de kaart, maar eronder */
-.lb.help .lbText{ display:none; }
+.lb.help .lbText{ display:grid; }
+.lb.help.no-overlay .lbText{ display:none; }
 .lb.help #lbImg{
   max-height: 58vh;
   object-fit:contain;

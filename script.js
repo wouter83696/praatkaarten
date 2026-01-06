@@ -124,17 +124,19 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     if(mode === 'help'){
       lb.classList.add('help');
 
-      // tekst over de kaart uit, tekst onder aan
+      // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbBelow) lbBelow.setAttribute('aria-hidden','false');
-      if(lbBelowTitle) lbBelowTitle.textContent = item.theme || "";
+      if(lbBelowTitle) lbBelowTitle.textContent = item.theme || ""; // blijft verborgen in CSS
       const desc = (helpData && item.key && typeof helpData[item.key] === 'string') ? helpData[item.key].trim() : "";
-      if(lbBelowDesc) lbBelowDesc.textContent = desc ? desc : "— tekst later invullen —";
+      if(lbBelowDesc) lbBelowDesc.textContent = desc ? desc : "";
 
-      // geen vraagtekst overlay
-          if(lbBelow) lbBelow.setAttribute('aria-hidden','true');
-    if(lbBelowTitle) lbBelowTitle.textContent = \"\";
-    if(lbBelowDesc) lbBelowDesc.textContent = \"\";
-    }else{
+      // Overlay op de kaart: themawoord, behalve op de cover
+      const isCover = item.key === 'cover';
+      lbText.textContent = isCover ? "" : (item.theme || "");
+      lb.classList.toggle('no-overlay', isCover || !lbText.textContent);
+    }
+
+    else{
       lb.classList.remove('help');
       if(lbBelow) lbBelow.setAttribute('aria-hidden','true');
       if(lbBelowTitle) lbBelowTitle.textContent = "";
