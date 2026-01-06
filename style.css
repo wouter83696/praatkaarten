@@ -215,8 +215,15 @@ html,body{
    =============================== */
 .controlsBar button,
 .controlsBar a{
-  color:var(--uiInk);
+  color: rgba(11,18,32,.45);
 }
+
+.controlsBar button:hover,
+.controlsBar a:hover{
+  color: rgba(11,18,32,.72);
+  background: rgba(0,0,0,.04);
+}
+
 
 /* =========================================================
    ✅ Eindfix: Hussel + Reset strak links, dicht bij elkaar

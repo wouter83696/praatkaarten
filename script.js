@@ -14,10 +14,24 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
+  const uitlegBtn = document.getElementById('uitleg');
+  const lbBelow = document.getElementById('lbBelow');
+  const lbBelowTitle = document.getElementById('lbBelowTitle');
+  const lbBelowDesc = document.getElementById('lbBelowDesc');
 
-  let data = [];       // full list
-  let filtered = [];   // current order
-  let currentIndex = -1;
+  
+
+  let mode = 'cards'; // 'cards' of 'help'
+  let helpData = {};
+  const helpItems = [
+    { theme:'Samen onderzoeken', key:'cover', bg:'voorkant.svg' },
+    { theme:'Verkennen', key:'verkennen', bg:'cards/verkennen.svg' },
+    { theme:'Duiden', key:'duiden', bg:'cards/duiden.svg' },
+    { theme:'Verbinden', key:'verbinden', bg:'cards/verbinden.svg' },
+    { theme:'Verhelderen', key:'verdiepen', bg:'cards/verdiepen.svg' },
+    { theme:'Vertragen', key:'vertragen', bg:'cards/vertragen.svg' },
+    { theme:'Bewegen', key:'bewegen', bg:'cards/bewegen.svg' }
+  ];
 
   // Nav hint (rechts): kort zichtbaar bij openen
   let hintTimer = null;
@@ -104,14 +118,39 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
 
   function openLb(item){
-    lbImg.src = item.bg;
-    lbText.textContent = item.q || "";
+    // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
+    lbImg.src = item.bg || "";
+
+    if(mode === 'help'){
+      lb.classList.add('help');
+
+      // tekst over de kaart uit, tekst onder aan
+      if(lbBelow) lbBelow.setAttribute('aria-hidden','false');
+      if(lbBelowTitle) lbBelowTitle.textContent = item.theme || "";
+      const desc = (helpData && item.key && typeof helpData[item.key] === 'string') ? helpData[item.key].trim() : "";
+      if(lbBelowDesc) lbBelowDesc.textContent = desc ? desc : "— tekst later invullen —";
+
+      // geen vraagtekst overlay
+          if(lbBelow) lbBelow.setAttribute('aria-hidden','true');
+    if(lbBelowTitle) lbBelowTitle.textContent = \"\";
+    if(lbBelowDesc) lbBelowDesc.textContent = \"\";
+    }else{
+      lb.classList.remove('help');
+      if(lbBelow) lbBelow.setAttribute('aria-hidden','true');
+      if(lbBelowTitle) lbBelowTitle.textContent = "";
+      if(lbBelowDesc) lbBelowDesc.textContent = "";
+
+      lbText.textContent = item.q || "";
+    }
+
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
     document.body.classList.add('lb-open');
+
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
+
     showUI();
     maybeShowNavHintOnce();
 
@@ -120,11 +159,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     if(nextBtn) nextBtn.disabled = false;
   }
 
-  function closeLb(){
-    lb.setAttribute('aria-hidden','true');
-    lb.classList.remove('open');
-    lb.classList.remove('is-swiping');
-    document.body.classList.remove('lb-open');
+      lb.classList.remove('help');
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
@@ -230,6 +265,7 @@ lb.addEventListener('pointerup', (e) => {
   });
 
   function openAt(index){
+    mode = 'cards';
     currentIndex = index;
     openLb(filtered[currentIndex]);
   }
@@ -323,15 +359,28 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'ArrowRight') go(1);
   });
 
+  resetBtn?.addEventListener('click', () => {
+    mode = 'cards';
+    filtered = data.slice();
+    render(filtered);
+    closeLb();
+  });
+
   shuffleBtn.addEventListener('click', () => {
     filtered = shuffle(filtered.slice());
     render(filtered);
   });
 
-  resetBtn.addEventListener('click', () => {
-    filtered = data.slice();
-    render(filtered);
-  });
+  
+  if(uitlegBtn){
+    uitlegBtn.addEventListener('click', () => {
+      showNavHint();
+      mode = 'help';
+      filtered = helpItems.slice();
+      currentIndex = 0;
+      openLb(filtered[currentIndex]);
+    });
+  }
 
   (async function init(){
     const res = await fetch('questions.json');
@@ -339,6 +388,14 @@ document.addEventListener('keydown', (e) => {
     data = buildData(questions);
     filtered = data.slice();
     render(filtered);
+
+    // uitleg-teksten (later invulbaar)
+    try{
+      const hr = await fetch('uitleg-data.json', { cache:'no-store' });
+      helpData = await hr.json();
+    }catch(e){
+      helpData = {};
+    }
   })();
 
 
