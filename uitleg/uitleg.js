@@ -1,17 +1,18 @@
 (async function(){
+  const BASE = "/praatkaarten";
   const slides = [
-    { key:"cover", title:"Samen onderzoeken", src:"../voorkant.svg", overlayTitle:true },
-    { key:"verkennen", title:"Verkennen", src:"../cards/verkennen.svg", overlayTitle:true },
-    { key:"duiden", title:"Duiden", src:"../cards/duiden.svg", overlayTitle:true },
-    { key:"verbinden", title:"Verbinden", src:"../cards/verbinden.svg", overlayTitle:true },
-    { key:"verdiepen", title:"Verhelderen", src:"../cards/verdiepen.svg", overlayTitle:true },
-    { key:"vertragen", title:"Vertragen", src:"../cards/vertragen.svg", overlayTitle:true },
-    { key:"bewegen", title:"Bewegen", src:"../cards/bewegen.svg", overlayTitle:true }
+    { key:"cover", title:"Samen onderzoeken", src:`${BASE}/voorkant.svg` },
+    { key:"verkennen", title:"Verkennen", src:`${BASE}/cards/verkennen.svg` },
+    { key:"duiden", title:"Duiden", src:`${BASE}/cards/duiden.svg` },
+    { key:"verbinden", title:"Verbinden", src:`${BASE}/cards/verbinden.svg` },
+    { key:"verdiepen", title:"Verhelderen", src:`${BASE}/cards/verdiepen.svg` },
+    { key:"vertragen", title:"Vertragen", src:`${BASE}/cards/vertragen.svg` },
+    { key:"bewegen", title:"Bewegen", src:`${BASE}/cards/bewegen.svg` }
   ];
 
   let data = {};
   try{
-    const res = await fetch('uitleg-data.json', { cache:'no-store' });
+    const res = await fetch(`${BASE}/uitleg-data.json`, { cache:'no-store' });
     data = await res.json();
   }catch(e){ data = {}; }
 
@@ -45,26 +46,23 @@
   });
 
   let index = 0;
-  let startX = 0, startY = 0, dx = 0;
-  let isDown = false;
-  let isSwiping = false;
+  let startX=0, startY=0, dx=0;
+  let isDown=false, isSwiping=false;
 
   function setDot(i){
-    [...dotsEl.children].forEach((el, j)=>{
-      el.classList.toggle('on', j===i);
-    });
+    [...dotsEl.children].forEach((el,j)=> el.classList.toggle('on', j===i));
   }
 
-  function getDesc(s){
-    const t = (data[s.key] || '').trim();
-    return t;
+  function getDesc(key){
+    return ((data && data[key]) ? String(data[key]) : "").trim();
   }
 
   function renderMeta(){
     const s = slides[index];
     themeEl.textContent = s.title;
+    overlaySpan.textContent = s.title;
 
-    const txt = getDesc(s);
+    const txt = getDesc(s.key);
     if(txt){
       descEl.textContent = txt;
       descEl.classList.remove('placeholder');
@@ -72,10 +70,6 @@
       descEl.textContent = '— tekst later invullen —';
       descEl.classList.add('placeholder');
     }
-
-    overlay.style.display = s.overlayTitle ? 'grid' : 'none';
-    overlaySpan.textContent = s.title;
-
     setDot(index);
   }
 
@@ -94,18 +88,14 @@
   }
 
   function onResize(){
-    // houd current slide netjes in beeld bij resize
     const w = stage.getBoundingClientRect().width;
     track.style.transition = 'none';
     track.style.transform = `translateX(${-index*w}px)`;
   }
 
   stage.addEventListener('pointerdown', (e)=>{
-    isDown = true;
-    isSwiping = false;
-    startX = e.clientX;
-    startY = e.clientY;
-    dx = 0;
+    isDown = true; isSwiping = false;
+    startX = e.clientX; startY = e.clientY; dx = 0;
     stage.setPointerCapture(e.pointerId);
     track.style.transition = 'none';
   });
@@ -115,18 +105,15 @@
     const moveX = e.clientX - startX;
     const moveY = e.clientY - startY;
 
-    // pas na kleine drempel bepalen of we horizontaal swipen
     if(!isSwiping){
       if(Math.abs(moveX) > 8 && Math.abs(moveX) > Math.abs(moveY)){
         isSwiping = true;
       }else if(Math.abs(moveY) > 10){
-        // user scrollt verticaal; laat los
         isDown = false;
         try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
         return;
       }
     }
-
     if(isSwiping){
       dx = moveX;
       dragTo(dx);
@@ -147,22 +134,18 @@
     }else{
       snapTo(index);
     }
-    dx = 0;
-    isSwiping = false;
+    dx = 0; isSwiping = false;
   });
 
-  stage.addEventListener('pointercancel', (e)=>{
+  stage.addEventListener('pointercancel', ()=>{
     if(!isDown) return;
     isDown = false;
-    try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
     snapTo(index);
-    dx = 0;
-    isSwiping = false;
+    dx = 0; isSwiping = false;
   });
 
   window.addEventListener('resize', onResize);
 
-  // init
   renderMeta();
   onResize();
 })();

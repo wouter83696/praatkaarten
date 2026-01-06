@@ -687,14 +687,12 @@ display:block;}
 <div class="controlsBar">
   <div class="inner">
     <div class="btnGroup">
-      
+      <button class="btn" id="uitleg" type="button">Uitleg</button>
+      <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="shuffle" type="button">Hussel</button>
       <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="reset" type="button">Reset</button>
-      <span class="sep" aria-hidden="true"></span>
-      <button class="btn" id="uitleg" type="button">Uitleg</button>
-    
-      </div>
+    </div>
     <div class="navHintMini" id="navHint" aria-hidden="true">← → swipe | tap to close </div>
 </div>
 </div>
@@ -751,6 +749,9 @@ const closeBtn = document.getElementById('close');
 
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
+  const uitlegBtn = document.getElementById('uitleg');
+  const helpModal = document.getElementById('helpModal');
+  const helpClose = document.getElementById('helpClose');
 
   let data = [];       // full list
   let filtered = [];   // current order
@@ -1064,7 +1065,26 @@ lb.setAttribute('aria-hidden','false');
     if(e.key === 'ArrowRight') go(1);
   });
 
-  shuffleBtn.addEventListener('click', () => {
+  
+  function openHelpModal(){
+    showNavHint(); // 8 sec hint in dezelfde balk
+    if(!helpModal) return;
+    helpModal.classList.add('open');
+    helpModal.setAttribute('aria-hidden','false');
+    document.body.classList.add('hm-open');
+  }
+  function closeHelpModal(){
+    if(!helpModal) return;
+    helpModal.classList.remove('open');
+    helpModal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('hm-open');
+  }
+
+  uitlegBtn?.addEventListener('click', openHelpModal);
+  helpClose?.addEventListener('click', closeHelpModal);
+  helpModal?.addEventListener('click', (e)=>{ if(e.target === helpModal) closeHelpModal(); });
+
+shuffleBtn.addEventListener('click', () => {
     filtered = shuffle(filtered.slice());
     render(filtered);
   });
@@ -1096,6 +1116,15 @@ lb.setAttribute('aria-hidden','false');
 </script>
 
 
+
+
+  <!-- Uitleg modal (telefoon focus) -->
+  <div class="helpModal" id="helpModal" aria-hidden="true">
+    <div class="helpPanel" role="dialog" aria-modal="true" aria-label="Uitleg">
+      <button class="helpClose" id="helpClose" type="button" aria-label="Sluiten">✕</button>
+      <iframe class="helpFrame" id="helpFrame" title="Uitleg" src="/praatkaarten/uitleg/uitleg.html"></iframe>
+    </div>
+  </div>
 
 </body>
 </html>
