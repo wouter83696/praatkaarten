@@ -35,7 +35,7 @@
    =============================== */
 
 body{
-  margin:0;
+  margin-left:auto;
   background:#fff;
   font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-text-size-adjust:100%;
@@ -47,7 +47,7 @@ body{
    =============================== */
 
 .controlsBar{
-  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  position:static;left:0;right:0;bottom:0;z-index:2000;
   /* iets strakker naar links, maar nog met ademruimte */
   padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   background:rgba(255,255,255,.86);
@@ -114,16 +114,16 @@ body.lb-open .navHintMini{ opacity:0; }
 /* Mobiel/tablet: toon hint rechts-onder in beeld (alleen bij eerste keer vergroten) */
 @media (hover:none) and (pointer:coarse){
   .navHintMini{
-    position:fixed;
-    right:14px;
-    bottom:14px;
-    margin:0;
-    padding:8px 10px;
-    background:rgba(243,245,238,.88);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    position:static;
+    right:auto;
+    bottom:auto;
+    margin-left:auto;
+    padding:0;
+    background:transparent;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
     border-radius:14px;
-    box-shadow:0 10px 30px rgba(0,0,0,.10);
+    box-shadow:none;
     color:rgba(11,18,32,.62);
     font-size:12.5px;
     z-index:9999;
@@ -218,7 +218,7 @@ body.lb-open .navHintMini{ opacity:0; }
    =============================== */
 
 .lb{
-  position:fixed;
+  position:static;
   inset:0;
   /* iOS/Safari: zorg dat de blur écht het volledige (dynamische) viewport pakt */
   width:100vw;
@@ -241,8 +241,9 @@ body.lb-open .navHintMini{ opacity:0; }
 
 /* Meebewegende, geblurde achtergrond (zelfde SVG als huidige kaart) */
 .lbBg{
-  position:fixed;
+  position:static;
   inset:0;
+  pointer-events:none;
   width:100vw;
   height:100dvh;
   min-height:100dvh;
@@ -269,7 +270,7 @@ body.lb-open .navHintMini{ opacity:0; }
 .lb::before{
   /* witte glaze bovenop de bg, zodat het rustig blijft */
   content:"";
-  position:fixed;
+  position:static;
   inset:0;
   width:100vw;
   height:100dvh;
@@ -688,7 +689,7 @@ display:block;}
    =============================== */
 body.hm-open{overflow:hidden}
 .helpModal{
-  position:fixed;
+  position:static;
   inset:0;
   display:none;
   align-items:center;
@@ -738,7 +739,7 @@ body.hm-open{overflow:hidden}
     </div>
 
     <div class="rightCluster">
-      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
+      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">swipe <-> tap to close</div>
       <button class="btn" id="uitleg" type="button">Uitleg</button>
     </div>
   </div>
@@ -835,7 +836,7 @@ const closeBtn = document.getElementById('close');
     hintTimer = setTimeout(() => {
       document.body.classList.remove('show-hint');
       navHint.setAttribute('aria-hidden','true');
-    }, 8000);
+    }, 480000);
   }
 
   // UI chrome (pijlen + sluiten)
