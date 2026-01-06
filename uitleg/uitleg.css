@@ -13,8 +13,9 @@ body{
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
   background:transparent;
   color:var(--ink);
+  overflow:auto;
 }
-.wrap{ padding:18px; max-width: 620px; margin:0 auto; }
+.wrap{ padding:18px; padding-bottom:84px; max-width: 620px; margin:0 auto; }
 .viewer{ padding-top:0; }
 
 .stage{
@@ -27,6 +28,39 @@ body{
   background:var(--paper);
   touch-action: pan-y;
   min-height:260px;
+}
+
+/* Desktop: cursor + pijlen zoals op de kaarten-pagina */
+@media (hover:hover){
+  .stage{ cursor:crosshair; }
+}
+
+.chev{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.75);
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
+  color:rgba(11,18,32,.45);
+  cursor:pointer;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.chev svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.chev.left{ left:10px; }
+.chev.right{ right:10px; }
+
+@media (hover:hover){
+  .chev{ display:flex; opacity:.85; }
+  .chev:hover{ opacity:1; background:rgba(255,255,255,.92); }
+}
+@media (hover:none) and (pointer:coarse){
+  .chev{ display:none !important; }
 }
 .slideTrack{
   display:flex;
@@ -49,3 +83,52 @@ body{
   padding:0 10px;
   min-height: 0;
 }
+
+/* ===============================
+   ONDERSTE BALK (menu)
+   =============================== */
+.controlsBar{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  z-index:50;
+}
+.controlsBar .inner{
+  width:100%;
+  max-width:620px;
+  margin:0 auto;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+.btnGroup{ display:flex; align-items:center; gap:14px; }
+.rightCluster{ display:flex; align-items:center; gap:10px; }
+
+.btn{
+  appearance:none;
+  border:0;
+  border-radius:999px;
+  padding:10px 14px;
+  background:rgba(255,255,255,.75);
+  color:rgba(11,18,32,.72);
+  font:500 14px/1 "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  text-decoration:none;
+  cursor:pointer;
+  box-shadow:0 10px 28px rgba(0,0,0,.10);
+}
+.btn:hover{ background:rgba(255,255,255,.92); }
+
+.navHintMini{
+  font-size:13px;
+  opacity:.55;
+  white-space:nowrap;
+}
+
+/* Balk verbergen in telefoon landscape (zoals op hoofdpagina) */
+@media (hover:none) and (pointer:coarse) and (orientation:landscape){
+  .controlsBar{ display:none; }
+  .wrap{ padding-bottom:18px; }
+}
+
+

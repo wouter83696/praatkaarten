@@ -12,13 +12,33 @@
 <body>
   <main class="wrap">
     <section class="viewer" aria-label="Uitleg kaarten">
-      <div class="stage" id="stage" aria-live="polite"></div>
+      <div class="stage" id="stage" aria-live="polite">
+        <button class="chev left" id="prevSlide" aria-label="Vorige">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="chev right" id="nextSlide" aria-label="Volgende">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
 
       <div class="meta">
         <div class="desc" id="desc"></div>
       </div>
     </section>
   </main>
+
+  <!-- Onderste balk (zelfde stijl als hoofdpagina) -->
+  <div class="controlsBar" role="navigation" aria-label="Menu">
+    <div class="inner">
+      <div class="btnGroup left">
+        <a class="btn" href="../index.html" id="backLink">Kaarten</a>
+      </div>
+      <div class="rightCluster">
+        <div class="navHintMini" id="navHint">← → swipe</div>
+        <button class="btn" id="closeHelp" type="button">Sluiten</button>
+      </div>
+    </div>
+  </div>
 
   <script src="uitleg.js"></script>
 </body>

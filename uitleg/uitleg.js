@@ -23,6 +23,10 @@
 
   const stage = document.getElementById('stage');
   const descEl = document.getElementById('desc');
+  const prevBtn = document.getElementById('prevSlide');
+  const nextBtn = document.getElementById('nextSlide');
+  const closeHelp = document.getElementById('closeHelp');
+  const backLink = document.getElementById('backLink');
   if(!stage || !descEl) return;
 
   const track = document.createElement('div');
@@ -70,14 +74,23 @@
     track.style.transform = `translateX(${-index*w}px)`;
   }
 
-  stage.addEventListener('pointerdown', (e)=>{
+  // Swipe overal in de uitleg (ook op de tekst) —
+  // verticaal scrollen blijft gewoon mogelijk.
+  const swipeRoot = document.querySelector('.viewer') || document.body;
+
+  function isInsideControls(el){
+    return !!el && (el.closest?.('.controlsBar') || el.closest?.('button') || el.closest?.('a'));
+  }
+
+  swipeRoot.addEventListener('pointerdown', (e)=>{
+    if(isInsideControls(e.target)) return;
     isDown = true; isSwiping = false;
     startX = e.clientX; startY = e.clientY; dx = 0;
-    stage.setPointerCapture(e.pointerId);
+    try{ swipeRoot.setPointerCapture(e.pointerId); }catch(_e){}
     track.style.transition = 'none';
   });
 
-  stage.addEventListener('pointermove', (e)=>{
+  swipeRoot.addEventListener('pointermove', (e)=>{
     if(!isDown) return;
     const moveX = e.clientX - startX;
     const moveY = e.clientY - startY;
@@ -86,11 +99,13 @@
       if(Math.abs(moveX) > 8 && Math.abs(moveX) > Math.abs(moveY)){
         isSwiping = true;
       }else if(Math.abs(moveY) > 10){
+        // verticaal: laat scrollen doorlopen
         isDown = false;
-        try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
+        try{ swipeRoot.releasePointerCapture(e.pointerId); }catch(_e){}
         return;
       }
     }
+
     if(isSwiping){
       dx = moveX;
       dragTo(dx);
@@ -98,10 +113,10 @@
     }
   }, { passive:false });
 
-  stage.addEventListener('pointerup', (e)=>{
+  swipeRoot.addEventListener('pointerup', (e)=>{
     if(!isDown) return;
     isDown = false;
-    try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
+    try{ swipeRoot.releasePointerCapture(e.pointerId); }catch(_e){}
 
     const w = stage.getBoundingClientRect().width;
     const threshold = Math.min(90, w * 0.18);
@@ -114,11 +129,41 @@
     dx = 0; isSwiping = false;
   });
 
-  stage.addEventListener('pointercancel', ()=>{
+  swipeRoot.addEventListener('pointercancel', ()=>{
     if(!isDown) return;
     isDown = false;
     snapTo(index);
     dx = 0; isSwiping = false;
+  });
+
+  // Desktop knoppen
+  prevBtn?.addEventListener('click', ()=> snapTo(index-1));
+  nextBtn?.addEventListener('click', ()=> snapTo(index+1));
+
+  // Sluiten / terug:
+  // - In modal (iframe): stuur bericht naar de parent
+  // - Losse pagina: ga terug naar index
+  function requestClose(){
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({type:'pk_close_help'}, '*');
+      return;
+    }
+    window.location.href = '../index.html';
+  }
+  closeHelp?.addEventListener('click', requestClose);
+  backLink?.addEventListener('click', (e)=>{
+    // In modal is "Kaarten" logisch als sluiten
+    if(window.parent && window.parent !== window){
+      e.preventDefault();
+      requestClose();
+    }
+  });
+
+  // Toetsen (desktop)
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowLeft') snapTo(index-1);
+    if(e.key === 'ArrowRight') snapTo(index+1);
+    if(e.key === 'Escape') requestClose();
   });
 
   window.addEventListener('resize', onResize);
