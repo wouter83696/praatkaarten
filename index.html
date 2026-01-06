@@ -72,7 +72,7 @@ body{
   font-size:13px;
   line-height:1.2;
   cursor:pointer;
-  color:rgba(11,18,32,.45);
+  color: rgba(11,18,32,.45);
 }
 
 .btn:hover{background:rgba(0,0,0,.04);}
@@ -721,23 +721,25 @@ body.hm-open{overflow:hidden}
 }
 .helpClose:hover{background:rgba(255,255,255,.92)}
 
+
+.rightCluster{display:flex;align-items:center;gap:10px;}
 </style>
 </head>
 <body>
 
 <div class="controlsBar">
   <div class="inner">
-    <div class="btnGroup">
-      
+    <div class="btnGroup left">
       <button class="btn" id="shuffle" type="button">Hussel</button>
       <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="reset" type="button">Reset</button>
-      <span class="sep" aria-hidden="true"></span>
-      <button class="btn" id="uitleg" type="button">Uitleg</button>
-    
     </div>
-    <div class="navHintMini" id="navHint" aria-hidden="true">← → swipe | tap to close </div>
-</div>
+
+    <div class="rightCluster">
+      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
+      <button class="btn" id="uitleg" type="button">Uitleg</button>
+    </div>
+  </div>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -1167,6 +1169,43 @@ shuffleBtn.addEventListener('click', () => {
       <iframe class="helpFrame" id="helpFrame" title="Uitleg" src="/praatkaarten/uitleg/uitleg.html"></iframe>
     </div>
   </div>
+
+
+<script>
+/* UITLEG MODAL HANDLERS */
+(function(){
+  function q(id){ return document.getElementById(id); }
+
+  function openHelp(){
+    try{ window.showNavHint && window.showNavHint(); }catch(_){}
+    const m = q('helpModal');
+    if(!m) return;
+    m.classList.add('open');
+    m.setAttribute('aria-hidden','false');
+    document.body.classList.add('hm-open');
+  }
+
+  function closeHelp(){
+    const m = q('helpModal');
+    if(!m) return;
+    m.classList.remove('open');
+    m.setAttribute('aria-hidden','true');
+    document.body.classList.remove('hm-open');
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const btn = q('uitleg');
+    const close = q('helpClose');
+    const modal = q('helpModal');
+
+    btn && btn.addEventListener('click', openHelp);
+    close && close.addEventListener('click', closeHelp);
+    modal && modal.addEventListener('click', (e)=>{ if(e.target === modal) closeHelp(); });
+
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeHelp(); });
+  });
+})();
+</script>
 
 </body>
 </html>
