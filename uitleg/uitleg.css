@@ -1,8 +1,122 @@
-:root{--ink:#222}
-body{margin:0;font-family:IBM Plex Sans}
-.wrap{padding:16px}
-.cover img{max-width:240px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.card{text-align:center}
-.card img{width:100%}
-.desc{font-size:13px;color:#555;margin-top:6px}
+:root{
+  --paper:#FAFAF8;
+  --ink: rgba(11,18,32,.82);
+  --muted: rgba(11,18,32,.55);
+  --radius: 18px;
+  --shadow: 0 14px 50px rgba(0,0,0,.10);
+  --blue: rgba(48,96,136,.95);
+  --line: rgba(0,0,0,.10);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  background:transparent;
+  color:var(--ink);
+}
+
+.wrap{
+  padding:18px;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.top{margin-bottom:14px}
+.top h1{margin:0;font-size:18px;font-weight:500}
+.top p{margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.4}
+
+.viewer{
+  border-top:1px solid var(--line);
+  padding-top:16px;
+}
+
+/* “kaart even groot als kaart”: vaste max breedte + aspect ratio */
+.stage{
+  position:relative;
+  width:min(520px, 100%);
+  margin: 0 auto;
+  border-radius: var(--radius);
+  overflow:hidden;
+  box-shadow: var(--shadow);
+  background: var(--paper);
+  touch-action: pan-y; /* we willen horizontale swipe, verticale scroll in modal blijft */
+}
+
+.slideTrack{
+  display:flex;
+  width:100%;
+  transform: translateX(0px);
+  transition: transform 240ms ease;
+}
+
+.slide{
+  flex:0 0 100%;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  background:transparent;
+}
+
+.slide img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+/* overlay thema in midden (optioneel) */
+.overlay{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+}
+.overlay span{
+  font-size:22px;
+  font-weight:500;
+  color: var(--blue);
+  text-align:center;
+  padding: 10px 14px;
+  line-height:1.15;
+}
+
+/* tekst onder kaart */
+.meta{
+  width:min(520px, 100%);
+  margin: 14px auto 0;
+  text-align:center;
+}
+.theme{
+  font-size:22px;
+  font-weight:500;
+  color: var(--blue);
+  margin: 0 0 8px;
+}
+.desc{
+  font-size:14px;
+  line-height:1.55;
+  color: rgba(11,18,32,.62);
+  min-height: 2.2em;
+  padding: 0 10px;
+}
+.desc.placeholder{ color: rgba(11,18,32,.38); }
+
+.dots{
+  width:min(520px, 100%);
+  margin: 12px auto 0;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+}
+.dot{
+  width:7px;height:7px;border-radius:999px;
+  background: rgba(11,18,32,.18);
+}
+.dot.on{ background: rgba(48,96,136,.75); }
+
+@media (max-width: 520px){
+  .overlay span{ font-size:20px; }
+  .theme{ font-size:20px; }
+}

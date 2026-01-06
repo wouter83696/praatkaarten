@@ -1,20 +1,35 @@
 <!doctype html>
 <html lang="nl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Uitleg</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="uitleg.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Uitleg</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="uitleg.css" />
 </head>
 <body>
-<main class="wrap">
-  <aside class="cover">
-    <img src="../voorkant.svg" alt="Voorkant">
-  </aside>
+  <main class="wrap">
+    <header class="top">
+      <h1>Uitleg</h1>
+      <p>Swipe naar links/rechts om door de thema’s te gaan.</p>
+    </header>
 
-  <section class="cards" id="cards"></section>
-</main>
-<script src="uitleg.js"></script>
+    <section class="viewer" aria-label="Uitleg kaarten">
+      <div class="stage" id="stage" aria-live="polite">
+        <!-- slides via JS -->
+      </div>
+
+      <div class="meta">
+        <div class="theme" id="theme">Samen onderzoeken</div>
+        <div class="desc" id="desc">— tekst later invullen —</div>
+      </div>
+
+      <div class="dots" id="dots" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <script src="uitleg.js"></script>
 </body>
 </html>
