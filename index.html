@@ -24,8 +24,8 @@
   --uiBlue: rgba(48,96,136,.85);
 
   /* WARM "INKT" (bruin-grijs) voor cursor + iconen */
-  --uiInk: rgba(145,145,140,.9);
-  --uiInkSoft: rgba(145,145,140,.5);
+  --uiInk: rgba(11,18,32,.45);
+  --uiInkSoft: rgba(11,18,32,.22);
 }
 
 *{box-sizing:border-box}
@@ -351,6 +351,7 @@ body.lb-open .navHintMini{ opacity:0; }
   line-height:1.15;
   color:var(--textBlue);
   margin:0 0 8px;
+  display:none;
 }
 
 .lbBelowDesc{
@@ -717,7 +718,7 @@ body.hm-open{overflow:hidden}
   border-radius:999px;
   background:rgba(255,255,255,.75);
   cursor:pointer;
-  color:rgba(11,18,32,.72);
+  color:var(--uiInk);
 }
 .helpClose:hover{background:rgba(255,255,255,.92)}
 

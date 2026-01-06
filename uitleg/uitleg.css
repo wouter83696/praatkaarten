@@ -4,7 +4,6 @@
   --muted: rgba(11,18,32,.55);
   --radius: 18px;
   --shadow: 0 14px 50px rgba(0,0,0,.10);
-  --blue: rgba(48,96,136,.95);
   --line: rgba(0,0,0,.10);
 }
 *{box-sizing:border-box}
@@ -16,10 +15,7 @@ body{
   color:var(--ink);
 }
 .wrap{ padding:18px; max-width: 620px; margin:0 auto; }
-.top{ margin-bottom:14px; }
-.top h1{ margin:0; font-size:18px; font-weight:500; }
-.top p{ margin:6px 0 0; font-size:13.5px; color:var(--muted); line-height:1.4; }
-.viewer{ border-top:1px solid var(--line); padding-top:16px; }
+.viewer{ padding-top:0; }
 
 .stage{
   position:relative;
@@ -41,21 +37,15 @@ body{
 .slide{ flex:0 0 100%; display:flex; }
 .slide img{ width:100%; height:auto; display:block; }
 
-.overlay{
-  position:absolute; inset:0;
-  display:grid; place-items:center;
-  pointer-events:none;
+.meta{
+  width:min(520px,100%);
+  margin:14px auto 0;
+  text-align:center;
 }
-.overlay span{
-  font-size:22px; font-weight:500; color:var(--blue);
-  text-align:center; padding:10px 14px; line-height:1.15;
+.desc{
+  font-size:14px;
+  line-height:1.55;
+  color:rgba(11,18,32,.62);
+  padding:0 10px;
+  min-height: 0;
 }
-
-.meta{ width:min(520px,100%); margin:14px auto 0; text-align:center; }
-.theme{ font-size:22px; font-weight:500; color:var(--blue); margin:0 0 8px; }
-.desc{ font-size:14px; line-height:1.55; color:rgba(11,18,32,.62); min-height:2.2em; padding:0 10px; }
-.placeholder{ color: rgba(11,18,32,.38); }
-
-.dots{ width:min(520px,100%); margin:12px auto 0; display:flex; gap:8px; justify-content:center; }
-.dot{ width:7px; height:7px; border-radius:999px; background: rgba(11,18,32,.18); }
-.dot.on{ background: rgba(48,96,136,.75); }

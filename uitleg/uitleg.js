@@ -1,26 +1,29 @@
 (async function(){
+  // Let op: deze uitleg draait in een iframe (helpModal) en gebruikt daarom absolute paden
+  // naar je GitHub Pages submap.
   const BASE = "/praatkaarten";
+
   const slides = [
-    { key:"cover", title:"Samen onderzoeken", src:`${BASE}/voorkant.svg` },
-    { key:"verkennen", title:"Verkennen", src:`${BASE}/cards/verkennen.svg` },
-    { key:"duiden", title:"Duiden", src:`${BASE}/cards/duiden.svg` },
-    { key:"verbinden", title:"Verbinden", src:`${BASE}/cards/verbinden.svg` },
-    { key:"verdiepen", title:"Verhelderen", src:`${BASE}/cards/verdiepen.svg` },
-    { key:"vertragen", title:"Vertragen", src:`${BASE}/cards/vertragen.svg` },
-    { key:"bewegen", title:"Bewegen", src:`${BASE}/cards/bewegen.svg` }
+    { key:"cover", src:`${BASE}/voorkant.svg`, alt:"Voorkant" },
+    { key:"verkennen", src:`${BASE}/cards/verkennen.svg`, alt:"Verkennen" },
+    { key:"duiden", src:`${BASE}/cards/duiden.svg`, alt:"Duiden" },
+    { key:"verbinden", src:`${BASE}/cards/verbinden.svg`, alt:"Verbinden" },
+    { key:"verdiepen", src:`${BASE}/cards/verdiepen.svg`, alt:"Verhelderen" },
+    { key:"vertragen", src:`${BASE}/cards/vertragen.svg`, alt:"Vertragen" },
+    { key:"bewegen", src:`${BASE}/cards/bewegen.svg`, alt:"Bewegen" }
   ];
 
   let data = {};
   try{
     const res = await fetch(`${BASE}/uitleg-data.json`, { cache:'no-store' });
     data = await res.json();
-  }catch(e){ data = {}; }
+  }catch(e){
+    data = {};
+  }
 
   const stage = document.getElementById('stage');
-  const themeEl = document.getElementById('theme');
   const descEl = document.getElementById('desc');
-  const dotsEl = document.getElementById('dots');
-  if(!stage || !themeEl || !descEl || !dotsEl) return;
+  if(!stage || !descEl) return;
 
   const track = document.createElement('div');
   track.className = 'slideTrack';
@@ -29,29 +32,13 @@
   slides.forEach((s)=>{
     const slide = document.createElement('div');
     slide.className = 'slide';
-    slide.innerHTML = `<img src="${s.src}" alt="${s.title}">`;
+    slide.innerHTML = `<img src="${s.src}" alt="${s.alt}">`;
     track.appendChild(slide);
-  });
-
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  overlay.innerHTML = '<span></span>';
-  stage.appendChild(overlay);
-  const overlaySpan = overlay.querySelector('span');
-
-  slides.forEach((_, i)=>{
-    const d = document.createElement('div');
-    d.className = 'dot' + (i===0 ? ' on':'') ;
-    dotsEl.appendChild(d);
   });
 
   let index = 0;
   let startX=0, startY=0, dx=0;
   let isDown=false, isSwiping=false;
-
-  function setDot(i){
-    [...dotsEl.children].forEach((el,j)=> el.classList.toggle('on', j===i));
-  }
 
   function getDesc(key){
     return ((data && data[key]) ? String(data[key]) : "").trim();
@@ -59,18 +46,8 @@
 
   function renderMeta(){
     const s = slides[index];
-    themeEl.textContent = s.title;
-    overlaySpan.textContent = s.title;
-
     const txt = getDesc(s.key);
-    if(txt){
-      descEl.textContent = txt;
-      descEl.classList.remove('placeholder');
-    }else{
-      descEl.textContent = '— tekst later invullen —';
-      descEl.classList.add('placeholder');
-    }
-    setDot(index);
+    descEl.textContent = txt; // geen placeholders / koppen
   }
 
   function snapTo(i){
