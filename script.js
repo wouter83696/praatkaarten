@@ -159,7 +159,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     if(nextBtn) nextBtn.disabled = false;
   }
 
-      lb.classList.remove('help');
+  function closeLb(){
+    lb.classList.remove('help');
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
