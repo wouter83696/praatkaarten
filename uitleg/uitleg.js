@@ -27,7 +27,28 @@
   const nextBtn = document.getElementById('nextSlide');
   const closeHelp = document.getElementById('closeHelp');
   const backLink = document.getElementById('backLink');
+  const navHint = document.getElementById('navHint');
   if(!stage || !descEl) return;
+
+  // Nav hint (zelfde gedrag als hoofdpagina):
+  // - Alleen voor touch/pen
+  // - Eén keer per sessie
+  let hintTimer = null;
+  const HINT_KEY = 'pk_nav_hint_shown_uitleg';
+  function showNavHint(){
+    if(!navHint) return;
+    document.body.classList.add('show-hint');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 8000);
+  }
+  function maybeShowNavHintOnce(pointerType){
+    if(pointerType === 'mouse') return;
+    try{
+      if(sessionStorage.getItem(HINT_KEY) === '1') return;
+      sessionStorage.setItem(HINT_KEY,'1');
+    }catch(_e){}
+    showNavHint();
+  }
 
   const track = document.createElement('div');
   track.className = 'slideTrack';
@@ -84,6 +105,7 @@
 
   swipeRoot.addEventListener('pointerdown', (e)=>{
     if(isInsideControls(e.target)) return;
+    maybeShowNavHintOnce(e.pointerType);
     isDown = true; isSwiping = false;
     startX = e.clientX; startY = e.clientY; dx = 0;
     try{ swipeRoot.setPointerCapture(e.pointerId); }catch(_e){}
