@@ -137,7 +137,11 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       const q = document.createElement('div');
       q.className = 'q';
-      q.textContent = item.q;
+      // Tekst op een vast wit vlak (met extra wit onder de tekst)
+      const qText = document.createElement('span');
+      qText.className = 'qText';
+      qText.textContent = item.q;
+      q.appendChild(qText);
 
       inner.appendChild(img);
       inner.appendChild(q);
@@ -170,7 +174,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       lb.classList.add('help');
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
-      if(lbBelow){ lbBelow.setAttribute('aria-hidden','false'); lbBelow.classList.add('show'); }
+      if(lbBelow) lbBelow.setAttribute('aria-hidden','false');
       if(lbBelowTitle) lbBelowTitle.textContent = item.theme || ""; // blijft verborgen in CSS
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
@@ -198,7 +202,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     else{
       lb.classList.remove('help');
-      if(lbBelow){ lbBelow.setAttribute('aria-hidden','true'); lbBelow.classList.remove('show'); }
+      if(lbBelow) lbBelow.setAttribute('aria-hidden','true');
       if(lbBelowTitle) lbBelowTitle.textContent = "";
       if(lbBelowDesc) lbBelowDesc.textContent = "";
 
@@ -230,7 +234,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
-    if(lbBelow){ lbBelow.setAttribute('aria-hidden','true'); lbBelow.classList.remove('show'); }
+    if(lbBelow) lbBelow.setAttribute('aria-hidden','true');
     if(lbBelowTitle) lbBelowTitle.textContent = "";
     if(lbBelowDesc) lbBelowDesc.textContent = "";
     currentIndex = -1;
