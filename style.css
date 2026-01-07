@@ -221,7 +221,7 @@ html,body{
 .controlsBar button:hover,
 .controlsBar a:hover{
   color: rgba(11,18,32,.72);
-  background: rgba(0,0,0,.04);
+  background: rgba(255,255,255,0.18);
 }
 
 
@@ -382,3 +382,16 @@ body.hm-open{ overflow:hidden; }
   z-index:2;
 }
 .helpClose:hover{ background:rgba(0,0,0,.08); }
+
+
+/* === Hover: subtiele 'soft white' (geen pill) === */
+.menuBtn, .menu a, .menu button{
+  border-radius: 10px;
+  transition: background-color .15s ease, color .15s ease;
+}
+@media (hover:hover){
+  .menuBtn:hover, .menu a:hover, .menu button:hover{
+    background: rgba(255,255,255,0.55);
+  }
+}
+
