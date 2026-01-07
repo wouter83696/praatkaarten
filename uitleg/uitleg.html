@@ -12,10 +12,14 @@
 <body>
   <main class="wrap">
     <section class="viewer" aria-label="Uitleg kaarten">
-      <div class="stage" id="stage" aria-live="polite"></div>
-
-      <div class="meta">
-        <div class="desc" id="desc"></div>
+      <div class="stage" id="stage" aria-live="polite">
+        <!-- desktop-only pijlen (zelfde UX als kaartjes) -->
+        <button class="nav navPrev" id="navPrev" type="button" aria-label="Vorige">
+          <span aria-hidden="true">‹</span>
+        </button>
+        <button class="nav navNext" id="navNext" type="button" aria-label="Volgende">
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
     </section>
   </main>

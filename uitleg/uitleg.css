@@ -16,6 +16,7 @@ body{
   /* zelfde gevoel als grote kaart-overlay */
   cursor: crosshair;
 }
+html,body,.viewer,.stage,.slideTrack,.slide,.slideInner{ cursor: crosshair; }
 .wrap{ padding:18px; max-width: 620px; margin:0 auto; }
 .viewer{ padding-top:0; }
 
@@ -29,7 +30,8 @@ body{
   background:var(--paper);
   /* horizontale swipe in JS; verticaal scroll blijft elders */
   touch-action: pan-y;
-  min-height:260px;
+  /* geen extra lege ruimte; hoogte volgt inhoud */
+  min-height:0;
 }
 .slideTrack{
   display:flex;
@@ -37,28 +39,49 @@ body{
   transform:translateX(0px);
   transition: transform 240ms ease;
 }
-.slide{ flex:0 0 100%; display:flex; }
+.slide{ flex:0 0 100%; }
+.slideInner{ display:flex; flex-direction:column; }
 .slide img{ width:100%; height:auto; display:block; }
 
-.meta{
-  width:min(520px,100%);
-  /* strak: direct onder het kaartje */
-  margin:8px auto 0;
-}
-
-/* wit vlak onder kaartje: compact en in lijn met de kaarten */
-.desc{
+/* tekst moet voelen als "onderkant van hetzelfde kaartje" (geen apart tekstvak) */
+.slideDesc{
   font-size:14px;
   line-height:1.55;
   color:rgba(11,18,32,.62);
+  padding:12px 14px 14px;
+  background:transparent;
+  border:0;
 
-  background:rgba(250,250,248,.92);
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:16px;
-  padding:12px 14px;
-
-  /* hoogte wordt door JS op max-teksthoogte gezet (clean) */
+  /* mooi lopende tekst (minder orphans na punt) */
+  text-wrap: pretty;
+  hyphens:auto;
   overflow:auto;
   -webkit-overflow-scrolling:touch;
   touch-action: pan-y;
+}
+
+/* desktop pijlen (verbergen op touch) */
+.nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:46px;
+  height:46px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.08);
+  background:rgba(250,250,248,.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:rgba(11,18,32,.70);
+  cursor:pointer;
+}
+.nav span{ font-size:28px; line-height:1; margin-top:-2px; }
+.navPrev{ left:10px; }
+.navNext{ right:10px; }
+@media (pointer: coarse){
+  .nav{ display:none; }
 }
