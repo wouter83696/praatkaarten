@@ -89,10 +89,13 @@ body{
    =============================== */
 .controlsBar{
   position:fixed;left:0;right:0;bottom:0;z-index:50;
-  /* exact dezelfde balk als index.html */
+  /* Zelfde gevoel als bij de grote kaartjes: translucent + blur + zachte scheiding */
   padding:12px 12px calc(12px + env(safe-area-inset-bottom));
-  background:rgba(255,255,255,.86);
+  background:rgba(250,250,248,.72);
   backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-top:1px solid rgba(0,0,0,.06);
+  box-shadow:0 -10px 30px rgba(0,0,0,.06);
 }
 .controlsBar .inner{
   max-width:1600px;
