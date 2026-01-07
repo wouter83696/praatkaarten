@@ -62,7 +62,7 @@
   });
 
   let index = 0;
-  let startX=0, startY=0, dx=0;
+  let startX=0, startY=0, startT=0, dx=0;
   let isDown=false, isSwiping=false;
 
   function getDesc(key){
@@ -107,7 +107,7 @@
     if(isInsideControls(e.target)) return;
     maybeShowNavHintOnce(e.pointerType);
     isDown = true; isSwiping = false;
-    startX = e.clientX; startY = e.clientY; dx = 0;
+    startX = e.clientX; startY = e.clientY; startT = performance.now(); dx = 0;
     try{ swipeRoot.setPointerCapture(e.pointerId); }catch(_e){}
     track.style.transition = 'none';
   });
@@ -146,6 +146,20 @@
     if(isSwiping && Math.abs(dx) > threshold){
       snapTo(index + (dx < 0 ? 1 : -1));
     }else{
+      // Tap-to-close op touch/pen (zelfde gedrag als de kaartjes lightbox)
+      // Alleen als:
+      // - het geen swipe was
+      // - de beweging klein was
+      // - de tik op de kaart/stage was (niet op de tekst)
+      // - pointerType geen mouse is
+      const dt = performance.now() - startT;
+      const isTap = !isSwiping && Math.abs(dx) < 10 && dt < 350;
+      const onStage = !!e.target?.closest?.('.stage');
+      if(isTap && onStage && (e.pointerType === 'touch' || e.pointerType === 'pen')){
+        requestClose();
+        dx = 0; isSwiping = false;
+        return;
+      }
       snapTo(index);
     }
     dx = 0; isSwiping = false;
