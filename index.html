@@ -384,16 +384,15 @@ text-wrap: pretty;
   padding:14px 20px 20px;
 }
 .lb.help .lbBelowDesc{
-  max-height: 170px;
+  height: clamp(120px, 20vh, 170px);
   overflow:auto;
   -webkit-overflow-scrolling: touch;
+  white-space: normal;
 }
 
 
 /* In uitleg-modus: ondertekst is scrollbaar, zonder extra "witte balk" eronder */
-.lb.help .lbBelowDesc{
-  overflow:visible;
-}
+
 
 /* Uitleg: géén verticaal scrollen op de hele kaart (alleen tekstvak indien nodig) */
 .lb.help .lbCard{
@@ -790,6 +789,12 @@ body.hm-open{overflow:hidden}
   margin-left: -1px;
 }
 
+
+#lbImg{display:block; width:calc(100% + 2px); margin-left:-1px; margin-top:-1px; height:auto; transform:translateZ(0); backface-visibility:hidden; -webkit-backface-visibility:hidden;}
+
+.lbBelow{margin-top:-1px;}
+
+.lb.help-title .lbText{place-items:center; text-align:center;}
 </style>
 </head>
 <body>
