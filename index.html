@@ -778,6 +778,18 @@ body.hm-open{overflow:hidden}
 @media (hover:hover) and (pointer:fine){
   .lbCard{ cursor:crosshair; }
 }
+
+/* iOS hairline fix: overscan afbeelding net over de rand */
+#lbImg{
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.lb.help #lbImg{
+  width: calc(100% + 2px);
+  margin-left: -1px;
+}
+
 </style>
 </head>
 <body>
