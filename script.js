@@ -243,6 +243,23 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     closeLb();
   }
 
+  // Fallback: tap/click op de achtergrond (blur) sluit ook (handig als iOS pointer-events raar doet)
+  const lbBg = lb.querySelector('.lbBg');
+  if(lbBg){
+    lbBg.addEventListener('click', (e) => {
+      if(!lb.classList.contains('open')) return;
+      // voorkom dubbele click na touch
+      if(performance.now() < suppressClickUntil) return;
+      closeFromTap(e);
+    });
+    lbBg.addEventListener('touchend', (e) => {
+      if(!lb.classList.contains('open')) return;
+      closeFromTap(e);
+    }, {passive:false});
+  }
+
+
+
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
     lastPointerType = e.pointerType || 'mouse';

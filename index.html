@@ -47,7 +47,7 @@ body{
    =============================== */
 
 .controlsBar{
-  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  position:fixed;left:0;right:0;bottom:0;z-index:3000;
   /* iets strakker naar links, maar nog met ademruimte */
   padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   background:rgba(255,255,255,.86);
@@ -235,6 +235,7 @@ body.lb-open .navHintMini{ opacity:0; }
   /* Touch: verticale scroll moet altijd gewoon kunnen (lange kaarten) */
   touch-action: pan-y;
   overscroll-behavior: contain;
+  z-index:2000;
 }
 
 .lb.open{display:flex;}
@@ -338,11 +339,13 @@ body.lb-open .navHintMini{ opacity:0; }
 .lbBelow{
   display:none;
   width:100%;
-  padding:12px 18px 18px;
-  border-top:0;
-  text-align:center;
-  background:#fff;
+  padding:0 18px 18px;
+  text-align:left;
+  background:transparent;
 }
+
+/* In dezelfde witte kaart; geen los vak */
+.lbCard{ background:#fff; }
 
 .lbBelowTitle{
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
@@ -360,8 +363,7 @@ body.lb-open .navHintMini{ opacity:0; }
   font-size:14px;
   line-height:1.55;
   color: rgba(11,18,32,.62);
-  min-height: 2.2em;
-  text-wrap: pretty;
+text-wrap: pretty;
   hyphens: auto;
   -webkit-hyphens: auto;
 }
@@ -378,19 +380,6 @@ body.lb-open .navHintMini{ opacity:0; }
   -webkit-overflow-scrolling: touch;
 }
 
-/* Uitleg: thematitel als overlay (SVG's bevatten geen titeltekst) */
-.lb.help.help-title .lbText{
-  display:grid;
-  place-items:start center;
-  padding:22px 24px;
-  padding-top:26px;
-  font-size:clamp(22px, 3.2vw + 10px, 34px);
-  line-height:1.1;
-  font-weight:500;
-  transform:translateY(8px);
-  pointer-events:none;
-}
-
 /* Help mode: tekst niet over de kaart, maar eronder */
 .lb.help .lbText{ display:grid; }
 .lb.help.no-overlay .lbText{ display:none; }
@@ -399,8 +388,7 @@ body.lb-open .navHintMini{ opacity:0; }
   object-fit:contain;
   background:#fff;
 }
-.lb.help .lbBelow{
-  display:none; display:block; }
+.lb.help .lbBelow{display:block;}
 
 /* ===============================
    ICONS
@@ -764,6 +752,12 @@ body.hm-open{overflow:hidden}
 
 
 .rightCluster{display:flex;align-items:center;gap:10px;}
+
+
+/* Desktop: zelfde crosshair als gewone kaart-overlay */
+@media (hover:hover) and (pointer:fine){
+  .lbCard{ cursor:crosshair; }
+}
 </style>
 </head>
 <body>
