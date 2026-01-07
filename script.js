@@ -12,13 +12,6 @@ if (window.visualViewport){
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
-  // State
-  let data = [];
-  let filtered = [];      // huidige (eventueel gehusselde) kaartset
-  let helpFiltered = [];  // uitlegkaartjes
-  let currentIndex = -1;
-
-
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
@@ -110,8 +103,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
 
   function render(items){
-    // Bewaar de huidige (zichtbare) kaartset voor navigatie
-    filtered = items;
     grid.innerHTML = "";
     const frag = document.createDocumentFragment();
 
@@ -216,11 +207,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
 
   function closeLb(){
-    // Sluiten = terug naar normale kaartmodus
-    if(mode === 'help'){
-      mode = 'cards';
-      helpFiltered = [];
-    }
     lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
@@ -278,15 +264,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     if(!lb.classList.contains('open')) return;
     lastPointerType = e.pointerType || 'mouse';
     // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
-    // Als je start in het uitleg-tekstvak: laat verticale scroll met rust (geen swipe-gesture).
     // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
     if (e.target.closest && e.target.closest('button')) {
       gestureArmed = false;
       showUI();
-      return;
-    }
-    if (e.target.closest && (e.target.closest('.lbBelow') || e.target.closest('.lbBelowDesc'))){
-      gestureArmed = false;
       return;
     }
     pointerDown = true;
@@ -353,21 +334,14 @@ lb.addEventListener('pointerup', (e) => {
     }
   });
 
-  function activeItems(){
-    return (mode === 'help') ? helpFiltered : filtered;
-  }
-
   function openAt(index){
-    const items = activeItems();
     currentIndex = index;
-    openLb(items[currentIndex]);
+    openLb(filtered[currentIndex]);
   }
 
   function go(delta){
-
     if (currentIndex < 0) return;
-    const items = activeItems();
-    const total = items.length;
+    const total = filtered.length;
     let next = currentIndex + delta;
     if (next < 0) next = total - 1;
     if (next >= total) next = 0;
@@ -471,7 +445,7 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => {
       showNavHint();
       mode = 'help';
-      helpFiltered = helpItems.slice();
+      filtered = helpItems.slice();
       openAt(0);
     });
   }
