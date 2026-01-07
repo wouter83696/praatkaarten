@@ -75,7 +75,7 @@ body{
   color: rgba(11,18,32,.45);
 }
 
-.btn:hover{background:rgba(0,0,0,.04);}
+.btn:hover{background:rgba(243,245,238,.88);}
 .btn:active{transform:translateY(1px);}
 
 .btnGroup{display:flex;align-items:center;gap:0;}
@@ -303,15 +303,23 @@ body.lb-open .navHintMini{ opacity:0; }
 .lbCard{
   position:relative;
   width:min(560px,92vw);
+  /* Desktop: grotere kaart zoals bij thema-overlay */
   border-radius:22px;
   overflow:hidden;
   background:#fff;
   box-shadow:0 18px 45px rgba(0,0,0,.20);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 #lbImg{
-  width:100%;
+  width:100.2%;
+  margin-left:-0.1%;
   display:block;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .lbText{
@@ -339,7 +347,7 @@ body.lb-open .navHintMini{ opacity:0; }
 .lbBelow{
   display:none;
   width:100%;
-  padding:0 18px 18px;
+  padding:12px 18px 18px;
   text-align:left;
   background:transparent;
 }
@@ -363,21 +371,33 @@ body.lb-open .navHintMini{ opacity:0; }
   font-size:14px;
   line-height:1.55;
   color: rgba(11,18,32,.62);
+  white-space: normal;
+  display: block;
 text-wrap: pretty;
   hyphens: auto;
   -webkit-hyphens: auto;
 }
+
+/* Vast tekstvak onder uitlegkaart: zelfde hoogte, zodat niets 'meebeweegt' */
+.lb.help .lbBelow{
+  display:block;
+  padding:14px 20px 20px;
+}
+.lb.help .lbBelowDesc{
+  max-height: 170px;
+  overflow:auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 
 /* In uitleg-modus: ondertekst is scrollbaar, zonder extra "witte balk" eronder */
 .lb.help .lbBelowDesc{
   overflow:visible;
 }
 
-/* Uitleg: kaart kan (indien nodig) verticaal scrollen binnen de lightbox */
+/* Uitleg: géén verticaal scrollen op de hele kaart (alleen tekstvak indien nodig) */
 .lb.help .lbCard{
-  max-height: calc(var(--vh, 1vh) * 92);
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 /* Help mode: tekst niet over de kaart, maar eronder */
