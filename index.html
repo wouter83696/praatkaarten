@@ -797,40 +797,9 @@ body.hm-open{overflow:hidden}
 .lb.help-title .lbText{place-items:center; text-align:center;}
 
 
-/* === v10j: Uitleg-kaart hoogte gelijk aan gewone kaarten (beeld krimpt, tekstvak vast) === */
-.lb.help .lbBelow{
-  display:block;
-  padding:10px 18px 14px;
-}
-
-.lb.help #lbImg{
-  width:100.2%;
-  margin-left:-0.1%;
-  margin-top:-1px;
-  display:block;
-  height:auto;
-  max-height: 240px;            /* kern: totale kaart blijft compact */
-  object-fit: cover;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-}
-
-.lb.help .lbBelowDesc{
-  height: 92px;                 /* vast vak; met 1 zin altijd netjes */
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  white-space: normal;
-}
-
-@media (max-width: 520px){
-  .lb.help #lbImg{ max-height: 270px; }  /* mobiel iets meer beeld */
-  .lb.help .lbBelowDesc{ height: 96px; }
-}
-
-/* Zorg dat titel in het midden blijft (uitlegmodus) */
-.lb.help-title .lbText{ place-items:center; text-align:center; }
+/* === v10k: lightbox kaartformaat === */
+.lbCard{ width: min(var(--card-w-large), 92vw); }
+#lbImg{ width: min(var(--card-w-large), 92vw); max-height: var(--card-h-large); object-fit: contain; }
 
 </style>
 </head>
