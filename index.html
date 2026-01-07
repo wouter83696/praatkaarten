@@ -338,8 +338,8 @@ body.lb-open .navHintMini{ opacity:0; }
 .lbBelow{
   display:none;
   width:100%;
-  padding:14px 18px 18px;
-  border-top:1px solid rgba(0,0,0,.08);
+  padding:12px 18px 18px;
+  border-top:0;
   text-align:center;
   background:#fff;
 }
@@ -361,14 +361,34 @@ body.lb-open .navHintMini{ opacity:0; }
   line-height:1.55;
   color: rgba(11,18,32,.62);
   min-height: 2.2em;
+  text-wrap: pretty;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 /* In uitleg-modus: ondertekst is scrollbaar, zonder extra "witte balk" eronder */
 .lb.help .lbBelowDesc{
-  max-height: min(28vh, 240px);
+  overflow:visible;
+}
+
+/* Uitleg: kaart kan (indien nodig) verticaal scrollen binnen de lightbox */
+.lb.help .lbCard{
+  max-height: calc(var(--vh, 1vh) * 92);
   overflow:auto;
   -webkit-overflow-scrolling: touch;
-  padding-right: 4px; /* ruimte voor scrollbar */
+}
+
+/* Uitleg: thematitel als overlay (SVG's bevatten geen titeltekst) */
+.lb.help.help-title .lbText{
+  display:grid;
+  place-items:start center;
+  padding:22px 24px;
+  padding-top:26px;
+  font-size:clamp(22px, 3.2vw + 10px, 34px);
+  line-height:1.1;
+  font-weight:500;
+  transform:translateY(8px);
+  pointer-events:none;
 }
 
 /* Help mode: tekst niet over de kaart, maar eronder */

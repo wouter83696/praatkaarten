@@ -47,18 +47,22 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     { theme:'Bewegen',     key:'bewegen',     bg:'cards/bewegen.svg' }
   ];
 
-  // Nav hint (rechts): kort zichtbaar bij openen
+  // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
   let hintTimer = null;
   const HINT_KEY = 'pk_nav_hint_shown';
+  const IS_TOUCH = (
+    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+  );
   function showNavHint(){
     if(!navHint) return;
     document.body.classList.add('show-hint');
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 8000);
+    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 20000);
   }
   function maybeShowNavHintOnce(){
-    // Alleen tonen wanneer de viewer via touch/pen is geopend (dus niet met muis/desktop)
-    if(lastPointerType === 'mouse') return;
+    // Alleen tonen op touch-apparaten
+    if(!IS_TOUCH) return;
     try{
       if(sessionStorage.getItem(HINT_KEY) === '1') return;
       sessionStorage.setItem(HINT_KEY,'1');
@@ -163,9 +167,18 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       const desc = raw.replace(/\s*\n\s*/g, ' ');
       if(lbBelowDesc) lbBelowDesc.textContent = desc;
 
-      // In help-mode géén tekst-overlay op de kaart (titel staat al in de SVG)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
+      // In help-mode:
+      // - voorkant: géén overlay-tekst (staat al in de SVG)
+      // - thema-kaarten: toon alleen de themanaam als overlay (SVG's in deze set bevatten geen titeltekst)
+      if(item.key === 'cover'){
+        lbText.textContent = "";
+        lb.classList.add('no-overlay');
+        lb.classList.remove('help-title');
+      }else{
+        lbText.textContent = item.theme || "";
+        lb.classList.remove('no-overlay');
+        lb.classList.add('help-title');
+      }
     }
 
     else{
@@ -194,7 +207,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
 
   function closeLb(){
-    lb.classList.remove('help','no-overlay','open','show-ui');
+    lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
     if(lbBelow) lbBelow.setAttribute('aria-hidden','true');
