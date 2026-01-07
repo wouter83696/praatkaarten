@@ -88,40 +88,46 @@ body{
    ONDERSTE BALK (menu)
    =============================== */
 .controlsBar{
-  position:fixed;
-  left:0; right:0; bottom:0;
-  z-index:50;
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  /* exact dezelfde balk als index.html */
+  padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(10px);
 }
 .controlsBar .inner{
-  width:100%;
-  max-width:none;
-  margin:0;
-  padding:14px 20px calc(14px + env(safe-area-inset-bottom));
+  max-width:1600px;
+  margin:0 auto;
   display:flex;
+  gap:12px;
   align-items:center;
-  justify-content:flex-start;
-  gap:14px;
+  justify-content:space-between;
 }
-.btnGroup{ display:flex; align-items:center; gap:6px; }
-.rightCluster{ display:flex; align-items:center; gap:10px; margin-left:auto; }
+
+.btnGroup{display:flex;align-items:center;gap:0;}
+.rightCluster{display:flex;align-items:center;gap:10px;}
 
 /* Zelfde look als de kaartjes (hoofdpagina): simpele tekstknoppen */
 .btn{
   appearance:none;
   border:0;
   background:transparent;
-  padding:8px 10px;
-  border-radius:10px;
+  border-radius:999px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.2;
   color:rgba(11,18,32,.45);
-  font:500 14px/1 "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font:500 13px/1.2 "IBM Plex Sans", system-ui, -apple-system, sans-serif;
   text-decoration:none;
   cursor:pointer;
   box-shadow:none;
 }
 .btn:hover{
-  color:rgba(11,18,32,.72);
   background:rgba(0,0,0,.04);
 }
+
+/* compacter zoals Hussel | Reset */
+.btnGroup .btn{padding:10px 4px;}
+.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 1px;opacity:.35;}
 
 /* focus ring rustig (zoals main) */
 .btn:focus-visible{
@@ -146,14 +152,7 @@ body{
 /* Alleen tonen als hint actief is */
 body.show-hint .navHintMini{ opacity:.72; }
 
-/* Telefoon portrait: balk lekker breed (zelfde als hoofdpagina) */
-@media (hover:none) and (pointer:coarse) and (orientation:portrait){
-  .controlsBar .inner{
-    max-width:none;
-    padding-left:clamp(14px, 3vw, 28px);
-    padding-right:clamp(14px, 3vw, 28px);
-  }
-}
+/* Geen extra afwijkende padding: bar is identiek aan hoofdpagina */
 
 /* Mobiel/tablet: hint als zwevende pill rechts-onder */
 @media (hover:none) and (pointer:coarse){
@@ -174,10 +173,6 @@ body.show-hint .navHintMini{ opacity:.72; }
   }
 }
 
-/* Balk verbergen in telefoon landscape (zoals op hoofdpagina) */
-@media (hover:none) and (pointer:coarse) and (orientation:landscape){
-  .controlsBar{ display:none; }
-  .wrap{ padding-bottom:18px; }
-}
+/* (geen landscape uitzondering) */
 
 
