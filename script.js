@@ -42,12 +42,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   let mode = 'cards'; // 'cards' of 'help'
   let helpData = {};
-
-  function firstSentence(txt){
-    const t = String(txt || "").trim().replace(/\s+/g,' ');
-    const m = t.match(/^[\s\S]*?[.!?]/);
-    return m ? m[0].trim() : t;
-  }
   // Uitleg-modus: voorkant + 6 thema-kaarten (alles in dezelfde lightbox).
   // Let op: sommige data-bestanden gebruiken nog "verdiepen" i.p.v. "verhelderen"; we ondersteunen beide.
   const helpItems = [
@@ -179,7 +173,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
       // Geen geforceerde enters: laat de browser het netjes afbreken.
-      const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
+      const desc = raw.replace(/\s*\n\s*/g, ' ');
       if(lbBelowDesc) lbBelowDesc.textContent = desc;
 
       // In help-mode:
