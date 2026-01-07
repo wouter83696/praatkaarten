@@ -50,6 +50,35 @@
     descEl.textContent = txt; // geen placeholders / koppen
   }
 
+  // Maak het "witte vlak" onder de kaart zo compact mogelijk:
+  // - bepaal de maximale teksthoogte over alle slides
+  // - zet de desc container op (max) die hoogte
+  // - cap zodat heel lange teksten nog kunnen scrollen
+  function fitDescHeight(){
+    const prev = descEl.textContent;
+    // reset om eerlijk te meten
+    descEl.style.height = 'auto';
+    descEl.style.maxHeight = 'none';
+
+    let maxH = 0;
+    for(const s of slides){
+      descEl.textContent = getDesc(s.key);
+      // force reflow
+      const h = descEl.scrollHeight;
+      if(h > maxH) maxH = h;
+    }
+
+    // restore
+    descEl.textContent = prev;
+
+    // cap: blijf clean, maar laat scrollen toe als teksten later langer worden
+    const cap = Math.min(260, Math.round(window.innerHeight * 0.34));
+    const finalH = Math.min(maxH, cap);
+    descEl.style.height = finalH + 'px';
+    descEl.style.maxHeight = cap + 'px';
+    descEl.style.overflowY = (maxH > cap) ? 'auto' : 'hidden';
+  }
+
   function snapTo(i){
     index = Math.max(0, Math.min(slides.length-1, i));
     const w = stage.getBoundingClientRect().width;
@@ -68,16 +97,22 @@
     const w = stage.getBoundingClientRect().width;
     track.style.transition = 'none';
     track.style.transform = `translateX(${-index*w}px)`;
+    fitDescHeight();
   }
 
-  stage.addEventListener('pointerdown', (e)=>{
+  // Swipe mag overal in de uitleg werken, behalve wanneer je in de tekst aan het scrollen bent.
+  const swipeSurface = document.body;
+
+  swipeSurface.addEventListener('pointerdown', (e)=>{
+    // laat verticale scroll in de beschrijving gewoon werken
+    if(e.target && e.target.closest && e.target.closest('#desc')) return;
     isDown = true; isSwiping = false;
     startX = e.clientX; startY = e.clientY; dx = 0;
-    stage.setPointerCapture(e.pointerId);
+    try{ swipeSurface.setPointerCapture(e.pointerId); }catch(_){/* ok */}
     track.style.transition = 'none';
   });
 
-  stage.addEventListener('pointermove', (e)=>{
+  swipeSurface.addEventListener('pointermove', (e)=>{
     if(!isDown) return;
     const moveX = e.clientX - startX;
     const moveY = e.clientY - startY;
@@ -87,7 +122,7 @@
         isSwiping = true;
       }else if(Math.abs(moveY) > 10){
         isDown = false;
-        try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
+        try{ swipeSurface.releasePointerCapture(e.pointerId); }catch(_){/* ok */}
         return;
       }
     }
@@ -98,10 +133,10 @@
     }
   }, { passive:false });
 
-  stage.addEventListener('pointerup', (e)=>{
+  swipeSurface.addEventListener('pointerup', (e)=>{
     if(!isDown) return;
     isDown = false;
-    try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
+    try{ swipeSurface.releasePointerCapture(e.pointerId); }catch(_){}
 
     const w = stage.getBoundingClientRect().width;
     const threshold = Math.min(90, w * 0.18);
@@ -114,7 +149,7 @@
     dx = 0; isSwiping = false;
   });
 
-  stage.addEventListener('pointercancel', ()=>{
+  swipeSurface.addEventListener('pointercancel', ()=>{
     if(!isDown) return;
     isDown = false;
     snapTo(index);
@@ -124,5 +159,6 @@
   window.addEventListener('resize', onResize);
 
   renderMeta();
+  fitDescHeight();
   onResize();
 })();
