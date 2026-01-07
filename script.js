@@ -179,8 +179,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // UITLEG: desktop caption + mobiel bottom sheet
       if(lbCaption) lbCaption.setAttribute('aria-hidden','false');
       if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
-      if(lbCaptionTitle) lbCaptionTitle.textContent = item.theme || "";
-      if(lbSheetTitle) lbSheetTitle.textContent = item.theme || "";
+      // Thema komt IN het kaartje (midden). Caption/sheet tonen alleen de uitlegtekst.
+      if(lbCaptionTitle) lbCaptionTitle.textContent = "";
+      if(lbSheetTitle) lbSheetTitle.textContent = "";
 // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
@@ -191,10 +192,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbCaptionDesc) lbCaptionDesc.textContent = desc;
       if(lbSheetDesc) lbSheetDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
-      lb.classList.remove('help-title');
+      // In help-mode: toon het THEMA gecentreerd op de kaart
+      lbText.textContent = item.theme || "";
+      lb.classList.add('help-title');
     }
 
     else{

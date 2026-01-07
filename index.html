@@ -310,8 +310,10 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100%;
   background:transparent;
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
+  gap:12px;
 }
 
 .lbCard{
@@ -435,10 +437,14 @@ text-wrap: pretty;
 /* Mobiel bottom sheet */
 .lbSheet{
   display:none;
-  position:absolute;
-  left:0; right:0; bottom:0;
-  padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+  position:fixed;
+  left:0;
+  right:0;
+  /* boven de vaste menubalk */
+  bottom:calc(64px + env(safe-area-inset-bottom));
+  padding:10px 14px;
   pointer-events:auto;
+  z-index:9999;
 }
 .lbSheetBody{
   background:rgba(255,255,255,.92);
@@ -483,8 +489,13 @@ text-wrap: pretty;
   .lb.help .lbSheet{display:block;}
 }
 
-/* In uitleg-modus: geen overlay-tekst over de kaart */
-.lb.help .lbText{display:none !important;}
+/* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
+.lb.help .lbText{
+  display:grid !important;
+  font-weight:500;
+  font-size:clamp(28px,3vw + 10px,44px);
+  line-height:1.1;
+}
 
 
 /* ===============================
@@ -891,21 +902,21 @@ body.hm-open{overflow:hidden}
       <div class="lbText" id="lbText"></div>
 <div class="lbHelpDesc" id="lbHelpDesc"></div>
 
-      <!-- UITLEG: desktop caption onder de kaart -->
+      </div>
+
+      <!-- UITLEG: desktop caption ONDER de kaart (losse UI, kaart blijft kaart) -->
       <div class="lbCaption" id="lbCaption" aria-hidden="true">
         <div class="lbCaptionTitle" id="lbCaptionTitle"></div>
         <div class="lbCaptionDesc" id="lbCaptionDesc"></div>
       </div>
 
-      <!-- UITLEG: mobiel bottom sheet -->
+      <!-- UITLEG: mobiel bottom sheet (los van de kaart) -->
       <div class="lbSheet" id="lbSheet" aria-hidden="true">
         <div class="lbSheetGrab" aria-hidden="true"></div>
         <div class="lbSheetBody">
           <div class="lbSheetTitle" id="lbSheetTitle"></div>
           <div class="lbSheetDesc" id="lbSheetDesc"></div>
         </div>
-      </div>
-
       </div>
 
     </div>
