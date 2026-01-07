@@ -1,65 +1,880 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Praatkaarten</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praatkaarten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
+
+/* ===============================
+   VARS
+   =============================== */
+
+:root{
+  --gap:18px;
+  --radius:16px;
+  --shadow:0 14px 50px rgba(0,0,0,.12);
+  --shadowHover:0 18px 70px rgba(0,0,0,.16);
+
+  --textBlue: rgba(48,96,136,.95);
+  --uiBlue: rgba(48,96,136,.85);
+
+  /* WARM "INKT" (bruin-grijs) voor cursor + iconen */
+  --uiInk: rgba(11,18,32,.45);
+  --uiInkSoft: rgba(11,18,32,.22);
+}
+
+*{box-sizing:border-box}
+
+/* ===============================
+   BASE
+   =============================== */
+
+body{
+  margin:0;
+  background:#fff;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-text-size-adjust:100%;
+  text-rendering:optimizeLegibility;
+}
+
+/* ===============================
+   CONTROLS
+   =============================== */
+
+.controlsBar{
+  position:fixed;left:0;right:0;bottom:0;z-index:3000;
+  /* iets strakker naar links, maar nog met ademruimte */
+  padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(10px);
+}
+
+.controlsBar .inner{
+  max-width:1600px;
+  margin:0 auto;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.btn{
+  appearance:none;
+  border:0;
+  background:transparent;
+  border-radius:999px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.2;
+  cursor:pointer;
+  color: rgba(11,18,32,.45);
+}
+
+.btn:hover{background:rgba(243,245,238,.88);}
+.btn:active{transform:translateY(1px);}
+
+.btnGroup{display:flex;align-items:center;gap:0;}
+/* strak: hussel | reset compacter, divider subtiel */
+.btnGroup .btn{padding:10px 4px;}
+.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 1px;opacity:.35;}
+
+.help{
+  transition:opacity .8s ease;
+
+  display:none;
+
+  color:rgba(11,18,32,.55);
+  font-size:13px;
+  line-height:1.35;
+  white-space:nowrap;
+}
+
+/* ===============================
+   NAV HINT IN MENUBALK (alleen bij grote kaart)
+   =============================== */
+.navHintMini{
+  margin-left:auto;
+  opacity:0;
+  color:rgba(11,18,32,.55);
+  font-size:12.5px;
+  line-height:1.2;
+  white-space:nowrap;
+  pointer-events:none;
+  transition:opacity .35s ease;
+}
+
+/* Alleen tonen als lightbox open is én hint actief is */
+body.lb-open.show-hint .navHintMini{ opacity:.72; }
+body.lb-open .navHintMini{ opacity:0; }
+/* Mobiel/tablet: toon hint rechts-onder in beeld (alleen bij eerste keer vergroten) */
+@media (hover:none) and (pointer:coarse){
+  .navHintMini{
+    position:fixed;
+    right:14px;
+    bottom:14px;
+    margin:0;
+    padding:8px 10px;
+    background:rgba(243,245,238,.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.10);
+    color:rgba(11,18,32,.62);
+    font-size:12.5px;
+    z-index:9999;
+  }
+}
+
+/* ===============================
+   GRID
+   =============================== */
+
+.grid{
+  display:grid;
+  gap:var(--gap);
+  padding:18px 28px 120px;
+  max-width:1600px;
+  margin:auto;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+@media (min-width:720px){
+  .grid{grid-template-columns:repeat(3,1fr);}
+}
+@media (min-width:980px){
+  .grid{grid-template-columns:repeat(4,1fr);}
+}
+@media (min-width:1240px){
+  .grid{grid-template-columns:repeat(6,1fr);}
+}
+
+/* ===============================
+   KAARTEN
+   =============================== */
+
+.card{
+  position:relative;
+  border:0;
+  background:transparent;
+  padding:0;
+  cursor:zoom-in;
+  transition:transform .14s ease;
+}
+
+.card:hover{transform:translateY(-2px);}
+
+.card img{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  transition:box-shadow .14s ease;
+}
+
+.card:hover img{box-shadow:var(--shadowHover);}
+
+/* ===============================
+   TEKST OP KLEINE KAARTJES
+   =============================== */
+
+.card .q{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 18px;
+  text-align:center;
+
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+  font-size:10.5px;
+  line-height:1.38;
+  letter-spacing:-0.008em;
+
+  color:var(--textBlue);
+  font-synthesis:none;
+
+  /* optische centrering */
+  transform:translateY(2px);
+}
+
+/* Tekst op klein kaartje: GEEN wit vlak (terug naar origineel) */
+.card .q .qText{
+  display:inline;
+  max-width:92%;
+  background:transparent;
+  border-radius:0;
+  padding:0;
+  box-shadow:none;
+}
+
+@media (max-width:520px){
+  .card .q{
+    padding:0 14px;
+    font-size:9.75px;
+    line-height:1.34;
+    letter-spacing:-0.006em;
+  }
+  .card .q .qText{
+    max-width:94%;
+  }
+}
+
+/* ===============================
+   LIGHTBOX
+   =============================== */
+
+.lb{
+  position:fixed;
+  inset:0;
+  /* iOS/Safari: zorg dat de blur écht het volledige (dynamische) viewport pakt */
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+
+  /* basis-overlay; echte "meebewegende" blur zit in .lbBg */
+  background:rgba(255,255,255,.10);
+
+  /* Touch: verticale scroll moet altijd gewoon kunnen (lange kaarten) */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  z-index:2000;
+}
+
+.lb.open{display:flex;}
+
+/* Meebewegende, geblurde achtergrond (zelfde SVG als huidige kaart) */
+.lbBg{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+  background-image: var(--lb-bg-url);
+  background-size: cover;
+  background-position: center;
+  transform: translateX(var(--lb-bg-shift, 0px)) scale(1.08);
+  transition: transform .18s ease;
+  filter: blur(18px);
+  opacity: .38;
+  pointer-events:none;
+  z-index:0;
+  /* robuuste viewport hoogte (rotatie / browser-UI) */
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: 100vh;
+  min-height: 100vh;
+
+}
+
+/* tijdens het swipen moet de bg direct meebewegen (zonder easing) */
+.lb.is-swiping .lbBg{ transition:none; }
+
+.lb::before{
+  /* witte glaze bovenop de bg, zodat het rustig blijft */
+  content:"";
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100dvh;
+  min-height:100dvh;
+  background: rgba(255,255,255,.22);
+  pointer-events:none;
+  z-index:0;
+  /* robuuste viewport hoogte (rotatie / browser-UI) */
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: calc(var(--vh, 1vh) * 100);
+  height: 100vh;
+  min-height: 100vh;
+
+}
+
+.panel, .lbCard, .chev, .close{
+  position:relative;
+  z-index:1;
+}
+
+.panel{
+  width:100%;
+  height:100%;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.lbCard{
+  position:relative;
+  width:min(560px,92vw);
+  /* Desktop: grotere kaart zoals bij thema-overlay */
+  border-radius:22px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 18px 45px rgba(0,0,0,.20);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+#lbImg{
+  width:100.2%;
+  margin-left:-0.1%;
+  display:block;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.lbText{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:22px 24px;
+  text-align:center;
+
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+  font-size:clamp(16px,2vw + 10px,30px);
+  line-height:1.28;
+  letter-spacing:-0.006em;
+
+  color:var(--textBlue);
+
+  /* optische centrering groot */
+  transform:translateY(6px);
+  pointer-events:none;
+}
+
+
+.lbBelow{
+  display:none;
+  width:100%;
+  padding:12px 18px 18px;
+  text-align:left;
+  background:transparent;
+}
+
+/* In dezelfde witte kaart; geen los vak */
+.lbCard{ background:#fff; }
+
+.lbBelowTitle{
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:500;
+  font-size:22px;
+  line-height:1.15;
+  color:var(--textBlue);
+  margin:0 0 8px;
+  display:none;
+}
+
+.lbBelowDesc{
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+  font-size:14px;
+  line-height:1.55;
+  color: rgba(11,18,32,.62);
+  white-space: normal;
+  display: block;
+text-wrap: pretty;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+
+/* ===============================
+   UITLEG (HELP) — tekst IN de kaart, zonder hoogte te veranderen
+   =============================== */
+.lbHelpText{
+  display:none;
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#fff;
+  padding:14px 18px 26px; /* extra 'enter' onderin */
+}
+.lbHelpTitle{
+  font-weight:500;
+  font-size:18px;
+  line-height:1.15;
+  color:var(--textBlue);
+  margin:0 0 8px;
+}
+.lbHelpDesc{
+  font-weight:400;
+  font-size:14px;
+  line-height:1.55;
+  color: rgba(11,18,32,.62);
+  margin:0;
+  text-wrap: pretty;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* Alleen in uitleg-modus tonen */
+.lb.help .lbHelpText{ display:block; }
+
+/* In uitleg-modus: geen los tekstvak onder de kaart */
+.lb.help .lbBelow{ display:none !important; }
+
+/* In uitleg-modus: kaartbeeld krijgt ruimte boven de tekst (zonder aspect ratio te breken) */
+.lb.help #lbImg{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+/* ===============================
+   ICONS
+   =============================== */
+
+.chev,
+.close{
+  position:absolute;
+  background:transparent;
+  border:0;
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  color:var(--uiInk);
+  cursor:pointer;
+
+  opacity:0;
+}
+
+.lb.show-ui .chev,
+.lb.show-ui .close{opacity:1;}
+
+.chev.left{left:10px;top:50%;transform:translateY(-50%);}
+.chev.right{right:10px;top:50%;transform:translateY(-50%);}
+.close{top:10px;right:10px;}
+/* Touch (telefoon/tablet): alleen kruisje tonen (geen pijlen/cursors) */
+@media (hover:none) and (pointer:coarse){
+  .chev{ display:none !important; }
+  .lb.show-ui .close{ opacity:1; }
+}
+
+.chev svg,
+.close svg{
+  width:22px;
+  height:22px;
+  stroke:currentColor;
+  stroke-width:2.6;
+  fill:none;
+  pointer-events:none;
+}
+
+/* ===============================
+   FIXES
+   =============================== */
+
+.themeTag,
+#themeTag{display:none !important;}
+
+button,
+.chev,
+.close{
+  -webkit-tap-highlight-color:transparent;
+  tap-highlight-color:transparent;
+  outline:none !important;
+  box-shadow:none !important;
+}
+
+
+/* 0) Zorg dat de pagina-achtergrond écht tot in de hoeken doorloopt */
+html, body{
+  min-height:100%;
+  background:#F3F5EE; /* zelfde als je page bg */
+}
+
+/* als er een wrapper is met witte achtergrond, maak die transparant */
+.page, .wrap, .container, main{
+  background: transparent;
+}
+
+/* 1) Grid/hoofdlayout altijd minstens volledige hoogte */
+.grid, .cards, .cardGrid{
+  min-height: 100vh;
+}
+
+/* 2) Lightbox blur: altijd full-screen, ook op iOS/Safari */
+.lb{
+  position: fixed;
+  inset: 0;
+  touch-action:none;
+  background: rgba(255,255,255,.14);
+}
+.lb::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.14);
+  pointer-events:none;
+}
+
+/* 3) Balk: WEL in portrait, WEG in landscape (telefoon)
+      (geen max-width; detecteer telefoon via coarse pointer) */
+.controlsBar{ display:flex; }
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+@media (max-height: 520px) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+
+
+/* Fris, schoon canvas */
+html, body{
+  min-height:100%;
+  background:#FFFFFF !important;
+}
+
+/* Heel subtiele frisse paper-touch (bijna onzichtbaar) */
+body{
+  background-image:
+    radial-gradient(1600px 1100px at 25% 10%, rgba(0,0,0,0.008), transparent 55%),
+    radial-gradient(1600px 1100px at 75% 90%, rgba(0,0,0,0.006), transparent 55%);
+}
+
+/* Zorg dat niets anders erdoorheen kleurt */
+.page, .wrap, .container, main,
+.grid, .cards, .cardGrid{
+  background: transparent !important;
+}
+
+/* Geen pseudo-achtergronden */
+html::before, html::after,
+body::before, body::after{
+  content:none !important;
+}
+
+
+/* ===== FIXES (v6-fris-fix) =====
+   Dit pakt het échte probleem:
+   de grid/container had een beige/groene achtergrond.
+   Alles nu één fris wit vlak.
+*/
+
+/* Pagina echt wit */
+html, body{
+  background:#FFFFFF !important;
+}
+
+/* GRID / kaart-achtergrond NEUTRALISEREN */
+.grid,
+.cards,
+.cardGrid,
+#grid,
+#cards{
+  background: #FFFFFF !important;
+}
+
+/* Geen gradients of tinten */
+body{
+  background-image: none !important;
+}
+
+/* Wrappers transparant */
+.page, .wrap, .container, main{
+  background: transparent !important;
+}
+
+
+.controlsBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.controlsBar .left{
+  display:flex;
+  gap:14px;
+}
+
+.controlsBar .right{
+  margin-left:auto;
+  opacity:.7;
+  font-size:0.9em;
+}
+
+/* rustiger: tekst alleen, geen nadruk */
+.controlsBar .right span{
+  white-space:nowrap;
+}
+
+
+.controlsBar .right{
+  transition: opacity .8s ease;
+}
+.controlsBar .right.is-hidden{
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+.controlsBar .inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+/* links */
+.controlsBar .btnGroup{
+  display:flex;
+  align-items:center;
+  /* strak: geen extra ruimte tussen Hussel | Reset */
+  gap:0;
+}
+
+/* rechts */
+.controlsBar .help{
+  transition:opacity .8s ease;
+
+  margin-left:auto;
+  opacity:.70;
+  font-size:0.9em;
+  white-space:nowrap;
+  transition: opacity .8s ease;
+}
+.controlsBar .help.is-hidden{
+  opacity:0;
+  pointer-events:none;
+}
+
+
+/* ===== FIXES (v6-fade-fix2) =====
+   Hussel/Reset écht links in de browser:
+   - forceer full-width op de balk
+   - override eventuele bestaande justify/align regels met !important
+*/
+
+.controlsBar{
+  width:100% !important;
+  left:0 !important;
+  right:0 !important;
+}
+
+.controlsBar .inner{
+  width:100% !important;
+  max-width:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px;
+  /* iets strakker tegen de linker (en rechter) rand */
+  padding-left: clamp(8px, 2vw, 14px);
+  padding-right: clamp(8px, 2vw, 14px);
+}
+
+.controlsBar .btnGroup{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  /* strak: geen extra ruimte tussen Hussel | Reset */
+  gap:0 !important;
+  margin-right:auto !important;
+}
+
+.controlsBar .help{
+  transition:opacity .8s ease;
+
+  margin-left:auto !important;
+  text-align:right;
+  opacity:.70;
+  font-size:0.9em;
+  white-space:nowrap;
+  transition: opacity .8s ease;
+}
+.controlsBar .help.is-hidden{
+  opacity:0;
+  pointer-events:none;
+}
+
+
+@media (hover:none) and (pointer:coarse) and (orientation:portrait){
+  .help{
+  transition:opacity .8s ease;
+display:block;}
+}
+
+
+/* Hide icons during swipe/drag (phone) */
+.lb.is-swiping .chev,
+.lb.is-swiping .close{opacity:0 !important;}
+
+/* ===============================
+   MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
+   - Swipe blijft werken
+   - Tap-to-close wordt in script.js gedaan
+   =============================== */
+/* ===============================
+   MOBILE (touch):
+   - Balk WEL in portrait
+   - Balk WEG in landscape
+   - Geen pijlen/kruisje
+   =============================== */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+@media (hover: none) and (pointer: coarse){
+  .lb .chev,
+  .lb .close{
+    display:none !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+}
+
+/* ===============================
+   UITLEG MODAL (mobiel focus)
+   =============================== */
+body.hm-open{overflow:hidden}
+.helpModal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  z-index:90;
+  background:rgba(255,255,255,.14);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+/* iOS/Safari: backdrop-filter kan soms aan de randen (met name boven) "gaten" laten zien.
+   Deze extra laag dwingt een full-screen blur. */
+.helpModal::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  background:rgba(255,255,255,.14);
+  pointer-events:none;
+}
+.helpModal.open{display:flex}
+.helpPanel{
+  position:relative;
+  width:min(560px, 100%);
+  height:min(820px, calc(var(--vh, 1vh) * 92));
+  border-radius:18px;
+  overflow:hidden;
+  background:#FAFAF8;
+  box-shadow:0 18px 45px rgba(0,0,0,.20);
+}
+.helpFrame{width:100%;height:100%;border:0;display:block;background:transparent}
+.helpClose{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:44px;height:44px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.75);
+  cursor:pointer;
+  color:var(--uiInk);
+}
+.helpClose:hover{background:rgba(255,255,255,.92)}
+
+
+.rightCluster{display:flex;align-items:center;gap:10px;}
+
+
+/* Desktop: zelfde crosshair als gewone kaart-overlay */
+@media (hover:hover) and (pointer:fine){
+  .lbCard{ cursor:crosshair; }
+}
+
+/* iOS hairline fix: overscan afbeelding net over de rand */
+#lbImg{
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.lb.help #lbImg{
+  width: calc(100% + 2px);
+  margin-left: -1px;
+}
+
+
+#lbImg{display:block; width:calc(100% + 2px); margin-left:-1px; margin-top:-1px; height:auto; transform:translateZ(0); backface-visibility:hidden; -webkit-backface-visibility:hidden;}
+
+.lbBelow{margin-top:-1px;}
+
+.lb.help-title .lbText{place-items:center; text-align:center;}
+</style>
 </head>
 <body>
 
-<main class="page">
-  <div class="grid" id="grid" aria-label="Praatkaarten"></div>
-
-  <!-- Onderste balk -->
-  <div class="controlsBar" id="controlsBar">
-    <div class="left">
-      <button class="linkBtn" id="shuffle" type="button">Hussel</button>
-      <span class="sep">|</span>
-      <button class="linkBtn" id="reset" type="button">Reset</button>
+<div class="controlsBar">
+  <div class="inner">
+    <div class="btnGroup left">
+      <button class="btn" id="shuffle" type="button">Hussel</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" id="reset" type="button">Reset</button>
     </div>
-    <div class="right">
-      <button class="linkBtn" id="help" type="button">Uitleg</button>
+
+    <div class="rightCluster">
+      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
+      <button class="btn" id="uitleg" type="button">Uitleg</button>
     </div>
   </div>
-</main>
+</div>
 
-<!-- Lightbox -->
+<div class="grid" id="grid"></div>
+
 <div class="lb" id="lb" aria-hidden="true">
-  <div class="lbBg" id="lbBg" aria-hidden="true"></div>
-
-  <div class="panel" role="dialog" aria-modal="true" aria-label="Kaart bekijken">
+  <div class="lbBg" aria-hidden="true"></div>
+  <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
+<button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
+            <img id="lbImg" alt="">
+      <div class="lbText" id="lbText"></div>
 
-      <button class="chev left" id="prev" aria-label="Vorige">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <button class="chev right" id="next" aria-label="Volgende">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-      <button class="close" id="close" type="button" aria-label="Sluiten">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
-      </button>
-
-      <div class="lbVisual">
-        <img id="lbImg" alt="">
-        <div class="lbText" id="lbText"></div>
-      </div>
-
-      <!-- UITLEG (vast aan de kaart, onderin; kaarthoogte blijft gelijk) -->
-      <div class="lbBelow" id="lbBelow" aria-hidden="true">
-        <div class="lbBelowTitle" id="lbBelowTitle"></div>
-        <div class="lbBelowDesc" id="lbBelowDesc"></div>
-        <div class="lbBelowPad" aria-hidden="true"></div>
+      <!-- UITLEG (tekst in de kaart, zonder verhouding te veranderen) -->
+      <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
+        <div class="lbHelpTitle" id="lbHelpTitle"></div>
+        <div class="lbHelpDesc" id="lbHelpDesc"></div>
       </div>
 
     </div>
   </div>
 </div>
 
+
+
 <script src="script.js"></script>
+
+
+
+
+
+
+  
+
+
+
 </body>
 </html>

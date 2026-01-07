@@ -34,9 +34,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
   const uitlegBtn = document.getElementById('uitleg');
-  const lbBelow = document.getElementById('lbBelow');
-  const lbBelowTitle = document.getElementById('lbBelowTitle');
-  const lbBelowDesc = document.getElementById('lbBelowDesc');
+  const lbHelpText = document.getElementById('lbHelpText');
+  const lbHelpTitle = document.getElementById('lbHelpTitle');
+  const lbHelpDesc = document.getElementById('lbHelpDesc');
 
   
 
@@ -137,7 +137,11 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       const q = document.createElement('div');
       q.className = 'q';
-      q.textContent = item.q;
+      // Tekst op een vast wit vlak (met extra wit onder de tekst)
+      const qText = document.createElement('span');
+      qText.className = 'qText';
+      qText.textContent = item.q;
+      q.appendChild(qText);
 
       inner.appendChild(img);
       inner.appendChild(q);
@@ -170,8 +174,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       lb.classList.add('help');
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
-      if(lbBelow){ lbBelow.setAttribute('aria-hidden','false'); lbBelow.classList.add('show'); }
-      if(lbBelowTitle) lbBelowTitle.textContent = item.theme || ""; // blijft verborgen in CSS
+      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
+      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
@@ -180,27 +184,18 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
-      if(lbBelowDesc) lbBelowDesc.textContent = desc;
-
-      // In help-mode:
-      // - voorkant: géén overlay-tekst (staat al in de SVG)
-      // - thema-kaarten: toon alleen de themanaam als overlay (SVG's in deze set bevatten geen titeltekst)
-      if(item.key === 'cover'){
-        lbText.textContent = "";
-        lb.classList.add('no-overlay');
-        lb.classList.remove('help-title');
-      }else{
-        lbText.textContent = item.theme || "";
-        lb.classList.remove('no-overlay');
-        lb.classList.add('help-title');
-      }
+      if(lbHelpDesc) lbHelpDesc.textContent = desc;
+      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
+      lbText.textContent = "";
+      lb.classList.add('no-overlay');
+      lb.classList.remove('help-title');
     }
 
     else{
       lb.classList.remove('help');
-      if(lbBelow){ lbBelow.setAttribute('aria-hidden','true'); lbBelow.classList.remove('show'); }
-      if(lbBelowTitle) lbBelowTitle.textContent = "";
-      if(lbBelowDesc) lbBelowDesc.textContent = "";
+      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
+      if(lbHelpTitle) lbHelpTitle.textContent = "";
+      if(lbHelpDesc) lbHelpDesc.textContent = "";
 
       lbText.textContent = item.q || "";
     }
@@ -230,9 +225,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
-    if(lbBelow){ lbBelow.setAttribute('aria-hidden','true'); lbBelow.classList.remove('show'); }
-    if(lbBelowTitle) lbBelowTitle.textContent = "";
-    if(lbBelowDesc) lbBelowDesc.textContent = "";
+    if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
+    if(lbHelpTitle) lbHelpTitle.textContent = "";
+    if(lbHelpDesc) lbHelpDesc.textContent = "";
     currentIndex = -1;
     lb.setAttribute('aria-hidden','true');
     document.body.classList.remove('lb-open');
@@ -291,7 +286,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       showUI();
       return;
     }
-    if (e.target.closest && (e.target.closest('.lbBelow') || e.target.closest('.lbBelowDesc'))){
+    if (e.target.closest && (e.target.closest('.lbHelpText') || e.target.closest('.lbHelpDesc'))){
       gestureArmed = false;
       return;
     }
