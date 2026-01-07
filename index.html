@@ -401,40 +401,7 @@ text-wrap: pretty;
    UITLEG (HELP) — kaart blijft kaart (desktop caption + mobiel bottom sheet)
    =============================== */
 
-/* Desktop caption onder de kaart */
-.lbCaption{
-  display:none;
-  width:min(560px,92vw);
-  margin:10px auto 0;
-  background:rgba(255,255,255,.92);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  border-radius:16px;
-  box-shadow:0 10px 24px rgba(0,0,0,.08);
-  padding:14px 16px 18px;
-  text-align:left;
-}
-.lbCaptionTitle{
-  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  font-weight:500;
-  font-size:16px;
-  line-height:1.2;
-  color:var(--textBlue);
-  margin:0 0 6px;
-}
-.lbCaptionDesc{
-  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  font-weight:400;
-  font-size:14px;
-  line-height:1.55;
-  color: rgba(11,18,32,.62);
-  margin:0;
-  text-wrap: pretty;
-  hyphens: auto;
-  -webkit-hyphens: auto;
-}
-
-/* Mobiel bottom sheet */
+/* Bottom sheet (uitleg als aparte laag — kaart blijft altijd kaart) */
 .lbSheet{
   display:none;
   position:fixed;
@@ -479,15 +446,19 @@ text-wrap: pretty;
   -webkit-hyphens: auto;
 }
 
-/* Uitleg-modus: toon caption/sheet afhankelijk van device */
+/* Desktop: sheet als compacte overlay (geen zwevend wit vlak onder de kaart) */
 @media (hover:hover) and (pointer:fine){
-  .lb.help .lbCaption{display:block;}
-  .lb.help .lbSheet{display:none;}
+  .lbSheet{
+    left:50%;
+    right:auto;
+    width:min(640px,92vw);
+    transform:translateX(-50%);
+    padding:0;
+  }
 }
-@media (hover:none) and (pointer:coarse){
-  .lb.help .lbCaption{display:none;}
-  .lb.help .lbSheet{display:block;}
-}
+
+/* Uitleg-modus: toon sheet (op alle devices) */
+.lb.help .lbSheet{display:block;}
 
 /* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
 .lb.help .lbText{
@@ -904,13 +875,7 @@ body.hm-open{overflow:hidden}
 
       </div>
 
-      <!-- UITLEG: desktop caption ONDER de kaart (losse UI, kaart blijft kaart) -->
-      <div class="lbCaption" id="lbCaption" aria-hidden="true">
-        <div class="lbCaptionTitle" id="lbCaptionTitle"></div>
-        <div class="lbCaptionDesc" id="lbCaptionDesc"></div>
-      </div>
-
-      <!-- UITLEG: mobiel bottom sheet (los van de kaart) -->
+      <!-- UITLEG: bottom sheet (los van de kaart; kaart blijft altijd kaart) -->
       <div class="lbSheet" id="lbSheet" aria-hidden="true">
         <div class="lbSheetGrab" aria-hidden="true"></div>
         <div class="lbSheetBody">

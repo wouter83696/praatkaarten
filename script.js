@@ -34,9 +34,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
   const uitlegBtn = document.getElementById('uitleg');
-  const lbCaption = document.getElementById('lbCaption');
-  const lbCaptionTitle = document.getElementById('lbCaptionTitle');
-  const lbCaptionDesc = document.getElementById('lbCaptionDesc');
+  // Caption onder de kaart is bewust verwijderd (oogde als zwevend wit vlak).
   const lbSheet = document.getElementById('lbSheet');
   const lbSheetTitle = document.getElementById('lbSheetTitle');
   const lbSheetDesc = document.getElementById('lbSheetDesc');
@@ -66,10 +64,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
   let hintTimer = null;
   const HINT_KEY = 'pk_nav_hint_shown';
-  const IS_TOUCH = (
-    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
-    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
-  );
+  // Alleen echte touch-UI's (telefoon/tablet). Sommige desktops rapporteren maxTouchPoints > 0
+  // door touchpad/pen en dan wil je de hint juist NIET.
+  const IS_TOUCH = (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
   function showNavHint(){
     if(!navHint) return;
     document.body.classList.add('show-hint');
@@ -176,11 +173,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     if(mode === 'help'){
       lb.classList.add('help');
 
-      // UITLEG: desktop caption + mobiel bottom sheet
-      if(lbCaption) lbCaption.setAttribute('aria-hidden','false');
+      // UITLEG: één duidelijke laag (bottom sheet), ook op desktop.
       if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
-      // Thema komt IN het kaartje (midden). Caption/sheet tonen alleen de uitlegtekst.
-      if(lbCaptionTitle) lbCaptionTitle.textContent = "";
+      // Thema komt IN het kaartje (midden). Sheet toont alleen de uitlegtekst.
       if(lbSheetTitle) lbSheetTitle.textContent = "";
 // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
@@ -190,7 +185,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
-      if(lbCaptionDesc) lbCaptionDesc.textContent = desc;
       if(lbSheetDesc) lbSheetDesc.textContent = desc;
       // In help-mode: toon het THEMA gecentreerd op de kaart
       lbText.textContent = item.theme || "";
@@ -199,11 +193,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     else{
       lb.classList.remove('help');
-      if(lbCaption) lbCaption.setAttribute('aria-hidden','true');
       if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
-      if(lbCaptionTitle) lbCaptionTitle.textContent = "";
       if(lbSheetTitle) lbSheetTitle.textContent = "";
-      if(lbCaptionDesc) lbCaptionDesc.textContent = "";
       if(lbSheetDesc) lbSheetDesc.textContent = "";
 
       lbText.textContent = item.q || "";
@@ -234,11 +225,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
-    if(lbCaption) lbCaption.setAttribute('aria-hidden','true');
     if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
-    if(lbCaptionTitle) lbCaptionTitle.textContent = "";
     if(lbSheetTitle) lbSheetTitle.textContent = "";
-    if(lbCaptionDesc) lbCaptionDesc.textContent = "";
     if(lbSheetDesc) lbSheetDesc.textContent = "";
     currentIndex = -1;
     lb.setAttribute('aria-hidden','true');
@@ -298,7 +286,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       showUI();
       return;
     }
-    if (e.target.closest && (e.target.closest('#lbCaption') || e.target.closest('#lbSheet'))){
+    if (e.target.closest && e.target.closest('#lbSheet')){
       gestureArmed = false;
       return;
     }
