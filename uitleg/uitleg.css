@@ -179,29 +179,3 @@ body.show-hint .navHintMini{ opacity:.72; }
 /* (geen landscape uitzondering) */
 
 
-
-
-/* =========================================================
-   FIX 2026-01-07 — uitleg pagina: zelfde kaartverhouding als hoofdgrid
-   ========================================================= */
-:root{
-  --card-ratio: 4 / 5;
-}
-
-.stage{
-  aspect-ratio: var(--card-ratio);
-  height: auto;
-}
-
-.slide, .slideTrack{ height:100%; }
-
-.slide img{
-  width:100%;
-  height:100%;
-  object-fit: cover;
-  display:block;
-}
-
-@media (max-width:520px){
-  .wrap{ padding:14px; padding-bottom:84px; }
-}
