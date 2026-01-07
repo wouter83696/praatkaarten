@@ -22,10 +22,33 @@
   }
 
   const stage = document.getElementById('stage');
-  if(!stage) return;
+  const descEl = document.getElementById('desc');
+  const prevBtn = document.getElementById('prevSlide');
+  const nextBtn = document.getElementById('nextSlide');
+  const closeHelp = document.getElementById('closeHelp');
+  const backLink = document.getElementById('backLink');
+  const navHint = document.getElementById('navHint');
+  if(!stage || !descEl) return;
 
-  const btnPrev = document.getElementById('navPrev');
-  const btnNext = document.getElementById('navNext');
+  // Nav hint (zelfde gedrag als hoofdpagina):
+  // - Alleen voor touch/pen
+  // - Eén keer per sessie
+  let hintTimer = null;
+  const HINT_KEY = 'pk_nav_hint_shown_uitleg';
+  function showNavHint(){
+    if(!navHint) return;
+    document.body.classList.add('show-hint');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 8000);
+  }
+  function maybeShowNavHintOnce(pointerType){
+    if(pointerType === 'mouse') return;
+    try{
+      if(sessionStorage.getItem(HINT_KEY) === '1') return;
+      sessionStorage.setItem(HINT_KEY,'1');
+    }catch(_e){}
+    showNavHint();
+  }
 
   const track = document.createElement('div');
   track.className = 'slideTrack';
@@ -34,72 +57,22 @@
   slides.forEach((s)=>{
     const slide = document.createElement('div');
     slide.className = 'slide';
-
-    const inner = document.createElement('div');
-    inner.className = 'slideInner';
-    inner.innerHTML = `
-      <img src="${s.src}" alt="${s.alt}">
-      <div class="slideDesc" data-key="${s.key}"></div>
-    `;
-    slide.appendChild(inner);
+    slide.innerHTML = `<img src="${s.src}" alt="${s.alt}">`;
     track.appendChild(slide);
   });
 
   let index = 0;
-  let startX=0, startY=0, dx=0;
+  let startX=0, startY=0, startT=0, dx=0;
   let isDown=false, isSwiping=false;
 
-  function normalizeText(v){
-    return String(v || "")
-      .replace(/\s*\n+\s*/g,' ')   // geen harde enters
-      .replace(/\s{2,}/g,' ')      // geen dubbele spaties
-      .trim();
-  }
-
   function getDesc(key){
-    return normalizeText((data && data[key]) ? data[key] : "");
+    return ((data && data[key]) ? String(data[key]) : "").trim();
   }
 
   function renderMeta(){
-    // Zet alleen de zichtbare slide tekst; andere slides hoeven niet elke keer te updaten.
-    const current = track.children[index];
-    if(!current) return;
-    const desc = current.querySelector('.slideDesc');
-    if(desc){
-      const s = slides[index];
-      desc.textContent = getDesc(s.key);
-    }
-  }
-
-  // Maak het "witte vlak" onder de kaart zo compact mogelijk:
-  // - bepaal de maximale teksthoogte over alle slides
-  // - zet de desc container op (max) die hoogte
-  // - cap zodat heel lange teksten nog kunnen scrollen
-  function fitDescHeight(){
-    const descEls = Array.from(track.querySelectorAll('.slideDesc'));
-    if(!descEls.length) return;
-
-    // reset om eerlijk te meten
-    descEls.forEach(el=>{ el.style.height='auto'; el.style.maxHeight='none'; el.style.overflowY='hidden'; });
-
-    let maxH = 0;
-    for(const s of slides){
-      const el = track.querySelector(`.slideDesc[data-key="${s.key}"]`);
-      if(!el) continue;
-      el.textContent = getDesc(s.key);
-      const h = el.scrollHeight;
-      if(h > maxH) maxH = h;
-    }
-
-    // cap: blijf clean, maar laat scrollen toe als teksten later langer worden
-    const cap = Math.min(220, Math.round(window.innerHeight * 0.28));
-    const finalH = Math.min(maxH, cap);
-
-    descEls.forEach(el=>{
-      el.style.height = finalH + 'px';
-      el.style.maxHeight = cap + 'px';
-      el.style.overflowY = (maxH > cap) ? 'auto' : 'hidden';
-    });
+    const s = slides[index];
+    const txt = getDesc(s.key);
+    descEl.textContent = txt; // geen placeholders / koppen
   }
 
   function snapTo(i){
@@ -120,30 +93,26 @@
     const w = stage.getBoundingClientRect().width;
     track.style.transition = 'none';
     track.style.transform = `translateX(${-index*w}px)`;
-    fitDescHeight();
   }
 
-  // Desktop pijlen
-  if(btnPrev){
-    btnPrev.addEventListener('click', ()=> snapTo(index - 1));
-  }
-  if(btnNext){
-    btnNext.addEventListener('click', ()=> snapTo(index + 1));
+  // Swipe overal in de uitleg (ook op de tekst) —
+  // verticaal scrollen blijft gewoon mogelijk.
+  const swipeRoot = document.querySelector('.viewer') || document.body;
+
+  function isInsideControls(el){
+    return !!el && (el.closest?.('.controlsBar') || el.closest?.('button') || el.closest?.('a'));
   }
 
-  // Swipe mag overal in de uitleg werken, behalve wanneer je in de tekst aan het scrollen bent.
-  const swipeSurface = document.body;
-
-  swipeSurface.addEventListener('pointerdown', (e)=>{
-    // laat verticale scroll in de beschrijving gewoon werken
-    if(e.target && e.target.closest && e.target.closest('.slideDesc')) return;
+  swipeRoot.addEventListener('pointerdown', (e)=>{
+    if(isInsideControls(e.target)) return;
+    maybeShowNavHintOnce(e.pointerType);
     isDown = true; isSwiping = false;
-    startX = e.clientX; startY = e.clientY; dx = 0;
-    try{ swipeSurface.setPointerCapture(e.pointerId); }catch(_){/* ok */}
+    startX = e.clientX; startY = e.clientY; startT = performance.now(); dx = 0;
+    try{ swipeRoot.setPointerCapture(e.pointerId); }catch(_e){}
     track.style.transition = 'none';
   });
 
-  swipeSurface.addEventListener('pointermove', (e)=>{
+  swipeRoot.addEventListener('pointermove', (e)=>{
     if(!isDown) return;
     const moveX = e.clientX - startX;
     const moveY = e.clientY - startY;
@@ -152,11 +121,13 @@
       if(Math.abs(moveX) > 8 && Math.abs(moveX) > Math.abs(moveY)){
         isSwiping = true;
       }else if(Math.abs(moveY) > 10){
+        // verticaal: laat scrollen doorlopen
         isDown = false;
-        try{ swipeSurface.releasePointerCapture(e.pointerId); }catch(_){/* ok */}
+        try{ swipeRoot.releasePointerCapture(e.pointerId); }catch(_e){}
         return;
       }
     }
+
     if(isSwiping){
       dx = moveX;
       dragTo(dx);
@@ -164,10 +135,10 @@
     }
   }, { passive:false });
 
-  swipeSurface.addEventListener('pointerup', (e)=>{
+  swipeRoot.addEventListener('pointerup', (e)=>{
     if(!isDown) return;
     isDown = false;
-    try{ swipeSurface.releasePointerCapture(e.pointerId); }catch(_){}
+    try{ swipeRoot.releasePointerCapture(e.pointerId); }catch(_e){}
 
     const w = stage.getBoundingClientRect().width;
     const threshold = Math.min(90, w * 0.18);
@@ -175,21 +146,64 @@
     if(isSwiping && Math.abs(dx) > threshold){
       snapTo(index + (dx < 0 ? 1 : -1));
     }else{
+      // Tap-to-close op touch/pen (zelfde gedrag als de kaartjes lightbox)
+      // Alleen als:
+      // - het geen swipe was
+      // - de beweging klein was
+      // - de tik op de kaart/stage was (niet op de tekst)
+      // - pointerType geen mouse is
+      const dt = performance.now() - startT;
+      const isTap = !isSwiping && Math.abs(dx) < 10 && dt < 350;
+      const onStage = !!e.target?.closest?.('.stage');
+      if(isTap && onStage && (e.pointerType === 'touch' || e.pointerType === 'pen')){
+        requestClose();
+        dx = 0; isSwiping = false;
+        return;
+      }
       snapTo(index);
     }
     dx = 0; isSwiping = false;
   });
 
-  swipeSurface.addEventListener('pointercancel', ()=>{
+  swipeRoot.addEventListener('pointercancel', ()=>{
     if(!isDown) return;
     isDown = false;
     snapTo(index);
     dx = 0; isSwiping = false;
   });
 
+  // Desktop knoppen
+  prevBtn?.addEventListener('click', ()=> snapTo(index-1));
+  nextBtn?.addEventListener('click', ()=> snapTo(index+1));
+
+  // Sluiten / terug:
+  // - In modal (iframe): stuur bericht naar de parent
+  // - Losse pagina: ga terug naar index
+  function requestClose(){
+    if(window.parent && window.parent !== window){
+      window.parent.postMessage({type:'pk_close_help'}, '*');
+      return;
+    }
+    window.location.href = '../index.html';
+  }
+  closeHelp?.addEventListener('click', requestClose);
+  backLink?.addEventListener('click', (e)=>{
+    // In modal is "Kaarten" logisch als sluiten
+    if(window.parent && window.parent !== window){
+      e.preventDefault();
+      requestClose();
+    }
+  });
+
+  // Toetsen (desktop)
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowLeft') snapTo(index-1);
+    if(e.key === 'ArrowRight') snapTo(index+1);
+    if(e.key === 'Escape') requestClose();
+  });
+
   window.addEventListener('resize', onResize);
 
   renderMeta();
-  fitDescHeight();
   onResize();
 })();

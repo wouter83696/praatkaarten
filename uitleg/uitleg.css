@@ -13,11 +13,9 @@ body{
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
   background:transparent;
   color:var(--ink);
-  /* zelfde gevoel als grote kaart-overlay */
-  cursor: crosshair;
+  overflow:auto;
 }
-html,body,.viewer,.stage,.slideTrack,.slide,.slideInner{ cursor: crosshair; }
-.wrap{ padding:18px; max-width: 620px; margin:0 auto; }
+.wrap{ padding:18px; padding-bottom:84px; max-width: 620px; margin:0 auto; }
 .viewer{ padding-top:0; }
 
 .stage{
@@ -28,10 +26,41 @@ html,body,.viewer,.stage,.slideTrack,.slide,.slideInner{ cursor: crosshair; }
   overflow:hidden;
   box-shadow:var(--shadow);
   background:var(--paper);
-  /* horizontale swipe in JS; verticaal scroll blijft elders */
   touch-action: pan-y;
-  /* geen extra lege ruimte; hoogte volgt inhoud */
-  min-height:0;
+  min-height:260px;
+}
+
+/* Desktop: cursor + pijlen zoals op de kaarten-pagina */
+@media (hover:hover){
+  .stage{ cursor:crosshair; }
+}
+
+.chev{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.75);
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
+  color:rgba(11,18,32,.45);
+  cursor:pointer;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.chev svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.chev.left{ left:10px; }
+.chev.right{ right:10px; }
+
+@media (hover:hover){
+  .chev{ display:flex; opacity:.85; }
+  .chev:hover{ opacity:1; background:rgba(255,255,255,.92); }
+}
+@media (hover:none) and (pointer:coarse){
+  .chev{ display:none !important; }
 }
 .slideTrack{
   display:flex;
@@ -39,49 +68,114 @@ html,body,.viewer,.stage,.slideTrack,.slide,.slideInner{ cursor: crosshair; }
   transform:translateX(0px);
   transition: transform 240ms ease;
 }
-.slide{ flex:0 0 100%; }
-.slideInner{ display:flex; flex-direction:column; }
+.slide{ flex:0 0 100%; display:flex; }
 .slide img{ width:100%; height:auto; display:block; }
 
-/* tekst moet voelen als "onderkant van hetzelfde kaartje" (geen apart tekstvak) */
-.slideDesc{
+.meta{
+  width:min(520px,100%);
+  margin:14px auto 0;
+  text-align:center;
+}
+.desc{
   font-size:14px;
   line-height:1.55;
   color:rgba(11,18,32,.62);
-  padding:12px 14px 14px;
-  background:transparent;
-  border:0;
-
-  /* mooi lopende tekst (minder orphans na punt) */
-  text-wrap: pretty;
-  hyphens:auto;
-  overflow:auto;
-  -webkit-overflow-scrolling:touch;
-  touch-action: pan-y;
+  padding:0 10px;
+  min-height: 0;
 }
 
-/* desktop pijlen (verbergen op touch) */
-.nav{
-  position:absolute;
-  top:50%;
-  transform:translateY(-50%);
-  width:46px;
-  height:46px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.08);
+/* ===============================
+   ONDERSTE BALK (menu)
+   =============================== */
+.controlsBar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  /* Zelfde gevoel als bij de grote kaartjes: translucent + blur + zachte scheiding */
+  padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   background:rgba(250,250,248,.72);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-top:1px solid rgba(0,0,0,.06);
+  box-shadow:0 -10px 30px rgba(0,0,0,.06);
+}
+.controlsBar .inner{
+  max-width:1600px;
+  margin:0 auto;
   display:flex;
+  gap:12px;
   align-items:center;
-  justify-content:center;
-  color:rgba(11,18,32,.70);
+  justify-content:space-between;
+}
+
+.btnGroup{display:flex;align-items:center;gap:0;}
+.rightCluster{display:flex;align-items:center;gap:10px;}
+
+/* Zelfde look als de kaartjes (hoofdpagina): simpele tekstknoppen */
+.btn{
+  appearance:none;
+  border:0;
+  background:transparent;
+  border-radius:999px;
+  padding:10px;
+  font-size:13px;
+  line-height:1.2;
+  color:rgba(11,18,32,.45);
+  font:500 13px/1.2 "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  text-decoration:none;
   cursor:pointer;
+  box-shadow:none;
 }
-.nav span{ font-size:28px; line-height:1; margin-top:-2px; }
-.navPrev{ left:10px; }
-.navNext{ right:10px; }
-@media (pointer: coarse){
-  .nav{ display:none; }
+.btn:hover{
+  background:rgba(0,0,0,.04);
 }
+
+/* compacter zoals Hussel | Reset */
+.btnGroup .btn{padding:10px 4px;}
+.sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 1px;opacity:.35;}
+
+/* focus ring rustig (zoals main) */
+.btn:focus-visible{
+  outline:2px solid rgba(11,18,32,.28);
+  outline-offset:2px;
+}
+
+/* ===============================
+   NAV HINT (zelfde gedrag/gevoel als hoofdpagina)
+   =============================== */
+.navHintMini{
+  margin-left:auto;
+  opacity:0;
+  color:rgba(11,18,32,.55);
+  font-size:12.5px;
+  line-height:1.2;
+  white-space:nowrap;
+  pointer-events:none;
+  transition:opacity .35s ease;
+}
+
+/* Alleen tonen als hint actief is */
+body.show-hint .navHintMini{ opacity:.72; }
+
+/* Geen extra afwijkende padding: bar is identiek aan hoofdpagina */
+
+/* Mobiel/tablet: hint als zwevende pill rechts-onder */
+@media (hover:none) and (pointer:coarse){
+  .navHintMini{
+    position:fixed;
+    right:14px;
+    bottom:14px;
+    margin:0;
+    padding:8px 10px;
+    background:rgba(243,245,238,.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,.10);
+    color:rgba(11,18,32,.62);
+    font-size:12.5px;
+    z-index:9999;
+  }
+}
+
+/* (geen landscape uitzondering) */
+
+
