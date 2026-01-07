@@ -1,7 +1,3 @@
-// Base pad voor assets/JSON (handig als dezelfde viewer in een submap draait, zoals /uitleg/)
-const BASE = (window.__PK_BASE || '').replace(/\/+$/,'');
-const withBase = (p) => BASE ? `${BASE}/${p}` : p;
-
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   const grid = document.getElementById('grid');
@@ -25,22 +21,17 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   
 
-  // Startmodus kan per pagina gezet worden (bijv. uitleg-pagina start direct in 'help')
-  let mode = (window.__PK_START_MODE === 'help') ? 'help' : 'cards'; // 'cards' of 'help'
+  let mode = 'cards'; // 'cards' of 'help'
   let helpData = {};
-  const helpItemsAll = [
-    { theme:'Samen onderzoeken', key:'cover', bg:withBase('voorkant.svg') },
-    { theme:'Verkennen', key:'verkennen', bg:withBase('cards/verkennen.svg') },
-    { theme:'Duiden', key:'duiden', bg:withBase('cards/duiden.svg') },
-    { theme:'Verbinden', key:'verbinden', bg:withBase('cards/verbinden.svg') },
-    // Let op: sleutel blijft 'verdiepen' i.v.m. je dataset, label op kaart is Verhelderen
-    { theme:'Verhelderen', key:'verdiepen', bg:withBase('cards/verdiepen.svg') },
-    { theme:'Vertragen', key:'vertragen', bg:withBase('cards/vertragen.svg') },
-    { theme:'Bewegen', key:'bewegen', bg:withBase('cards/bewegen.svg') }
+  const helpItems = [
+    { theme:'Samen onderzoeken', key:'cover', bg:'voorkant.svg' },
+    { theme:'Verkennen', key:'verkennen', bg:'cards/verkennen.svg' },
+    { theme:'Duiden', key:'duiden', bg:'cards/duiden.svg' },
+    { theme:'Verbinden', key:'verbinden', bg:'cards/verbinden.svg' },
+    { theme:'Verhelderen', key:'verdiepen', bg:'cards/verdiepen.svg' },
+    { theme:'Vertragen', key:'vertragen', bg:'cards/vertragen.svg' },
+    { theme:'Bewegen', key:'bewegen', bg:'cards/bewegen.svg' }
   ];
-
-  // Op de losse uitleg-pagina wil je alleen de 6 thema-kaarten (geen cover). Zet dan: window.__PK_HELP_ONLY_THEMES = true.
-  const helpItems = (window.__PK_HELP_ONLY_THEMES) ? helpItemsAll.slice(1) : helpItemsAll;
 
   // Nav hint (rechts): kort zichtbaar bij openen
   let hintTimer = null;
@@ -85,7 +76,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
           theme,
           num: i+1,
           q: qs[i],
-          bg: withBase(`cards/${theme}.svg`),
+          bg: `cards/${theme}.svg`,
           id: `${theme}-${String(i+1).padStart(2,'0')}`
         });
       }
@@ -378,7 +369,7 @@ document.addEventListener('keydown', (e) => {
     closeLb();
   });
 
-  shuffleBtn?.addEventListener('click', () => {
+  shuffleBtn.addEventListener('click', () => {
     filtered = shuffle(filtered.slice());
     render(filtered);
   });
@@ -395,27 +386,19 @@ document.addEventListener('keydown', (e) => {
   }
 
   (async function init(){
-    // uitleg-teksten (later invulbaar)
-    try{
-      const hr = await fetch(withBase('uitleg-data.json'), { cache:'no-store' });
-      helpData = await hr.json();
-    }catch(e){
-      helpData = {};
-    }
-
-    // Losse uitleg-pagina: start direct met de 6 thema-kaarten (geen vragen-grid)
-    if(window.__PK_START_MODE === 'help'){
-      filtered = helpItems.slice();
-      render(filtered);
-      return;
-    }
-
-    // Normale kaarten-pagina
-    const res = await fetch(withBase('questions.json'));
+    const res = await fetch('questions.json');
     const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();
     render(filtered);
+
+    // uitleg-teksten (later invulbaar)
+    try{
+      const hr = await fetch('uitleg-data.json', { cache:'no-store' });
+      helpData = await hr.json();
+    }catch(e){
+      helpData = {};
+    }
   })();
 
 

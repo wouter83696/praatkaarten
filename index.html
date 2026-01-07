@@ -699,17 +699,6 @@ body.hm-open{overflow:hidden}
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
 }
-/* iOS/Safari: backdrop-filter kan soms aan de randen (met name boven) "gaten" laten zien.
-   Deze extra laag dwingt een full-screen blur. */
-.helpModal::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  background:rgba(255,255,255,.14);
-  pointer-events:none;
-}
 .helpModal.open{display:flex}
 .helpPanel{
   position:relative;
@@ -750,7 +739,7 @@ body.hm-open{overflow:hidden}
 
     <div class="rightCluster">
       <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
-      <a class="btn" href="uitleg/uitleg.html">Uitleg</a>
+      <button class="btn" id="uitleg" type="button">Uitleg</button>
     </div>
   </div>
 </div>
@@ -1137,14 +1126,6 @@ lb.setAttribute('aria-hidden','false');
     helpModal.setAttribute('aria-hidden','true');
     document.body.classList.remove('hm-open');
   }
-
-  // Laat de uitleg-pagina (iframe) de modal sluiten via postMessage
-  window.addEventListener('message', (ev)=>{
-    const d = ev?.data;
-    if(d && typeof d === 'object' && d.type === 'pk_close_help'){
-      closeHelpModal();
-    }
-  });
 
   uitlegBtn?.addEventListener('click', openHelpModal);
   helpClose?.addEventListener('click', closeHelpModal);
