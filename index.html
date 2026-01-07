@@ -363,14 +363,6 @@ body.lb-open .navHintMini{ opacity:0; }
   min-height: 2.2em;
 }
 
-/* In uitleg-modus: ondertekst is scrollbaar, zonder extra "witte balk" eronder */
-.lb.help .lbBelowDesc{
-  max-height: min(28vh, 240px);
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 4px; /* ruimte voor scrollbar */
-}
-
 /* Help mode: tekst niet over de kaart, maar eronder */
 .lb.help .lbText{ display:grid; }
 .lb.help.no-overlay .lbText{ display:none; }
@@ -707,17 +699,6 @@ body.hm-open{overflow:hidden}
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
 }
-/* iOS/Safari: backdrop-filter kan soms aan de randen (met name boven) "gaten" laten zien.
-   Deze extra laag dwingt een full-screen blur. */
-.helpModal::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  background:rgba(255,255,255,.14);
-  pointer-events:none;
-}
 .helpModal.open{display:flex}
 .helpPanel{
   position:relative;
@@ -787,16 +768,446 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js"></script>
+<script>
+  
+  // Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
+  function setVh(){
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  setVh();
+  window.addEventListener('resize', setVh);
+  window.addEventListener('orientationchange', setVh);
+  if (window.visualViewport){
+    window.visualViewport.addEventListener('resize', setVh);
+  }
 
+const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
+  const grid = document.getElementById('grid');
+  const lb = document.getElementById('lb');
+  const lbImg = document.getElementById('lbImg');
+  const lbText = document.getElementById('lbText');
+  const lbCard = document.getElementById('lbCard');
+  const navHint = document.getElementById('navHint');
+const closeBtn = document.getElementById('close');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
 
+  const shuffleBtn = document.getElementById('shuffle');
+  const resetBtn = document.getElementById('reset');
+  const uitlegBtn = document.getElementById('uitleg');
+  const helpModal = document.getElementById('helpModal');
+  const helpClose = document.getElementById('helpClose');
 
+  let data = [];       // full list
+  let filtered = [];   // current order
+  let currentIndex = -1;
 
+  // Nav hint (rechts): alleen op touch-apparaten (telefoon/tablet) en alleen de 1e keer dat je een kaart groot opent.
+  // Let op: sommige desktops (touch-laptops / browser emulation) kunnen '(pointer: coarse)' teruggeven.
+  // Daarom combineren we media queries met de echte interactie (pointerType).
+  const MQ_TOUCHLIKE = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  const MQ_MOBILEVIEW = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
+  let openPointerType = 'mouse';
+  // Onthoud waarmee de gebruiker de viewer opent (touch vs mouse).
+  grid.addEventListener('pointerdown', (e) => { openPointerType = e.pointerType || 'mouse'; }, {passive:true});
+  grid.addEventListener('touchstart', () => { openPointerType = 'touch'; }, {passive:true});
+  const HINT_KEY = 'praatkaarten_hint_shown_v1';
+  let hintTimer = null;
+  function showNavHint(){
+    if(!navHint) return;
+    // Toon alleen als dit echt een touch-ervaring is (telefoon/tablet) óf als de viewer geopend is via touch.
+    if(!(MQ_MOBILEVIEW && (MQ_TOUCHLIKE || openPointerType === 'touch'))) return;
+    try{
+      if(sessionStorage.getItem(HINT_KEY) === '1') return;
+      sessionStorage.setItem(HINT_KEY, '1');
+    }catch(e){
+      // als sessionStorage niet kan, gewoon één keer per page-load tonen
+      if(window.__pkHintShown) return;
+      window.__pkHintShown = true;
+    }
+
+    // toon hint in menubalk (rechts), alleen zolang de lightbox open is
+    document.body.classList.add('show-hint');
+    navHint.setAttribute('aria-hidden','false');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => {
+      document.body.classList.remove('show-hint');
+      navHint.setAttribute('aria-hidden','true');
+    }, 8000);
+  }
+
+  // UI chrome (pijlen + sluiten)
+  // - Touch: iets langer zichtbaar
+  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
+  const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  const HIDE_MS_DESKTOP = 2200;
+  const HIDE_MS_TOUCH   = 3200;
+
+  let uiTimer = null;
+  function showUI(){
+    lb.classList.add('show-ui');
+    clearTimeout(uiTimer);
+    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
+  }
+
+  function buildData(questions){
+    const out = [];
+    for (const theme of THEMES){
+      const qs = questions[theme] || [];
+      for (let i=0; i<qs.length; i++){
+        out.push({
+          theme,
+          num: i+1,
+          q: qs[i],
+          bg: `cards/${theme}.svg`,
+          id: `${theme}-${String(i+1).padStart(2,'0')}`
+        });
+      }
+    }
+    return out;
+  }
+
+  function render(items){
+    grid.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    items.forEach((item, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'card';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', item.id);
+
+      const inner = document.createElement('div');
+      inner.className = 'cardInner';
+
+      const img = document.createElement('img');
+      img.className = 'bg';
+      img.src = item.bg;
+      img.alt = "";
+
+      const q = document.createElement('div');
+      q.className = 'q';
+      q.textContent = item.q;
+
+      inner.appendChild(img);
+      inner.appendChild(q);
+      btn.appendChild(inner);
+
+      btn.addEventListener('click', () => openAt(idx));
+      frag.appendChild(btn);
+    });
+
+    grid.appendChild(frag);
+  }
+
+  function openLb(item){
+    lbImg.src = item.bg;
+    // Laat de geblurde achtergrond mee wisselen met de huidige kaart
+    lb.style.setProperty('--lb-bg-url', `url(${item.bg})`);
+    lb.style.setProperty('--lb-bg-shift', '0px');
+    lbText.textContent = item.q || "";
+    // Thema-label (bij hover in hoek)
+    const pretty = {
+      verkennen: 'Verkennen',
+      verdiepen: 'Verdiepen',
+      verbinden: 'Verbinden',
+      bewegen: 'Bewegen',
+      duiden: 'Duiden',
+      verdiepen: 'Verdiepen',
+      vertragen: 'Vertragen'
+    };
+lb.setAttribute('aria-hidden','false');
+    lb.classList.add('open');
+    document.body.classList.add('lb-open');
+    // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    showUI();
+    showNavHint();
+
+    prevBtn.disabled = currentIndex <= 0;
+    nextBtn.disabled = currentIndex >= filtered.length - 1;
+  }
+
+  function closeLb(){
+    lb.setAttribute('aria-hidden','true');
+    lb.classList.remove('open');
+    document.body.classList.remove('lb-open');
+    lbImg.src = "";
+    lbText.textContent = "";
+    lb.style.setProperty('--lb-bg-url', 'none');
+    lb.style.setProperty('--lb-bg-shift', '0px');
+    currentIndex = -1;
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    clearTimeout(hintTimer);
+    document.body.classList.remove('show-hint');
+    if(navHint) navHint.setAttribute('aria-hidden','true');
+  }
+
+  // Swipe / drag overal (ook op de grijze achtergrond):
+  // - links/rechts: vorige/volgende
+  // - omlaag: sluiten
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
+  let gestureArmed = false;
+  let lastPointerType = 'mouse';
+
+  // Voorkom dat de 'synthetic click' na een touch-tap doorvalt naar de grid
+  // (klassieker: je sluit de lightbox, maar de klik opent direct weer een kaart).
+  let suppressClickUntil = 0;
+
+  function closeFromTap(e){
+    suppressClickUntil = performance.now() + 450;
+    try{ e?.preventDefault?.(); }catch(_e){}
+    try{ e?.stopPropagation?.(); }catch(_e){}
+    closeLb();
+  }
+
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    lastPointerType = e.pointerType || 'mouse';
+    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
+    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
+    if (e.target.closest && e.target.closest('button')) {
+      gestureArmed = false;
+      showUI();
+      return;
+    }
+    pointerDown = true;
+    gestureArmed = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    // Op touch willen we native verticaal scrollen (zeker bij lange kaarten).
+    // Pointer-capture kan dat soms "stroef" maken, dus alleen gebruiken bij mouse/pen.
+    if(lastPointerType !== 'touch'){
+      lb.setPointerCapture?.(e.pointerId);
+    }
+    showUI();
+  });
+
+  // Tijdens echte swipe/drag: iconen tijdelijk verbergen
+  lb.addEventListener('pointermove', (e) => {
+    if(!pointerDown) return;
+    if(!gestureArmed) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    // Alleen "swipe"-modus als het echt horizontaal is.
+    // Dit voorkomt dat verticaal scrollen soms als swipe/tap wordt gezien.
+    if(ax > ay && ax > 12){
+      lb.classList.add('is-swiping');
+      // Subtiel: achtergrond "glijdt" mee tijdens horizontale swipe
+      lb.style.setProperty('--lb-bg-shift', `${dx * 0.18}px`);
+    }else{
+      lb.classList.remove('is-swiping');
+      lb.style.setProperty('--lb-bg-shift', '0px');
+    }
+  }, {passive:true});
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    lb.classList.remove('is-swiping');
+    // Snap rustig terug
+    lb.style.setProperty('--lb-bg-shift', '0px');
+    if(!gestureArmed) return;
+    gestureArmed = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
+      closeLb();
+      return;
+    }
+    if(ax > ay && ax > thrX){
+      if(dx < 0) go(1); else go(-1);
+      showUI();
+      return;
+    }
+
+    // ✅ Tap-to-close op touch: ook als je op de kaart zelf tapt
+    if(lastPointerType !== 'mouse' && ax < 10 && ay < 10){
+      closeFromTap(e);
+      return;
+    }
+  });
+
+  function openAt(index){
+    currentIndex = index;
+    openLb(filtered[currentIndex]);
+  }
+
+  function go(delta){
+    if (currentIndex < 0) return;
+    const total = filtered.length;
+    let next = currentIndex + delta;
+    if(next < 0) next = total - 1;
+    if(next >= total) next = 0;
+    openAt(next);
+  }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  // events (iconen op de kaart)
+  // Desktop: klik op kaart doet niets (alleen UI tonen)
+  // Touch: tap op kaart sluit (tap-to-close)
+  lbCard.addEventListener('click', (e) => {
+    if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
+      closeFromTap(e);
+      return;
+    }
+    e.stopPropagation();
+  });
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
+
+  lb.addEventListener('mousemove', showUI);
+  lb.addEventListener('touchstart', showUI, {passive:true});
+  lb.addEventListener('click', (e) => {
+    // Klik buiten de kaart (op de blur/achtergrond) = sluiten
+    if(e.target === lb) {
+      if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
+        closeFromTap(e);
+      } else {
+        closeLb();
+      }
+      return;
+    }
+    showUI();
+  });
+
+  // Onderdruk 'click-through' direct na een touch-tap-close.
+  document.addEventListener('click', (e) => {
+    if (performance.now() < suppressClickUntil) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.key === 'Escape') closeLb();
+    if(e.key === 'ArrowLeft') go(-1);
+    if(e.key === 'ArrowRight') go(1);
+  });
 
   
+  function openHelpModal(){
+    showNavHint(); // 8 sec hint in dezelfde balk
+    if(!helpModal) return;
+    helpModal.classList.add('open');
+    helpModal.setAttribute('aria-hidden','false');
+    document.body.classList.add('hm-open');
+  }
+  function closeHelpModal(){
+    if(!helpModal) return;
+    helpModal.classList.remove('open');
+    helpModal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('hm-open');
+  }
+
+  uitlegBtn?.addEventListener('click', openHelpModal);
+  helpClose?.addEventListener('click', closeHelpModal);
+  helpModal?.addEventListener('click', (e)=>{ if(e.target === helpModal) closeHelpModal(); });
+
+shuffleBtn.addEventListener('click', () => {
+    filtered = shuffle(filtered.slice());
+    render(filtered);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    filtered = data.slice();
+    render(filtered);
+  });
+
+  (async function init(){
+    const res = await fetch('questions.json');
+    const questions = await res.json();
+    data = buildData(questions);
+    filtered = data.slice();
+    render(filtered);
+  })();
+
+/* ===== INSTRUCTION FADE (v6-fade-fix) ===== */
+(function(){
+  function fadeHint(){
+    const hint = document.querySelector('.controlsBar .help');
+    if(!hint) return;
+    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
+  }
+  window.addEventListener('load', fadeHint, { once:true });
+})();
+
+</script>
 
 
+
+
+  <!-- Uitleg modal (telefoon focus) -->
+  <div class="helpModal" id="helpModal" aria-hidden="true">
+    <div class="helpPanel" role="dialog" aria-modal="true" aria-label="Uitleg">
+      <button class="helpClose" id="helpClose" type="button" aria-label="Sluiten">✕</button>
+      <iframe class="helpFrame" id="helpFrame" title="Uitleg" src="/praatkaarten/uitleg/uitleg.html"></iframe>
+    </div>
+  </div>
+
+
+<script>
+/* UITLEG MODAL HANDLERS */
+(function(){
+  function q(id){ return document.getElementById(id); }
+
+  function openHelp(){
+    try{ window.showNavHint && window.showNavHint(); }catch(_){}
+    const m = q('helpModal');
+    if(!m) return;
+    m.classList.add('open');
+    m.setAttribute('aria-hidden','false');
+    document.body.classList.add('hm-open');
+  }
+
+  function closeHelp(){
+    const m = q('helpModal');
+    if(!m) return;
+    m.classList.remove('open');
+    m.setAttribute('aria-hidden','true');
+    document.body.classList.remove('hm-open');
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const btn = q('uitleg');
+    const close = q('helpClose');
+    const modal = q('helpModal');
+
+    btn && btn.addEventListener('click', openHelp);
+    close && close.addEventListener('click', closeHelp);
+    modal && modal.addEventListener('click', (e)=>{ if(e.target === modal) closeHelp(); });
+
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeHelp(); });
+  });
+})();
+</script>
 
 </body>
 </html>

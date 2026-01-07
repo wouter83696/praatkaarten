@@ -1,15 +1,3 @@
-// Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
-function setVh(){
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-setVh();
-window.addEventListener('resize', setVh);
-window.addEventListener('orientationchange', setVh);
-if (window.visualViewport){
-  window.visualViewport.addEventListener('resize', setVh);
-}
-
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   const grid = document.getElementById('grid');
@@ -35,15 +23,14 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   let mode = 'cards'; // 'cards' of 'help'
   let helpData = {};
-  // Uitleg-modus: alleen de 6 thema-kaarten (geen aparte pagina, geen cover).
-  // Let op: sommige installaties gebruiken "verdiepen" als key; we ondersteunen beide.
   const helpItems = [
-    { theme:'Verkennen',   key:'verkennen',   bg:'cards/verkennen.svg' },
-    { theme:'Duiden',      key:'duiden',      bg:'cards/duiden.svg' },
-    { theme:'Verbinden',   key:'verbinden',   bg:'cards/verbinden.svg' },
-    { theme:'Verhelderen', key:'verhelderen', bg:'cards/verhelderen.svg' },
-    { theme:'Vertragen',   key:'vertragen',   bg:'cards/vertragen.svg' },
-    { theme:'Bewegen',     key:'bewegen',     bg:'cards/bewegen.svg' }
+    { theme:'Samen onderzoeken', key:'cover', bg:'voorkant.svg' },
+    { theme:'Verkennen', key:'verkennen', bg:'cards/verkennen.svg' },
+    { theme:'Duiden', key:'duiden', bg:'cards/duiden.svg' },
+    { theme:'Verbinden', key:'verbinden', bg:'cards/verbinden.svg' },
+    { theme:'Verhelderen', key:'verdiepen', bg:'cards/verdiepen.svg' },
+    { theme:'Vertragen', key:'vertragen', bg:'cards/vertragen.svg' },
+    { theme:'Bewegen', key:'bewegen', bg:'cards/bewegen.svg' }
   ];
 
   // Nav hint (rechts): kort zichtbaar bij openen
@@ -123,28 +110,16 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       inner.appendChild(q);
       btn.appendChild(inner);
 
-      btn.addEventListener('click', () => {
-        mode = 'cards';
-        openAt(idx);
-      });
+      btn.addEventListener('click', () => openAt(idx));
       frag.appendChild(btn);
     });
 
     grid.appendChild(frag);
   }
 
-  function setLightboxBackground(url){
-    // Geblurde achtergrond = dezelfde SVG als huidige kaart
-    // (werkt ook als de img zelf nog laadt)
-    try{
-      lb.style.setProperty('--lb-bg-url', `url("${url}")`);
-    }catch(_e){}
-  }
-
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
     lbImg.src = item.bg || "";
-    if(item.bg) setLightboxBackground(item.bg);
 
     if(mode === 'help'){
       lb.classList.add('help');
@@ -152,12 +127,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbBelow) lbBelow.setAttribute('aria-hidden','false');
       if(lbBelowTitle) lbBelowTitle.textContent = item.theme || ""; // blijft verborgen in CSS
-      // Support: sommige data-bestanden gebruiken nog 'verdiepen'
-      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
-        ? 'verdiepen'
-        : item.key;
-
-      const desc = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
+      const desc = (helpData && item.key && typeof helpData[item.key] === 'string') ? helpData[item.key].trim() : "";
       if(lbBelowDesc) lbBelowDesc.textContent = desc ? desc : "";
 
       // Overlay op de kaart: themawoord, behalve op de cover
@@ -196,9 +166,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lbImg.src = "";
     lbText.textContent = "";
     currentIndex = -1;
-    lb.classList.remove('open');
-    lb.setAttribute('aria-hidden','true');
-    document.body.classList.remove('lb-open');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     clearTimeout(hintTimer);
@@ -301,6 +268,7 @@ lb.addEventListener('pointerup', (e) => {
   });
 
   function openAt(index){
+    mode = 'cards';
     currentIndex = index;
     openLb(filtered[currentIndex]);
   }
@@ -412,7 +380,8 @@ document.addEventListener('keydown', (e) => {
       showNavHint();
       mode = 'help';
       filtered = helpItems.slice();
-      openAt(0);
+      currentIndex = 0;
+      openLb(filtered[currentIndex]);
     });
   }
 
