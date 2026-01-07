@@ -796,11 +796,248 @@ body.hm-open{overflow:hidden}
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
 
+/* =========================================================
+   FIX 2026-01-07 — 1 maatstelsel voor kleine kaart, grote kaart en uitleg
+   ========================================================= */
+:root{
+  --card-ratio: 4 / 5;            /* breedte / hoogte */
+  --card-min: 240px;              /* basisbreedte small (desktop) */
+  --card-min-mobile: 160px;       /* basisbreedte small (mobiel) */
+  --card-gap: 18px;
+  --lb-safe-h: calc(100dvh - 140px);   /* ruimte voor menubalk + padding */
+  --help-below-h: clamp(120px, 20vh, 170px);
+}
 
-/* === v10k: lightbox kaartformaat === */
-.lbCard{ width: min(var(--card-w-large), 92vw); }
-#lbImg{ width: min(var(--card-w-large), 92vw); max-height: var(--card-h-large); object-fit: contain; }
+/* Responsive grid: automatisch zoveel kolommen als passen */
+.grid{
+  gap: var(--card-gap) !important;
+  padding: clamp(14px, 2.2vw, 22px) clamp(14px, 2.6vw, 28px) 120px !important;
+  max-width: 1600px !important;
+  margin: 0 auto !important;
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-min), 1fr)) !important;
+}
+@media (max-width: 520px){
+  .grid{
+    grid-template-columns: repeat(auto-fit, minmax(var(--card-min-mobile), 1fr)) !important;
+  }
+}
 
+/* Kleine kaart: altijd exact dezelfde hoogte via aspect-ratio */
+.card{ aspect-ratio: var(--card-ratio) !important; }
+.card img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Rechter cluster (Uitleg + hint) netjes uitlijnen */
+.rightCluster{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  margin-left:auto !important;
+}
+
+/* Grote kaart: exact dezelfde verhouding als klein, maar groter */
+.lbCard{
+  aspect-ratio: var(--card-ratio) !important;
+  width: min(92vw, 560px, calc(var(--lb-safe-h) * (var(--card-ratio)))) !important;
+  height: auto !important;
+  overflow:hidden !important;
+}
+
+/* Afbeelding vult het kaartvlak (normale modus) */
+#lbImg{
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  object-fit: cover !important;
+  display:block !important;
+}
+
+/* Help/uitleg: kaart blijft zelfde hoogte, maar krijgt vaste tekstzone onderin */
+.lb.help .lbCard{ display:flex !important; flex-direction:column !important; }
+.lb.help #lbImg{
+  height: calc(100% - var(--help-below-h)) !important;
+  width: 100% !important;
+  object-fit: contain !important;
+  background:#fff !important;
+}
+.lb.help .lbBelow{
+  display:block !important;
+  height: var(--help-below-h) !important;
+  padding: 14px 20px 18px !important;
+  overflow:auto !important;
+  -webkit-overflow-scrolling: touch;
+  margin-top:0 !important;
+}
+.lb.help .lbBelowDesc{ height:auto !important; overflow:visible !important; }
+
+/* Desktop: grid voelt strakker */
+@media (hover:hover) and (pointer:fine){
+  .grid{ padding-top: 16px !important; }
+}
+
+/* =========================================================
+   FIX 2026-01-07 — 1 maatstelsel voor kleine kaart, grote kaart en uitleg
+   ========================================================= */
+:root{
+  --card-ratio: 4 / 5;            /* breedte / hoogte */
+  --card-min: 240px;              /* basisbreedte small (desktop) */
+  --card-min-mobile: 160px;       /* basisbreedte small (mobiel) */
+  --card-gap: 18px;
+  --lb-safe-h: calc(100dvh - 140px);   /* ruimte voor menubalk + padding */
+  --help-below-h: clamp(120px, 20vh, 170px);
+}
+
+/* Responsive grid: automatisch zoveel kolommen als passen */
+.grid{
+  gap: var(--card-gap) !important;
+  padding: clamp(14px, 2.2vw, 22px) clamp(14px, 2.6vw, 28px) 120px !important;
+  max-width: 1600px !important;
+  margin: 0 auto !important;
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-min), 1fr)) !important;
+}
+@media (max-width: 520px){
+  .grid{
+    grid-template-columns: repeat(auto-fit, minmax(var(--card-min-mobile), 1fr)) !important;
+  }
+}
+
+/* Kleine kaart: altijd exact dezelfde hoogte via aspect-ratio */
+.card{ aspect-ratio: var(--card-ratio) !important; }
+.card img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Rechter cluster (Uitleg + hint) netjes uitlijnen */
+.rightCluster{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  margin-left:auto !important;
+}
+
+/* Grote kaart: exact dezelfde verhouding als klein, maar groter */
+.lbCard{
+  aspect-ratio: var(--card-ratio) !important;
+  width: min(92vw, 560px, calc(var(--lb-safe-h) * (var(--card-ratio)))) !important;
+  height: auto !important;
+  overflow:hidden !important;
+}
+
+/* Afbeelding vult het kaartvlak (normale modus) */
+#lbImg{
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  object-fit: cover !important;
+  display:block !important;
+}
+
+/* Help/uitleg: kaart blijft zelfde hoogte, maar krijgt vaste tekstzone onderin */
+.lb.help .lbCard{
+  display:flex !important;
+  flex-direction:column !important;
+}
+.lb.help #lbImg{
+  height: calc(100% - var(--help-below-h)) !important;
+  width: 100% !important;
+  object-fit: contain !important;
+  background:#fff !important;
+}
+.lb.help .lbBelow{
+  display:block !important;
+  height: var(--help-below-h) !important;
+  padding: 14px 20px 18px !important;
+  overflow:auto !important;
+  -webkit-overflow-scrolling: touch;
+  margin-top:0 !important;
+}
+.lb.help .lbBelowDesc{
+  height:auto !important;
+  overflow:visible !important;
+}
+
+@media (hover:hover) and (pointer:fine){
+  .grid{ padding-top: 16px !important; }
+}
+
+
+/* =========================================================
+   FIX 2026-01-07 — 1 maatstelsel voor kleine kaart, grote kaart en uitleg
+   ========================================================= */
+:root{
+  --card-ratio: 4 / 5;            /* breedte / hoogte */
+  --card-min: 240px;              /* basisbreedte small (desktop) */
+  --card-min-mobile: 160px;       /* basisbreedte small (mobiel) */
+  --card-gap: 18px;
+  --lb-safe-h: calc(100dvh - 140px);
+  --help-below-h: clamp(120px, 20vh, 170px);
+}
+
+/* Responsive grid */
+.grid{
+  gap: var(--card-gap) !important;
+  padding: clamp(14px, 2.2vw, 22px) clamp(14px, 2.6vw, 28px) 120px !important;
+  max-width: 1600px !important;
+  margin: 0 auto !important;
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-min), 1fr)) !important;
+}
+@media (max-width: 520px){
+  .grid{ grid-template-columns: repeat(auto-fit, minmax(var(--card-min-mobile), 1fr)) !important; }
+}
+
+/* Kleine kaart: vaste hoogte via aspect-ratio */
+.card{ aspect-ratio: var(--card-ratio) !important; }
+.card img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Menubalk rechts (Uitleg + hint) netjes */
+.rightCluster{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  margin-left:auto !important;
+}
+
+/* Grote kaart: exact dezelfde verhouding als klein */
+.lbCard{
+  aspect-ratio: var(--card-ratio) !important;
+  width: min(92vw, 560px, calc(var(--lb-safe-h) * (var(--card-ratio)))) !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+#lbImg{
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  object-fit: cover !important;
+  display:block !important;
+}
+
+/* Uitleg: kaart blijft dezelfde maat, met vaste tekstzone */
+.lb.help .lbCard{ display:flex !important; flex-direction:column !important; }
+.lb.help #lbImg{
+  height: calc(100% - var(--help-below-h)) !important;
+  width: 100% !important;
+  object-fit: contain !important;
+  background:#fff !important;
+}
+.lb.help .lbBelow{
+  display:block !important;
+  height: var(--help-below-h) !important;
+  padding: 14px 20px 18px !important;
+  overflow:auto !important;
+  -webkit-overflow-scrolling: touch;
+  margin-top:0 !important;
+}
+.lb.help .lbBelowDesc{ height:auto !important; }
 </style>
 </head>
 <body>

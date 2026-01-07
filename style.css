@@ -221,7 +221,7 @@ html,body{
 .controlsBar button:hover,
 .controlsBar a:hover{
   color: rgba(11,18,32,.72);
-  background: rgba(255,255,255,.18);
+  background: rgba(0,0,0,.04);
 }
 
 
@@ -393,42 +393,5 @@ body.hm-open{ overflow:hidden; }
   .menuBtn:hover, .menu a:hover, .menu button:hover{
     background: rgba(255,255,255,0.55);
   }
-}
-
-
-
-/* === v10k: kaartmaten volgens SVG viewBox (240.94×155.91) === */
-:root {
-  --card-aspect: 240.94 / 155.91;
-  --card-w-small: 241px;
-  --card-h-small: 156px;
-  --card-w-large: 480px;
-  --card-h-large: 312px;
-}
-
-/* Kleine kaartjes (grid) */
-.card img, .card object, .card svg {
-  aspect-ratio: var(--card-aspect);
-}
-
-@media (min-width: 640px) {
-  .card {
-    width: var(--card-w-small);
-  }
-}
-
-@media (max-width: 639px) {
-  .card {
-    width: min(var(--card-w-small), 92vw);
-  }
-}
-
-/* Grote kaart (lightbox) - SVG deel */
-#lbImg {
-  aspect-ratio: var(--card-aspect);
-  width: min(var(--card-w-large), 92vw);
-  height: auto;
-  max-height: var(--card-h-large);
-  object-fit: contain;
 }
 

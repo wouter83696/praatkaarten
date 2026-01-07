@@ -279,6 +279,26 @@ button,
   box-shadow:none !important;
 }
 
+
+
+/* =========================================================
+   FIX 2026-01-07 — grid: vaste kaartverhouding + responsive kolommen
+   ========================================================= */
+:root{
+  --card-ratio: 4 / 5;
+  --card-min: 240px;
+  --card-min-mobile: 160px;
+}
+
+.grid{
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-min), 1fr)) !important;
+}
+@media (max-width:520px){
+  .grid{ grid-template-columns: repeat(auto-fit, minmax(var(--card-min-mobile), 1fr)) !important; }
+}
+
+.card{ aspect-ratio: var(--card-ratio) !important; }
+.card img{ width:100% !important; height:100% !important; object-fit: cover !important; }
 </style>
 </head>
 <body>
