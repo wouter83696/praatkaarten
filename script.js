@@ -10,7 +10,7 @@ if (window.visualViewport){
   window.visualViewport.addEventListener('resize', setVh);
 }
 
-const VERSION = '2.1.2';
+const VERSION = '2.1.3';
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
 function withVersion(url){
