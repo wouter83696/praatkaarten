@@ -850,6 +850,25 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
+
+/* --- v3.0: align uitleg-tekstvak exact met kaart (desktop & mobiel) --- */
+.lbHelpDesc{ display:none !important; } /* voorkom 'los pill'-vak onderin */
+
+.lbSheetGrab{ display:none !important; } /* grab handle weg */
+
+/* Laat JS de positie/breedte bepalen op desktop; mobiel blijft bottom-based */
+@media (hover:hover) and (pointer:fine){
+  .lbSheet{
+    left:0 !important;
+    right:auto !important;
+    width:auto !important;
+    transform:none !important;
+    bottom:auto !important;
+    top:auto !important;
+    padding:0 !important;
+  }
+}
+
 </style>
 </head>
 <body>

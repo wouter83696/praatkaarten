@@ -172,6 +172,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     if(mode === 'help'){
       lb.classList.add('help');
+      if(window.__positionHelpSheet) window.__positionHelpSheet();
 
       // UITLEG: één duidelijke laag (bottom sheet), ook op desktop.
       if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
@@ -193,6 +194,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     else{
       lb.classList.remove('help');
+      if(window.__positionHelpSheet) window.__positionHelpSheet();
       if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
       if(lbSheetTitle) lbSheetTitle.textContent = "";
       if(lbSheetDesc) lbSheetDesc.textContent = "";
@@ -499,3 +501,53 @@ window.closeLb = closeLb;
 
 
 window.go = go;
+
+
+
+// --- v3.0: positioneer uitleg-sheet exact onder de kaart (desktop) ---
+(function(){
+  const sheet = document.getElementById('lbSheet');
+  const card  = document.getElementById('lbCard');
+
+  function isDesktopPointer(){
+    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  }
+
+  function positionSheet(){
+    if(!sheet || !card) return;
+
+    // Alleen positioneren wanneer de sheet zichtbaar is
+    const lb = document.getElementById('lb');
+    if(!lb || !lb.classList.contains('help')) return;
+
+    const r = card.getBoundingClientRect();
+    const gap = 18; // speelse, maar strakke ruimte
+    const top = Math.round(r.bottom + gap);
+
+    // Breedte exact gelijk aan kaart
+    sheet.style.left = Math.round(r.left) + 'px';
+    sheet.style.width = Math.round(r.width) + 'px';
+
+    if(isDesktopPointer()){
+      sheet.style.top = top + 'px';
+      sheet.style.bottom = 'auto';
+      sheet.style.right = 'auto';
+      sheet.style.transform = 'none';
+    } else {
+      // Mobiel: iets hoger boven de menubalk voor duim/scroll-ruimte
+      sheet.style.left = '0px';
+      sheet.style.right = '0px';
+      sheet.style.width = 'auto';
+      sheet.style.top = 'auto';
+      sheet.style.transform = 'none';
+      sheet.style.bottom = 'calc(64px + env(safe-area-inset-bottom) + 52px)';
+    }
+  }
+
+  window.addEventListener('resize', positionSheet, {passive:true});
+  window.addEventListener('orientationchange', positionSheet, {passive:true});
+
+  // Expose for existing open/close handlers to call
+  window.__positionHelpSheet = positionSheet;
+})();
+
