@@ -405,14 +405,25 @@ text-wrap: pretty;
 .lbSheet{
   display:none;
   position:fixed;
-  left:0;
-  right:0;
-  /* boven de vaste menubalk */
-  bottom:calc(64px + env(safe-area-inset-bottom));
-  padding:10px 14px;
+  /* uitlijnen met kaart */
+  left:50%;
+  right:auto;
+  width:min(560px,92vw);
+  transform:translateX(-50%);
+  /* hoger boven de vaste menubalk (meer “speelruimte” voor scroll/duim) */
+  bottom:calc(64px + env(safe-area-inset-bottom) + 28px);
+  padding:0;
   pointer-events:auto;
   z-index:9999;
 }
+
+/* Landscape: iets minder omhoog, omdat hoogte schaars is */
+@media (orientation: landscape){
+  .lbSheet{
+    bottom:calc(64px + env(safe-area-inset-bottom) + 14px);
+  }
+}
+
 .lbSheetBody{
   background:rgba(255,255,255,.92);
   backdrop-filter:blur(10px);
