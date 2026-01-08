@@ -767,7 +767,7 @@ display:block;}
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    - Swipe blijft werken
-   - Tap-to-close wordt in script.js gedaan
+   - Tap-to-close wordt in script.js?v=34 gedaan
    =============================== */
 /* ===============================
    MOBILE (touch):
@@ -850,6 +850,11 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
+
+/* --- v3.4 cachebust + hard overrides --- */
+#lbHelpDesc, .lbHelpDesc { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+#lbSheet { box-sizing:border-box; }
+
 </style>
 </head>
 <body>
@@ -901,7 +906,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js"></script>
+<script src="script.js?v=34"></script>
 
 
 
