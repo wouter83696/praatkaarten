@@ -2,7 +2,7 @@
   // Let op: deze uitleg draait in een iframe (helpModal) en gebruikt daarom absolute paden
   // naar je GitHub Pages submap.
   const BASE = "/praatkaarten";
-  const VERSION = "2.3";
+  const VERSION = "2.4";
 
   // simpele cache-buster (werkt ook op GitHub Pages)
   const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);

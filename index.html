@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v2.3</title>
+<title>Praatkaarten v2.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -394,16 +394,19 @@ text-wrap: pretty;
 
 
 /* ===============================
-   UITLEG (HELP) — tekst IN de kaart, zonder hoogte te veranderen
+   UITLEG (HELP)
+   - Witte tekstvlak zit "vast" onder de kaart (geen overlay)
+   - Hoogte groeit automatisch mee met de tekst
+   - Kaart-afbeelding behoudt z'n originele ratio
    =============================== */
+.lbCard{ display:flex; flex-direction:column; }
+
 .lbHelpText{
   display:none;
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
+  position:static;
   background:#fff;
-  padding:14px 18px 26px; /* extra 'enter' onderin */
+  border-top:1px solid rgba(0,0,0,.06);
+  padding:14px 18px 18px;
 }
 .lbHelpTitle{
   font-weight:500;
@@ -411,6 +414,7 @@ text-wrap: pretty;
   line-height:1.15;
   color:var(--textBlue);
   margin:0 0 8px;
+  display:none; /* geen kop in uitleg */
 }
 .lbHelpDesc{
   font-weight:400;
@@ -421,6 +425,9 @@ text-wrap: pretty;
   text-wrap: pretty;
   hyphens: auto;
   -webkit-hyphens: auto;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
 }
 
 /* Alleen in uitleg-modus tonen */
@@ -865,7 +872,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.3"></script>
+<script src="script.js?v=2.4"></script>
 
 
 

@@ -11,7 +11,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = "2.3";
+const VERSION = "2.4";
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
