@@ -3,11 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten</title>
+<title>Praatkaartjes – v3.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
+
+
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
 /* ===============================
@@ -318,7 +321,7 @@ body.lb-open .navHintMini{ opacity:0; }
 
 .lbCard{
   position:relative;
-  width:min(560px,92vw);
+  width:auto; max-width:none;
   /* Desktop: grotere kaart zoals bij thema-overlay */
   border-radius:22px;
   overflow:hidden;
@@ -402,27 +405,9 @@ text-wrap: pretty;
    =============================== */
 
 /* Bottom sheet (uitleg als aparte laag — kaart blijft altijd kaart) */
-.lbSheet{
-  display:none;
-  position:fixed;
-  /* uitlijnen met kaart */
-  left:50%;
-  right:auto;
-  width:min(560px,92vw);
-  transform:translateX(-50%);
-  /* hoger boven de vaste menubalk (meer “speelruimte” voor scroll/duim) */
-  bottom:calc(64px + env(safe-area-inset-bottom) + 28px);
-  padding:0;
-  pointer-events:auto;
-  z-index:9999;
-}
-
 /* Landscape: iets minder omhoog, omdat hoogte schaars is */
 @media (orientation: landscape){
-  .lbSheet{
-    bottom:calc(64px + env(safe-area-inset-bottom) + 14px);
   }
-}
 
 .lbSheetBody{
   background:rgba(255,255,255,.92);
@@ -458,19 +443,10 @@ text-wrap: pretty;
 
 /* Desktop: sheet als compacte overlay (geen zwevend wit vlak onder de kaart) */
 @media (hover:hover) and (pointer:fine){
-  .lbSheet{
-    left:50%;
-    right:auto;
-    width:min(640px,92vw);
-    transform:translateX(-50%);
-    padding:0;
   }
-}
 
 /* Uitleg-modus: toon sheet (op alle devices) */
-.lb.help .lbSheet{display:block;}
-
-/* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
+.lb.help /* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
 .lb.help .lbText{
   display:grid !important;
   font-weight:500;
@@ -767,7 +743,7 @@ display:block;}
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    - Swipe blijft werken
-   - Tap-to-close wordt in script.js gedaan
+   - Tap-to-close wordt in script.js?v=37 gedaan
    =============================== */
 /* ===============================
    MOBILE (touch):
@@ -850,6 +826,93 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
+
+/* stack die kaart + tekstvak samen houdt */
+#lbStack{
+  width:min(560px,92vw);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+/* kaart vult stack */
+#lbCard{ width:100%; }
+
+/* uitleg-sheet in normale flow */
+#lbSheet{
+  display:none;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* show sheet only when help is active */
+#lb.help #lbSheet{ display:block; }
+
+/* oude pill volledig uit */
+#lbHelpDesc, .lbHelpDesc{ display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+
+/* grab handle weg */
+.lbSheetGrab{ display:none !important; }
+
+/* Zorg dat er onderin ruimte blijft voor de vaste menubalk (duim/scrollruimte) */
+#lb{
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* --- v3.7: sheet alleen bij Uitleg + netjes gecentreerd, en mooier (overlap) --- */
+#lbStack{
+  width:min(760px,92vw);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  position:relative;
+}
+#lbCard{ width:100%; }
+
+/* sheet standaard uit */
+#lbSheet{
+  display:none;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* alleen zichtbaar in help/uitleg-modus */
+#lb.help #lbSheet{
+  display:block;
+  margin-top:-28px; /* subtiele overlap: voelt als één object */
+}
+
+/* oude pill volledig uit */
+#lbHelpDesc, .lbHelpDesc{ display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+/* grab handle weg */
+.lbSheetGrab{ display:none !important; }
+
+/* ruimte onderin voor vaste menubalk */
+#lb{ padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+
+/* iPhone landscape: tekst IN de kaart, onderin (geen scroll) */
+@media (orientation: landscape) and (max-height: 520px){
+  #lbStack{ gap:0; }
+  #lb{ padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  #lb.help #lbSheet{
+    display:block;
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:16px;
+    width:auto;
+    margin-top:0;
+    border-radius:18px;
+    background: rgba(255,255,255,0.92);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
+
 </style>
 </head>
 <body>
@@ -875,19 +938,23 @@ body.hm-open{overflow:hidden}
   <div class="lbBg" aria-hidden="true"></div>
   <div class="panel" role="dialog" aria-modal="true">
     
-<div class="lbCard" id="lbCard">
-<button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
-      <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
-      <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
-            <img id="lbImg" alt="">
-      <div class="lbText" id="lbText"></div>
-<div class="lbHelpDesc" id="lbHelpDesc"></div>
+<div id="lbStack">
+      <div id="lbStack">
+  <div class="lbCard" id="lbCard">
+    <img class="lbImg" id="lbImg" alt="" draggable="false" />
+    <div class="lbText" id="lbText"></div>
+  </div>
 
-      </div>
-
-      <!-- UITLEG: bottom sheet (los van de kaart; kaart blijft altijd kaart) -->
-      <div class="lbSheet" id="lbSheet" aria-hidden="true">
-        <div class="lbSheetGrab" aria-hidden="true"></div>
+  <!-- UITLEG: beschrijving (sheet) -->
+  <div class="lbSheet" id="lbSheet" aria-hidden="true">
+    <div class="lbSheetGrab" aria-hidden="true"></div>
+    <div class="lbSheetBody">
+      <div class="lbSheetTitle" id="lbSheetTitle"></div>
+      <div class="lbSheetDesc" id="lbSheetDesc"></div>
+    </div>
+  </div>
+</div>
+    </div>
         <div class="lbSheetBody">
           <div class="lbSheetTitle" id="lbSheetTitle"></div>
           <div class="lbSheetDesc" id="lbSheetDesc"></div>
@@ -901,7 +968,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js"></script>
+<script src="script.js?v=37"></script>
 
 
 
