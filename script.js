@@ -4,6 +4,26 @@ function setVh(){
   document.documentElement.style.setProperty('--vh', `${vh}px`);
 }
 setVh();
+window.addEventListener('resize', setVh);
+window.addEventListener('orientationchange', setVh);
+if (window.visualViewport){
+  window.visualViewport.addEventListener('resize', setVh);
+}
+
+const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
+
+  // State
+  let data = [];
+  let filtered = [];      // huidige (eventueel gehusselde) kaartset
+  let helpFiltered = [];  // uitlegkaartjes
+  let currentIndex = -1;
+
+
+  const grid = document.getElementById('grid');
+  const lb = document.getElementById('lb');
+  const lbImg = document.getElementById('lbImg');
+  
+  lbImg.addEventListener('load', () => requestAnimationFrame(positionHelpSheet), {passive:true});
 const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
@@ -66,10 +86,12 @@ const lbText = document.getElementById('lbText');
       const ro = new ResizeObserver(() => requestAnimationFrame(positionHelpSheet));
       ro.observe(lbCard);
       // ook sheet zelf (tekst kan hoogte beïnvloeden)
-      if(lbSheet) }catch(e){}
+      if(lbSheet) ro.observe(lbSheet);
+    }catch(e){}
   }
 
 
+  window.addEventListener('resize', () => requestAnimationFrame(positionHelpSheet), {passive:true});
   window.addEventListener('orientationchange', () => setTimeout(() => requestAnimationFrame(positionHelpSheet), 60), {passive:true});
 
 
