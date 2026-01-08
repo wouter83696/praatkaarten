@@ -841,6 +841,31 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
+
+/* --- UX polish: center text panel under card, same width --- */
+.lbSheet {
+  max-width: var(--card-width, 720px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card,
+.card-container {
+  --card-width: 720px;
+}
+
+
+/* --- Final spacing polish: closer to card, room below for scroll --- */
+.lbSheet {
+  margin-top: 8px !important;          /* closer to the card */
+  padding-bottom: 24px !important;     /* internal breathing room */
+}
+
+.lbSheetWrapper,
+.lbSheetContainer {
+  padding-bottom: 14vh !important;     /* finger scroll space below */
+}
+
 </style>
 </head>
 <body>
