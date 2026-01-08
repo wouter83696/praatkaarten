@@ -10,15 +10,15 @@ if (window.visualViewport){
   window.visualViewport.addEventListener('resize', setVh);
 }
 
+const VERSION = '2.1.2';
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
-const VERSION = "2.1.0";
-function withCache(url){
-  if(!url) return url;
-  const sep = url.includes("?") ? "&" : "?";
-  return url + sep + "v=" + VERSION;
+function withVersion(url){
+  const u = String(url || '');
+  if(!u) return u;
+  const sep = u.includes('?') ? '&' : '?';
+  return `${u}${sep}v=${encodeURIComponent(VERSION)}`;
 }
-
 
   // State
   let data = [];
@@ -140,7 +140,7 @@ function withCache(url){
 
       const img = document.createElement('img');
       img.className = 'bg';
-      img.src = withCache(item.bg);
+      img.src = withVersion(item.bg);
       img.alt = "";
 
       const q = document.createElement('div');
@@ -175,15 +175,16 @@ function withCache(url){
 
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    lbImg.src = item.bg ? withCache(item.bg) : "";
-    if(item.bg) setLightboxBackground(item.bg);
+    lbImg.src = withVersion(item.bg || "");
+    if(item.bg) setLightboxBackground(withVersion(item.bg));
 
     if(mode === 'help'){
       lb.classList.add('help');
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
+      // Kop staat in het midden van de kaart (overlay), niet in het tekstvak
+      if(lbHelpTitle) lbHelpTitle.textContent = "";
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
@@ -193,10 +194,10 @@ function withCache(url){
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
-      lb.classList.remove('help-title');
+
+      // In help-mode: titel in het midden van de kaart
+      lbText.textContent = item.theme || "";
+      lb.classList.remove('no-overlay');
     }
 
     else{
@@ -486,7 +487,7 @@ document.addEventListener('keydown', (e) => {
   }
 
   (async function init(){
-    const res = await fetch(withCache('questions.json'));
+    const res = await fetch(withVersion('questions.json'), { cache:'no-store' });
     const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();
@@ -494,7 +495,7 @@ document.addEventListener('keydown', (e) => {
 
     // uitleg-teksten (later invulbaar)
     try{
-      const hr = await fetch(withCache('uitleg-data.json'), { cache:'no-store' });
+      const hr = await fetch(withVersion('uitleg-data.json'), { cache:'no-store' });
       helpData = await hr.json();
     }catch(e){
       helpData = {};
