@@ -318,7 +318,7 @@ body.lb-open .navHintMini{ opacity:0; }
 
 .lbCard{
   position:relative;
-  width:min(560px,92vw);
+  width:auto; max-width:none;
   /* Desktop: grotere kaart zoals bij thema-overlay */
   border-radius:22px;
   overflow:hidden;
@@ -408,7 +408,7 @@ text-wrap: pretty;
   /* uitlijnen met kaart */
   left:50%;
   right:auto;
-  width:min(560px,92vw);
+  width:auto; max-width:none;
   transform:translateX(-50%);
   /* hoger boven de vaste menubalk (meer “speelruimte” voor scroll/duim) */
   bottom:calc(64px + env(safe-area-inset-bottom) + 28px);

@@ -22,7 +22,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
-  const lbText = document.getElementById('lbText');
+  
+  lbImg.addEventListener('load', () => requestAnimationFrame(positionHelpSheet), {passive:true});
+const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
   const navHint = document.getElementById('navHint');
@@ -55,6 +57,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     lbSheet.style.left = left + 'px';
     lbSheet.style.width = width + 'px';
+    lbSheet.style.maxWidth = width + 'px';
+    lbSheet.style.boxSizing = 'border-box';
     lbSheet.style.right = 'auto';
     lbSheet.style.transform = 'none';
 
@@ -63,7 +67,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     let top = Math.round(r.bottom + gap);
 
     // Clamp: houd onderin altijd ruimte vrij (menubalk + safe area + extra)
-    const reservedBottom = 64 + 16; // menubalk + ademruimte
+    const reservedBottom = 64 + 32; // menubalk + extra ademruimte (hoger) // menubalk + ademruimte
     const vh = window.innerHeight || document.documentElement.clientHeight;
 
     // Meet sheet hoogte (na content). Als 0, doe een best-effort.
@@ -75,6 +79,17 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lbSheet.style.top = top + 'px';
     lbSheet.style.bottom = 'auto';
   }
+
+  // --- v3.3: hou uitleg-sheet altijd synchroon met kaart (ResizeObserver) ---
+  if (window.ResizeObserver && lbCard){
+    try{
+      const ro = new ResizeObserver(() => requestAnimationFrame(positionHelpSheet));
+      ro.observe(lbCard);
+      // ook sheet zelf (tekst kan hoogte beïnvloeden)
+      if(lbSheet) ro.observe(lbSheet);
+    }catch(e){}
+  }
+
 
   window.addEventListener('resize', () => requestAnimationFrame(positionHelpSheet), {passive:true});
   window.addEventListener('orientationchange', () => setTimeout(() => requestAnimationFrame(positionHelpSheet), 60), {passive:true});
