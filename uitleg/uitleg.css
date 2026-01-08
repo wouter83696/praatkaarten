@@ -218,6 +218,8 @@ body.show-hint .navHintMini{ opacity:.72; }
   display: block;
   width: 100%;
   height: auto;
+
+  border-radius: 0 !important;
 }
 
 .kaart-tekst {
