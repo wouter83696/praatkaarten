@@ -22,7 +22,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
-  const lbText = document.getElementById('lbText');
+  
+  lbImg.addEventListener('load', () => requestAnimationFrame(positionHelpSheet), {passive:true});
+const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
   const navHint = document.getElementById('navHint');
@@ -38,6 +40,60 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbSheet = document.getElementById('lbSheet');
   const lbSheetTitle = document.getElementById('lbSheetTitle');
   const lbSheetDesc = document.getElementById('lbSheetDesc');
+
+
+  // --- v3.2: positioneer uitleg-tekstvak exact onder de kaart (desktop + mobiel) ---
+  function positionHelpSheet(){
+    if(!lb || !lb.classList.contains('help')) return;
+    if(!lbSheet || !lbCard) return;
+
+    // Zorg dat sheet zichtbaar is voordat we meten
+    const r = lbCard.getBoundingClientRect();
+    const gap = 18;
+
+    // Basis: zelfde breedte & uitlijning als kaart
+    const left = Math.round(r.left);
+    const width = Math.round(r.width);
+
+    lbSheet.style.left = left + 'px';
+    lbSheet.style.width = width + 'px';
+    lbSheet.style.maxWidth = width + 'px';
+    lbSheet.style.boxSizing = 'border-box';
+    lbSheet.style.right = 'auto';
+    lbSheet.style.transform = 'none';
+
+    // Verticaal: onder de kaart, maar nooit 'te laag' (ruimte boven menubalk)
+    // Eerst "wens-top"
+    let top = Math.round(r.bottom + gap);
+
+    // Clamp: houd onderin altijd ruimte vrij (menubalk + safe area + extra)
+    const reservedBottom = 64 + 32; // menubalk + extra ademruimte (hoger) // menubalk + ademruimte
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+
+    // Meet sheet hoogte (na content). Als 0, doe een best-effort.
+    const sheetH = lbSheet.offsetHeight || 120;
+    const maxTop = Math.max(16, Math.round(vh - reservedBottom - sheetH));
+
+    if(top > maxTop) top = maxTop;
+
+    lbSheet.style.top = top + 'px';
+    lbSheet.style.bottom = 'auto';
+  }
+
+  // --- v3.3: hou uitleg-sheet altijd synchroon met kaart (ResizeObserver) ---
+  if (window.ResizeObserver && lbCard){
+    try{
+      const ro = new ResizeObserver(() => requestAnimationFrame(positionHelpSheet));
+      ro.observe(lbCard);
+      // ook sheet zelf (tekst kan hoogte beïnvloeden)
+      if(lbSheet) ro.observe(lbSheet);
+    }catch(e){}
+  }
+
+
+  window.addEventListener('resize', () => requestAnimationFrame(positionHelpSheet), {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(() => requestAnimationFrame(positionHelpSheet), 60), {passive:true});
+
 
   
 
@@ -172,13 +228,17 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     if(mode === 'help'){
       lb.classList.add('help');
+      requestAnimationFrame(positionHelpSheet);
 
       // UITLEG: één duidelijke laag (bottom sheet), ook op desktop.
       if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
       // Thema komt IN het kaartje (midden). Sheet toont alleen de uitlegtekst.
       if(lbSheetTitle) lbSheetTitle.textContent = "";
 // Support: sommige data-bestanden gebruiken nog 'verdiepen'
-      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
+      const key = (item.key === 'verhelderen'
+        && helpData
+        && (typeof helpData.verhelderen !== 'string')
+        && (typeof helpData.verdiepen === 'string'))
         ? 'verdiepen'
         : item.key;
 
@@ -186,6 +246,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbSheetDesc) lbSheetDesc.textContent = desc;
+      requestAnimationFrame(positionHelpSheet);
       // In help-mode: toon het THEMA gecentreerd op de kaart
       lbText.textContent = item.theme || "";
       lb.classList.add('help-title');

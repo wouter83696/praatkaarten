@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
 /* ===============================
@@ -622,7 +623,7 @@ display:block;}
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    - Swipe blijft werken
-   - Tap-to-close wordt in script.js gedaan
+   - Tap-to-close wordt in script.js?v=35 gedaan
    =============================== */
 /* ===============================
    MOBILE (touch):
@@ -642,6 +643,43 @@ display:block;}
     pointer-events:none !important;
   }
 }
+
+/* --- v3.5: Uitleg-tekstvak altijd onder kaart, altijd uitgelijnd --- */
+
+/* stack die kaart + tekstvak samen houdt */
+#lbStack{
+  width:min(560px,92vw);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+/* kaart vult stack */
+#lbCard{ width:100%; }
+
+/* uitleg-sheet in normale flow */
+#lbSheet{
+  display:none;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* show sheet only when help is active */
+#lb.help #lbSheet{ display:block; }
+
+/* oude pill volledig uit */
+#lbHelpDesc, .lbHelpDesc{ display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+
+/* grab handle weg */
+.lbSheetGrab{ display:none !important; }
+
+/* Zorg dat er onderin ruimte blijft voor de vaste menubalk (duim/scrollruimte) */
+#lb{
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+
 </style>
 </head>
 <body>

@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
 /* ===============================
@@ -318,7 +319,7 @@ body.lb-open .navHintMini{ opacity:0; }
 
 .lbCard{
   position:relative;
-  width:min(560px,92vw);
+  width:auto; max-width:none;
   /* Desktop: grotere kaart zoals bij thema-overlay */
   border-radius:22px;
   overflow:hidden;
@@ -402,27 +403,9 @@ text-wrap: pretty;
    =============================== */
 
 /* Bottom sheet (uitleg als aparte laag — kaart blijft altijd kaart) */
-.lbSheet{
-  display:none;
-  position:fixed;
-  /* uitlijnen met kaart */
-  left:50%;
-  right:auto;
-  width:min(560px,92vw);
-  transform:translateX(-50%);
-  /* hoger boven de vaste menubalk (meer “speelruimte” voor scroll/duim) */
-  bottom:calc(64px + env(safe-area-inset-bottom) + 28px);
-  padding:0;
-  pointer-events:auto;
-  z-index:9999;
-}
-
 /* Landscape: iets minder omhoog, omdat hoogte schaars is */
 @media (orientation: landscape){
-  .lbSheet{
-    bottom:calc(64px + env(safe-area-inset-bottom) + 14px);
   }
-}
 
 .lbSheetBody{
   background:rgba(255,255,255,.92);
@@ -458,19 +441,10 @@ text-wrap: pretty;
 
 /* Desktop: sheet als compacte overlay (geen zwevend wit vlak onder de kaart) */
 @media (hover:hover) and (pointer:fine){
-  .lbSheet{
-    left:50%;
-    right:auto;
-    width:min(640px,92vw);
-    transform:translateX(-50%);
-    padding:0;
   }
-}
 
 /* Uitleg-modus: toon sheet (op alle devices) */
-.lb.help .lbSheet{display:block;}
-
-/* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
+.lb.help /* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
 .lb.help .lbText{
   display:grid !important;
   font-weight:500;
@@ -767,7 +741,7 @@ display:block;}
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    - Swipe blijft werken
-   - Tap-to-close wordt in script.js gedaan
+   - Tap-to-close wordt in script.js?v=35 gedaan
    =============================== */
 /* ===============================
    MOBILE (touch):
@@ -850,6 +824,43 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
+
+/* --- v3.5: Uitleg-tekstvak altijd onder kaart, altijd uitgelijnd --- */
+
+/* stack die kaart + tekstvak samen houdt */
+#lbStack{
+  width:min(560px,92vw);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+/* kaart vult stack */
+#lbCard{ width:100%; }
+
+/* uitleg-sheet in normale flow */
+#lbSheet{
+  display:none;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* show sheet only when help is active */
+#lb.help #lbSheet{ display:block; }
+
+/* oude pill volledig uit */
+#lbHelpDesc, .lbHelpDesc{ display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+
+/* grab handle weg */
+.lbSheetGrab{ display:none !important; }
+
+/* Zorg dat er onderin ruimte blijft voor de vaste menubalk (duim/scrollruimte) */
+#lb{
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+
 </style>
 </head>
 <body>
@@ -888,6 +899,7 @@ body.hm-open{overflow:hidden}
       <!-- UITLEG: bottom sheet (los van de kaart; kaart blijft altijd kaart) -->
       <div class="lbSheet" id="lbSheet" aria-hidden="true">
         <div class="lbSheetGrab" aria-hidden="true"></div>
+    </div><!-- /#lbStack -->
         <div class="lbSheetBody">
           <div class="lbSheetTitle" id="lbSheetTitle"></div>
           <div class="lbSheetDesc" id="lbSheetDesc"></div>
@@ -901,7 +913,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js"></script>
+<script src="script.js?v=35"></script>
 
 
 
