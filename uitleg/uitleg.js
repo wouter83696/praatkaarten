@@ -3,19 +3,22 @@
   // naar je GitHub Pages submap.
   const BASE = "/praatkaarten";
 
+  const VERSION = "2.1.0";
+  const VQ = `?v=${VERSION}`;
+
   const slides = [
-    { key:"cover", src:`${BASE}/voorkant.svg`, alt:"Voorkant" },
-    { key:"verkennen", src:`${BASE}/cards/verkennen.svg`, alt:"Verkennen" },
-    { key:"duiden", src:`${BASE}/cards/duiden.svg`, alt:"Duiden" },
-    { key:"verbinden", src:`${BASE}/cards/verbinden.svg`, alt:"Verbinden" },
-    { key:"verdiepen", src:`${BASE}/cards/verdiepen.svg`, alt:"Verhelderen" },
-    { key:"vertragen", src:`${BASE}/cards/vertragen.svg`, alt:"Vertragen" },
-    { key:"bewegen", src:`${BASE}/cards/bewegen.svg`, alt:"Bewegen" }
+    { key:"cover", src:`${BASE}/voorkant.svg${VQ}`, alt:"Voorkant" },
+    { key:"verkennen", src:`${BASE}/cards/verkennen.svg${VQ}`, alt:"Verkennen" },
+    { key:"duiden", src:`${BASE}/cards/duiden.svg${VQ}`, alt:"Duiden" },
+    { key:"verbinden", src:`${BASE}/cards/verbinden.svg${VQ}`, alt:"Verbinden" },
+    { key:"verdiepen", src:`${BASE}/cards/verdiepen.svg${VQ}`, alt:"Verhelderen" },
+    { key:"vertragen", src:`${BASE}/cards/vertragen.svg${VQ}`, alt:"Vertragen" },
+    { key:"bewegen", src:`${BASE}/cards/bewegen.svg${VQ}`, alt:"Bewegen" }
   ];
 
   let data = {};
   try{
-    const res = await fetch(`${BASE}/uitleg-data.json`, { cache:'no-store' });
+    const res = await fetch(`${BASE}/uitleg-data.json${VQ}`, { cache:'no-store' });
     data = await res.json();
   }catch(e){
     data = {};
@@ -23,8 +26,8 @@
 
   const stage = document.getElementById('stage');
   const descEl = document.getElementById('desc');
-    const titleEl = document.getElementById('titleOverlay');
-const prevBtn = document.getElementById('prevSlide');
+  const titleEl = document.getElementById('cardTitle');
+  const prevBtn = document.getElementById('prevSlide');
   const nextBtn = document.getElementById('nextSlide');
   const closeHelp = document.getElementById('closeHelp');
   const backLink = document.getElementById('backLink');
@@ -72,9 +75,11 @@ const prevBtn = document.getElementById('prevSlide');
 
   function renderMeta(){
     const s = slides[index];
-    if(titleEl){ titleEl.textContent = (s.key === 'cover') ? '' : s.alt; }
     const txt = getDesc(s.key);
-    descEl.textContent = txt; // geen placeholders / koppen
+    descEl.textContent = txt;
+    if(titleEl){
+      titleEl.textContent = (s.key === 'cover') ? '' : (s.alt || '');
+    }
   }
 
   function snapTo(i){

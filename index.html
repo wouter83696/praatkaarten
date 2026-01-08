@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten – v4.2</title>
+<title>Praatkaarten v2.1.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -310,12 +310,8 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100%;
   background:transparent;
   display:flex;
-  flex-direction:column;
   align-items:center;
-  justify-content:flex-start;
-  gap:14px;
-  padding:22px;
-  overflow:auto;
+  justify-content:center;
 }
 
 .lbCard{
@@ -398,20 +394,24 @@ text-wrap: pretty;
 
 
 /* ===============================
-   UITLEG (HELP)
-   - kaart (SVG) altijd volledig zichtbaar (geen zoom)
-   - thema-naam in het midden van het kaartje
-   - tekstvak ONDER de kaart, zelfde breedte, schaalt met tekst
+   UITLEG (HELP) — tekst IN de kaart, zonder hoogte te veranderen
    =============================== */
 .lbHelpText{
   display:none;
-  width:min(560px,92vw);
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
   background:#fff;
-  border-radius:18px;
-  box-shadow:0 16px 40px rgba(0,0,0,.14);
-  padding:14px 18px 18px;
+  padding:14px 18px 26px; /* extra 'enter' onderin */
 }
-.lbHelpTitle{display:none;}
+.lbHelpTitle{
+  font-weight:500;
+  font-size:18px;
+  line-height:1.15;
+  color:var(--textBlue);
+  margin:0 0 8px;
+}
 .lbHelpDesc{
   font-weight:400;
   font-size:14px;
@@ -426,12 +426,14 @@ text-wrap: pretty;
 /* Alleen in uitleg-modus tonen */
 .lb.help .lbHelpText{ display:block; }
 
-/* In uitleg-modus: SVG altijd volledig in beeld */
+/* In uitleg-modus: geen los tekstvak onder de kaart */
+.lb.help .lbBelow{ display:none !important; }
+
+/* In uitleg-modus: kaartbeeld krijgt ruimte boven de tekst (zonder aspect ratio te breken) */
 .lb.help #lbImg{
   display:block;
   width:100%;
   height:auto;
-  object-fit:contain;
 }
 
 /* ===============================
@@ -851,19 +853,19 @@ body.hm-open{overflow:hidden}
             <img id="lbImg" alt="">
       <div class="lbText" id="lbText"></div>
 
-    </div>
+      <!-- UITLEG (tekst in de kaart, zonder verhouding te veranderen) -->
+      <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
+        <div class="lbHelpTitle" id="lbHelpTitle"></div>
+        <div class="lbHelpDesc" id="lbHelpDesc"></div>
+      </div>
 
-    <!-- UITLEG (tekst onder de kaart, zelfde breedte, schaalt mee) -->
-    <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
-      <div class="lbHelpTitle" id="lbHelpTitle"></div>
-      <div class="lbHelpDesc" id="lbHelpDesc"></div>
     </div>
   </div>
 </div>
 
 
 
-<script src="script.js?v=4.2"></script>
+<script src="script.js?v=2.1.0"></script>
 
 
 

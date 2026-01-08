@@ -12,6 +12,14 @@ if (window.visualViewport){
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
+const VERSION = "2.1.0";
+function withCache(url){
+  if(!url) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return url + sep + "v=" + VERSION;
+}
+
+
   // State
   let data = [];
   let filtered = [];      // huidige (eventueel gehusselde) kaartset
@@ -132,7 +140,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       const img = document.createElement('img');
       img.className = 'bg';
-      img.src = item.bg;
+      img.src = withCache(item.bg);
       img.alt = "";
 
       const q = document.createElement('div');
@@ -167,7 +175,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    lbImg.src = item.bg || "";
+    lbImg.src = item.bg ? withCache(item.bg) : "";
     if(item.bg) setLightboxBackground(item.bg);
 
     if(mode === 'help'){
@@ -175,7 +183,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      // Thema-naam komt gecentreerd IN het kaartje (overlay).
       if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
@@ -186,11 +193,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: thema-naam in het midden van het kaartje.
-      // Cover (voorkant) heeft geen thema-naam.
-      lbText.textContent = item.theme || "";
-      lb.classList.remove('no-overlay');
-      lb.classList.add('help-title');
+      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
+      lbText.textContent = "";
+      lb.classList.add('no-overlay');
+      lb.classList.remove('help-title');
     }
 
     else{
@@ -200,8 +206,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       if(lbHelpDesc) lbHelpDesc.textContent = "";
 
       lbText.textContent = item.q || "";
-      lb.classList.remove('help-title');
-      lb.classList.remove('no-overlay');
     }
 
     lb.setAttribute('aria-hidden','false');
@@ -482,7 +486,7 @@ document.addEventListener('keydown', (e) => {
   }
 
   (async function init(){
-    const res = await fetch('questions.json');
+    const res = await fetch(withCache('questions.json'));
     const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();
@@ -490,7 +494,7 @@ document.addEventListener('keydown', (e) => {
 
     // uitleg-teksten (later invulbaar)
     try{
-      const hr = await fetch('uitleg-data.json', { cache:'no-store' });
+      const hr = await fetch(withCache('uitleg-data.json'), { cache:'no-store' });
       helpData = await hr.json();
     }catch(e){
       helpData = {};
