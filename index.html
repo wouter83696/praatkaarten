@@ -405,15 +405,25 @@ text-wrap: pretty;
 .lbSheet{
   display:none;
   position:fixed;
-  left:0;
-  right:0;
-  /* boven de vaste menubalk */
-  bottom: calc(64px + env(safe-area-inset-bottom) + 24px);
-  padding:10px 14px;
+  /* uitlijnen met kaart */
+  left:50%;
+  right:auto;
+  width:min(560px,92vw);
+  transform:translateX(-50%);
+  /* hoger boven de vaste menubalk (meer “speelruimte” voor scroll/duim) */
+  bottom:calc(64px + env(safe-area-inset-bottom) + 28px);
+  padding:0;
   pointer-events:auto;
   z-index:9999;
- padding-bottom: 16px;
 }
+
+/* Landscape: iets minder omhoog, omdat hoogte schaars is */
+@media (orientation: landscape){
+  .lbSheet{
+    bottom:calc(64px + env(safe-area-inset-bottom) + 14px);
+  }
+}
+
 .lbSheetBody{
   background:rgba(255,255,255,.92);
   backdrop-filter:blur(10px);
@@ -422,13 +432,12 @@ text-wrap: pretty;
   box-shadow:0 18px 45px rgba(0,0,0,.18);
   padding:14px 16px 18px;
   text-align:left;
+
+  width:100%;
+  margin:0;
+  box-sizing:border-box;
 }
-.lbSheetGrab{
-  width:42px;height:4px;
-  border-radius:999px;
-  background:rgba(0,0,0,.18);
-  margin:0 auto 10px;
-}
+.lbSheetGrab{ display:none; }
 .lbSheetTitle{
   font-weight:500;
   font-size:16px;
@@ -459,7 +468,7 @@ text-wrap: pretty;
 }
 
 /* Uitleg-modus: toon sheet (op alle devices) */
-.lb.help .lbSheet{display:flex;justify-content:center;align-items:flex-start;}
+.lb.help .lbSheet{display:block;}
 
 /* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
 .lb.help .lbText{
@@ -841,19 +850,6 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
-
-/* --- UX polish: center text panel under card, same width --- */
-.lbSheet {
-  max-width: var(--card-width, 720px);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.card,
-.card-container {
-  --card-width: 720px;
-}
-
 </style>
 </head>
 <body>
