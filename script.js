@@ -21,31 +21,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
-
-function syncHelpWidth(){
-  try{
-    const lb = document.getElementById('lb');
-    if(!lb) return;
-    const card = document.getElementById('lbCard');
-    const stack = document.getElementById('lbStack');
-    if(!card || !stack) return;
-    const w = Math.round(card.getBoundingClientRect().width);
-    if(w > 0){
-      stack.style.setProperty('--cardW', w + 'px');
-    
-    // In telefoon-landscape (kleine hoogte): start altijd bovenaan zodat eerst de kaart zichtbaar is
-    if (window.matchMedia && window.matchMedia('(orientation: landscape) and (max-height: 520px)').matches){
-      if (lb && lb.classList && lb.classList.contains('help')){
-        stack.scrollTop = 0;
-      }
-    }}
-  }catch(e){}
-}
-
   const lbImg = document.getElementById('lbImg');
-  
-  lbImg.addEventListener('load', () => requestAnimationFrame(positionHelpSheet), {passive:true});
-const lbText = document.getElementById('lbText');
+  const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
   const navHint = document.getElementById('navHint');
@@ -57,64 +34,9 @@ const lbText = document.getElementById('lbText');
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
   const uitlegBtn = document.getElementById('uitleg');
-  // Caption onder de kaart is bewust verwijderd (oogde als zwevend wit vlak).
-  const lbSheet = document.getElementById('lbSheet');
-  const lbSheetTitle = document.getElementById('lbSheetTitle');
-  const lbSheetDesc = document.getElementById('lbSheetDesc');
-
-
-  // --- v3.2: positioneer uitleg-tekstvak exact onder de kaart (desktop + mobiel) ---
-  function positionHelpSheet(){
-    if(!lb || !lb.classList.contains('help')) return;
-    if(!lbSheet || !lbCard) return;
-
-    // Zorg dat sheet zichtbaar is voordat we meten
-    const r = lbCard.getBoundingClientRect();
-    const gap = 18;
-
-    // Basis: zelfde breedte & uitlijning als kaart
-    const left = Math.round(r.left);
-    const width = Math.round(r.width);
-
-    lbSheet.style.left = left + 'px';
-    lbSheet.style.width = width + 'px';
-    lbSheet.style.maxWidth = width + 'px';
-    lbSheet.style.boxSizing = 'border-box';
-    lbSheet.style.right = 'auto';
-    lbSheet.style.transform = 'none';
-
-    // Verticaal: onder de kaart, maar nooit 'te laag' (ruimte boven menubalk)
-    // Eerst "wens-top"
-    let top = Math.round(r.bottom + gap);
-
-    // Clamp: houd onderin altijd ruimte vrij (menubalk + safe area + extra)
-    const reservedBottom = 64 + 32; // menubalk + extra ademruimte (hoger) // menubalk + ademruimte
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-
-    // Meet sheet hoogte (na content). Als 0, doe een best-effort.
-    const sheetH = lbSheet.offsetHeight || 120;
-    const maxTop = Math.max(16, Math.round(vh - reservedBottom - sheetH));
-
-    if(top > maxTop) top = maxTop;
-
-    lbSheet.style.top = top + 'px';
-    lbSheet.style.bottom = 'auto';
-  }
-
-  // --- v3.3: hou uitleg-sheet altijd synchroon met kaart (ResizeObserver) ---
-  if (window.ResizeObserver && lbCard){
-    try{
-      const ro = new ResizeObserver(() => requestAnimationFrame(positionHelpSheet));
-      ro.observe(lbCard);
-      // ook sheet zelf (tekst kan hoogte beïnvloeden)
-      if(lbSheet) ro.observe(lbSheet);
-    }catch(e){}
-  }
-
-
-  window.addEventListener('resize', () => requestAnimationFrame(positionHelpSheet), {passive:true});
-  window.addEventListener('orientationchange', () => setTimeout(() => requestAnimationFrame(positionHelpSheet), 60), {passive:true});
-
+  const lbHelpText = document.getElementById('lbHelpText');
+  const lbHelpTitle = document.getElementById('lbHelpTitle');
+  const lbHelpDesc = document.getElementById('lbHelpDesc');
 
   
 
@@ -141,9 +63,10 @@ const lbText = document.getElementById('lbText');
   // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
   let hintTimer = null;
   const HINT_KEY = 'pk_nav_hint_shown';
-  // Alleen echte touch-UI's (telefoon/tablet). Sommige desktops rapporteren maxTouchPoints > 0
-  // door touchpad/pen en dan wil je de hint juist NIET.
-  const IS_TOUCH = (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+  const IS_TOUCH = (
+    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+  );
   function showNavHint(){
     if(!navHint) return;
     document.body.classList.add('show-hint');
@@ -249,43 +172,37 @@ const lbText = document.getElementById('lbText');
 
     if(mode === 'help'){
       lb.classList.add('help');
-  syncHelpWidth();
-      requestAnimationFrame(positionHelpSheet);
 
-      // UITLEG: één duidelijke laag (bottom sheet), ook op desktop.
-      if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
-      // Thema komt IN het kaartje (midden). Sheet toont alleen de uitlegtekst.
-      if(lbSheetTitle) lbSheetTitle.textContent = "";
-// Support: sommige data-bestanden gebruiken nog 'verdiepen'
-      const key = (item.key === 'verhelderen'
-        && helpData
-        && (typeof helpData.verhelderen !== 'string')
-        && (typeof helpData.verdiepen === 'string'))
+      // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
+      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
+      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
+      // Support: sommige data-bestanden gebruiken nog 'verdiepen'
+      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
         : item.key;
 
       const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
-      if(lbSheetDesc) lbSheetDesc.textContent = desc;
-      requestAnimationFrame(positionHelpSheet);
-      // In help-mode: toon het THEMA gecentreerd op de kaart
-      lbText.textContent = item.theme || "";
-      lb.classList.add('help-title');
+      if(lbHelpDesc) lbHelpDesc.textContent = desc;
+      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
+      lbText.textContent = "";
+      lb.classList.add('no-overlay');
+      lb.classList.remove('help-title');
     }
 
     else{
       lb.classList.remove('help');
-      if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
-      if(lbSheetTitle) lbSheetTitle.textContent = "";
-      if(lbSheetDesc) lbSheetDesc.textContent = "";
+      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
+      if(lbHelpTitle) lbHelpTitle.textContent = "";
+      if(lbHelpDesc) lbHelpDesc.textContent = "";
 
       lbText.textContent = item.q || "";
     }
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-  syncHelpWidth();
+  lb.scrollTop = 0;
     document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
@@ -309,9 +226,9 @@ const lbText = document.getElementById('lbText');
     lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
-    if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
-    if(lbSheetTitle) lbSheetTitle.textContent = "";
-    if(lbSheetDesc) lbSheetDesc.textContent = "";
+    if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
+    if(lbHelpTitle) lbHelpTitle.textContent = "";
+    if(lbHelpDesc) lbHelpDesc.textContent = "";
     currentIndex = -1;
     lb.setAttribute('aria-hidden','true');
     document.body.classList.remove('lb-open');
@@ -370,7 +287,7 @@ const lbText = document.getElementById('lbText');
       showUI();
       return;
     }
-    if (e.target.closest && e.target.closest('#lbSheet')){
+    if (e.target.closest && (e.target.closest('.lbHelpText') || e.target.closest('.lbHelpDesc'))){
       gestureArmed = false;
       return;
     }
