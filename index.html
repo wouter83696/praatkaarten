@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaartjes – v3.9</title>
+<title>Praatkaartjes – v4.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -740,7 +740,7 @@ display:block;}
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    - Swipe blijft werken
-   - Tap-to-close wordt in script.js?v=39 gedaan
+   - Tap-to-close wordt in script.js?v=40 gedaan
    =============================== */
 /* ===============================
    MOBILE (touch):
@@ -890,46 +890,41 @@ body.hm-open{overflow:hidden}
   }
 }
 
-/* --- v3.9: tekstvak ONDER kaart, auto-hoogte, zelfde “diepte” --- */
+
+/* --- v4.0: kaartmaat weer “origineel” + tekstvak exact onder kaart --- */
 #lbStack{
-  width:min(760px,92vw);
+  width:auto;
+  max-width:92vw;
   margin:0 auto;
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:14px; /* iets compacter */
+  gap:14px;
   position:relative;
 }
-#lbCard{ width:100%; }
-
-/* Sheet standaard uit */
-#lbSheet{
-  width:100%;
-  box-sizing:border-box;
-  display:none;
+#lbCard{
+  width:auto;
+  max-width:92vw;
+  display:inline-block;
 }
-
-/* Alleen bij Uitleg-mode */
+#lbImg{
+  display:block;
+  width:auto;
+  max-width:92vw;
+  height:auto;
+  max-height: calc(100vh - 210px);
+}
+#lbSheet{ display:none; box-sizing:border-box; }
 #lb.help #lbSheet{
   display:block;
-  margin-top:0;            /* GEEN overlap */
-  align-self:stretch;
-}
-
-/* Auto-hoogte + nette padding */
-#lbSheet .lbSheetBody{
-  padding:18px 20px;
-}
-#lbSheetTitle{
-  margin:0 0 6px 0;
-}
-#lbSheetDesc{
+  width: var(--cardW, 92vw);
+  max-width:92vw;
   margin:0;
-  white-space:normal;
-  overflow-wrap:anywhere;
 }
+#lbSheet .lbSheetBody{ padding:18px 20px; }
+#lbSheetTitle{ margin:0 0 6px 0; }
+#lbSheetDesc{ margin:0; white-space:normal; overflow-wrap:anywhere; }
 
-/* Zelfde ‘diepte’ als kaart (iets subtiel) */
 #lbSheet{
   background: rgba(255,255,255,0.92);
   -webkit-backdrop-filter: blur(10px);
@@ -937,18 +932,11 @@ body.hm-open{overflow:hidden}
   border-radius:18px;
   box-shadow: 0 14px 40px rgba(0,0,0,.14);
 }
-
-/* Grab handle weg */
 .lbSheetGrab{ display:none !important; }
-/* Oude pill uit */
 #lbHelpDesc{ display:none !important; }
-
-/* ruimte onder vaste balk */
 #lb{ padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 
-/* Telefoon landscape: tekst IN het kaartje onderin */
 @media (orientation: landscape) and (max-height: 520px){
-  #lbStack{ gap:0; }
   #lb.help #lbSheet{
     position:absolute;
     left:16px;
@@ -956,6 +944,7 @@ body.hm-open{overflow:hidden}
     bottom:16px;
     width:auto;
   }
+  #lbImg{ max-height: calc(100vh - 120px); }
 }
 
 
@@ -1010,7 +999,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=39"></script>
+<script src="script.js?v=40"></script>
 
 
 

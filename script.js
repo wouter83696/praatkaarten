@@ -21,6 +21,21 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
+
+function syncHelpWidth(){
+  try{
+    const lb = document.getElementById('lb');
+    if(!lb) return;
+    const card = document.getElementById('lbCard');
+    const stack = document.getElementById('lbStack');
+    if(!card || !stack) return;
+    const w = Math.round(card.getBoundingClientRect().width);
+    if(w > 0){
+      stack.style.setProperty('--cardW', w + 'px');
+    }
+  }catch(e){}
+}
+
   const lbImg = document.getElementById('lbImg');
   
   lbImg.addEventListener('load', () => requestAnimationFrame(positionHelpSheet), {passive:true});
@@ -228,6 +243,7 @@ const lbText = document.getElementById('lbText');
 
     if(mode === 'help'){
       lb.classList.add('help');
+  syncHelpWidth();
       requestAnimationFrame(positionHelpSheet);
 
       // UITLEG: één duidelijke laag (bottom sheet), ook op desktop.
@@ -263,6 +279,7 @@ const lbText = document.getElementById('lbText');
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
+  syncHelpWidth();
     document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
