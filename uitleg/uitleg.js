@@ -1,7 +1,7 @@
 (async function(){
   // Let op: deze uitleg draait in een iframe (helpModal) en gebruikt daarom absolute paden
   // naar je GitHub Pages submap.
-  const BASE = "/praatkaarten";
+  const BASE = (location.hostname.includes('github.io') ? '/praatkaarten' : '');
 
   const slides = [
     { key:"cover", src:`${BASE}/voorkant.svg`, alt:"Voorkant" },
@@ -56,8 +56,9 @@
 
   slides.forEach((s)=>{
     const slide = document.createElement('div');
-    slide.className = 'slide';
-    slide.innerHTML = `<img src="${s.src}" alt="${s.alt}">`;
+    slide.className = 'slide' + (s.key==='cover' ? ' is-cover' : '');
+    const title = (s.key==='cover') ? '' : `<div class="slideTitle">${s.alt}</div>`;
+    slide.innerHTML = `<img src="${s.src}" alt="${s.alt}">${title}`;
     track.appendChild(slide);
   });
 

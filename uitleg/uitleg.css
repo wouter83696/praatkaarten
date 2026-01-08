@@ -179,3 +179,72 @@ body.show-hint .navHintMini{ opacity:.72; }
 /* (geen landscape uitzondering) */
 
 
+/* ===============================
+   UITLEG KAART – STRAKKE WEERGAVE
+   - kaart altijd volledig zichtbaar (geen crop/zoom)
+   - titel in het midden van de kaart
+   - tekstvak schaalt automatisch mee
+   =============================== */
+
+.stage{
+  /* houd rekening met de vaste onderbalk */
+  max-height: calc(100vh - 140px);
+}
+
+.slide{
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+/* Kaart altijd volledig in het venster */
+.slide img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center center;
+  display: block;
+}
+
+/* Titel gecentreerd op de kaart */
+.slideTitle{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.1;
+  color: rgba(37, 76, 122, .95);
+  pointer-events: none;
+}
+
+/* Geen titel op de voorkant */
+.slide.is-cover .slideTitle{ display:none; }
+
+/* Tekstvak onder de kaart: groeit mee met inhoud */
+.meta{
+  width: min(520px, 100%);
+  margin: 14px auto 0;
+  text-align: left;
+}
+
+.descBox{
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.desc{
+  padding: 0;
+  height: auto;
+  min-height: unset;
+  max-height: none;
+  overflow: visible;
+  color: rgba(11,18,32,.68);
+}
+

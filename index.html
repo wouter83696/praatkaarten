@@ -310,10 +310,8 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100%;
   background:transparent;
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:12px;
 }
 
 .lbCard{
@@ -331,9 +329,8 @@ body.lb-open .navHintMini{ opacity:0; }
 }
 
 #lbImg{
-  width:100%;
-  height:auto;
-  margin:0;
+  width:100.2%;
+  margin-left:-0.1%;
   display:block;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -396,56 +393,26 @@ text-wrap: pretty;
 }
 
 
-
 /* ===============================
-   UITLEG (HELP) — kaart blijft kaart (desktop caption + mobiel bottom sheet)
+   UITLEG (HELP) — tekst IN de kaart, zonder hoogte te veranderen
    =============================== */
-
-/* Bottom sheet (uitleg als aparte laag — kaart blijft altijd kaart) */
-.lbSheet{
+.lbHelpText{
   display:none;
-  position:fixed;
-  /* uitlijnen met kaart */
-  left:50%;
-  right:auto;
-  width:min(560px,92vw);
-  transform:translateX(-50%);
-  /* hoger boven de vaste menubalk (meer “speelruimte” voor scroll/duim) */
-  bottom:calc(64px + env(safe-area-inset-bottom) + 28px);
-  padding:0;
-  pointer-events:auto;
-  z-index:9999;
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#fff;
+  padding:14px 18px 26px; /* extra 'enter' onderin */
 }
-
-/* Landscape: iets minder omhoog, omdat hoogte schaars is */
-@media (orientation: landscape){
-  .lbSheet{
-    bottom:calc(64px + env(safe-area-inset-bottom) + 14px);
-  }
-}
-
-.lbSheetBody{
-  background:rgba(255,255,255,.92);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  border-radius:18px;
-  box-shadow:0 18px 45px rgba(0,0,0,.18);
-  padding:14px 16px 18px;
-  text-align:left;
-
-  width:100%;
-  margin:0;
-  box-sizing:border-box;
-}
-.lbSheetGrab{ display:none; }
-.lbSheetTitle{
+.lbHelpTitle{
   font-weight:500;
-  font-size:16px;
-  line-height:1.2;
+  font-size:18px;
+  line-height:1.15;
   color:var(--textBlue);
-  margin:0 0 6px;
+  margin:0 0 8px;
 }
-.lbSheetDesc{
+.lbHelpDesc{
   font-weight:400;
   font-size:14px;
   line-height:1.55;
@@ -456,28 +423,18 @@ text-wrap: pretty;
   -webkit-hyphens: auto;
 }
 
-/* Desktop: sheet als compacte overlay (geen zwevend wit vlak onder de kaart) */
-@media (hover:hover) and (pointer:fine){
-  .lbSheet{
-    left:50%;
-    right:auto;
-    width:min(640px,92vw);
-    transform:translateX(-50%);
-    padding:0;
-  }
+/* Alleen in uitleg-modus tonen */
+.lb.help .lbHelpText{ display:block; }
+
+/* In uitleg-modus: geen los tekstvak onder de kaart */
+.lb.help .lbBelow{ display:none !important; }
+
+/* In uitleg-modus: kaartbeeld krijgt ruimte boven de tekst (zonder aspect ratio te breken) */
+.lb.help #lbImg{
+  display:block;
+  width:100%;
+  height:auto;
 }
-
-/* Uitleg-modus: toon sheet (op alle devices) */
-.lb.help .lbSheet{display:block;}
-
-/* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
-.lb.help .lbText{
-  display:grid !important;
-  font-weight:500;
-  font-size:clamp(28px,3vw + 10px,44px);
-  line-height:1.1;
-}
-
 
 /* ===============================
    ICONS
@@ -848,6 +805,21 @@ body.hm-open{overflow:hidden}
   .lbCard{ cursor:crosshair; }
 }
 
+/* iOS hairline fix: overscan afbeelding net over de rand */
+#lbImg{
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.lb.help #lbImg{
+  width: calc(100% + 2px);
+  margin-left: -1px;
+}
+
+
+#lbImg{display:block; width:calc(100% + 2px); margin-left:-1px; margin-top:-1px; height:auto; transform:translateZ(0); backface-visibility:hidden; -webkit-backface-visibility:hidden;}
+
+.lbBelow{margin-top:-1px;}
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
 </style>
@@ -874,29 +846,21 @@ body.hm-open{overflow:hidden}
 <div class="lb" id="lb" aria-hidden="true">
   <div class="lbBg" aria-hidden="true"></div>
   <div class="panel" role="dialog" aria-modal="true">
-    
-<div class="lbCard" id="lbCard">
+    <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
             <img id="lbImg" alt="">
       <div class="lbText" id="lbText"></div>
-<div class="lbHelpDesc" id="lbHelpDesc"></div>
 
-      </div>
-
-      <!-- UITLEG: bottom sheet (los van de kaart; kaart blijft altijd kaart) -->
-      <div class="lbSheet" id="lbSheet" aria-hidden="true">
-        <div class="lbSheetGrab" aria-hidden="true"></div>
-        <div class="lbSheetBody">
-          <div class="lbSheetTitle" id="lbSheetTitle"></div>
-          <div class="lbSheetDesc" id="lbSheetDesc"></div>
-        </div>
+      <!-- UITLEG (tekst in de kaart, zonder verhouding te veranderen) -->
+      <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
+        <div class="lbHelpTitle" id="lbHelpTitle"></div>
+        <div class="lbHelpDesc" id="lbHelpDesc"></div>
       </div>
 
     </div>
   </div>
-
 </div>
 
 
