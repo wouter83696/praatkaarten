@@ -1,31 +1,40 @@
-/* Wrapper */
 .uitleg-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  padding: 24px 16px;
 }
 
-/* Kaart */
-.kaart-container {
+/* KAART */
+.kaart-frame {
+  position: relative;
   width: min(90vw, 420px);
   aspect-ratio: 2 / 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* SVG / IMG */
-.kaart-container img,
-.kaart-container svg {
+.kaart-frame img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
 }
 
-/* Tekstvlak */
-.tekst-container {
+/* TITEL IN HET MIDDEN */
+.kaart-titel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #3a5f8f;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* TEKST */
+.uitleg-tekst {
   width: min(90vw, 420px);
   background: #ffffff;
   padding: 16px 18px;
