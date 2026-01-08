@@ -99,6 +99,9 @@
     const height = slide.scrollHeight;
     if(height){
       stage.style.height = `${height}px`;
+    const height = slide.getBoundingClientRect().height;
+    if(height){
+      cardShell.style.height = `${height}px`;
     }
     const stageEl = slide.querySelector('.stage');
     if(stageEl){
