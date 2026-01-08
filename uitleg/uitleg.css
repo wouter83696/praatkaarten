@@ -26,9 +26,15 @@ body{
   overflow:hidden;
   box-shadow:var(--shadow);
   background:#fff;
+  position:relative;
 }
 
 /* Bovenste deel: de SVG (zelfde gevoel als index.html: volledig zichtbaar, niet ingezoomd) */
+.slideViewport{
+  width:100%;
+  overflow:hidden;
+}
+
 .stage{
   position:relative;
   width:100%;
@@ -49,7 +55,7 @@ body{
 
 .chev{
   position:absolute;
-  top:50%;
+  top:var(--stage-center, 50%);
   transform:translateY(-50%);
   width:44px;
   height:44px;
@@ -79,9 +85,12 @@ body{
   width:100%;
   transform:translateX(0px);
   transition: transform 240ms ease;
-  height:100%;
 }
-.slide{ flex:0 0 100%; display:block; height:100%; }
+.slide{
+  flex:0 0 100%;
+  display:flex;
+  flex-direction:column;
+}
 .slide img{
   width:100%;
   height:100%;
@@ -197,5 +206,3 @@ body.show-hint .navHintMini{ opacity:.72; }
 }
 
 /* (geen landscape uitzondering) */
-
-

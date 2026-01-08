@@ -13,18 +13,13 @@
   <main class="wrap">
     <section class="viewer" aria-label="Uitleg kaarten">
       <div class="cardShell" aria-live="polite">
-        <div class="stage" id="stage">
-          <button class="chev left" id="prevSlide" aria-label="Vorige">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <button class="chev right" id="nextSlide" aria-label="Volgende">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-          </button>
-        </div>
-
-        <div class="meta">
-          <div class="desc" id="desc"></div>
-        </div>
+        <button class="chev left" id="prevSlide" aria-label="Vorige">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="chev right" id="nextSlide" aria-label="Volgende">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <div class="slideViewport" id="stage"></div>
       </div>
     </section>
   </main>
