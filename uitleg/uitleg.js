@@ -25,13 +25,13 @@
   }
 
   const stage = document.getElementById('stage');
-  const descEl = document.getElementById('desc');
+  const cardShell = document.querySelector('.cardShell');
   const prevBtn = document.getElementById('prevSlide');
   const nextBtn = document.getElementById('nextSlide');
   const closeHelp = document.getElementById('closeHelp');
   const backLink = document.getElementById('backLink');
   const navHint = document.getElementById('navHint');
-  if(!stage || !descEl) return;
+  if(!stage || !cardShell) return;
 
   // Nav hint (zelfde gedrag als hoofdpagina):
   // - Alleen voor touch/pen
@@ -53,6 +53,10 @@
     showNavHint();
   }
 
+  function getDesc(key){
+    return ((data && data[key]) ? String(data[key]) : "").trim();
+  }
+
   const track = document.createElement('div');
   track.className = 'slideTrack';
   stage.appendChild(track);
@@ -60,7 +64,28 @@
   slides.forEach((s)=>{
     const slide = document.createElement('div');
     slide.className = 'slide';
-    slide.innerHTML = `<img src="${s.src}" alt="${s.alt}">`;
+
+    const stageEl = document.createElement('div');
+    stageEl.className = 'stage';
+
+    const img = document.createElement('img');
+    img.src = s.src;
+    img.alt = s.alt;
+    img.addEventListener('load', () => {
+      requestAnimationFrame(syncCardShell);
+    });
+    stageEl.appendChild(img);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+
+    const desc = document.createElement('div');
+    desc.className = 'desc';
+    desc.textContent = getDesc(s.key);
+    meta.appendChild(desc);
+
+    slide.appendChild(stageEl);
+    slide.appendChild(meta);
     track.appendChild(slide);
   });
 
@@ -68,14 +93,20 @@
   let startX=0, startY=0, startT=0, dx=0;
   let isDown=false, isSwiping=false;
 
-  function getDesc(key){
-    return ((data && data[key]) ? String(data[key]) : "").trim();
-  }
-
-  function renderMeta(){
-    const s = slides[index];
-    const txt = getDesc(s.key);
-    descEl.textContent = txt; // geen placeholders / koppen
+  function syncCardShell(){
+    const slide = track.children[index];
+    if(!slide) return;
+    const height = slide.scrollHeight;
+    if(height){
+      stage.style.height = `${height}px`;
+    }
+    const stageEl = slide.querySelector('.stage');
+    if(stageEl){
+      const stageHeight = stageEl.getBoundingClientRect().height;
+      if(stageHeight){
+        cardShell.style.setProperty('--stage-center', `${stageHeight / 2}px`);
+      }
+    }
   }
 
   function snapTo(i){
@@ -83,7 +114,7 @@
     const w = stage.getBoundingClientRect().width;
     track.style.transition = 'transform 240ms ease';
     track.style.transform = `translateX(${-index*w}px)`;
-    renderMeta();
+    syncCardShell();
   }
 
   function dragTo(px){
@@ -96,6 +127,7 @@
     const w = stage.getBoundingClientRect().width;
     track.style.transition = 'none';
     track.style.transform = `translateX(${-index*w}px)`;
+    syncCardShell();
   }
 
   // Swipe overal in de uitleg (ook op de tekst) —
@@ -207,6 +239,5 @@
 
   window.addEventListener('resize', onResize);
 
-  renderMeta();
   onResize();
 })();
