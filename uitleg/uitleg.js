@@ -71,6 +71,9 @@
     const img = document.createElement('img');
     img.src = s.src;
     img.alt = s.alt;
+    img.addEventListener('load', () => {
+      requestAnimationFrame(syncCardShell);
+    });
     stageEl.appendChild(img);
 
     const meta = document.createElement('div');
@@ -93,6 +96,9 @@
   function syncCardShell(){
     const slide = track.children[index];
     if(!slide) return;
+    const height = slide.scrollHeight;
+    if(height){
+      stage.style.height = `${height}px`;
     const height = slide.getBoundingClientRect().height;
     if(height){
       cardShell.style.height = `${height}px`;
