@@ -18,34 +18,16 @@ body{
 .wrap{ padding:18px; padding-bottom:84px; max-width: 620px; margin:0 auto; }
 .viewer{ padding-top:0; }
 
-/* Eén kaart (beeld + tekst) als samenhangend blok */
-.cardShell{
+.stage{
+  position:relative;
   width:min(520px, 100%);
   margin:0 auto;
   border-radius:var(--radius);
   overflow:hidden;
   box-shadow:var(--shadow);
-  background:#fff;
-  position:relative;
-}
-
-/* Bovenste deel: de SVG (zelfde gevoel als index.html: volledig zichtbaar, niet ingezoomd) */
-.slideViewport{
-  width:100%;
-  overflow:hidden;
-}
-
-.stage{
-  position:relative;
-  width:100%;
-  margin:0;
-  border-radius:0;          /* radius zit op cardShell */
-  overflow:hidden;
-  box-shadow:none;
   background:var(--paper);
   touch-action: pan-y;
-  /* vaste kaartverhouding zodat de SVG niet kan stretchen door flex/min-height */
-  aspect-ratio: 240.94 / 155.91;
+  min-height:260px;
 }
 
 /* Desktop: cursor + pijlen zoals op de kaarten-pagina */
@@ -55,7 +37,7 @@ body{
 
 .chev{
   position:absolute;
-  top:var(--stage-center, 50%);
+  top:50%;
   transform:translateY(-50%);
   width:44px;
   height:44px;
@@ -86,31 +68,20 @@ body{
   transform:translateX(0px);
   transition: transform 240ms ease;
 }
-.slide{
-  flex:0 0 100%;
-  display:flex;
-  flex-direction:column;
-}
-.slide img{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:contain;
-}
+.slide{ flex:0 0 100%; display:flex; }
+.slide img{ width:100%; height:auto; display:block; }
 
 .meta{
-  width:100%;
-  margin:0;
-  text-align:left;
-  background:#fff;
-  padding:16px 18px 18px;
+  width:min(520px,100%);
+  margin:14px auto 0;
+  text-align:center;
 }
 .desc{
   font-size:14px;
   line-height:1.55;
   color:rgba(11,18,32,.62);
-  padding:0;
-  min-height:0; /* auto-resize op basis van tekst */
+  padding:0 10px;
+  min-height: 0;
 }
 
 /* ===============================
@@ -206,3 +177,5 @@ body.show-hint .navHintMini{ opacity:.72; }
 }
 
 /* (geen landscape uitzondering) */
+
+
