@@ -28,7 +28,12 @@ body{
   background:var(--paper);
   touch-action: pan-y;
   min-height:260px;
+  aspect-ratio: 240.94 / 155.91;
+  display:flex;
+  align-items:stretch;
+  justify-content:stretch;
 }
+
 
 /* Desktop: cursor + pijlen zoals op de kaarten-pagina */
 @media (hover:hover){
@@ -65,24 +70,52 @@ body{
 .slideTrack{
   display:flex;
   width:100%;
+  height:100%;
   transform:translateX(0px);
   transition: transform 240ms ease;
 }
-.slide{ flex:0 0 100%; display:flex; }
-.slide img{ width:100%; height:auto; display:block; }
+.slide{ flex:0 0 100%; display:flex; width:100%; height:100%; }
+.slide img{ width:100%; height:100%; display:block; object-fit:contain; }
+
+.titleOverlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-family: var(--font);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: .2px;
+  color: rgba(11,18,32,.88);
+  pointer-events:none;
+  text-shadow: 0 1px 0 rgba(255,255,255,.8);
+}
+
+@media (max-width:420px){
+  .titleOverlay{ font-size: 18px; }
+}
 
 .meta{
   width:min(520px,100%);
-  margin:14px auto 0;
+  margin:14px auto 90px; /* ruimte voor onderste balk */
   text-align:center;
 }
+
 .desc{
   font-size:14px;
   line-height:1.55;
-  color:rgba(11,18,32,.62);
-  padding:0 10px;
+  color:rgba(11,18,32,.70);
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 0 0 14px;
   min-height: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
 }
+
 
 /* ===============================
    ONDERSTE BALK (menu)
@@ -178,73 +211,4 @@ body.show-hint .navHintMini{ opacity:.72; }
 
 /* (geen landscape uitzondering) */
 
-
-/* ===============================
-   UITLEG KAART – STRAKKE WEERGAVE
-   - kaart altijd volledig zichtbaar (geen crop/zoom)
-   - titel in het midden van de kaart
-   - tekstvak schaalt automatisch mee
-   =============================== */
-
-.stage{
-  /* houd rekening met de vaste onderbalk */
-  max-height: calc(100vh - 140px);
-}
-
-.slide{
-  position: relative;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
-  box-sizing: border-box;
-}
-
-/* Kaart altijd volledig in het venster */
-.slide img{
-  width: 100%;
-  height: 100%;
-  object-fit: contain !important;
-  object-position: center center;
-  display: block;
-}
-
-/* Titel gecentreerd op de kaart */
-.slideTitle{
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-weight: 500;
-  font-size: 28px;
-  line-height: 1.1;
-  color: rgba(37, 76, 122, .95);
-  pointer-events: none;
-}
-
-/* Geen titel op de voorkant */
-.slide.is-cover .slideTitle{ display:none; }
-
-/* Tekstvak onder de kaart: groeit mee met inhoud */
-.meta{
-  width: min(520px, 100%);
-  margin: 14px auto 0;
-  text-align: left;
-}
-
-.descBox{
-  background: #fff;
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: var(--shadow);
-}
-
-.desc{
-  padding: 0;
-  height: auto;
-  min-height: unset;
-  max-height: none;
-  overflow: visible;
-  color: rgba(11,18,32,.68);
-}
 

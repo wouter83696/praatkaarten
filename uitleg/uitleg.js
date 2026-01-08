@@ -1,7 +1,7 @@
 (async function(){
   // Let op: deze uitleg draait in een iframe (helpModal) en gebruikt daarom absolute paden
   // naar je GitHub Pages submap.
-  const BASE = (location.hostname.includes('github.io') ? '/praatkaarten' : '');
+  const BASE = "/praatkaarten";
 
   const slides = [
     { key:"cover", src:`${BASE}/voorkant.svg`, alt:"Voorkant" },
@@ -23,7 +23,8 @@
 
   const stage = document.getElementById('stage');
   const descEl = document.getElementById('desc');
-  const prevBtn = document.getElementById('prevSlide');
+    const titleEl = document.getElementById('titleOverlay');
+const prevBtn = document.getElementById('prevSlide');
   const nextBtn = document.getElementById('nextSlide');
   const closeHelp = document.getElementById('closeHelp');
   const backLink = document.getElementById('backLink');
@@ -56,9 +57,8 @@
 
   slides.forEach((s)=>{
     const slide = document.createElement('div');
-    slide.className = 'slide' + (s.key==='cover' ? ' is-cover' : '');
-    const title = (s.key==='cover') ? '' : `<div class="slideTitle">${s.alt}</div>`;
-    slide.innerHTML = `<img src="${s.src}" alt="${s.alt}">${title}`;
+    slide.className = 'slide';
+    slide.innerHTML = `<img src="${s.src}" alt="${s.alt}">`;
     track.appendChild(slide);
   });
 
@@ -72,6 +72,7 @@
 
   function renderMeta(){
     const s = slides[index];
+    if(titleEl){ titleEl.textContent = (s.key === 'cover') ? '' : s.alt; }
     const txt = getDesc(s.key);
     descEl.textContent = txt; // geen placeholders / koppen
   }
