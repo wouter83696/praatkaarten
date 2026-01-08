@@ -32,7 +32,13 @@ function syncHelpWidth(){
     const w = Math.round(card.getBoundingClientRect().width);
     if(w > 0){
       stack.style.setProperty('--cardW', w + 'px');
-    }
+    
+    // In telefoon-landscape (kleine hoogte): start altijd bovenaan zodat eerst de kaart zichtbaar is
+    if (window.matchMedia && window.matchMedia('(orientation: landscape) and (max-height: 520px)').matches){
+      if (lb && lb.classList && lb.classList.contains('help')){
+        stack.scrollTop = 0;
+      }
+    }}
   }catch(e){}
 }
 
