@@ -850,34 +850,6 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
-
-
-/* --- v3.1: Uitleg-tekstvak altijd uitlijnen met kaart (desktop + mobiel) --- */
-#lbHelpDesc{ display:none !important; }   /* oude 'pill' nooit tonen */
-#lbSheet .lbSheetGrab{ display:none !important; }
-
-#lbSheet{
-  display:none;
-  position:fixed;
-  z-index:9999;
-  left: var(--lb-sheet-left, 50%);
-  top:  var(--lb-sheet-top, auto);
-  width: var(--lb-sheet-width, min(560px, 92vw));
-  transform: translateX(-50%);
-  pointer-events:auto;
-}
-
-#lbSheet .lbSheetBody{
-  width:100%;
-  margin:0;
-  box-sizing:border-box;
-}
-
-/* Op mobiel geen translate-centering als we absolute left krijgen */
-@media (hover:none) and (pointer:coarse){
-  #lbSheet{ transform:none; }
-}
-
 </style>
 </head>
 <body>

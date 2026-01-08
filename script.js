@@ -39,6 +39,47 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbSheetTitle = document.getElementById('lbSheetTitle');
   const lbSheetDesc = document.getElementById('lbSheetDesc');
 
+
+  // --- v3.2: positioneer uitleg-tekstvak exact onder de kaart (desktop + mobiel) ---
+  function positionHelpSheet(){
+    if(!lb || !lb.classList.contains('help')) return;
+    if(!lbSheet || !lbCard) return;
+
+    // Zorg dat sheet zichtbaar is voordat we meten
+    const r = lbCard.getBoundingClientRect();
+    const gap = 18;
+
+    // Basis: zelfde breedte & uitlijning als kaart
+    const left = Math.round(r.left);
+    const width = Math.round(r.width);
+
+    lbSheet.style.left = left + 'px';
+    lbSheet.style.width = width + 'px';
+    lbSheet.style.right = 'auto';
+    lbSheet.style.transform = 'none';
+
+    // Verticaal: onder de kaart, maar nooit 'te laag' (ruimte boven menubalk)
+    // Eerst "wens-top"
+    let top = Math.round(r.bottom + gap);
+
+    // Clamp: houd onderin altijd ruimte vrij (menubalk + safe area + extra)
+    const reservedBottom = 64 + 16; // menubalk + ademruimte
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+
+    // Meet sheet hoogte (na content). Als 0, doe een best-effort.
+    const sheetH = lbSheet.offsetHeight || 120;
+    const maxTop = Math.max(16, Math.round(vh - reservedBottom - sheetH));
+
+    if(top > maxTop) top = maxTop;
+
+    lbSheet.style.top = top + 'px';
+    lbSheet.style.bottom = 'auto';
+  }
+
+  window.addEventListener('resize', () => requestAnimationFrame(positionHelpSheet), {passive:true});
+  window.addEventListener('orientationchange', () => setTimeout(() => requestAnimationFrame(positionHelpSheet), 60), {passive:true});
+
+
   
 
   let mode = 'cards'; // 'cards' of 'help'
@@ -172,14 +213,17 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     if(mode === 'help'){
       lb.classList.add('help');
-      if(window.__positionHelpSheet) window.__positionHelpSheet();
+      requestAnimationFrame(positionHelpSheet);
 
       // UITLEG: één duidelijke laag (bottom sheet), ook op desktop.
       if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
       // Thema komt IN het kaartje (midden). Sheet toont alleen de uitlegtekst.
       if(lbSheetTitle) lbSheetTitle.textContent = "";
 // Support: sommige data-bestanden gebruiken nog 'verdiepen'
-      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
+      const key = (item.key === 'verhelderen'
+        && helpData
+        && (typeof helpData.verhelderen !== 'string')
+        && (typeof helpData.verdiepen === 'string'))
         ? 'verdiepen'
         : item.key;
 
@@ -187,6 +231,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbSheetDesc) lbSheetDesc.textContent = desc;
+      requestAnimationFrame(positionHelpSheet);
       // In help-mode: toon het THEMA gecentreerd op de kaart
       lbText.textContent = item.theme || "";
       lb.classList.add('help-title');
@@ -194,7 +239,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     else{
       lb.classList.remove('help');
-      if(window.__positionHelpSheet) window.__positionHelpSheet();
       if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
       if(lbSheetTitle) lbSheetTitle.textContent = "";
       if(lbSheetDesc) lbSheetDesc.textContent = "";
@@ -501,51 +545,3 @@ window.closeLb = closeLb;
 
 
 window.go = go;
-
-
-
-
-
-
-
-// --- v3.1: positioneer uitleg-tekstvak strak onder de kaart (desktop + mobiel) ---
-(function(){
-  const sheet = document.getElementById('lbSheet');
-  const card  = document.getElementById('lbCard');
-  const root  = document.documentElement;
-
-  function positionSheet(){
-    if(!sheet || !card) return;
-
-    const lb = document.getElementById('lb');
-    if(!lb || !lb.classList.contains('help')) return;
-
-    const r = card.getBoundingClientRect();
-    const gap = 14; // iets dichterbij dan voorheen
-    const bottomSpace = 92; // ruimte voor duim/scroll + menubalk gevoel
-    const menuHeight = 64; // vaste menubalk (hussel/reset/uitleg)
-    // tijdelijke width/left zetten zodat we sheethoogte netjes kunnen meten
-    root.style.setProperty('--lb-sheet-left', Math.round(r.left) + 'px');
-    root.style.setProperty('--lb-sheet-width', Math.round(r.width) + 'px');
-    // op desktop gebruiken we centering via translateX(-50%) niet; we zetten left absoluut en transform none via media query op mobiel
-    // daarom zetten we ook een 'top' berekend, met clamp
-    // Eerst een voorlopige top:
-    root.style.setProperty('--lb-sheet-top', Math.round(r.bottom + gap) + 'px');
-
-    // Na render: sheet hoogte meten en top clamped instellen
-    requestAnimationFrame(() => {
-      const sh = sheet.getBoundingClientRect().height || 0;
-      const maxTop = Math.max(16, window.innerHeight - (menuHeight + bottomSpace) - sh);
-      const desiredTop = Math.round(r.bottom + gap);
-      const clampedTop = Math.min(desiredTop, maxTop);
-      root.style.setProperty('--lb-sheet-top', clampedTop + 'px');
-    });
-  }
-
-  // Expose
-  window.__positionHelpSheet = positionSheet;
-
-  window.addEventListener('resize', positionSheet, {passive:true});
-  window.addEventListener('orientationchange', positionSheet, {passive:true});
-})();
-
