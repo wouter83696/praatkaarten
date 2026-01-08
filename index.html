@@ -318,7 +318,7 @@ body.lb-open .navHintMini{ opacity:0; }
 
 .lbCard{
   position:relative;
-  width:auto; max-width:none;
+  width:min(560px,92vw);
   /* Desktop: grotere kaart zoals bij thema-overlay */
   border-radius:22px;
   overflow:hidden;
@@ -408,7 +408,7 @@ text-wrap: pretty;
   /* uitlijnen met kaart */
   left:50%;
   right:auto;
-  width:auto; max-width:none;
+  width:min(560px,92vw);
   transform:translateX(-50%);
   /* hoger boven de vaste menubalk (meer “speelruimte” voor scroll/duim) */
   bottom:calc(64px + env(safe-area-inset-bottom) + 28px);
@@ -767,7 +767,7 @@ display:block;}
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    - Swipe blijft werken
-   - Tap-to-close wordt in script.js?v=34 gedaan
+   - Tap-to-close wordt in script.js gedaan
    =============================== */
 /* ===============================
    MOBILE (touch):
@@ -850,11 +850,6 @@ body.hm-open{overflow:hidden}
 
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
-
-/* --- v3.4 cachebust + hard overrides --- */
-#lbHelpDesc, .lbHelpDesc { display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
-#lbSheet { box-sizing:border-box; }
-
 </style>
 </head>
 <body>
@@ -906,7 +901,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=34"></script>
+<script src="script.js"></script>
 
 
 
