@@ -213,13 +213,20 @@ body{
 
 .lbCard{
   position:relative;
-  width:min(560px,92vw);
+  /* ✅ Groot kaartje: zelfde verhouding als klein, maar NIET te groot */
+  /* Begrens op viewport-breedte, max px, én beschikbare hoogte (minus balk/ruimte). */
+  width: min(86vw, 460px, calc((100vh - 220px) * 0.6667));
   border-radius:22px;
   overflow:hidden;
   background:#fff;
   box-shadow:0 18px 45px rgba(0,0,0,.20);
   /* Zelfde verhouding als kleine kaartjes */
   aspect-ratio: 2 / 3;
+}
+
+/* Telefoon portrait: kaart iets breder (meer scherm), maar nog steeds begrensd */
+@media (max-width: 520px){
+  .lbCard{ width: min(92vw, 420px, calc((100vh - 220px) * 0.6667)); }
 }
 
 #lbImg{

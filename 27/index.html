@@ -321,9 +321,10 @@ body.lb-open .navHintMini{ opacity:0; }
 
 .lbCard{
   position:relative;
-  width:auto; max-width:none;
-  /* Desktop: grotere kaart zoals bij thema-overlay */
-  /* Zorg dat groot altijd exact dezelfde verhouding houdt als klein */
+  /* ✅ Groot kaartje: zelfde verhouding als klein, maar NIET te groot */
+  /* Begrens op viewport-breedte, max px, én beschikbare hoogte (minus balk/ruimte). */
+  width: min(86vw, 460px, calc((100vh - 220px) * 0.6667));
+  max-width: none;
   aspect-ratio: 2 / 3;
   border-radius:22px;
   overflow:hidden;
@@ -333,6 +334,11 @@ body.lb-open .navHintMini{ opacity:0; }
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+/* Telefoon portrait: kaart iets breder (meer scherm), maar nog steeds begrensd */
+@media (max-width: 520px){
+  .lbCard{ width: min(92vw, 420px, calc((100vh - 220px) * 0.6667)); }
 }
 
 #lbImg{
