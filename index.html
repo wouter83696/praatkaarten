@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten</title>
+<title>Praatkaartjes – v3.6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
 
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -741,7 +742,7 @@ display:block;}
 /* ===============================
    MOBILE: GEEN ICONS / GEEN KRUISJE / GEEN BALK
    - Swipe blijft werken
-   - Tap-to-close wordt in script.js?v=35 gedaan
+   - Tap-to-close wordt in script.js?v=36 gedaan
    =============================== */
 /* ===============================
    MOBILE (touch):
@@ -825,8 +826,6 @@ body.hm-open{overflow:hidden}
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
 
-/* --- v3.5: Uitleg-tekstvak altijd onder kaart, altijd uitgelijnd --- */
-
 /* stack die kaart + tekstvak samen houdt */
 #lbStack{
   width:min(560px,92vw);
@@ -860,6 +859,47 @@ body.hm-open{overflow:hidden}
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
+/* --- v3.6: Uitleg-tekstvak correct schalen + landscape in kaart --- */
+#lbStack{
+  width:min(760px,92vw);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+  position:relative;
+}
+#lbCard{ width:100%; }
+
+#lbSheet{
+  display:none;
+  width:100%;
+  box-sizing:border-box;
+}
+#lb.help #lbSheet{ display:block; }
+
+#lbHelpDesc, .lbHelpDesc{ display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; }
+.lbSheetGrab{ display:none !important; }
+
+#lb{ padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+
+@media (orientation: landscape) and (max-height: 520px){
+  #lbStack{ gap:0; }
+  #lb{ padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  #lb.help #lbSheet{
+    display:block;
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:16px;
+    width:auto;
+    border-radius:18px;
+    background: rgba(255,255,255,0.92);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
 
 </style>
 </head>
@@ -886,7 +926,8 @@ body.hm-open{overflow:hidden}
   <div class="lbBg" aria-hidden="true"></div>
   <div class="panel" role="dialog" aria-modal="true">
     
-<div class="lbCard" id="lbCard">
+<div id="lbStack">
+      <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
@@ -899,7 +940,8 @@ body.hm-open{overflow:hidden}
       <!-- UITLEG: bottom sheet (los van de kaart; kaart blijft altijd kaart) -->
       <div class="lbSheet" id="lbSheet" aria-hidden="true">
         <div class="lbSheetGrab" aria-hidden="true"></div>
-    </div><!-- /#lbStack -->
+    </div>
+    </div><!-- /#lbStack --><!-- /#lbStack -->
         <div class="lbSheetBody">
           <div class="lbSheetTitle" id="lbSheetTitle"></div>
           <div class="lbSheetDesc" id="lbSheetDesc"></div>
@@ -913,7 +955,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=35"></script>
+<script src="script.js?v=36"></script>
 
 
 
