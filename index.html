@@ -408,10 +408,11 @@ text-wrap: pretty;
   left:0;
   right:0;
   /* boven de vaste menubalk */
-  bottom:calc(64px + env(safe-area-inset-bottom));
+  bottom: calc(64px + env(safe-area-inset-bottom) + 24px);
   padding:10px 14px;
   pointer-events:auto;
   z-index:9999;
+ padding-bottom: 16px;
 }
 .lbSheetBody{
   background:rgba(255,255,255,.92);
@@ -458,7 +459,7 @@ text-wrap: pretty;
 }
 
 /* Uitleg-modus: toon sheet (op alle devices) */
-.lb.help .lbSheet{display:block;}
+.lb.help .lbSheet{display:flex;justify-content:center;align-items:flex-start;}
 
 /* In uitleg-modus: toon alleen het THEMA in het midden van de kaart */
 .lb.help .lbText{
