@@ -504,50 +504,48 @@ window.go = go;
 
 
 
-// --- v3.0: positioneer uitleg-sheet exact onder de kaart (desktop) ---
+
+
+
+
+// --- v3.1: positioneer uitleg-tekstvak strak onder de kaart (desktop + mobiel) ---
 (function(){
   const sheet = document.getElementById('lbSheet');
   const card  = document.getElementById('lbCard');
-
-  function isDesktopPointer(){
-    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  }
+  const root  = document.documentElement;
 
   function positionSheet(){
     if(!sheet || !card) return;
 
-    // Alleen positioneren wanneer de sheet zichtbaar is
     const lb = document.getElementById('lb');
     if(!lb || !lb.classList.contains('help')) return;
 
     const r = card.getBoundingClientRect();
-    const gap = 18; // speelse, maar strakke ruimte
-    const top = Math.round(r.bottom + gap);
+    const gap = 14; // iets dichterbij dan voorheen
+    const bottomSpace = 92; // ruimte voor duim/scroll + menubalk gevoel
+    const menuHeight = 64; // vaste menubalk (hussel/reset/uitleg)
+    // tijdelijke width/left zetten zodat we sheethoogte netjes kunnen meten
+    root.style.setProperty('--lb-sheet-left', Math.round(r.left) + 'px');
+    root.style.setProperty('--lb-sheet-width', Math.round(r.width) + 'px');
+    // op desktop gebruiken we centering via translateX(-50%) niet; we zetten left absoluut en transform none via media query op mobiel
+    // daarom zetten we ook een 'top' berekend, met clamp
+    // Eerst een voorlopige top:
+    root.style.setProperty('--lb-sheet-top', Math.round(r.bottom + gap) + 'px');
 
-    // Breedte exact gelijk aan kaart
-    sheet.style.left = Math.round(r.left) + 'px';
-    sheet.style.width = Math.round(r.width) + 'px';
-
-    if(isDesktopPointer()){
-      sheet.style.top = top + 'px';
-      sheet.style.bottom = 'auto';
-      sheet.style.right = 'auto';
-      sheet.style.transform = 'none';
-    } else {
-      // Mobiel: iets hoger boven de menubalk voor duim/scroll-ruimte
-      sheet.style.left = '0px';
-      sheet.style.right = '0px';
-      sheet.style.width = 'auto';
-      sheet.style.top = 'auto';
-      sheet.style.transform = 'none';
-      sheet.style.bottom = 'calc(64px + env(safe-area-inset-bottom) + 52px)';
-    }
+    // Na render: sheet hoogte meten en top clamped instellen
+    requestAnimationFrame(() => {
+      const sh = sheet.getBoundingClientRect().height || 0;
+      const maxTop = Math.max(16, window.innerHeight - (menuHeight + bottomSpace) - sh);
+      const desiredTop = Math.round(r.bottom + gap);
+      const clampedTop = Math.min(desiredTop, maxTop);
+      root.style.setProperty('--lb-sheet-top', clampedTop + 'px');
+    });
   }
+
+  // Expose
+  window.__positionHelpSheet = positionSheet;
 
   window.addEventListener('resize', positionSheet, {passive:true});
   window.addEventListener('orientationchange', positionSheet, {passive:true});
-
-  // Expose for existing open/close handlers to call
-  window.__positionHelpSheet = positionSheet;
 })();
 
