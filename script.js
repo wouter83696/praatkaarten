@@ -34,9 +34,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
   const uitlegBtn = document.getElementById('uitleg');
-  const lbHelpText = document.getElementById('lbHelpText');
-  const lbHelpTitle = document.getElementById('lbHelpTitle');
-  const lbHelpDesc = document.getElementById('lbHelpDesc');
+  // Caption onder de kaart is bewust verwijderd (oogde als zwevend wit vlak).
+  const lbSheet = document.getElementById('lbSheet');
+  const lbSheetTitle = document.getElementById('lbSheetTitle');
+  const lbSheetDesc = document.getElementById('lbSheetDesc');
 
   
 
@@ -63,10 +64,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
   let hintTimer = null;
   const HINT_KEY = 'pk_nav_hint_shown';
-  const IS_TOUCH = (
-    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
-    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
-  );
+  // Alleen echte touch-UI's (telefoon/tablet). Sommige desktops rapporteren maxTouchPoints > 0
+  // door touchpad/pen en dan wil je de hint juist NIET.
+  const IS_TOUCH = (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
   function showNavHint(){
     if(!navHint) return;
     document.body.classList.add('show-hint');
@@ -173,10 +173,11 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     if(mode === 'help'){
       lb.classList.add('help');
 
-      // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
-      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
-      // Support: sommige data-bestanden gebruiken nog 'verdiepen'
+      // UITLEG: één duidelijke laag (bottom sheet), ook op desktop.
+      if(lbSheet) lbSheet.setAttribute('aria-hidden','false');
+      // Thema komt IN het kaartje (midden). Sheet toont alleen de uitlegtekst.
+      if(lbSheetTitle) lbSheetTitle.textContent = "";
+// Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
         : item.key;
@@ -184,25 +185,23 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
-      if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
-      lb.classList.remove('help-title');
+      if(lbSheetDesc) lbSheetDesc.textContent = desc;
+      // In help-mode: toon het THEMA gecentreerd op de kaart
+      lbText.textContent = item.theme || "";
+      lb.classList.add('help-title');
     }
 
     else{
       lb.classList.remove('help');
-      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-      if(lbHelpTitle) lbHelpTitle.textContent = "";
-      if(lbHelpDesc) lbHelpDesc.textContent = "";
+      if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
+      if(lbSheetTitle) lbSheetTitle.textContent = "";
+      if(lbSheetDesc) lbSheetDesc.textContent = "";
 
       lbText.textContent = item.q || "";
     }
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-  lb.scrollTop = 0;
     document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
@@ -226,9 +225,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
-    if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-    if(lbHelpTitle) lbHelpTitle.textContent = "";
-    if(lbHelpDesc) lbHelpDesc.textContent = "";
+    if(lbSheet) lbSheet.setAttribute('aria-hidden','true');
+    if(lbSheetTitle) lbSheetTitle.textContent = "";
+    if(lbSheetDesc) lbSheetDesc.textContent = "";
     currentIndex = -1;
     lb.setAttribute('aria-hidden','true');
     document.body.classList.remove('lb-open');
@@ -287,7 +286,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       showUI();
       return;
     }
-    if (e.target.closest && (e.target.closest('.lbHelpText') || e.target.closest('.lbHelpDesc'))){
+    if (e.target.closest && e.target.closest('#lbSheet')){
       gestureArmed = false;
       return;
     }
