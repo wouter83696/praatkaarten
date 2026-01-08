@@ -10,15 +10,10 @@ if (window.visualViewport){
   window.visualViewport.addEventListener('resize', setVh);
 }
 
-const VERSION = '2.1.3';
-const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
+const VERSION = '2.1';
+const withV = (url) => url + (url.includes('?') ? '&' : '?') + `v=${encodeURIComponent(VERSION)}`;
 
-function withVersion(url){
-  const u = String(url || '');
-  if(!u) return u;
-  const sep = u.includes('?') ? '&' : '?';
-  return `${u}${sep}v=${encodeURIComponent(VERSION)}`;
-}
+const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   // State
   let data = [];
@@ -59,13 +54,13 @@ function withVersion(url){
   // Uitleg-modus: voorkant + 6 thema-kaarten (alles in dezelfde lightbox).
   // Let op: sommige data-bestanden gebruiken nog "verdiepen" i.p.v. "verhelderen"; we ondersteunen beide.
   const helpItems = [
-    { theme:'',            key:'cover',       bg:'voorkant.svg' },
-    { theme:'Verkennen',   key:'verkennen',   bg:'cards/verkennen.svg' },
-    { theme:'Duiden',      key:'duiden',      bg:'cards/duiden.svg' },
-    { theme:'Verbinden',   key:'verbinden',   bg:'cards/verbinden.svg' },
-    { theme:'Verhelderen', key:'verhelderen', bg:'cards/verhelderen.svg' },
-    { theme:'Vertragen',   key:'vertragen',   bg:'cards/vertragen.svg' },
-    { theme:'Bewegen',     key:'bewegen',     bg:'cards/bewegen.svg' }
+    { theme:'',            key:'cover',       bg:withV('voorkant.svg') },
+    { theme:'Verkennen',   key:'verkennen',   bg:withV('cards/verkennen.svg') },
+    { theme:'Duiden',      key:'duiden',      bg:withV('cards/duiden.svg') },
+    { theme:'Verbinden',   key:'verbinden',   bg:withV('cards/verbinden.svg') },
+    { theme:'Verhelderen', key:'verhelderen', bg:withV('cards/verhelderen.svg') },
+    { theme:'Vertragen',   key:'vertragen',   bg:withV('cards/vertragen.svg') },
+    { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
   ];
 
   // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
@@ -115,7 +110,7 @@ function withVersion(url){
           theme,
           num: i+1,
           q: qs[i],
-          bg: `cards/${theme}.svg`,
+          bg: withV(`cards/${theme}.svg`),
           id: `${theme}-${String(i+1).padStart(2,'0')}`
         });
       }
@@ -140,7 +135,7 @@ function withVersion(url){
 
       const img = document.createElement('img');
       img.className = 'bg';
-      img.src = withVersion(item.bg);
+      img.src = item.bg;
       img.alt = "";
 
       const q = document.createElement('div');
@@ -175,16 +170,15 @@ function withVersion(url){
 
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    lbImg.src = withVersion(item.bg || "");
-    if(item.bg) setLightboxBackground(withVersion(item.bg));
+    lbImg.src = item.bg || "";
+    if(item.bg) setLightboxBackground(item.bg);
 
     if(mode === 'help'){
       lb.classList.add('help');
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      // Kop staat in het midden van de kaart (overlay), niet in het tekstvak
-      if(lbHelpTitle) lbHelpTitle.textContent = "";
+      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
@@ -194,10 +188,10 @@ function withVersion(url){
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-
-      // In help-mode: titel in het midden van de kaart
-      lbText.textContent = item.theme || "";
-      lb.classList.remove('no-overlay');
+      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
+      lbText.textContent = "";
+      lb.classList.add('no-overlay');
+      lb.classList.remove('help-title');
     }
 
     else{
@@ -487,7 +481,7 @@ document.addEventListener('keydown', (e) => {
   }
 
   (async function init(){
-    const res = await fetch(withVersion('questions.json'), { cache:'no-store' });
+    const res = await fetch(withV('questions.json'));
     const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();
@@ -495,7 +489,7 @@ document.addEventListener('keydown', (e) => {
 
     // uitleg-teksten (later invulbaar)
     try{
-      const hr = await fetch(withVersion('uitleg-data.json'), { cache:'no-store' });
+      const hr = await fetch(withV('uitleg-data.json'), { cache:'no-store' });
       helpData = await hr.json();
     }catch(e){
       helpData = {};

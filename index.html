@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v2.1.3</title>
+<title>Praatkaarten v2.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -239,13 +239,9 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100dvh;
   min-height:100dvh;
   display:none;
-  /* Niet centreren: zodat lange tekst naar beneden kan uitlopen */
-  align-items:flex-start;
+  align-items:center;
   justify-content:center;
   padding:22px;
-
-  /* ✅ Laat de lightbox zelf scrollen als content langer is dan viewport */
-  overflow-y:auto;
 
   /* basis-overlay; echte "meebewegende" blur zit in .lbBg */
   background:rgba(255,255,255,.10);
@@ -311,51 +307,30 @@ body.lb-open .navHintMini{ opacity:0; }
 
 .panel{
   width:100%;
-  /* Laat de overlay zelf scrollen als tekst langer wordt */
-  min-height:100%;
-  height:auto;
+  height:100%;
   background:transparent;
   display:flex;
-  /* Niet centreren: kaart blijft bovenaan en tekst groeit naar beneden */
-  align-items:flex-start;
+  align-items:center;
   justify-content:center;
-  padding: min(8vh, 64px) 0 calc(120px + env(safe-area-inset-bottom));
 }
 
 .lbCard{
   position:relative;
   width:min(560px,92vw);
-  /* De kaart (SVG) moet z'n eigen verhouding houden; tekst komt eronder */
-  background:transparent;
-  box-shadow:none;
-  overflow:visible;
+  /* Desktop: grotere kaart zoals bij thema-overlay */
+  border-radius:22px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:0 18px 45px rgba(0,0,0,.20);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-
-  /* Belangrijk: inhoud onder elkaar (kaart + tekstvak) */
-  display:flex;
-  flex-direction:column;
-}
-
-/* Media-blok (SVG) */
-.lbMedia{
-  position:relative;
-  width:100%;
-  display:block;
-  background:#fff;
-  border-radius:22px;
-  overflow:hidden;
-  /* ✅ vaste kaartverhouding (zoals je originele kaartjes) */
-  aspect-ratio: 241 / 156;
-  box-shadow:0 18px 45px rgba(0,0,0,.20);
 }
 
 #lbImg{
-  width:100%;
-  height:100%;
-  object-fit:contain;
+  width:100.2%;
+  margin-left:-0.1%;
   display:block;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -382,12 +357,6 @@ body.lb-open .navHintMini{ opacity:0; }
   pointer-events:none;
 }
 
-/* In uitleg-modus: titel in het midden van de kaart (iets compacter) */
-.lb.help .lbText{
-  font-weight:500;
-  font-size:clamp(20px,2.2vw + 10px,34px);
-}
-
 
 .lbBelow{
   display:none;
@@ -397,7 +366,8 @@ body.lb-open .navHintMini{ opacity:0; }
   background:transparent;
 }
 
-/* .lbCard is nu alleen een wrapper; de kaart zelf is .lbMedia */
+/* In dezelfde witte kaart; geen los vak */
+.lbCard{ background:#fff; }
 
 .lbBelowTitle{
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
@@ -424,18 +394,24 @@ text-wrap: pretty;
 
 
 /* ===============================
-   UITLEG (HELP) — tekst ONDER de kaart (schaalt mee)
+   UITLEG (HELP) — tekst IN de kaart, zonder hoogte te veranderen
    =============================== */
 .lbHelpText{
   display:none;
-  width:100%;
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
   background:#fff;
-  padding:14px 18px 18px;
-  margin-top:12px;
-  border-radius:16px;
-  box-shadow:0 10px 28px rgba(0,0,0,.12);
+  padding:14px 18px 26px; /* extra 'enter' onderin */
 }
-.lbHelpTitle{ display:none; }
+.lbHelpTitle{
+  font-weight:500;
+  font-size:18px;
+  line-height:1.15;
+  color:var(--textBlue);
+  margin:0 0 8px;
+}
 .lbHelpDesc{
   font-weight:400;
   font-size:14px;
@@ -453,9 +429,12 @@ text-wrap: pretty;
 /* In uitleg-modus: geen los tekstvak onder de kaart */
 .lb.help .lbBelow{ display:none !important; }
 
-/* In uitleg-modus: geen vraag-overlay, wel titel in het midden */
-.lb.help:not(.no-overlay) .lbText{ display:grid; }
-.lb.help.no-overlay .lbText{ display:none; }
+/* In uitleg-modus: kaartbeeld krijgt ruimte boven de tekst (zonder aspect ratio te breken) */
+.lb.help #lbImg{
+  display:block;
+  width:100%;
+  height:auto;
+}
 
 /* ===============================
    ICONS
@@ -871,10 +850,8 @@ body.hm-open{overflow:hidden}
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
-      <div class="lbMedia" id="lbMedia">
-        <img id="lbImg" alt="">
-        <div class="lbText" id="lbText"></div>
-      </div>
+            <img id="lbImg" alt="">
+      <div class="lbText" id="lbText"></div>
 
       <!-- UITLEG (tekst in de kaart, zonder verhouding te veranderen) -->
       <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
@@ -888,7 +865,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.1.3"></script>
+<script src="script.js?v=2.1"></script>
 
 
 
