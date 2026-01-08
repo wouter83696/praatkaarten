@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v2.1</title>
+<title>Praatkaarten v2.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -367,7 +367,7 @@ body.lb-open .navHintMini{ opacity:0; }
 }
 
 /* In dezelfde witte kaart; geen los vak */
-.lbCard{ background:#fff; }
+.lbCard{ background:#fff; display:flex; flex-direction:column; overflow:hidden; }
 
 .lbBelowTitle{
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
@@ -393,25 +393,19 @@ text-wrap: pretty;
 }
 
 
+
 /* ===============================
-   UITLEG (HELP) — tekst IN de kaart, zonder hoogte te veranderen
+   UITLEG (HELP) — tekst ONDER de kaart, auto hoogte
    =============================== */
 .lbHelpText{
   display:none;
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
+  position:static;
+  width:100%;
   background:#fff;
-  padding:14px 18px 26px; /* extra 'enter' onderin */
+  padding:14px 18px 18px;
+  border-top:1px solid rgba(0,0,0,.06);
 }
-.lbHelpTitle{
-  font-weight:500;
-  font-size:18px;
-  line-height:1.15;
-  color:var(--textBlue);
-  margin:0 0 8px;
-}
+/* kop is verwijderd: alleen beschrijving */
 .lbHelpDesc{
   font-weight:400;
   font-size:14px;
@@ -429,7 +423,7 @@ text-wrap: pretty;
 /* In uitleg-modus: geen los tekstvak onder de kaart */
 .lb.help .lbBelow{ display:none !important; }
 
-/* In uitleg-modus: kaartbeeld krijgt ruimte boven de tekst (zonder aspect ratio te breken) */
+/* In uitleg-modus: kaartbeeld blijft volledig zichtbaar */
 .lb.help #lbImg{
   display:block;
   width:100%;
@@ -821,7 +815,6 @@ body.hm-open{overflow:hidden}
 
 .lbBelow{margin-top:-1px;}
 
-.lb.help-title .lbText{place-items:center; text-align:center;}
 </style>
 </head>
 <body>
@@ -855,7 +848,6 @@ body.hm-open{overflow:hidden}
 
       <!-- UITLEG (tekst in de kaart, zonder verhouding te veranderen) -->
       <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
-        <div class="lbHelpTitle" id="lbHelpTitle"></div>
         <div class="lbHelpDesc" id="lbHelpDesc"></div>
       </div>
 
@@ -865,7 +857,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.1"></script>
+<script src="script.js?v=2.2"></script>
 
 
 

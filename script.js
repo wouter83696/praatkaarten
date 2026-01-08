@@ -10,7 +10,7 @@ if (window.visualViewport){
   window.visualViewport.addEventListener('resize', setVh);
 }
 
-const VERSION = '2.1';
+const VERSION = '2.2';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + `v=${encodeURIComponent(VERSION)}`;
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -38,7 +38,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const resetBtn = document.getElementById('reset');
   const uitlegBtn = document.getElementById('uitleg');
   const lbHelpText = document.getElementById('lbHelpText');
-  const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
   
@@ -54,13 +53,13 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Uitleg-modus: voorkant + 6 thema-kaarten (alles in dezelfde lightbox).
   // Let op: sommige data-bestanden gebruiken nog "verdiepen" i.p.v. "verhelderen"; we ondersteunen beide.
   const helpItems = [
-    { theme:'',            key:'cover',       bg:withV('voorkant.svg') },
-    { theme:'Verkennen',   key:'verkennen',   bg:withV('cards/verkennen.svg') },
-    { theme:'Duiden',      key:'duiden',      bg:withV('cards/duiden.svg') },
-    { theme:'Verbinden',   key:'verbinden',   bg:withV('cards/verbinden.svg') },
-    { theme:'Verhelderen', key:'verhelderen', bg:withV('cards/verhelderen.svg') },
-    { theme:'Vertragen',   key:'vertragen',   bg:withV('cards/vertragen.svg') },
-    { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
+    { theme:'',            key:'cover',       bg:'voorkant.svg' },
+    { theme:'Verkennen',   key:'verkennen',   bg:'cards/verkennen.svg' },
+    { theme:'Duiden',      key:'duiden',      bg:'cards/duiden.svg' },
+    { theme:'Verbinden',   key:'verbinden',   bg:'cards/verbinden.svg' },
+    { theme:'Verhelderen', key:'verhelderen', bg:'cards/verhelderen.svg' },
+    { theme:'Vertragen',   key:'vertragen',   bg:'cards/vertragen.svg' },
+    { theme:'Bewegen',     key:'bewegen',     bg:'cards/bewegen.svg' }
   ];
 
   // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
@@ -110,7 +109,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
           theme,
           num: i+1,
           q: qs[i],
-          bg: withV(`cards/${theme}.svg`),
+          bg: `cards/${theme}.svg`,
           id: `${theme}-${String(i+1).padStart(2,'0')}`
         });
       }
@@ -170,15 +169,14 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    lbImg.src = item.bg || "";
-    if(item.bg) setLightboxBackground(item.bg);
+    lbImg.src = item.bg ? withV(item.bg) : "";
+    if(item.bg) setLightboxBackground(withV(item.bg));
 
     if(mode === 'help'){
       lb.classList.add('help');
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
@@ -186,7 +184,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
       // Geen geforceerde enters: laat de browser het netjes afbreken.
-      const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
+      const desc = raw.replace(/\s*\n\s*/g, ' ');
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
       // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
       lbText.textContent = "";
@@ -197,7 +195,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     else{
       lb.classList.remove('help');
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-      if(lbHelpTitle) lbHelpTitle.textContent = "";
       if(lbHelpDesc) lbHelpDesc.textContent = "";
 
       lbText.textContent = item.q || "";
@@ -229,7 +226,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lbImg.src = "";
     lbText.textContent = "";
     if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-    if(lbHelpTitle) lbHelpTitle.textContent = "";
     if(lbHelpDesc) lbHelpDesc.textContent = "";
     currentIndex = -1;
     lb.setAttribute('aria-hidden','true');

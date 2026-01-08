@@ -1,5 +1,5 @@
 (async function(){
-  const VERSION = '2.1';
+  const VERSION = '2.2';
   // Let op: deze uitleg draait in een iframe (helpModal) en gebruikt daarom absolute paden
   // naar je GitHub Pages submap.
   const BASE = "/praatkaarten";
