@@ -175,6 +175,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
+      // Thema-naam komt gecentreerd IN het kaartje (overlay).
       if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
@@ -185,10 +186,11 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
-      lb.classList.remove('help-title');
+      // In help-mode: thema-naam in het midden van het kaartje.
+      // Cover (voorkant) heeft geen thema-naam.
+      lbText.textContent = item.theme || "";
+      lb.classList.remove('no-overlay');
+      lb.classList.add('help-title');
     }
 
     else{
@@ -198,6 +200,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       if(lbHelpDesc) lbHelpDesc.textContent = "";
 
       lbText.textContent = item.q || "";
+      lb.classList.remove('help-title');
+      lb.classList.remove('no-overlay');
     }
 
     lb.setAttribute('aria-hidden','false');
