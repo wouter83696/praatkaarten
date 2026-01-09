@@ -55,6 +55,59 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
+  // ===============================
+  // INLINE VIEWER (Variant B)
+  // ===============================
+  const inlineViewer = document.getElementById('inlineViewer');
+  const inlineImg = document.getElementById('inlineImg');
+  const inlineText = document.getElementById('inlineText');
+  const inlineHelpText = document.getElementById('inlineHelpText');
+  const inlineHelpDesc = document.getElementById('inlineHelpDesc');
+  const inlineClose = document.getElementById('inlineClose');
+  const inlinePrev = document.getElementById('inlinePrev');
+  const inlineNext = document.getElementById('inlineNext');
+
+  function openInline(item){
+    if(!inlineViewer) return;
+    inlineImg.src = item.bg || "";
+    if(mode === 'help'){
+      if(inlineHelpText) inlineHelpText.classList.add('open');
+      if(inlineHelpText) inlineHelpText.setAttribute('aria-hidden','false');
+      if(inlineText) inlineText.style.display = 'none';
+
+      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
+        ? 'verdiepen'
+        : item.key;
+
+      const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
+      const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
+      if(inlineHelpDesc) inlineHelpDesc.textContent = desc;
+    }else{
+      if(inlineHelpText) inlineHelpText.classList.remove('open');
+      if(inlineHelpText) inlineHelpText.setAttribute('aria-hidden','true');
+      if(inlineText) inlineText.style.display = '';
+      if(inlineText) inlineText.textContent = item.q || "";
+      if(inlineHelpDesc) inlineHelpDesc.textContent = "";
+    }
+
+    inlineViewer.classList.add('open');
+    inlineViewer.setAttribute('aria-hidden','false');
+
+    try{ inlineViewer.scrollIntoView({behavior:'smooth', block:'start'}); }
+    catch(e){ inlineViewer.scrollIntoView(true); }
+  }
+
+  function closeInline(){
+    if(!inlineViewer) return;
+    inlineViewer.classList.remove('open');
+    inlineViewer.setAttribute('aria-hidden','true');
+    // Als je sluit terwijl uitleg aan staat: zet toggle uit (voelt logisch)
+    if(mode === 'help' && uitlegToggle){
+      uitlegToggle.checked = false;
+      mode = 'cards';
+    }
+  }
+
   // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
   if(lbHelpTitle){
     lbHelpTitle.textContent = "";
@@ -286,7 +339,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     suppressClickUntil = performance.now() + 450;
     try{ e?.preventDefault?.(); }catch(_e){}
     try{ e?.stopPropagation?.(); }catch(_e){}
-    closeLb();
+    closeInline();
   }
 
   // Fallback: tap/click op de achtergrond (blur) sluit ook (handig als iOS pointer-events raar doet)
@@ -368,7 +421,7 @@ lb.addEventListener('pointerup', (e) => {
     const thrY = fast ? 50 : 80;
 
     if(ay > ax && dy > thrY){
-      closeLb();
+      closeInline();
       return;
     }
     if(ax > ay && ax > thrX){
@@ -449,7 +502,7 @@ lb.addEventListener('pointerup', (e) => {
     }
     e.stopPropagation();
   });
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeInline(); });
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
@@ -461,7 +514,7 @@ lb.addEventListener('pointerup', (e) => {
       if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
         closeFromTap(e);
       } else {
-        closeLb();
+        closeInline();
       }
       return;
     }
@@ -481,7 +534,7 @@ lb.addEventListener('pointerup', (e) => {
   }, true);
 document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLb();
+    if(e.key === 'Escape') closeInline();
     if(e.key === 'ArrowLeft') go(-1);
     if(e.key === 'ArrowRight') go(1);
   });
@@ -512,7 +565,7 @@ document.addEventListener('keydown', (e) => {
       helpFiltered = helpItems.slice();
       openAt(0);
     }else{
-      if(mode === 'help') closeLb();
+      if(mode === 'help') closeInline();
       mode = 'cards';
     }
   }
@@ -524,7 +577,7 @@ document.addEventListener('keydown', (e) => {
     mode = 'cards';
     filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
     render(filtered);
-    closeLb();
+    closeInline();
   }
 
   // Start: beide uit
@@ -539,7 +592,12 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
-  (async function init(){
+  
+  // Inline viewer controls
+  if(inlineClose) inlineClose.addEventListener('click', (e) => { e.stopPropagation(); closeInline(); });
+  if(inlinePrev) inlinePrev.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
+  if(inlineNext) inlineNext.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
+(async function init(){
     const res = await fetch(withV('questions.json'));
     const questions = await res.json();
     data = buildData(questions);
