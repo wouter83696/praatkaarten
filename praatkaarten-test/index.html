@@ -4,21 +4,23 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Praatkaartjes – uitleg carrousel demo</title>
+<title>Praatkaartjes – uitleg carrousel v2</title>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
 <header class="topbar">
-  <span>Uitleg</span>
+  <span>Praatkaartjes</span>
   <button id="toggleUitleg">Toon uitleg</button>
 </header>
 
 <section id="uitlegContainer" class="collapsed">
   <div class="carousel">
-    <div class="slide active">
-      <div class="card front">Samen onderzoeken</div>
-      <div class="text" id="uitlegText"></div>
+    <div class="card" id="card"></div>
+    <div class="text" id="uitlegText"></div>
+    <div class="controls">
+      <button id="prev">←</button>
+      <button id="next">→</button>
     </div>
   </div>
 </section>

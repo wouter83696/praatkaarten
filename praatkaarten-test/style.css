@@ -21,22 +21,19 @@ body {
 #uitlegContainer {
   overflow: hidden;
   transition: max-height 0.4s ease;
-  background: #f6f6f6;
 }
 
-#uitlegContainer.collapsed {
-  max-height: 0;
-}
-
-#uitlegContainer.expanded {
-  max-height: 600px;
-}
+#uitlegContainer.collapsed { max-height: 0; }
+#uitlegContainer.expanded { max-height: 500px; }
 
 .carousel {
   padding: 16px;
+  text-align: center;
 }
 
 .card {
+  max-width: 480px;
+  margin: 0 auto;
   background: #9ec5b3;
   border-radius: 20px;
   height: 180px;
@@ -49,9 +46,15 @@ body {
 
 .text {
   max-width: 480px;
-  margin: 16px auto 0;
+  margin: 16px auto;
   font-size: 16px;
   line-height: 1.4;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 }
 
 .grid {
