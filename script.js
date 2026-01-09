@@ -1,7 +1,3 @@
-// Auto base-path (map-onafhankelijk)
-const BASE = new URL('.', document.currentScript.src).href;
-const assetUrl = (p) => new URL(p, BASE).href;
-
 // Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
 function setVh(){
   const vh = window.innerHeight * 0.01;
@@ -82,7 +78,8 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = '3.2.2';
+// Versie (ook gebruikt als cache-buster op GitHub Pages)
+const VERSION = '3.3.2';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -110,9 +107,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
 
-  
-  const closeBtn = document.getElementById('closeBtn');
-let shuffleOn = false;
+  let shuffleOn = false;
   let uitlegOn  = false;
 
   function setChip(btn, on){
@@ -263,14 +258,14 @@ let shuffleOn = false;
 
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    lbImg.src = (() => {
-      const bg = (lbImg).trim ? (lbImg).trim() : (lbImg);
-      if(!bg) return "";
-      // als bg al absolute URL is, laat staan
-      if(/^https?:\/\//i.test(bg)) return bg;
-      return resolveResourceUrl(bg)[0].toString();
-    })();
-    if(item.bg) setLightboxBackground(item.bg);
+    // FIX: gebruik de bg van het item (niet het <img>-element zelf), anders breekt klikken.
+    const bg = (item && item.bg) ? String(item.bg).trim() : "";
+    const bgResolved = (!bg)
+      ? ""
+      : (/^https?:\/\//i.test(bg) ? bg : resolveResourceUrl(bg)[0].toString());
+
+    lbImg.src = bgResolved;
+    if(bgResolved) setLightboxBackground(bgResolved);
 
     if(mode === 'help'){
       lb.classList.add('help');
@@ -613,13 +608,6 @@ document.addEventListener('keydown', (e) => {
   }
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
-  }
-  if(closeBtn){
-    closeBtn.addEventListener('click', () => {
-      // sluit uitleg (mobiel) of viewer (lightbox)
-      if(document.body.classList.contains('show-intro')) setUitleg(false);
-      if(document.body.classList.contains('lb-open')) closeLb();
-    });
   }
 
   (async function init(){
