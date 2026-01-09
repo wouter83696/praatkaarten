@@ -41,14 +41,12 @@ html,body{
 .card{
   background:#fff;
   border-radius:var(--radius);
-  backdrop-filter: blur(6px);
   box-shadow:var(--shadow);
 }
 
 @media (hover:hover){
   .card:hover{
-    backdrop-filter: blur(6px);
-  box-shadow:var(--shadowHover);
+    box-shadow:var(--shadowHover);
     transform:translateY(-2px);
   }
 }
@@ -74,7 +72,6 @@ html,body{
 
 /* Actieve kaart in overlay */
 .lb .card{
-  backdrop-filter: blur(6px);
   box-shadow:
     0 8px 18px rgba(0,0,0,.14),
     0 32px 60px rgba(0,0,0,.18);
@@ -372,7 +369,6 @@ body.hm-open{ overflow:hidden; }
   border-radius:18px;
   overflow:hidden;
   background:#FAFAF8;
-  backdrop-filter: blur(6px);
   box-shadow: 0 18px 45px rgba(0,0,0,.20);
 }
 .helpFrame{ width:100%; height:100%; border:0; display:block; }
@@ -402,22 +398,37 @@ body.hm-open{ overflow:hidden; }
 
 
 
-/* UI fixes */
-#uitleg-carousel {
-  padding-bottom: 12px;
-}
-
-#uitleg-carousel .card-wrapper {
-  background: transparent;
-  padding: 0;
-}
-
-/* Subtle background blur */
-body.uitleg-open::before {
-  content: "";
-  position: fixed;
-  inset: 0;
+/* ===== v3.3.2 UI tweaks ===== */
+/* Subtiele blur/dim achter de viewer (alleen als open) */
+body.lb-open::before,
+body.show-intro::before{
+  content:"";
+  position:fixed;
+  inset:0;
   backdrop-filter: blur(3px);
-  background: rgba(0,0,0,0.05);
-  z-index: 10;
+  background: rgba(0,0,0,0.04);
+  z-index: 8; /* onder lightbox en onder bottom bar */
+  pointer-events:none;
+}
+
+/* Sluitknop in menubalk: alleen zichtbaar als viewer/uitleg open is */
+#closeBtn{ display:none; }
+body.lb-open #closeBtn,
+body.show-intro #closeBtn{ display:inline-flex; }
+
+.chip-close{
+  margin-left: auto;
+  opacity: .8;
+}
+.chip-close:hover{ opacity: 1; }
+
+/* White frame/rand rond kaart voorkomen in viewer */
+.lb .cardWrap,
+.lb .card-wrap,
+#lb .cardWrap,
+#lb .card-wrap{
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }

@@ -106,7 +106,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
 
-  let shuffleOn = false;
+  
+  const closeBtn = document.getElementById('closeBtn');
+let shuffleOn = false;
   let uitlegOn  = false;
 
   function setChip(btn, on){
@@ -608,6 +610,13 @@ document.addEventListener('keydown', (e) => {
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
+  if(closeBtn){
+    closeBtn.addEventListener('click', () => {
+      // sluit uitleg (mobiel) of viewer (lightbox)
+      if(document.body.classList.contains('show-intro')) setUitleg(false);
+      if(document.body.classList.contains('lb-open')) closeLb();
+    });
+  }
 
   (async function init(){
     const res = await fetch(withV('questions.json'));
@@ -702,17 +711,3 @@ async function renderMobileIntro(){
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
-
-/* Make all cards open in bottom sheet */
-function openUitlegAll(cardData) {
-  document.body.classList.add("uitleg-open");
-  const sheet = document.getElementById("uitleg-carousel");
-  if (sheet) sheet.classList.add("open");
-}
-
-/* Close button in menu bar */
-function closeUitleg() {
-  document.body.classList.remove("uitleg-open");
-  const sheet = document.getElementById("uitleg-carousel");
-  if (sheet) sheet.classList.remove("open");
-}
