@@ -476,7 +476,8 @@ text-wrap: pretty;
 .chev,
 .close{
   position:absolute;
-  background:transparent;
+  /* Zorg dat het kruisje altijd zichtbaar is op desktop */
+  background:rgba(255,255,255,.78);
   border:0;
   width:44px;
   height:44px;
@@ -485,11 +486,14 @@ text-wrap: pretty;
   color:var(--uiInk);
   cursor:pointer;
 
-  opacity:0;
+  border-radius:999px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  opacity:1;
 }
 
-.lb.show-ui .chev,
-.lb.show-ui .close{opacity:1;}
+/* Pijlen mogen subtiel blijven, kruisje blijft altijd aan */
+.chev{ opacity:.85; }
+.lb.show-ui .chev{ opacity:1; }
 
 .chev.left{left:10px;top:50%;transform:translateY(-50%);}
 .chev.right{right:10px;top:50%;transform:translateY(-50%);}
@@ -906,7 +910,8 @@ body.hm-open{overflow:hidden}
   background-position: center;
   transform: scale(1.08);
   filter: blur(18px);
-  opacity: .38;
+  /* Minder drukke achtergrond: nog wel diepte, maar tekst blijft leesbaar */
+  opacity: .16;
   pointer-events:none;
   z-index:0;
 }
@@ -914,7 +919,8 @@ body.hm-open{overflow:hidden}
   content:"";
   position:absolute;
   inset:0;
-  background: rgba(255,255,255,.22);
+  /* Witte glaze iets sterker zodat de blur niet 'doorlekt' */
+  background: rgba(255,255,255,.55);
   pointer-events:none;
   z-index:1;
 }
