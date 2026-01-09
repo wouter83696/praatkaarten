@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.2.2</title>
+<title>Praatkaarten v3.2.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -352,18 +352,6 @@ body.lb-open .navHintMini{ opacity:0; }
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-}
-
-/* ===============================
-   MOBILE: bottom-sheet viewer
-   =============================== */
-@media (max-width: 720px){
-  .lb{
-    align-items:flex-end;
-    justify-content:flex-end;
-    padding:0;
-
-  }
 }
 
 #lbImg{
@@ -877,7 +865,7 @@ body.hm-open{overflow:hidden}
    =============================== */
 
 /* standaard verborgen; we tonen 'm pas als de gebruiker op Uitleg tikt */
-.mobileIntro{display:none; margin:16px auto 8px; width:min(940px, 100%); padding:0 14px;}
+.mobileIntro{display:none; margin:12px auto 0; width:min(940px, 100%); padding:0 14px;}
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
@@ -892,7 +880,7 @@ body.hm-open{overflow:hidden}
   font:500 13px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-.introTrack{display:flex; gap:14px; overflow-x:auto; padding:0 6px 8px;
+.introTrack{display:flex; gap:14px; overflow-x:auto; padding:16px 14px 12px;
   scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
 }
 .introTrack::-webkit-scrollbar{display:none;}
@@ -914,7 +902,7 @@ body.hm-open{overflow:hidden}
   font-weight:500;
   font-size:22px;
   letter-spacing:.2px;
-  color: rgba(11,18,32,.55);
+  color: var(--textBlue);
   pointer-events:none;
 }
 .introImg{width:100%; height:100%; object-fit:contain; display:block;}
@@ -934,35 +922,85 @@ body.hm-open{overflow:hidden}
   overflow-wrap:anywhere;
   white-space:normal;
 }
-.introHint{margin:8px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
+.introHint{margin:4px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
 
 
-@media (max-width: 720px){
-  .lb{
-    align-items:flex-end;
-    justify-content:flex-end;
-    padding:0;
+
+/* =========================================================
+   BOTTOM-SHEET VIEWER (speels + één paneel met onderbalk)
+   - Mobiel: viewer komt van onderen (sheet)
+   - Desktop: blijft midden
+   - Geen zware blur; wel zachte focus via dim + scale
+   ========================================================= */
+
+/* Basis: laat de overlay flex gebruiken */
+.lb{ display:none; }
+.lb.open{ display:flex; align-items:center; justify-content:center; }
+.lbBg{
+  position:absolute; inset:0;
+  background: rgba(0,0,0,0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Speelse focus: pagina heel licht kleiner/terug */
+body.lb-open main,
+body.lb-open .wrap,
+body.lb-open .page,
+body.lb-open .container{
+  transform: scale(0.985);
+  opacity: 0.96;
+  filter: saturate(0.95);
+  transition: transform .22s ease, opacity .22s ease, filter .22s ease;
+}
+
+/* Zorg dat panel boven de dimlaag ligt */
+.lb .panel{ position:relative; z-index:2; }
+
+/* Mobiel: bottom-sheet */
+@media (hover:none) and (pointer:coarse){
+  .lb.open{ align-items:flex-end; justify-content:center; padding: 0; }
+  .lb .panel{
+    width: 100%;
+    max-width: 100%;
+    border-radius: 28px 28px 0 0;
+    margin: 0;
+    /* sheet-surface */
+    background: #fff;
+    /* geef de sheet een mooie schaduw */
+    box-shadow: 0 -18px 60px rgba(0,0,0,0.18);
+    /* ruimte zodat controlsBar als 'onderdeel' voelt */
+    padding-bottom: calc(74px + env(safe-area-inset-bottom));
   }
-  /* bottom-sheet: sheet blijft onder, maar kaart staat visueel op ooghoogte */
-  .panel{
-    height: 78vh;
-    max-height: 78vh;
-    width:100%;
+
+  /* Card in sheet optisch midden/ooghoogte */
+  .lb .lbCard{
     display:flex;
-    align-items:center;
+    flex-direction:column;
     justify-content:center;
-    padding: 16px 14px calc(84px + env(safe-area-inset-bottom));
+    align-items:center;
+    min-height: 64vh;
+    padding: 18px 16px 10px;
     box-sizing:border-box;
   }
-  .lbCard{
-    width:100vw;
-    max-width:none;
-    border-radius:26px 26px 0 0;
-    box-shadow:0 -18px 45px rgba(0,0,0,.18);
+
+  /* Onderbalk: transparant zodat hij 'op' de sheet ligt (één paneel gevoel) */
+  body.lb-open .controlsBar{
+    background: transparent !important;
+    box-shadow: none !important;
+    border-top: 0 !important;
   }
-  /* iets meer ademruimte boven de kaart binnen de sheet */
-  .lbCardWrap{ padding:16px 14px calc(22px + env(safe-area-inset-bottom)); }
 }
+
+/* Desktop: behoud het midden-paneel gevoel */
+@media (hover:hover) and (pointer:fine){
+  .lb .panel{
+    background:#fff;
+    border-radius: 28px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.22);
+  }
+}
+
 </style>
 </head>
 <body>

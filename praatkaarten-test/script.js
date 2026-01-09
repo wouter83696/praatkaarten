@@ -172,8 +172,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       btn.addEventListener('click', () => {
         mode = 'cards';
-        // Optie 3: focusplek bovenaan (desktop) / bottom-sheet (mobiel)
-        try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
         openAt(idx);
       });
       frag.appendChild(btn);
@@ -244,11 +242,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   function closeLb(){
     // Sluiten = terug naar normale kaartmodus
     if(mode === 'help'){
-      // Uitleg-chip ook uitzetten
-      uitlegOn = false;
-      setChip(uitlegBtn, false);
-      document.body.classList.remove('show-intro');
-
       mode = 'cards';
       helpFiltered = [];
     }
@@ -505,16 +498,9 @@ document.addEventListener('keydown', (e) => {
     setChip(uitlegBtn, uitlegOn);
 
     if(isMobile()){
-      // Mobiel: gebruik dezelfde viewer (lightbox) als desktop, maar via bottom-sheet styling.
-      document.body.classList.remove('show-intro');
+      document.body.classList.toggle('show-intro', uitlegOn);
       if(uitlegOn){
-        showNavHint();
-        mode = 'help';
-        helpFiltered = helpItems.slice();
-        openAt(0);
-      }else{
-        if(mode === 'help') closeLb();
-        mode = 'cards';
+        try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
       }
       return;
     }
