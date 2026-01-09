@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.3';
+const VERSION = '3.3.7';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -97,7 +97,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
-  const navHint = document.getElementById('navHint');
+  // (v3.3.7) swipe-hint is bewust verwijderd
+  const navHint = null;
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
@@ -106,8 +107,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
-  const closeAllBtn = document.getElementById('closeAllBtn');
-  const closeSheetTop = document.getElementById('closeSheetTop');
+  // (v3.3.7) geen extra sluitknoppen in de pills
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -153,28 +153,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
   ];
 
-  // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
+  // (v3.3.7) swipe-hint verwijderd: geen timers/tekst meer
   let hintTimer = null;
-  const HINT_KEY = 'pk_nav_hint_shown';
-  const IS_TOUCH = (
-    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
-    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
-  );
-  function showNavHint(){
-    if(!navHint) return;
-    document.body.classList.add('show-hint');
-    clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 20000);
-  }
-  function maybeShowNavHintOnce(){
-    // Alleen tonen op touch-apparaten
-    if(!IS_TOUCH) return;
-    try{
-      if(sessionStorage.getItem(HINT_KEY) === '1') return;
-      sessionStorage.setItem(HINT_KEY,'1');
-    }catch(_e){}
-    showNavHint();
-  }
 
 // UI chrome (pijlen + sluiten)
   // - Touch: iets langer zichtbaar
@@ -284,10 +264,12 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
-      lb.classList.remove('help-title');
+      // In help-mode: thema-naam in het midden (net als op mobiel), behalve op de voorkant.
+      const isCover = (item && item.key === 'cover');
+      const t = (!isCover && item && typeof item.theme === 'string') ? item.theme.trim() : '';
+      lbText.textContent = t;
+      lb.classList.toggle('help-title', !!t);
+      lb.classList.remove('no-overlay');
     }
 
     else{
@@ -308,7 +290,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     document.body.style.overflow = 'hidden';
 
     showUI();
-    maybeShowNavHintOnce();
+    // (v3.3.7) geen swipe-hint
 
     // Oneindig doorlopen: pijlen nooit uitschakelen
     if(prevBtn) prevBtn.disabled = false;
@@ -332,8 +314,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     document.body.classList.remove('lb-open');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    clearTimeout(hintTimer);
-    document.body.classList.remove('show-hint');
+    // (v3.3.7) geen swipe-hint
 
     // Sync: als je de uitleg-lightbox op desktop sluit, zet de chip uit
     try{
@@ -583,7 +564,7 @@ document.addEventListener('keydown', (e) => {
 
     // Desktop: help-lightbox aan/uit
     if(uitlegOn){
-      showNavHint();
+      // (v3.3.7) geen swipe-hint
       mode = 'help';
       helpFiltered = helpItems.slice();
       openAt(0);
@@ -616,25 +597,39 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
-  // Sluiten (X): sluit wat er open staat
-  if(closeAllBtn){
-    closeAllBtn.addEventListener('click', () => {
-      // 1) uitleg uit (dit sluit ook help-lightbox / mobile intro)
-      if(uitlegOn) setUitleg(false);
-      // 2) shuffle uit (terug naar originele volgorde)
-      if(shuffleOn) setShuffle(false);
-      // 3) lightbox dicht (als er nog iets open staat)
-      if(lb.classList.contains('open')) closeLb();
-    });
+  // ===============================
+  // v3.3.7 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
+  // ===============================
+  const mobileIntroEl = document.getElementById('mobileIntro');
+  if(mobileIntroEl){
+    let sy = 0, sx = 0;
+    mobileIntroEl.addEventListener('touchstart', (e) => {
+      if(!uitlegOn) return;
+      const t = e.touches && e.touches[0];
+      if(!t) return;
+      sy = t.clientY;
+      sx = t.clientX;
+    }, {passive:true});
+
+    mobileIntroEl.addEventListener('touchend', (e) => {
+      if(!uitlegOn) return;
+      const t = e.changedTouches && e.changedTouches[0];
+      if(!t) return;
+      const dy = t.clientY - sy;
+      const dx = t.clientX - sx;
+      const ay = Math.abs(dy);
+      const ax = Math.abs(dx);
+      // Alleen duidelijke swipe omlaag (niet horizontaal scrollen door de kaarten)
+      if(ay > ax && dy > 70){
+        setUitleg(false);
+      }
+    }, {passive:true});
   }
 
-  // Mobiel: close-knop boven het uitleg-venster (alleen uitleg sluiten)
-  if(closeSheetTop){
-    closeSheetTop.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if(uitlegOn) setUitleg(false);
-    });
-  }
+  // (v3.3.7) sluiten gaat via:
+  // - Uitleg-knop opnieuw (toggle)
+  // - swipe omlaag op het uitleg-venster (mobiel)
+  // - ESC / klik buiten de kaart / swipe omlaag in lightbox
 
   (async function init(){
     const res = await fetch(withV('questions.json'));
