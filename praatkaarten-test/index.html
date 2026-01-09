@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.4</title>
+<title>Praatkaarten v3.3.5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -883,7 +883,14 @@ body.hm-open{overflow:hidden}
   -webkit-backdrop-filter: blur(10px);
 
   border-radius: 18px 18px 0 0;
-  box-shadow: 0 -18px 55px rgba(0,0,0,.14);
+  /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
+  box-shadow:
+    0 -18px 55px rgba(0,0,0,.14),
+    0 10px 35px rgba(0,0,0,.10);
+  border: 1px solid rgba(11,18,32,.08);
+  overflow: hidden;
+  background-clip: padding-box;
+  isolation: isolate;
 
   transform: translateY(103%);
   transition: transform .28s ease;
@@ -976,7 +983,7 @@ body.hm-open{overflow:hidden}
 /* ===============================
    ICON PILLS (i.p.v. menubalk)
    - standaard onderin uitlijnen
-   - bij uitleg open: bovenaan
+   - knoppen blijven altijd onderaan
    =============================== */
 
 .controlsBar{ display:none !important; }
@@ -992,16 +999,7 @@ body.hm-open{overflow:hidden}
   pointer-events:none;
 }
 
-/* Mobiel: bij uitleg open -> pills bovenaan */
-@media (hover:none) and (pointer:coarse){
-  body.uitleg-open .pillsDock{
-    top:0;
-    bottom:auto;
-    padding-top:calc(12px + env(safe-area-inset-top));
-    padding-bottom:12px;
-    align-items:flex-start;
-  }
-}
+/* Mobiel: pills blijven ook bij uitleg open onderaan (geen bewegende knoppen) */
 
 /* Desktop: pills altijd onder, geen close button */
 @media (hover:hover) and (pointer:fine){
@@ -1102,7 +1100,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.4"></script>
+<script src="script.js?v=3.3.5"></script>
 
 
 
