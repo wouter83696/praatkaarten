@@ -572,9 +572,6 @@ document.addEventListener('keydown', (e) => {
 
     if(isMobile()){
       document.body.classList.toggle('show-intro', uitlegOn);
-      if(uitlegOn){
-        try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
-      }
       return;
     }
 
