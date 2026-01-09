@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.3</title>
+<title>Praatkaarten v3.3.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -992,12 +992,21 @@ body.hm-open{overflow:hidden}
   pointer-events:none;
 }
 
-body.uitleg-open .pillsDock{
-  top:0;
-  bottom:auto;
-  padding-top:calc(12px + env(safe-area-inset-top));
-  padding-bottom:12px;
-  align-items:flex-start;
+/* Mobiel: bij uitleg open -> pills bovenaan */
+@media (hover:none) and (pointer:coarse){
+  body.uitleg-open .pillsDock{
+    top:0;
+    bottom:auto;
+    padding-top:calc(12px + env(safe-area-inset-top));
+    padding-bottom:12px;
+    align-items:flex-start;
+  }
+}
+
+/* Desktop: pills altijd onder, geen close button */
+@media (hover:hover) and (pointer:fine){
+  .pillsDock{ justify-content:flex-start; }
+  .pillsRight{ display:none; }
 }
 
 .pillsLeft,
@@ -1093,7 +1102,7 @@ body.uitleg-open .pillsDock{
 
 
 
-<script src="script.js?v=3.3.3"></script>
+<script src="script.js?v=3.3.4"></script>
 
 
 
