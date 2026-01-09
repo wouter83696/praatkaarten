@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.8</title>
+<title>Praatkaartjes – Samen onderzoeken (v3.4.0)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -26,6 +26,9 @@
   /* WARM "INKT" (bruin-grijs) voor cursor + iconen */
   --uiInk: rgba(11,18,32,.45);
   --uiInkSoft: rgba(11,18,32,.22);
+
+  /* hoogte van de icon-pills onderin (voor offset van de mobiele uitleg-sheet) */
+  --pillsDockH: 72px;
 }
 
 *{box-sizing:border-box}
@@ -293,7 +296,7 @@ body.lb-open .navHintMini{ opacity:0; }
   transform: translateX(var(--lb-bg-shift, 0px)) scale(1.08);
   transition: transform .18s ease;
   filter: blur(18px);
-  opacity: .38;
+  opacity: .18;
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -315,7 +318,7 @@ body.lb-open .navHintMini{ opacity:0; }
   width:100vw;
   height:100dvh;
   min-height:100dvh;
-  background: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.42);
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -476,8 +479,7 @@ text-wrap: pretty;
 .chev,
 .close{
   position:absolute;
-  /* Zorg dat het kruisje altijd zichtbaar is op desktop */
-  background:rgba(255,255,255,.78);
+  background:transparent;
   border:0;
   width:44px;
   height:44px;
@@ -486,18 +488,27 @@ text-wrap: pretty;
   color:var(--uiInk);
   cursor:pointer;
 
-  border-radius:999px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.12);
-  opacity:1;
+  opacity:0;
 }
 
-/* Pijlen mogen subtiel blijven, kruisje blijft altijd aan */
-.chev{ opacity:.85; }
-.lb.show-ui .chev{ opacity:1; }
+.lb.show-ui .chev,
+.lb.show-ui .close{opacity:1;}
+
+/* In uitleg-modus moet het kruisje altijd beschikbaar blijven */
+.lb.help .close{opacity:1 !important;}
 
 .chev.left{left:10px;top:50%;transform:translateY(-50%);}
 .chev.right{right:10px;top:50%;transform:translateY(-50%);}
 .close{top:10px;right:10px;}
+
+/* Desktop: geen "witte ringen" rond de overlay-controls; subtieler + fade via show-ui */
+@media (hover:hover) and (pointer:fine){
+  .chev,.close{
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+  }
+}
 /* Touch (telefoon/tablet): alleen kruisje tonen (geen pijlen/cursors) */
 @media (hover:none) and (pointer:coarse){
   .chev{ display:none !important; }
@@ -878,7 +889,8 @@ body.hm-open{overflow:hidden}
   /* altijd aanwezig, maar standaard buiten beeld */
   height: var(--introSheetH, 0px);
   position:fixed;
-  left:0; right:0; bottom:0;
+  /* iets hoger zodat de pills de tekst/kaart niet overlappen */
+  left:0; right:0; bottom: var(--pillsDockH);
   padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   z-index:2500;
 
@@ -910,8 +922,7 @@ body.hm-open{overflow:hidden}
   background-position: center;
   transform: scale(1.08);
   filter: blur(18px);
-  /* Minder drukke achtergrond: nog wel diepte, maar tekst blijft leesbaar */
-  opacity: .16;
+  opacity: .18;
   pointer-events:none;
   z-index:0;
 }
@@ -919,8 +930,7 @@ body.hm-open{overflow:hidden}
   content:"";
   position:absolute;
   inset:0;
-  /* Witte glaze iets sterker zodat de blur niet 'doorlekt' */
-  background: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.42);
   pointer-events:none;
   z-index:1;
 }
@@ -989,6 +999,12 @@ body.hm-open{overflow:hidden}
   pointer-events:none;
 }
 .introImg{width:100%; height:100%; object-fit:cover; display:block;}
+
+/* Uitleg-kaarten mogen niet "inzoomen"; toon de volledige SVG in verhouding */
+.introImg{ object-fit:contain; background:#fff; }
+
+/* Uitleg-kaarten moeten volledig zichtbaar blijven (geen crop) */
+.introImg{ object-fit:contain; background:#fff; }
 
 /* Tekstdeel (clean) */
 .introText{
@@ -1133,7 +1149,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.8"></script>
+<script src="script.js?v=3.4.0"></script>
 
 
 
