@@ -10,6 +10,10 @@ if (window.visualViewport){
   window.visualViewport.addEventListener('resize', setVh);
 }
 
+// Versie + cache-buster (handig op GitHub Pages)
+const VERSION = "2.7";
+const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
+
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   // State
@@ -38,6 +42,12 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
+  // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
+  if(lbHelpTitle){
+    lbHelpTitle.textContent = "";
+    lbHelpTitle.style.display = "none";
+  }
+
   
 
   let mode = 'cards'; // 'cards' of 'help'
@@ -51,13 +61,13 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Uitleg-modus: voorkant + 6 thema-kaarten (alles in dezelfde lightbox).
   // Let op: sommige data-bestanden gebruiken nog "verdiepen" i.p.v. "verhelderen"; we ondersteunen beide.
   const helpItems = [
-    { theme:'',            key:'cover',       bg:'voorkant.svg' },
-    { theme:'Verkennen',   key:'verkennen',   bg:'cards/verkennen.svg' },
-    { theme:'Duiden',      key:'duiden',      bg:'cards/duiden.svg' },
-    { theme:'Verbinden',   key:'verbinden',   bg:'cards/verbinden.svg' },
-    { theme:'Verhelderen', key:'verhelderen', bg:'cards/verhelderen.svg' },
-    { theme:'Vertragen',   key:'vertragen',   bg:'cards/vertragen.svg' },
-    { theme:'Bewegen',     key:'bewegen',     bg:'cards/bewegen.svg' }
+    { theme:'',            key:'cover',       bg:withV('voorkant.svg') },
+    { theme:'Verkennen',   key:'verkennen',   bg:withV('cards/verkennen.svg') },
+    { theme:'Duiden',      key:'duiden',      bg:withV('cards/duiden.svg') },
+    { theme:'Verbinden',   key:'verbinden',   bg:withV('cards/verbinden.svg') },
+    { theme:'Verhelderen', key:'verhelderen', bg:withV('cards/verhelderen.svg') },
+    { theme:'Vertragen',   key:'vertragen',   bg:withV('cards/vertragen.svg') },
+    { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
   ];
 
   // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
@@ -107,7 +117,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
           theme,
           num: i+1,
           q: qs[i],
-          bg: `cards/${theme}.svg`,
+          bg: withV(`cards/${theme}.svg`),
           id: `${theme}-${String(i+1).padStart(2,'0')}`
         });
       }
@@ -175,7 +185,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
+      // geen kop in uitleg
       // Support: sommige data-bestanden gebruiken nog 'verdiepen'
       const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
         ? 'verdiepen'
@@ -194,7 +204,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     else{
       lb.classList.remove('help');
       if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-      if(lbHelpTitle) lbHelpTitle.textContent = "";
+      // geen kop in uitleg
       if(lbHelpDesc) lbHelpDesc.textContent = "";
 
       lbText.textContent = item.q || "";
@@ -226,7 +236,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lbImg.src = "";
     lbText.textContent = "";
     if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-    if(lbHelpTitle) lbHelpTitle.textContent = "";
+    // geen kop in uitleg
     if(lbHelpDesc) lbHelpDesc.textContent = "";
     currentIndex = -1;
     lb.setAttribute('aria-hidden','true');
@@ -478,7 +488,7 @@ document.addEventListener('keydown', (e) => {
   }
 
   (async function init(){
-    const res = await fetch('questions.json');
+    const res = await fetch(withV('questions.json'));
     const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();
@@ -486,7 +496,7 @@ document.addEventListener('keydown', (e) => {
 
     // uitleg-teksten (later invulbaar)
     try{
-      const hr = await fetch('uitleg-data.json', { cache:'no-store' });
+      const hr = await fetch(withV('uitleg-data.json'), { cache:'no-store' });
       helpData = await hr.json();
     }catch(e){
       helpData = {};
@@ -499,3 +509,29 @@ window.closeLb = closeLb;
 
 
 window.go = go;
+
+
+
+// ===============================
+// Mobiele uitleg-carousel (v2.7)
+// ===============================
+(function(){
+  const section = document.getElementById('mobileIntro');
+  const btn = document.getElementById('introToggle');
+  if(!section || !btn) return;
+
+  const key = 'introCollapsed';
+  const setState = (collapsed) => {
+    section.classList.toggle('is-collapsed', collapsed);
+    btn.textContent = collapsed ? 'Toon' : 'Verberg';
+    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    try{ localStorage.setItem(key, collapsed ? '1' : '0'); }catch(e){}
+  };
+
+  let collapsed = false;
+  try{ collapsed = localStorage.getItem(key) === '1'; }catch(e){}
+  setState(collapsed);
+
+  btn.addEventListener('click', () => setState(!section.classList.contains('is-collapsed')));
+})();
+

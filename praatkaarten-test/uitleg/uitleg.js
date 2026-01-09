@@ -2,20 +2,24 @@
   // Let op: deze uitleg draait in een iframe (helpModal) en gebruikt daarom absolute paden
   // naar je GitHub Pages submap.
   const BASE = "/praatkaarten";
+  const VERSION = "2.5.2";
+
+  // simpele cache-buster (werkt ook op GitHub Pages)
+  const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
   const slides = [
-    { key:"cover", src:`${BASE}/voorkant.svg`, alt:"Voorkant" },
-    { key:"verkennen", src:`${BASE}/cards/verkennen.svg`, alt:"Verkennen" },
-    { key:"duiden", src:`${BASE}/cards/duiden.svg`, alt:"Duiden" },
-    { key:"verbinden", src:`${BASE}/cards/verbinden.svg`, alt:"Verbinden" },
-    { key:"verdiepen", src:`${BASE}/cards/verdiepen.svg`, alt:"Verhelderen" },
-    { key:"vertragen", src:`${BASE}/cards/vertragen.svg`, alt:"Vertragen" },
-    { key:"bewegen", src:`${BASE}/cards/bewegen.svg`, alt:"Bewegen" }
+    { key:"cover", src:withV(`${BASE}/voorkant.svg`), alt:"Voorkant" },
+    { key:"verkennen", src:withV(`${BASE}/cards/verkennen.svg`), alt:"Verkennen" },
+    { key:"duiden", src:withV(`${BASE}/cards/duiden.svg`), alt:"Duiden" },
+    { key:"verbinden", src:withV(`${BASE}/cards/verbinden.svg`), alt:"Verbinden" },
+    { key:"verdiepen", src:withV(`${BASE}/cards/verdiepen.svg`), alt:"Verhelderen" },
+    { key:"vertragen", src:withV(`${BASE}/cards/vertragen.svg`), alt:"Vertragen" },
+    { key:"bewegen", src:withV(`${BASE}/cards/bewegen.svg`), alt:"Bewegen" }
   ];
 
   let data = {};
   try{
-    const res = await fetch(`${BASE}/uitleg-data.json`, { cache:'no-store' });
+    const res = await fetch(withV(`${BASE}/uitleg-data.json`), { cache:'no-store' });
     data = await res.json();
   }catch(e){
     data = {};

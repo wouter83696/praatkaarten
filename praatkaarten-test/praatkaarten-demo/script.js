@@ -1,3 +1,5 @@
+const VERSION = '2.5.2';
+const withV = (u) => (u.includes('?') ? u + '&v=' + VERSION : u + '?v=' + VERSION);
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   const grid = document.getElementById('grid');
@@ -334,7 +336,7 @@ document.addEventListener('keydown', (e) => {
   });
 
   (async function init(){
-    const res = await fetch('questions.json');
+    const res = await fetch(withV('questions.json'));
     const questions = await res.json();
     data = buildData(questions);
     filtered = data.slice();

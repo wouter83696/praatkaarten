@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten</title>
+<title>Praatkaarten v2.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -394,16 +394,19 @@ text-wrap: pretty;
 
 
 /* ===============================
-   UITLEG (HELP) — tekst IN de kaart, zonder hoogte te veranderen
+   UITLEG (HELP)
+   - Witte tekstvlak zit "vast" onder de kaart (geen overlay)
+   - Hoogte groeit automatisch mee met de tekst
+   - Kaart-afbeelding behoudt z'n originele ratio
    =============================== */
+.lbCard{ display:flex; flex-direction:column; }
+
 .lbHelpText{
   display:none;
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
+  position:static;
   background:#fff;
-  padding:14px 18px 26px; /* extra 'enter' onderin */
+  border-top:1px solid rgba(0,0,0,.06);
+  padding:14px 18px 18px;
 }
 .lbHelpTitle{
   font-weight:500;
@@ -411,6 +414,7 @@ text-wrap: pretty;
   line-height:1.15;
   color:var(--textBlue);
   margin:0 0 8px;
+  display:none; /* geen kop in uitleg */
 }
 .lbHelpDesc{
   font-weight:400;
@@ -421,6 +425,9 @@ text-wrap: pretty;
   text-wrap: pretty;
   hyphens: auto;
   -webkit-hyphens: auto;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
 }
 
 /* Alleen in uitleg-modus tonen */
@@ -822,6 +829,44 @@ body.hm-open{overflow:hidden}
 .lbBelow{margin-top:-1px;}
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
+
+
+
+/* ===============================
+   MOBIELE UITLEG-CAROUSEL (v2.7)
+   =============================== */
+
+.mobileIntro{display:none; margin:16px auto 8px; width:min(940px, 100%); padding:0 14px;}
+@media (max-width: 720px){
+  .mobileIntro{display:block;}
+}
+.mobileIntro.is-collapsed .introTrack,
+.mobileIntro.is-collapsed .introHint{display:none;}
+.mobileIntro.is-collapsed{margin-bottom:4px;}
+
+.introHead{display:flex; align-items:center; justify-content:space-between; margin:0 6px 10px;}
+.introTitle{font-weight:500; color:rgba(60,70,80,.75); font-size:14px; letter-spacing:.2px;}
+.introToggle{border:0; background:rgba(255,255,255,.55); backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color:rgba(60,70,80,.75); padding:8px 12px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.08);
+  font:500 13px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.introTrack{display:flex; gap:14px; overflow-x:auto; padding:0 6px 8px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+}
+.introTrack::-webkit-scrollbar{display:none;}
+.introCard{flex:0 0 auto; width:min(86vw, 420px); scroll-snap-align:center;
+  border-radius:24px; overflow:hidden; background:rgba(255,255,255,.55);
+  box-shadow:var(--shadow);
+}
+.introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;}
+.introImg{width:100%; height:100%; object-fit:contain; display:block;}
+.introText{background:#fff; padding:14px 16px 16px;}
+.introTextTitle{font-weight:500; color:rgba(48,96,136,.95); font-size:18px; margin:0 0 6px;}
+.introTextBody{color:rgba(60,70,80,.78); font-size:15px; line-height:1.35; overflow-wrap:anywhere; white-space:normal;}
+.introHint{margin:8px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
+
 </style>
 </head>
 <body>
@@ -840,6 +885,62 @@ body.hm-open{overflow:hidden}
     </div>
   </div>
 </div>
+
+<section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
+  <div class="introHead">
+    <div class="introTitle">Uitleg</div>
+    <button class="introToggle" id="introToggle" type="button" aria-expanded="true">Verberg</button>
+  </div>
+
+  <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
+    <article class="introCard" data-intro="cover">
+      <div class="introImgWrap">
+        <img class="introImg" src="voorkant.svg" alt="Samen onderzoeken – Gesprekskaarten voor teams">
+      </div>
+      <div class="introText">
+        <div class="introTextTitle">Samen onderzoeken</div>
+        <div class="introTextBody">Deze kaarten nodigen je uit om samen te kijken naar wat er speelt, zichtbaar wordt en onbesproken blijft in de samenwerking.</div>
+      </div>
+    </article>
+
+    <article class="introCard" data-intro="verkennen">
+      <div class="introImgWrap"><img class="introImg" src="cards/verkennen.svg" alt="Verkennen"></div>
+      <div class="introText"><div class="introTextTitle">Verkennen</div><div class="introTextBody">Bij verkennen staan we stil bij wat we waarnemen in de samenwerking.</div></div>
+    </article>
+
+    <article class="introCard" data-intro="duiden">
+      <div class="introImgWrap"><img class="introImg" src="cards/duiden.svg" alt="Duiden"></div>
+      <div class="introText"><div class="introTextTitle">Duiden</div><div class="introTextBody">Bij duiden staan we stil bij de betekenis die we geven aan wat er gebeurt in de samenwerking.</div></div>
+    </article>
+
+    <article class="introCard" data-intro="verbinden">
+      <div class="introImgWrap"><img class="introImg" src="cards/verbinden.svg" alt="Verbinden"></div>
+      <div class="introText"><div class="introTextTitle">Verbinden</div><div class="introTextBody">Bij verbinden staan we stil bij hoe we ons tot elkaar verhouden in de samenwerking.</div></div>
+    </article>
+
+    <article class="introCard" data-intro="verhelderen">
+      <div class="introImgWrap"><img class="introImg" src="cards/verhelderen.svg" alt="Verhelderen"></div>
+      <div class="introText"><div class="introTextTitle">Verhelderen</div><div class="introTextBody">Bij verhelderen staan we stil bij wat onduidelijk is in de samenwerking.</div></div>
+    </article>
+
+    <article class="introCard" data-intro="verdiepen">
+      <div class="introImgWrap"><img class="introImg" src="cards/verdiepen.svg" alt="Verdiepen"></div>
+      <div class="introText"><div class="introTextTitle">Verdiepen</div><div class="introTextBody">Bij verdiepen onderzoeken we wat er onder de oppervlakte speelt in de samenwerking.</div></div>
+    </article>
+
+    <article class="introCard" data-intro="vertragen">
+      <div class="introImgWrap"><img class="introImg" src="cards/vertragen.svg" alt="Vertragen"></div>
+      <div class="introText"><div class="introTextTitle">Vertragen</div><div class="introTextBody">Bij vertragen nemen we bewust tijd om rust en overzicht te creëren in de samenwerking.</div></div>
+    </article>
+
+    <article class="introCard" data-intro="bewegen">
+      <div class="introImgWrap"><img class="introImg" src="cards/bewegen.svg" alt="Bewegen"></div>
+      <div class="introText"><div class="introTextTitle">Bewegen</div><div class="introTextBody">Bij bewegen verkennen we wat een volgende stap kan zijn in de samenwerking.</div></div>
+    </article>
+  </div>
+
+  <div class="introHint" aria-hidden="true">← → swipe</div>
+</section>
 
 <div class="grid" id="grid"></div>
 
@@ -865,7 +966,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js"></script>
+<script src="script.js?v=2.5.2"></script>
 
 
 
