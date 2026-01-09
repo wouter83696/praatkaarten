@@ -11,7 +11,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = '2.9.1';
+const VERSION = '2.8';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -328,14 +328,7 @@ lb.addEventListener('pointermove', (e) => {
   if(ax > ay && ax > 12){
     lb.classList.add('is-swiping');
   }
-
-
-  // Mobile carousel bijwerken
-  if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches){
-    loadIntroSlides().then(introSlides => renderMobileCarousel(introSlides, items));
-  }
-}
-, {passive:true});
+}, {passive:true});
 
 lb.addEventListener('pointerup', (e) => {
     if(!pointerDown) return;
@@ -476,12 +469,7 @@ document.addEventListener('keydown', (e) => {
     mode = 'cards';
     filtered = data.slice();
     render(filtered);
-
-    if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches){
-      const introSlides = await loadIntroSlides();
-      renderMobileCarousel(introSlides, filtered);
-    }
-closeLb();
+    closeLb();
   });
 
   shuffleBtn.addEventListener('click', () => {
@@ -608,157 +596,4 @@ async function renderMobileIntro(){
 
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
-
-
-
-
-/* ===============================
-   v2.9.1 – Mobile carousel (uitleg + kaarten)
-   =============================== */
-let introSlidesCache = null;
-
-async function loadIntroSlides(){
-  if(introSlidesCache) return introSlidesCache;
-  try{
-    const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
-    const d = await r.json();
-    introSlidesCache = (d && Array.isArray(d.slides)) ? d.slides : [];
-  }catch(e){
-    introSlidesCache = [];
-  }
-  return introSlidesCache;
-}
-
-function renderMobileCarousel(intro, items){
-  const section = document.getElementById('mobileCarousel');
-  const track = document.getElementById('carTrack');
-  const counter = document.getElementById('carCounter');
-  const btn = document.getElementById('carToggle');
-  const hint = document.getElementById('carHint');
-  if(!section || !track || !counter || !btn) return;
-
-  // hint from json (optional)
-  if(hint && intro && intro.hint) hint.textContent = intro.hint;
-
-  const introSlides = Array.isArray(intro) ? intro : [];
-
-  const KEY = 'pk_carousel_collapsed';
-  const setState = (collapsed) => {
-    section.classList.toggle('is-collapsed', collapsed);
-    btn.textContent = collapsed ? 'Toon' : 'Verberg';
-    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    try{ localStorage.setItem(KEY, collapsed ? '1' : '0'); }catch(e){}
-  };
-  let collapsed = false;
-  try{ collapsed = localStorage.getItem(KEY) === '1'; }catch(e){}
-  setState(collapsed);
-  btn.onclick = () => setState(!section.classList.contains('is-collapsed'));
-
-  track.innerHTML = '';
-
-  // Intro slides
-  for(const s of introSlides){
-    const art = document.createElement('article');
-    art.className = 'carouselSlide is-intro';
-
-    const img = document.createElement('img');
-    img.className = 'slideImg';
-    img.src = withV(s.img || '');
-    img.alt = s.alt || s.title || '';
-
-    const text = document.createElement('div');
-    text.className = 'slideText';
-
-    const t = document.createElement('div');
-    t.className = 'slideTextTitle';
-    t.textContent = s.title || '';
-
-    const b = document.createElement('div');
-    b.className = 'slideTextBody';
-    b.textContent = s.body || '';
-
-    text.appendChild(t);
-    text.appendChild(b);
-
-    art.appendChild(img);
-    art.appendChild(text);
-
-    track.appendChild(art);
-  }
-
-  // Question slides
-  for(const item of items){
-    const art = document.createElement('article');
-    art.className = 'carouselSlide is-question';
-
-    const card = document.createElement('div');
-    card.className = 'qCard';
-
-    const img = document.createElement('img');
-    img.className = 'qBg';
-    img.src = item.bg;
-    img.alt = '';
-
-    const textWrap = document.createElement('div');
-    textWrap.className = 'qTextWrap';
-
-    const theme = document.createElement('div');
-    theme.className = 'qTheme';
-    theme.textContent = item.theme;
-
-    const q = document.createElement('div');
-    q.className = 'qText';
-    q.textContent = item.q;
-
-    textWrap.appendChild(theme);
-    textWrap.appendChild(q);
-
-    card.appendChild(img);
-    card.appendChild(textWrap);
-
-    art.appendChild(card);
-
-    art.addEventListener('click', () => {
-      const idx = filtered.findIndex(x => x.id === item.id);
-      if(idx >= 0){
-        mode = 'cards';
-        openAt(idx);
-      }
-    });
-
-    track.appendChild(art);
-  }
-
-  const introCount = introSlides.length;
-  const totalQ = items.length;
-  const slides = Array.from(track.children);
-
-  const updateCounter = () => {
-    const rect = track.getBoundingClientRect();
-    const mid = rect.left + rect.width/2;
-    let best = 0;
-    let bestD = Infinity;
-    slides.forEach((el, i) => {
-      const r = el.getBoundingClientRect();
-      const c = r.left + r.width/2;
-      const d = Math.abs(c - mid);
-      if(d < bestD){ bestD = d; best = i; }
-    });
-
-    if(best < introCount){
-      counter.textContent = `Uitleg ${best+1}/${introCount}`;
-    }else{
-      const qIndex = best - introCount + 1;
-      counter.textContent = `Kaart ${qIndex}/${totalQ}`;
-    }
-  };
-
-  let raf = 0;
-  track.addEventListener('scroll', () => {
-    if(raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(updateCounter);
-  }, { passive:true });
-
-  updateCounter();
-}
 

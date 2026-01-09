@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v2.9.1</title>
+<title>Praatkaarten v2.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -886,20 +886,17 @@ body.hm-open{overflow:hidden}
   </div>
 </div>
 
-<section class="mobileCarousel" id="mobileCarousel" aria-label="Bladeren">
-  <div class="carHead">
-    <div class="carTitle">Bladeren</div>
-    <button class="carToggle" id="carToggle" type="button" aria-expanded="true">Verberg</button>
+<section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
+  <div class="introHead">
+    <div class="introTitle">Uitleg</div>
+    <button class="introToggle" id="introToggle" type="button" aria-expanded="true">Verberg</button>
   </div>
 
-  <div class="carTrack" id="carTrack" tabindex="0" aria-label="Swipe door uitleg en kaarten">
-    <!-- wordt gevuld vanuit intro-data.json + questions.json -->
+  <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
+    <!-- wordt gevuld vanuit intro-data.json -->
   </div>
 
-  <div class="carFoot">
-    <div class="carCounter" id="carCounter" aria-live="polite"></div>
-    <div class="carHint" id="carHint" aria-hidden="true">← → swipe</div>
-  </div>
+  <div class="introHint" aria-hidden="true">← → swipe</div>
 </section>
 
 <div class="grid" id="grid"></div>
@@ -926,7 +923,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.9.1"></script>
+<script src="script.js?v=2.8"></script>
 
 
 
