@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaartjes – Samen onderzoeken (v3.4.0)</title>
+<title>Praatkaartjes – Samen onderzoeken (v3.4.1)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -29,6 +29,9 @@
 
   /* hoogte van de icon-pills onderin (voor offset van de mobiele uitleg-sheet) */
   --pillsDockH: 72px;
+
+  /* vaste kaartverhouding (SVG viewBox 240.94 × 155.91) */
+  --cardAR: 240.94 / 155.91;
 }
 
 *{box-sizing:border-box}
@@ -358,9 +361,12 @@ body.lb-open .navHintMini{ opacity:0; }
 }
 
 #lbImg{
-  width:100.2%;
-  margin-left:-0.1%;
+  width:100%;
   display:block;
+  /* Forceer juiste verhouding (voorkomt 'te hoge' kaarten in uitleg) */
+  aspect-ratio: var(--cardAR);
+  height:auto;
+  object-fit:contain;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
@@ -825,7 +831,8 @@ body.hm-open{overflow:hidden}
   position:relative;
   width:min(560px, 100%);
   height:min(820px, calc(var(--vh, 1vh) * 92));
-  border-radius:18px;
+  /* overlay/paneel: vierkant (kaart binnenin blijft afgerond) */
+  border-radius:0;
   overflow:hidden;
   background:#FAFAF8;
   box-shadow:0 18px 45px rgba(0,0,0,.20);
@@ -853,19 +860,22 @@ body.hm-open{overflow:hidden}
   .lbCard{ cursor:crosshair; }
 }
 
-/* iOS hairline fix: overscan afbeelding net over de rand */
+/* iOS hairline fix (zonder de verhouding te breken) */
 #lbImg{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio: var(--cardAR);
+  object-fit:contain;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   backface-visibility: hidden;
+  -webkit-backface-visibility:hidden;
 }
 .lb.help #lbImg{
-  width: calc(100% + 2px);
-  margin-left: -1px;
+  width:100%;
+  margin-left:0;
 }
-
-
-#lbImg{display:block; width:calc(100% + 2px); margin-left:-1px; margin-top:-1px; height:auto; transform:translateZ(0); backface-visibility:hidden; -webkit-backface-visibility:hidden;}
 
 .lbBelow{margin-top:-1px;}
 
