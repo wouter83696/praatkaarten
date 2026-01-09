@@ -11,7 +11,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = '3.2';
+const VERSION = '3.2.2';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -488,22 +488,10 @@ document.addEventListener('keydown', (e) => {
 
   // ===============================
   // v3.2 – Chips onderbalk
-  // - Hussel: aan = 1x shuffle, uit = originele volgorde (reset is dus niet meer nodig)
+  // (Let op: shuffleOn/uitlegOn, setChip() en isMobile() worden al bovenin gedeclareerd.)
+  // - Hussel: aan = 1x shuffle, uit = originele volgorde
   // - Uitleg: mobiel = carousel boven grid, desktop = help-lightbox
   // ===============================
-
-  let shuffleOn = false;
-  let uitlegOn  = false;
-
-  function setChip(el, on){
-    if(!el) return;
-    el.classList.toggle('is-on', !!on);
-    el.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-
-  function isMobile(){
-    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
-  }
 
   function setUitleg(on){
     uitlegOn = !!on;
