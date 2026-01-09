@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten</title>
+<title>Praatkaarten v2.9.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -24,8 +24,8 @@
   --uiBlue: rgba(48,96,136,.85);
 
   /* WARM "INKT" (bruin-grijs) voor cursor + iconen */
-  --uiInk: rgba(145,145,140,.9);
-  --uiInkSoft: rgba(145,145,140,.5);
+  --uiInk: rgba(11,18,32,.45);
+  --uiInkSoft: rgba(11,18,32,.22);
 }
 
 *{box-sizing:border-box}
@@ -47,7 +47,7 @@ body{
    =============================== */
 
 .controlsBar{
-  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  position:fixed;left:0;right:0;bottom:0;z-index:3000;
   /* iets strakker naar links, maar nog met ademruimte */
   padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   background:rgba(255,255,255,.86);
@@ -72,10 +72,10 @@ body{
   font-size:13px;
   line-height:1.2;
   cursor:pointer;
-  color:rgba(11,18,32,.78);
+  color: rgba(11,18,32,.45);
 }
 
-.btn:hover{background:rgba(0,0,0,.04);}
+.btn:hover{background:rgba(243,245,238,.88);}
 .btn:active{transform:translateY(1px);}
 
 .btnGroup{display:flex;align-items:center;gap:0;}
@@ -186,9 +186,10 @@ body.lb-open .navHintMini{ opacity:0; }
 .card .q{
   position:absolute;
   inset:0;
-  display:grid;
-  place-items:center;
-  padding:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 18px;
   text-align:center;
 
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
@@ -204,12 +205,25 @@ body.lb-open .navHintMini{ opacity:0; }
   transform:translateY(2px);
 }
 
+/* Tekst op klein kaartje: GEEN wit vlak (terug naar origineel) */
+.card .q .qText{
+  display:inline;
+  max-width:92%;
+  background:transparent;
+  border-radius:0;
+  padding:0;
+  box-shadow:none;
+}
+
 @media (max-width:520px){
   .card .q{
-    padding:14px;
+    padding:0 14px;
     font-size:9.75px;
     line-height:1.34;
     letter-spacing:-0.006em;
+  }
+  .card .q .qText{
+    max-width:94%;
   }
 }
 
@@ -235,6 +249,7 @@ body.lb-open .navHintMini{ opacity:0; }
   /* Touch: verticale scroll moet altijd gewoon kunnen (lange kaarten) */
   touch-action: pan-y;
   overscroll-behavior: contain;
+  z-index:2000;
 }
 
 .lb.open{display:flex;}
@@ -302,43 +317,23 @@ body.lb-open .navHintMini{ opacity:0; }
 .lbCard{
   position:relative;
   width:min(560px,92vw);
+  /* Desktop: grotere kaart zoals bij thema-overlay */
   border-radius:22px;
   overflow:hidden;
   background:#fff;
   box-shadow:0 18px 45px rgba(0,0,0,.20);
-
-  /* Uitleg: kaart + tekstvak onder elkaar */
-  display:flex;
-  flex-direction:column;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 #lbImg{
-  width:100%;
+  width:100.2%;
+  margin-left:-0.1%;
   display:block;
-}
-
-/* UITLEG TEKSTVAK (onder de kaart) */
-.uitlegBox{
-  display:none;
-  padding:14px 16px 16px;
-  font-size:14px;
-  line-height:1.45;
-  color:rgba(11,18,32,.78);
-  border-top:1px solid rgba(0,0,0,.08);
-}
-
-body.uitleg-on .uitlegBox{ display:block; }
-
-/* Toggle-knop: zelfde stijl als andere knoppen, maar met duidelijke AAN-stand */
-.btnToggle[aria-pressed="true"]{
-  background:rgba(0,0,0,.06);
-  color:rgba(11,18,32,.86);
-}
-
-/* In uitleg-modus: grid blijft visueel aanwezig maar niet "klikbaar" (rust) */
-body.uitleg-on .grid{
-  pointer-events:none;
-  opacity:.35;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .lbText{
@@ -360,6 +355,92 @@ body.uitleg-on .grid{
   /* optische centrering groot */
   transform:translateY(6px);
   pointer-events:none;
+}
+
+
+.lbBelow{
+  display:none;
+  width:100%;
+  padding:12px 18px 18px;
+  text-align:left;
+  background:transparent;
+}
+
+/* In dezelfde witte kaart; geen los vak */
+.lbCard{ background:#fff; }
+
+.lbBelowTitle{
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:500;
+  font-size:22px;
+  line-height:1.15;
+  color:var(--textBlue);
+  margin:0 0 8px;
+  display:none;
+}
+
+.lbBelowDesc{
+  font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-weight:400;
+  font-size:14px;
+  line-height:1.55;
+  color: rgba(11,18,32,.62);
+  white-space: normal;
+  display: block;
+text-wrap: pretty;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+
+/* ===============================
+   UITLEG (HELP)
+   - Witte tekstvlak zit "vast" onder de kaart (geen overlay)
+   - Hoogte groeit automatisch mee met de tekst
+   - Kaart-afbeelding behoudt z'n originele ratio
+   =============================== */
+.lbCard{ display:flex; flex-direction:column; }
+
+.lbHelpText{
+  display:none;
+  position:static;
+  background:#fff;
+  border-top:1px solid rgba(0,0,0,.06);
+  padding:14px 18px 18px;
+}
+.lbHelpTitle{
+  font-weight:500;
+  font-size:18px;
+  line-height:1.15;
+  color:var(--textBlue);
+  margin:0 0 8px;
+  display:none; /* geen kop in uitleg */
+}
+.lbHelpDesc{
+  font-weight:400;
+  font-size:14px;
+  line-height:1.55;
+  color: rgba(11,18,32,.62);
+  margin:0;
+  text-wrap: pretty;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+
+/* Alleen in uitleg-modus tonen */
+.lb.help .lbHelpText{ display:block; }
+
+/* In uitleg-modus: geen los tekstvak onder de kaart */
+.lb.help .lbBelow{ display:none !important; }
+
+/* In uitleg-modus: kaartbeeld krijgt ruimte boven de tekst (zonder aspect ratio te breken) */
+.lb.help #lbImg{
+  display:block;
+  width:100%;
+  height:auto;
 }
 
 /* ===============================
@@ -670,23 +751,215 @@ display:block;}
     pointer-events:none !important;
   }
 }
+
+/* ===============================
+   UITLEG MODAL (mobiel focus)
+   =============================== */
+body.hm-open{overflow:hidden}
+.helpModal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  z-index:90;
+  background:rgba(255,255,255,.14);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+/* iOS/Safari: backdrop-filter kan soms aan de randen (met name boven) "gaten" laten zien.
+   Deze extra laag dwingt een full-screen blur. */
+.helpModal::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  background:rgba(255,255,255,.14);
+  pointer-events:none;
+}
+.helpModal.open{display:flex}
+.helpPanel{
+  position:relative;
+  width:min(560px, 100%);
+  height:min(820px, calc(var(--vh, 1vh) * 92));
+  border-radius:18px;
+  overflow:hidden;
+  background:#FAFAF8;
+  box-shadow:0 18px 45px rgba(0,0,0,.20);
+}
+.helpFrame{width:100%;height:100%;border:0;display:block;background:transparent}
+.helpClose{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:44px;height:44px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.75);
+  cursor:pointer;
+  color:var(--uiInk);
+}
+.helpClose:hover{background:rgba(255,255,255,.92)}
+
+
+.rightCluster{display:flex;align-items:center;gap:10px;}
+
+
+/* Desktop: zelfde crosshair als gewone kaart-overlay */
+@media (hover:hover) and (pointer:fine){
+  .lbCard{ cursor:crosshair; }
+}
+
+/* iOS hairline fix: overscan afbeelding net over de rand */
+#lbImg{
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.lb.help #lbImg{
+  width: calc(100% + 2px);
+  margin-left: -1px;
+}
+
+
+#lbImg{display:block; width:calc(100% + 2px); margin-left:-1px; margin-top:-1px; height:auto; transform:translateZ(0); backface-visibility:hidden; -webkit-backface-visibility:hidden;}
+
+.lbBelow{margin-top:-1px;}
+
+.lb.help-title .lbText{place-items:center; text-align:center;}
+
+
+
+/* ===============================
+   MOBIELE UITLEG-CAROUSEL (v2.7)
+   =============================== */
+
+.mobileIntro{display:none; margin:16px auto 8px; width:min(940px, 100%); padding:0 14px;}
+@media (max-width: 720px){
+  .mobileIntro{display:block;}
+}
+.mobileIntro.is-collapsed .introTrack,
+.mobileIntro.is-collapsed .introHint{display:none;}
+.mobileIntro.is-collapsed{margin-bottom:4px;}
+
+.introHead{display:flex; align-items:center; justify-content:space-between; margin:0 6px 10px;}
+.introTitle{font-weight:500; color:rgba(60,70,80,.75); font-size:14px; letter-spacing:.2px;}
+.introToggle{border:0; background:rgba(255,255,255,.55); backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color:rgba(60,70,80,.75); padding:8px 12px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.08);
+  font:500 13px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.introTrack{display:flex; gap:14px; overflow-x:auto; padding:0 6px 8px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+}
+.introTrack::-webkit-scrollbar{display:none;}
+.introCard{flex:0 0 auto; width:min(86vw, 420px); scroll-snap-align:center;
+  border-radius:24px; overflow:hidden; background:rgba(255,255,255,.55);
+  box-shadow:var(--shadow);
+}
+.introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;}
+.introImg{width:100%; height:100%; object-fit:contain; display:block;}
+.introText{background:#fff; padding:14px 16px 16px;}
+.introTextTitle{font-weight:500; color:rgba(48,96,136,.95); font-size:18px; margin:0 0 6px;}
+.introTextBody{color:rgba(60,70,80,.78); font-size:15px; line-height:1.35; overflow-wrap:anywhere; white-space:normal;}
+.introHint{margin:8px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
+
+
+
+/* v2.9.3 – mobile carousel (clean) */
+.mobileCarousel{ display:none; margin: 14px 14px 8px; }
+@media (max-width: 820px){ .mobileCarousel{ display:block; } }
+
+.mobileCarousel .carHead{
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 0 2px 10px;
+}
+.mobileCarousel .carTitle{ font-weight:600; letter-spacing:.2px; }
+.mobileCarousel .carToggle{
+  appearance:none; border:0; background: rgba(0,0,0,0.06);
+  padding: 10px 12px; border-radius: 12px; font: inherit;
+}
+.mobileCarousel.is-collapsed .carTrack,
+.mobileCarousel.is-collapsed .carText,
+.mobileCarousel.is-collapsed .carFoot{ display:none; }
+
+.mobileCarousel .carTrack{
+  display:flex; gap:14px; overflow-x:auto; padding-bottom:8px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling: touch;
+}
+.mobileCarousel .carTrack::-webkit-scrollbar{ display:none; }
+
+.carouselSlide{ flex: 0 0 86%; scroll-snap-align:center; }
+.carouselSlide.is-intro .slideImg,
+.carouselSlide.is-question .qCard{
+  border-radius:22px; overflow:hidden;
+  background: rgba(255,255,255,0.70);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+  border: 1px solid rgba(255,255,255,0.55);
+}
+.carouselSlide.is-intro .slideImg{ display:block; width:100%; height:auto; }
+
+.carouselSlide.is-question .qBg{ display:block; width:100%; height:auto; }
+.carouselSlide.is-question .qTextWrap{ background:#fff; padding:14px 16px 16px; }
+.carouselSlide.is-question .qTheme{ font-size:12px; opacity:.65; margin-bottom:8px; text-transform:capitalize; }
+.carouselSlide.is-question .qText{ font-size:16px; line-height:1.35; }
+
+.mobileCarousel .carText{
+  margin: 10px 2px 0;
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+}
+.mobileCarousel .carBody{ line-height:1.35; }
+
+.mobileCarousel .carFoot{
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 6px 2px 0; opacity:.8; font-size:12px;
+}
+.mobileCarousel .carCounter{ font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 
 <div class="controlsBar">
   <div class="inner">
-    <div class="btnGroup">
+    <div class="btnGroup left">
       <button class="btn" id="shuffle" type="button">Hussel</button>
       <span class="sep" aria-hidden="true"></span>
       <button class="btn" id="reset" type="button">Reset</button>
     </div>
-    <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
-      <button class="btn btnToggle" id="uitlegToggle" type="button" aria-pressed="false">Uitleg</button>
-      <div class="navHintMini" id="navHint" aria-hidden="true">← → swipe | tap to close</div>
+
+    <div class="rightCluster">
+      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
+      <button class="btn" id="uitleg" type="button">Uitleg</button>
     </div>
+  </div>
 </div>
-</div>
+
+<section class="mobileCarousel" id="mobileCarousel" aria-label="Bladeren">
+  <div class="carHead">
+    <div class="carTitle">Uitleg</div>
+    <button class="carToggle" id="carToggle" type="button" aria-expanded="true">Verberg</button>
+  </div>
+
+  <div class="carTrack" id="carTrack" tabindex="0" aria-label="Swipe door uitleg en kaarten">
+    <!-- wordt gevuld -->
+  </div>
+
+  <div class="carText" id="carText" aria-live="polite" hidden>
+    <div class="carBody" id="carBody"></div>
+  </div>
+
+  <div class="carFoot">
+    <div class="carCounter" id="carCounter" aria-live="polite"></div>
+    <div class="carHint" id="carHint" aria-hidden="true">← → swipe</div>
+  </div>
+</section>
 
 <div class="grid" id="grid"></div>
 
@@ -697,447 +970,39 @@ display:block;}
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
       <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
-      <img id="lbImg" alt="">
+            <img id="lbImg" alt="">
       <div class="lbText" id="lbText"></div>
-      <div class="uitlegBox" id="uitlegBox" aria-live="polite"></div>
+
+      <!-- UITLEG (tekst in de kaart, zonder verhouding te veranderen) -->
+      <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
+        <div class="lbHelpTitle" id="lbHelpTitle"></div>
+        <div class="lbHelpDesc" id="lbHelpDesc"></div>
+      </div>
+
     </div>
   </div>
 </div>
 
 
 
-<script>
+<script src="script.js?v=2.9.3"></script>
+
+
+
+
+
+
   
-  // Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
-  function setVh(){
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-  }
-  setVh();
-  window.addEventListener('resize', setVh);
-  window.addEventListener('orientationchange', setVh);
-  if (window.visualViewport){
-    window.visualViewport.addEventListener('resize', setVh);
-  }
 
-const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
-  const grid = document.getElementById('grid');
-  const lb = document.getElementById('lb');
-  const lbImg = document.getElementById('lbImg');
-  const lbText = document.getElementById('lbText');
-  const uitlegBox = document.getElementById('uitlegBox');
-  const lbCard = document.getElementById('lbCard');
-  const navHint = document.getElementById('navHint');
-const closeBtn = document.getElementById('close');
-  const prevBtn = document.getElementById('prev');
-  const nextBtn = document.getElementById('next');
 
-  const uitlegToggle = document.getElementById('uitlegToggle');
 
-  const shuffleBtn = document.getElementById('shuffle');
-  const resetBtn = document.getElementById('reset');
-
-  let data = [];       // full list
-  let filtered = [];   // current order
-  let uitlegSlides = [];
-  let uitlegCopy = {};
-  let uitlegMode = false;
-  let currentIndex = -1;
-
-  // Nav hint (rechts): alleen op touch-apparaten (telefoon/tablet) en alleen de 1e keer dat je een kaart groot opent.
-  // Let op: sommige desktops (touch-laptops / browser emulation) kunnen '(pointer: coarse)' teruggeven.
-  // Daarom combineren we media queries met de echte interactie (pointerType).
-  const MQ_TOUCHLIKE = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  const MQ_MOBILEVIEW = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
-  let openPointerType = 'mouse';
-  // Onthoud waarmee de gebruiker de viewer opent (touch vs mouse).
-  grid.addEventListener('pointerdown', (e) => { openPointerType = e.pointerType || 'mouse'; }, {passive:true});
-  grid.addEventListener('touchstart', () => { openPointerType = 'touch'; }, {passive:true});
-  const HINT_KEY = 'praatkaarten_hint_shown_v1';
-  let hintTimer = null;
-  function showNavHint(){
-    if(!navHint) return;
-    // Toon alleen als dit echt een touch-ervaring is (telefoon/tablet) óf als de viewer geopend is via touch.
-    if(!(MQ_MOBILEVIEW && (MQ_TOUCHLIKE || openPointerType === 'touch'))) return;
-    try{
-      if(sessionStorage.getItem(HINT_KEY) === '1') return;
-      sessionStorage.setItem(HINT_KEY, '1');
-    }catch(e){
-      // als sessionStorage niet kan, gewoon één keer per page-load tonen
-      if(window.__pkHintShown) return;
-      window.__pkHintShown = true;
-    }
-
-    // toon hint in menubalk (rechts), alleen zolang de lightbox open is
-    document.body.classList.add('show-hint');
-    navHint.setAttribute('aria-hidden','false');
-    clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => {
-      document.body.classList.remove('show-hint');
-      navHint.setAttribute('aria-hidden','true');
-    }, 8000);
-  }
-
-  // UI chrome (pijlen + sluiten)
-  // - Touch: iets langer zichtbaar
-  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
-  const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
-  const HIDE_MS_DESKTOP = 2200;
-  const HIDE_MS_TOUCH   = 3200;
-
-  let uiTimer = null;
-  function showUI(){
-    lb.classList.add('show-ui');
-    clearTimeout(uiTimer);
-    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
-  }
-
-  const PRETTY = {
-    verkennen: 'Verkennen',
-    duiden: 'Duiden',
-    verbinden: 'Verbinden',
-    verdiepen: 'Verdiepen',
-    vertragen: 'Vertragen',
-    bewegen: 'Bewegen'
-  };
-
-  function buildData(questions){
-    const out = [];
-    for (const theme of THEMES){
-      const qs = questions[theme] || [];
-      for (let i=0; i<qs.length; i++){
-        out.push({
-          theme,
-          num: i+1,
-          q: qs[i],
-          bg: `cards/${theme}.svg`,
-          id: `${theme}-${String(i+1).padStart(2,'0')}`
-        });
-      }
-    }
-    return out;
-  }
-
-  function buildUitlegSlides(){
-    const slides = [];
-    // 1) voorkant
-    slides.push({
-      kind: 'uitleg',
-      theme: 'front',
-      bg: 'voorkant.svg',
-      overlay: '',
-      copy: uitlegCopy.front || ''
-    });
-    // 2) thema's (op volgorde)
-    for(const theme of THEMES){
-      slides.push({
-        kind: 'uitleg',
-        theme,
-        bg: `cards/${theme}.svg`,
-        overlay: PRETTY[theme] || theme,
-        copy: (uitlegCopy && uitlegCopy[theme]) ? uitlegCopy[theme] : ''
-      });
-    }
-    return slides;
-  }
-
-  function activeList(){
-    return uitlegMode ? uitlegSlides : filtered;
-  }
-
-  function render(items){
-    grid.innerHTML = "";
-    const frag = document.createDocumentFragment();
-
-    items.forEach((item, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'card';
-      btn.type = 'button';
-      btn.setAttribute('aria-label', item.id);
-
-      const inner = document.createElement('div');
-      inner.className = 'cardInner';
-
-      const img = document.createElement('img');
-      img.className = 'bg';
-      img.src = item.bg;
-      img.alt = "";
-
-      const q = document.createElement('div');
-      q.className = 'q';
-      q.textContent = item.q;
-
-      inner.appendChild(img);
-      inner.appendChild(q);
-      btn.appendChild(inner);
-
-      btn.addEventListener('click', () => openAt(idx));
-      frag.appendChild(btn);
-    });
-
-    grid.appendChild(frag);
-  }
-
-  function openLb(item){
-    lbImg.src = item.bg;
-    // Laat de geblurde achtergrond mee wisselen met de huidige kaart
-    lb.style.setProperty('--lb-bg-url', `url(${item.bg})`);
-    lb.style.setProperty('--lb-bg-shift', '0px');
-    // Tekst op de kaart (vragen in normaal / themanaam in uitleg)
-    lbText.textContent = uitlegMode ? (item.overlay || "") : (item.q || "");
-    // Uitleg-tekstvak onderin (alleen in uitleg-modus)
-    uitlegBox.textContent = uitlegMode ? (item.copy || "") : "";
-lb.setAttribute('aria-hidden','false');
-    lb.classList.add('open');
-    document.body.classList.add('lb-open');
-    document.body.classList.toggle('uitleg-on', !!uitlegMode);
-    // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    showUI();
-    showNavHint();
-
-    const list = activeList();
-    prevBtn.disabled = currentIndex <= 0;
-    nextBtn.disabled = currentIndex >= list.length - 1;
-  }
-
-  function closeLb(){
-    lb.setAttribute('aria-hidden','true');
-    lb.classList.remove('open');
-    document.body.classList.remove('lb-open');
-    document.body.classList.remove('uitleg-on');
-    lbImg.src = "";
-    lbText.textContent = "";
-    uitlegBox.textContent = "";
-    lb.style.setProperty('--lb-bg-url', 'none');
-    lb.style.setProperty('--lb-bg-shift', '0px');
-    currentIndex = -1;
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-    clearTimeout(hintTimer);
-    document.body.classList.remove('show-hint');
-    if(navHint) navHint.setAttribute('aria-hidden','true');
-  }
-
-  // Swipe / drag overal (ook op de grijze achtergrond):
-  // - links/rechts: vorige/volgende
-  // - omlaag: sluiten
-  let startX = 0, startY = 0, startT = 0;
-  let pointerDown = false;
-  let gestureArmed = false;
-  let lastPointerType = 'mouse';
-
-  // Voorkom dat de 'synthetic click' na een touch-tap doorvalt naar de grid
-  // (klassieker: je sluit de lightbox, maar de klik opent direct weer een kaart).
-  let suppressClickUntil = 0;
-
-  function closeFromTap(e){
-    suppressClickUntil = performance.now() + 450;
-    try{ e?.preventDefault?.(); }catch(_e){}
-    try{ e?.stopPropagation?.(); }catch(_e){}
-    closeLb();
-  }
-
-  lb.addEventListener('pointerdown', (e) => {
-    if(!lb.classList.contains('open')) return;
-    lastPointerType = e.pointerType || 'mouse';
-    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
-    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
-    if (e.target.closest && e.target.closest('button')) {
-      gestureArmed = false;
-      showUI();
-      return;
-    }
-    pointerDown = true;
-    gestureArmed = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    startT = performance.now();
-    // Op touch willen we native verticaal scrollen (zeker bij lange kaarten).
-    // Pointer-capture kan dat soms "stroef" maken, dus alleen gebruiken bij mouse/pen.
-    if(lastPointerType !== 'touch'){
-      lb.setPointerCapture?.(e.pointerId);
-    }
-    showUI();
-  });
-
-  // Tijdens echte swipe/drag: iconen tijdelijk verbergen
-  lb.addEventListener('pointermove', (e) => {
-    if(!pointerDown) return;
-    if(!gestureArmed) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    const ax = Math.abs(dx);
-    const ay = Math.abs(dy);
-
-    // Alleen "swipe"-modus als het echt horizontaal is.
-    // Dit voorkomt dat verticaal scrollen soms als swipe/tap wordt gezien.
-    if(ax > ay && ax > 12){
-      lb.classList.add('is-swiping');
-      // Subtiel: achtergrond "glijdt" mee tijdens horizontale swipe
-      lb.style.setProperty('--lb-bg-shift', `${dx * 0.18}px`);
-    }else{
-      lb.classList.remove('is-swiping');
-      lb.style.setProperty('--lb-bg-shift', '0px');
-    }
-  }, {passive:true});
-
-  lb.addEventListener('pointerup', (e) => {
-    if(!pointerDown) return;
-    pointerDown = false;
-    lb.classList.remove('is-swiping');
-    // Snap rustig terug
-    lb.style.setProperty('--lb-bg-shift', '0px');
-    if(!gestureArmed) return;
-    gestureArmed = false;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    const dt = performance.now() - startT;
-    const ax = Math.abs(dx);
-    const ay = Math.abs(dy);
-
-    const fast = dt < 420;
-    const thrX = fast ? 40 : 60;
-    const thrY = fast ? 50 : 80;
-
-    if(ay > ax && dy > thrY){
-      closeLb();
-      return;
-    }
-    if(ax > ay && ax > thrX){
-      if(dx < 0) go(1); else go(-1);
-      showUI();
-      return;
-    }
-
-    // ✅ Tap-to-close op touch: ook als je op de kaart zelf tapt
-    if(lastPointerType !== 'mouse' && ax < 10 && ay < 10){
-      closeFromTap(e);
-      return;
-    }
-  });
-
-  function openAt(index){
-    const list = activeList();
-    currentIndex = index;
-    openLb(list[currentIndex]);
-  }
-
-  function go(delta){
-    if (currentIndex < 0) return;
-    const total = activeList().length;
-    let next = currentIndex + delta;
-    if(next < 0) next = total - 1;
-    if(next >= total) next = 0;
-    openAt(next);
-  }
-
-  function shuffle(arr){
-    for(let i=arr.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-    return arr;
-  }
-
-  // events (iconen op de kaart)
-  // Desktop: klik op kaart doet niets (alleen UI tonen)
-  // Touch: tap op kaart sluit (tap-to-close)
-  lbCard.addEventListener('click', (e) => {
-    if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
-      closeFromTap(e);
-      return;
-    }
-    e.stopPropagation();
-  });
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
-  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
-  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
-
-  lb.addEventListener('mousemove', showUI);
-  lb.addEventListener('touchstart', showUI, {passive:true});
-  lb.addEventListener('click', (e) => {
-    // Klik buiten de kaart (op de blur/achtergrond) = sluiten
-    if(e.target === lb) {
-      if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
-        closeFromTap(e);
-      } else {
-        closeLb();
-      }
-      return;
-    }
-    showUI();
-  });
-
-  // Onderdruk 'click-through' direct na een touch-tap-close.
-  document.addEventListener('click', (e) => {
-    if (performance.now() < suppressClickUntil) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  }, true);
-
-  document.addEventListener('keydown', (e) => {
-    if(!lb.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLb();
-    if(e.key === 'ArrowLeft') go(-1);
-    if(e.key === 'ArrowRight') go(1);
-  });
-
-  shuffleBtn.addEventListener('click', () => {
-    if(uitlegMode) return;
-    filtered = shuffle(filtered.slice());
-    render(filtered);
-  });
-
-  resetBtn.addEventListener('click', () => {
-    if(uitlegMode) return;
-    filtered = data.slice();
-    render(filtered);
-
-});
-
-  // Uitleg-toggle: 1 knop, carrousel klapt open/dicht
-  uitlegToggle.addEventListener('click', () => {
-    uitlegMode = !uitlegMode;
-    uitlegToggle.setAttribute('aria-pressed', uitlegMode ? 'true' : 'false');
-    document.body.classList.toggle('uitleg-on', !!uitlegMode);
-
-    // In uitleg-modus: open de carrousel op de voorkant
-    if(uitlegMode){
-      openAt(0);
-    }else{
-      // Uit uitleg: sluit de viewer (grid blijft staan)
-      if(lb.classList.contains('open')) closeLb();
-    }
-  });
-
-  (async function init(){
-    const res = await fetch('questions.json');
-    const questions = await res.json();
-    uitlegCopy = (questions && questions.uitleg) ? questions.uitleg : {};
-    data = buildData(questions);
-    filtered = data.slice();
-    render(filtered);
-    uitlegSlides = buildUitlegSlides();
-  })();
-
-/* ===== INSTRUCTION FADE (v6-fade-fix) ===== */
-(function(){
-  function fadeHint(){
-    const hint = document.querySelector('.controlsBar .help');
-    if(!hint) return;
-    setTimeout(()=>hint.classList.add('is-hidden'), 3500);
-  }
-  window.addEventListener('load', fadeHint, { once:true });
-})();
-
+<script id="introData" type="application/json">
+{"slides": [{"key": "cover", "title": "Samen onderzoeken", "body": "Deze kaarten proberen je uit te nodigen om samen te kijken naar wat er speelt, zichtbaar wordt en onbesproken blijft in de samenwerking.", "img": "voorkant.svg", "alt": "Samen onderzoeken – Gesprekskaarten voor teams"}, {"key": "verkennen", "title": "Verkennen", "body": "Bij verkennen staan we stil bij wat we waarnemen in de samenwerking.", "img": "cards/verkennen.svg", "alt": "Verkennen"}, {"key": "duiden", "title": "Duiden", "body": "Bij duiden staan we stil bij de betekenis die we geven aan wat er gebeurt in de samenwerking.", "img": "cards/duiden.svg", "alt": "Duiden"}, {"key": "verbinden", "title": "Verbinden", "body": "Bij verbinden staan we stil bij hoe we ons tot elkaar verhouden in de samenwerking.", "img": "cards/verbinden.svg", "alt": "Verbinden"}, {"key": "verhelderen", "title": "Verhelderen", "body": "Bij verhelderen staan we stil bij wat onduidelijk is in de samenwerking.", "img": "cards/verhelderen.svg", "alt": "Verhelderen"}, {"key": "verdiepen", "title": "Verdiepen", "body": "Bij verdiepen staan we stil bij wat onder de oppervlakte meespeelt in de samenwerking.", "img": "cards/verdiepen.svg", "alt": "Verdiepen"}, {"key": "vertragen", "title": "Vertragen", "body": "Bij vertragen staan we stil bij het tempo en nemen we bewust de tijd om rust en overzicht te creëren in de samenwerking.", "img": "cards/vertragen.svg", "alt": "Vertragen"}, {"key": "bewegen", "title": "Bewegen", "body": "Bij bewegen staan we stil bij wat een volgende stap kan zijn in de samenwerking.", "img": "cards/bewegen.svg", "alt": "Bewegen"}], "hint": "← → swipe"}
 </script>
-
-
+<script id="questionsData" type="application/json">
+{"verkennen": ["Wat zien we op dit moment gebeuren in onze samenwerking?", "Wat valt ons op in onze manier van samenwerken?", "Herkennen we patronen in onze manier van samenwerken?", "Waar zijn we aan gewend geraakt?", "Wat krijgt nu minder aandacht?", "Blijven er dingen onbesproken?"], "duiden": ["Wat proberen we als team goed te doen?", "Wat nemen we wel of niet als vanzelfsprekend aan?", "Wanneer helpt afstemming ons, en wanneer belemmert het ons?", "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?", "Welke patronen blijven we terugzien in onze samenwerking?", "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?"], "verbinden": ["Waar worden we enthousiast van?", "Wanneer voel jij je echt onderdeel van het team?", "Mogen er verschillen bestaan in ons team?", "Hoe kunnen we elkaar uitdagen en andere kanten belichten?", "Wat helpt ons om onszelf te laten zien in de samenwerking?", "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?"], "vertragen": ["Wanneer nemen we in onze samenwerking eigenlijk de tijd?", "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?", "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?", "Welke patronen worden zichtbaar wanneer de druk toeneemt?", "Welke rol nemen we automatisch aan in momenten van spanning?", "Wanneer merken we dat vertragen helpend zou zijn?"], "bewegen": ["Wat doen we met ideeën die ontstaan?", "Wanneer komt er beweging in het team?", "Wat helpt ons om van praten naar doen te gaan?", "Welke ideeën blijven liggen, en waarom?", "Wat houdt ons tegen om in actie te komen?", "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"]}
+</script>
 
 </body>
 </html>
