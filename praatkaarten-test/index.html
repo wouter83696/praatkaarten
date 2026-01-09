@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.5</title>
+<title>Praatkaarten v3.3.6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1039,6 +1039,32 @@ body.hm-open{overflow:hidden}
   color: rgba(11,18,32,.58);
 }
 
+/* Close-knop boven het uitleg-venster (alleen mobiel) */
+.closeSheetTop{
+  position: fixed;
+  right: 12px;
+  /* precies boven de sheet */
+  bottom: calc(var(--introSheetH, 0px) + 12px + env(safe-area-inset-bottom));
+  z-index: 3200;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+/* Mobiel: als uitleg open is -> bottom pills weg, close bovenaan in beeld */
+@media (max-width: 720px){
+  body.show-intro .pillsDock .pill{
+    opacity: 0;
+    pointer-events: none;
+  }
+  body.show-intro .closeSheetTop{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
 /* Telefoon landscape: verberg de pills (zelfde gedrag als oude menubalk) */
 @media (hover: none) and (pointer: coarse) and (orientation: landscape){
   .pillsDock{ display:none !important; }
@@ -1067,6 +1093,11 @@ body.hm-open{overflow:hidden}
 
   <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
 </div>
+
+<!-- Close boven het uitleg-venster (mobiel) -->
+<button class="pill closeSheetTop" id="closeSheetTop" type="button" aria-label="Sluit uitleg">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+</button>
 
 
 <div class="grid" id="grid"></div>

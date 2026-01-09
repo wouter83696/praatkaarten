@@ -107,6 +107,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
   const closeAllBtn = document.getElementById('closeAllBtn');
+  const closeSheetTop = document.getElementById('closeSheetTop');
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -624,6 +625,14 @@ document.addEventListener('keydown', (e) => {
       if(shuffleOn) setShuffle(false);
       // 3) lightbox dicht (als er nog iets open staat)
       if(lb.classList.contains('open')) closeLb();
+    });
+  }
+
+  // Mobiel: close-knop boven het uitleg-venster (alleen uitleg sluiten)
+  if(closeSheetTop){
+    closeSheetTop.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(uitlegOn) setUitleg(false);
     });
   }
 
