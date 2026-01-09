@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v2.7</title>
+<title>Praatkaarten v2.9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -886,60 +886,20 @@ body.hm-open{overflow:hidden}
   </div>
 </div>
 
-<section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
-  <div class="introHead">
-    <div class="introTitle">Uitleg</div>
-    <button class="introToggle" id="introToggle" type="button" aria-expanded="true">Verberg</button>
+<section class="mobileCarousel" id="mobileCarousel" aria-label="Bladeren">
+  <div class="carHead">
+    <div class="carTitle">Bladeren</div>
+    <button class="carToggle" id="carToggle" type="button" aria-expanded="true">Verberg</button>
   </div>
 
-  <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
-    <article class="introCard" data-intro="cover">
-      <div class="introImgWrap">
-        <img class="introImg" src="voorkant.svg" alt="Samen onderzoeken – Gesprekskaarten voor teams">
-      </div>
-      <div class="introText">
-        <div class="introTextTitle">Samen onderzoeken</div>
-        <div class="introTextBody">Deze kaarten nodigen je uit om samen te kijken naar wat er speelt, zichtbaar wordt en onbesproken blijft in de samenwerking.</div>
-      </div>
-    </article>
-
-    <article class="introCard" data-intro="verkennen">
-      <div class="introImgWrap"><img class="introImg" src="cards/verkennen.svg" alt="Verkennen"></div>
-      <div class="introText"><div class="introTextTitle">Verkennen</div><div class="introTextBody">Bij verkennen staan we stil bij wat we waarnemen in de samenwerking.</div></div>
-    </article>
-
-    <article class="introCard" data-intro="duiden">
-      <div class="introImgWrap"><img class="introImg" src="cards/duiden.svg" alt="Duiden"></div>
-      <div class="introText"><div class="introTextTitle">Duiden</div><div class="introTextBody">Bij duiden staan we stil bij de betekenis die we geven aan wat er gebeurt in de samenwerking.</div></div>
-    </article>
-
-    <article class="introCard" data-intro="verbinden">
-      <div class="introImgWrap"><img class="introImg" src="cards/verbinden.svg" alt="Verbinden"></div>
-      <div class="introText"><div class="introTextTitle">Verbinden</div><div class="introTextBody">Bij verbinden staan we stil bij hoe we ons tot elkaar verhouden in de samenwerking.</div></div>
-    </article>
-
-    <article class="introCard" data-intro="verhelderen">
-      <div class="introImgWrap"><img class="introImg" src="cards/verhelderen.svg" alt="Verhelderen"></div>
-      <div class="introText"><div class="introTextTitle">Verhelderen</div><div class="introTextBody">Bij verhelderen staan we stil bij wat onduidelijk is in de samenwerking.</div></div>
-    </article>
-
-    <article class="introCard" data-intro="verdiepen">
-      <div class="introImgWrap"><img class="introImg" src="cards/verdiepen.svg" alt="Verdiepen"></div>
-      <div class="introText"><div class="introTextTitle">Verdiepen</div><div class="introTextBody">Bij verdiepen onderzoeken we wat er onder de oppervlakte speelt in de samenwerking.</div></div>
-    </article>
-
-    <article class="introCard" data-intro="vertragen">
-      <div class="introImgWrap"><img class="introImg" src="cards/vertragen.svg" alt="Vertragen"></div>
-      <div class="introText"><div class="introTextTitle">Vertragen</div><div class="introTextBody">Bij vertragen nemen we bewust tijd om rust en overzicht te creëren in de samenwerking.</div></div>
-    </article>
-
-    <article class="introCard" data-intro="bewegen">
-      <div class="introImgWrap"><img class="introImg" src="cards/bewegen.svg" alt="Bewegen"></div>
-      <div class="introText"><div class="introTextTitle">Bewegen</div><div class="introTextBody">Bij bewegen verkennen we wat een volgende stap kan zijn in de samenwerking.</div></div>
-    </article>
+  <div class="carTrack" id="carTrack" tabindex="0" aria-label="Swipe door uitleg en kaarten">
+    <!-- wordt gevuld vanuit intro-data.json + questions.json -->
   </div>
 
-  <div class="introHint" aria-hidden="true">← → swipe</div>
+  <div class="carFoot">
+    <div class="carCounter" id="carCounter" aria-live="polite"></div>
+    <div class="carHint" aria-hidden="true">← → swipe</div>
+  </div>
 </section>
 
 <div class="grid" id="grid"></div>
@@ -966,7 +926,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.5.2"></script>
+<script src="script.js?v=2.9"></script>
 
 
 
