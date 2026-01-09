@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v2.8</title>
+<title>Praatkaarten v3.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -82,6 +82,32 @@ body{
 /* strak: hussel | reset compacter, divider subtiel */
 .btnGroup .btn{padding:10px 4px;}
 .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 1px;opacity:.35;}
+
+/* ===============================
+   CHIP TOGGLES (Hussel / Uitleg) – v3.2
+   =============================== */
+.chipGroup{display:flex; align-items:center; gap:10px;}
+.chip{
+  appearance:none;
+  border:0;
+  background:transparent;
+  border-radius:999px;
+  padding:10px 12px;
+  font-size:13px;
+  line-height:1.2;
+  cursor:pointer;
+  color: rgba(11,18,32,.45);
+  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10);
+  transition: background .18s ease, box-shadow .18s ease, transform .05s ease;
+}
+.chip:hover{ background: rgba(243,245,238,.88); }
+.chip:active{ transform: translateY(1px); }
+.chip.is-on{
+  background: rgba(48,96,136,.12);
+  box-shadow: inset 0 0 0 1px rgba(48,96,136,.22);
+  color: rgba(11,18,32,.58);
+}
+.chip:focus-visible{ outline: 2px solid rgba(48,96,136,.35); outline-offset: 2px; }
 
 .help{
   transition:opacity .8s ease;
@@ -833,16 +859,18 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   MOBIELE UITLEG-CAROUSEL (v2.7)
+   MOBIELE UITLEG-CAROUSEL (v3.0)
+   - opent/sluit via knop "Uitleg" in de onderste balk
+   - tekst staat los onder de kaart (clean)
    =============================== */
 
+/* standaard verborgen; we tonen 'm pas als de gebruiker op Uitleg tikt */
 .mobileIntro{display:none; margin:16px auto 8px; width:min(940px, 100%); padding:0 14px;}
+
+/* alleen relevant op mobiel */
 @media (max-width: 720px){
-  .mobileIntro{display:block;}
+  body.show-intro .mobileIntro{display:block;}
 }
-.mobileIntro.is-collapsed .introTrack,
-.mobileIntro.is-collapsed .introHint{display:none;}
-.mobileIntro.is-collapsed{margin-bottom:4px;}
 
 .introHead{display:flex; align-items:center; justify-content:space-between; margin:0 6px 10px;}
 .introTitle{font-weight:500; color:rgba(60,70,80,.75); font-size:14px; letter-spacing:.2px;}
@@ -857,14 +885,43 @@ body.hm-open{overflow:hidden}
 }
 .introTrack::-webkit-scrollbar{display:none;}
 .introCard{flex:0 0 auto; width:min(86vw, 420px); scroll-snap-align:center;
-  border-radius:24px; overflow:hidden; background:rgba(255,255,255,.55);
-  box-shadow:var(--shadow);
+  background:transparent; box-shadow:none; overflow:visible;
+  display:flex; flex-direction:column; gap:10px;
 }
-.introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;}
+.introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;
+  border-radius:24px; box-shadow:var(--shadow);
+}
+.introImgWrap{ position:relative; }
+.introTheme{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight:500;
+  font-size:22px;
+  letter-spacing:.2px;
+  color: rgba(11,18,32,.55);
+  pointer-events:none;
+}
 .introImg{width:100%; height:100%; object-fit:contain; display:block;}
-.introText{background:#fff; padding:14px 16px 16px;}
-.introTextTitle{font-weight:500; color:rgba(48,96,136,.95); font-size:18px; margin:0 0 6px;}
-.introTextBody{color:rgba(60,70,80,.78); font-size:15px; line-height:1.35; overflow-wrap:anywhere; white-space:normal;}
+.introText{
+  /* Tekst = pure pagina (geen extra kader, geen eigen achtergrond) */
+  background:transparent;
+  padding:2px 2px 0;
+  border-radius:0;
+  box-shadow:none;
+}
+.introTextTitle{display:none;}
+.introTextBody{
+  color:rgba(60,70,80,.78);
+  font-size:15px;
+  line-height:1.35;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-wrap:anywhere;
+  white-space:normal;
+}
 .introHint{margin:8px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
 
 </style>
@@ -873,25 +930,18 @@ body.hm-open{overflow:hidden}
 
 <div class="controlsBar">
   <div class="inner">
-    <div class="btnGroup left">
-      <button class="btn" id="shuffle" type="button">Hussel</button>
-      <span class="sep" aria-hidden="true"></span>
-      <button class="btn" id="reset" type="button">Reset</button>
+    <div class="chipGroup left" aria-label="Bediening">
+      <button class="chip" id="shuffleBtn" type="button" aria-pressed="false">Hussel</button>
+      <button class="chip" id="uitlegBtn" type="button" aria-pressed="false">Uitleg</button>
     </div>
 
     <div class="rightCluster">
       <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
-      <button class="btn" id="uitleg" type="button">Uitleg</button>
     </div>
   </div>
 </div>
 
 <section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
-  <div class="introHead">
-    <div class="introTitle">Uitleg</div>
-    <button class="introToggle" id="introToggle" type="button" aria-expanded="true">Verberg</button>
-  </div>
-
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
@@ -923,7 +973,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.8"></script>
+<script src="script.js?v=3.2"></script>
 
 
 
