@@ -702,3 +702,17 @@ async function renderMobileIntro(){
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
+
+/* Make all cards open in bottom sheet */
+function openUitlegAll(cardData) {
+  document.body.classList.add("uitleg-open");
+  const sheet = document.getElementById("uitleg-carousel");
+  if (sheet) sheet.classList.add("open");
+}
+
+/* Close button in menu bar */
+function closeUitleg() {
+  document.body.classList.remove("uitleg-open");
+  const sheet = document.getElementById("uitleg-carousel");
+  if (sheet) sheet.classList.remove("open");
+}

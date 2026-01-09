@@ -24,6 +24,7 @@ body{
   margin:0 auto;
   border-radius:var(--radius);
   overflow:hidden;
+  backdrop-filter: blur(6px);
   box-shadow:var(--shadow);
   background:var(--paper);
 }
@@ -54,6 +55,7 @@ body{
   border:0;
   border-radius:999px;
   background:rgba(255,255,255,.75);
+  backdrop-filter: blur(6px);
   box-shadow:0 8px 18px rgba(0,0,0,.12);
   color:rgba(11,18,32,.45);
   cursor:pointer;
@@ -116,6 +118,7 @@ body{
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
   border-top:1px solid rgba(0,0,0,.06);
+  backdrop-filter: blur(6px);
   box-shadow:0 -10px 30px rgba(0,0,0,.06);
 }
 .controlsBar .inner{
@@ -143,6 +146,7 @@ body{
   font:500 13px/1.2 "IBM Plex Sans", system-ui, -apple-system, sans-serif;
   text-decoration:none;
   cursor:pointer;
+  backdrop-filter: blur(6px);
   box-shadow:none;
 }
 .btn:hover{
@@ -190,7 +194,8 @@ body.show-hint .navHintMini{ opacity:.72; }
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius:14px;
-    box-shadow:0 10px 30px rgba(0,0,0,.10);
+    backdrop-filter: blur(6px);
+  box-shadow:0 10px 30px rgba(0,0,0,.10);
     color:rgba(11,18,32,.62);
     font-size:12.5px;
     z-index:9999;
@@ -231,4 +236,24 @@ body.show-hint .navHintMini{ opacity:.72; }
 /* v2.6 – uitleg SVG onderkant recht */
 .kaart-beeld img{
   border-radius: 0 !important;
+}
+
+/* UI fixes */
+#uitleg-carousel {
+  padding-bottom: 12px;
+}
+
+#uitleg-carousel .card-wrapper {
+  background: transparent;
+  padding: 0;
+}
+
+/* Subtle background blur */
+body.uitleg-open::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(3px);
+  background: rgba(0,0,0,0.05);
+  z-index: 10;
 }
