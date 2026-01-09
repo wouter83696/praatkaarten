@@ -11,7 +11,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = '2.8';
+const VERSION = '3.1';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -35,9 +35,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
-  const shuffleBtn = document.getElementById('shuffle');
-  const resetBtn = document.getElementById('reset');
-  const uitlegBtn = document.getElementById('uitleg');
+  // Onderbalk toggles (v3.1)
+  const shuffleToggle = document.getElementById('shuffleToggle');
+  const uitlegToggle = document.getElementById('uitlegToggle');
   const lbHelpText = document.getElementById('lbHelpText');
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
@@ -465,39 +465,55 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'ArrowRight') go(1);
   });
 
-  resetBtn?.addEventListener('click', () => {
-    mode = 'cards';
-    filtered = data.slice();
-    render(filtered);
-    closeLb();
-  });
+  // ===============================
+  // v3.1 – Toggles onderbalk
+  // - Hussel: aan = 1x shuffle, uit = originele volgorde (reset is dus niet meer nodig)
+  // - Uitleg: mobiel = carousel boven grid, desktop = help-lightbox
+  // ===============================
 
-  shuffleBtn.addEventListener('click', () => {
-    filtered = shuffle(filtered.slice());
-    render(filtered);
-  });
+  if(shuffleToggle){
+    // start altijd uit
+    shuffleToggle.checked = false;
+    shuffleToggle.addEventListener('change', () => {
+      mode = 'cards';
+      if(shuffleToggle.checked){
+        filtered = shuffle(data.slice());
+      }else{
+        filtered = data.slice();
+      }
+      render(filtered);
+      // netjes: als er een lightbox open is, sluit die (voorkomt verwarring)
+      closeLb();
+    });
+  }
 
-  
-  // Uitleg-knop:
-  // - Mobiel: togglet de uitleg-carousel boven het grid (super clean: kaart + los tekstvak)
-  // - Desktop: opent de lightbox in uitleg-modus (zoals eerder)
-  if(uitlegBtn){
-    uitlegBtn.addEventListener('click', () => {
+  if(uitlegToggle){
+    // start altijd uit
+    uitlegToggle.checked = false;
+    uitlegToggle.addEventListener('change', () => {
       const isMobile = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
 
       if(isMobile){
-        document.body.classList.toggle('show-intro');
-        // als hij opent: scrol subtiel naar boven zodat je de carousel direct ziet
-        if(document.body.classList.contains('show-intro')){
+        if(uitlegToggle.checked){
+          document.body.classList.add('show-intro');
           try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
+        }else{
+          document.body.classList.remove('show-intro');
         }
         return;
       }
 
-      showNavHint();
-      mode = 'help';
-      helpFiltered = helpItems.slice();
-      openAt(0);
+      // Desktop: help-lightbox aan/uit
+      if(uitlegToggle.checked){
+        showNavHint();
+        mode = 'help';
+        helpFiltered = helpItems.slice();
+        openAt(0);
+      }else{
+        // alleen sluiten als we in help-modus zitten
+        if(mode === 'help') closeLb();
+        mode = 'cards';
+      }
     });
   }
 
@@ -540,6 +556,9 @@ window.go = go;
   // "Verberg" knop in de uitleg-header: sluit de hele carousel
   btn.addEventListener('click', () => {
     document.body.classList.remove('show-intro');
+    // sync met toggle in de onderbalk
+    const t = document.getElementById('uitlegToggle');
+    if(t) t.checked = false;
   });
 })();
 
@@ -582,14 +601,10 @@ async function renderMobileIntro(){
     const text = document.createElement('div');
     text.className = 'introText';
 
-    const t = document.createElement('div');
-    t.className = 'introTextTitle';
-    t.textContent = s.title || '';
     const b = document.createElement('div');
     b.className = 'introTextBody';
     b.textContent = s.body || '';
 
-    text.appendChild(t);
     text.appendChild(b);
 
     art.appendChild(wrap);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.0</title>
+<title>Praatkaarten v3.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -82,6 +82,56 @@ body{
 /* strak: hussel | reset compacter, divider subtiel */
 .btnGroup .btn{padding:10px 4px;}
 .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 1px;opacity:.35;}
+
+/* ===============================
+   CLEAN TOGGLES (Hussel / Uitleg)
+   =============================== */
+.toggleGroup{display:flex; align-items:center; gap:14px;}
+.toggle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border-radius:999px;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.toggleLabel{font-size:13px; line-height:1.2; color:rgba(11,18,32,.45);}
+.toggle input{
+  position:absolute;
+  opacity:0;
+  width:1px;
+  height:1px;
+}
+.switch{
+  width:40px;
+  height:22px;
+  border-radius:999px;
+  background:rgba(11,18,32,.14);
+  position:relative;
+  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10);
+  transition:background .18s ease;
+  flex:0 0 auto;
+}
+.switch::after{
+  content:"";
+  position:absolute;
+  top:2px;
+  left:2px;
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  background:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.16);
+  transition:transform .18s ease;
+}
+.toggle input:checked + .switch{
+  background:rgba(48,96,136,.38);
+}
+.toggle input:checked + .switch::after{
+  transform:translateX(18px);
+}
+.toggle:focus-within{background:rgba(243,245,238,.88);}
 
 .help{
   transition:opacity .8s ease;
@@ -866,11 +916,21 @@ body.hm-open{overflow:hidden}
   border-radius:24px; box-shadow:var(--shadow);
 }
 .introImg{width:100%; height:100%; object-fit:contain; display:block;}
-.introText{background:#fff; padding:14px 16px 16px;
-  border-radius:24px; box-shadow:var(--shadow);
+.introText{
+  /* Tekst = pure pagina (geen extra kader, geen eigen achtergrond) */
+  background:transparent;
+  padding:2px 2px 0;
+  border-radius:0;
+  box-shadow:none;
 }
-.introTextTitle{font-weight:500; color:rgba(48,96,136,.95); font-size:18px; margin:0 0 6px;}
-.introTextBody{color:rgba(60,70,80,.78); font-size:15px; line-height:1.35; overflow-wrap:anywhere; white-space:normal;}
+.introTextTitle{display:none;}
+.introTextBody{
+  color:rgba(60,70,80,.78);
+  font-size:15px;
+  line-height:1.35;
+  overflow-wrap:anywhere;
+  white-space:normal;
+}
 .introHint{margin:8px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
 
 </style>
@@ -879,15 +939,22 @@ body.hm-open{overflow:hidden}
 
 <div class="controlsBar">
   <div class="inner">
-    <div class="btnGroup left">
-      <button class="btn" id="shuffle" type="button">Hussel</button>
-      <span class="sep" aria-hidden="true"></span>
-      <button class="btn" id="reset" type="button">Reset</button>
+    <div class="toggleGroup left" aria-label="Bediening">
+      <label class="toggle" for="shuffleToggle">
+        <span class="toggleLabel">Hussel</span>
+        <input id="shuffleToggle" type="checkbox" aria-label="Hussel aan/uit">
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+
+      <label class="toggle" for="uitlegToggle">
+        <span class="toggleLabel">Uitleg</span>
+        <input id="uitlegToggle" type="checkbox" aria-label="Uitleg aan/uit">
+        <span class="switch" aria-hidden="true"></span>
+      </label>
     </div>
 
     <div class="rightCluster">
       <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
-      <button class="btn" id="uitleg" type="button">Uitleg</button>
     </div>
   </div>
 </div>
@@ -929,7 +996,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.9"></script>
+<script src="script.js?v=3.1"></script>
 
 
 
