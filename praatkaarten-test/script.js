@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.7';
+const VERSION = '3.3.8';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -108,6 +108,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
   // (v3.3.7) geen extra sluitknoppen in de pills
+  const mobileIntroEl = document.getElementById('mobileIntro');
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -531,7 +532,14 @@ lb.addEventListener('pointerup', (e) => {
   // Onderdruk 'click-through' direct na een touch-tap-close.
   // Dit voorkomt dat er meteen weer een kaart opent op de plek waar je tikt.
   document.addEventListener('click', (e) => {
-    if (performance.now() < suppressClickUntil) {
+    // Alleen onderdrukken als de click buiten overlays/controls valt.
+    // Anders kan bijvoorbeeld de close-knop soms "dood" aanvoelen op mobiel.
+    if (
+      performance.now() < suppressClickUntil &&
+      !lb.contains(e.target) &&
+      !(mobileIntroEl && mobileIntroEl.contains(e.target)) &&
+      !(e.target && e.target.closest && e.target.closest('.pillsDock'))
+    ) {
       e.stopPropagation();
       e.preventDefault();
     }
@@ -598,32 +606,68 @@ document.addEventListener('keydown', (e) => {
   }
 
   // ===============================
-  // v3.3.7 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
+  // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
+  // - robuuster: luister capture + pointer events (iOS/Safari) + touch fallback
   // ===============================
-  const mobileIntroEl = document.getElementById('mobileIntro');
+  const introTrackEl  = document.getElementById('introTrack');
   if(mobileIntroEl){
-    let sy = 0, sx = 0;
+    let sy = 0, sx = 0, active = false;
+
+    const start = (x,y) => { sx = x; sy = y; active = true; };
+    const end = (x,y) => {
+      if(!active) return;
+      active = false;
+      if(!uitlegOn) return;
+      const dy = y - sy;
+      const dx = x - sx;
+      const ay = Math.abs(dy);
+      const ax = Math.abs(dx);
+      // Duidelijke swipe omlaag: verticaal dominant + voldoende afstand
+      if(ay > ax * 1.2 && dy > 85){
+        setUitleg(false);
+      }
+    };
+
+    // Pointer events (meest betrouwbaar, ook op moderne iOS)
+    const onPointerDown = (e) => {
+      if(!uitlegOn) return;
+      // alleen primaire pointer
+      if(e.isPrimary === false) return;
+      start(e.clientX, e.clientY);
+    };
+    const onPointerUp = (e) => end(e.clientX, e.clientY);
+
+    mobileIntroEl.addEventListener('pointerdown', onPointerDown, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('pointerup', onPointerUp, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('pointercancel', () => { active = false; }, {passive:true, capture:true});
+
+    // Touch fallback (oudere iOS)
     mobileIntroEl.addEventListener('touchstart', (e) => {
       if(!uitlegOn) return;
       const t = e.touches && e.touches[0];
       if(!t) return;
-      sy = t.clientY;
-      sx = t.clientX;
-    }, {passive:true});
-
+      start(t.clientX, t.clientY);
+    }, {passive:true, capture:true});
     mobileIntroEl.addEventListener('touchend', (e) => {
-      if(!uitlegOn) return;
       const t = e.changedTouches && e.changedTouches[0];
       if(!t) return;
-      const dy = t.clientY - sy;
-      const dx = t.clientX - sx;
-      const ay = Math.abs(dy);
-      const ax = Math.abs(dx);
-      // Alleen duidelijke swipe omlaag (niet horizontaal scrollen door de kaarten)
-      if(ay > ax && dy > 70){
-        setUitleg(false);
-      }
-    }, {passive:true});
+      end(t.clientX, t.clientY);
+    }, {passive:true, capture:true});
+
+    // Extra: als je swipe start op de track zelf, vang die ook af (bubbelt niet altijd lekker bij momentum scroll)
+    if(introTrackEl){
+      introTrackEl.addEventListener('touchstart', (e) => {
+        if(!uitlegOn) return;
+        const t = e.touches && e.touches[0];
+        if(!t) return;
+        start(t.clientX, t.clientY);
+      }, {passive:true, capture:true});
+      introTrackEl.addEventListener('touchend', (e) => {
+        const t = e.changedTouches && e.changedTouches[0];
+        if(!t) return;
+        end(t.clientX, t.clientY);
+      }, {passive:true, capture:true});
+    }
   }
 
   // (v3.3.7) sluiten gaat via:
