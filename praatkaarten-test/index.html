@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.3</title>
+<title>Praatkaarten v3.3.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -163,7 +163,7 @@ body.lb-open .navHintMini{ opacity:0; }
 .grid{
   display:grid;
   gap:var(--gap);
-  padding:18px 28px 96px;
+  padding:18px 28px 120px;
   max-width:1600px;
   margin:auto;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -973,144 +973,31 @@ body.hm-open{overflow:hidden}
   display:none; /* swipe-tekst onderaan uit (voor nu) */
 }
 
-/* ===============================
-   v3.3.3 – MINIMALE UI (losse icon-only pills)
-   - geen balk, geen groep
-   - bijna onzichtbaar
-   =============================== */
-
-/* eventuele oude balk altijd weg */
-.controlsBar{ display:none !important; }
-
-.uiPills{
-  position:fixed;
-  left:0; right:0; bottom:0;
-  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
-  z-index:3500;
-  pointer-events:none; /* alleen knoppen zijn klikbaar */
-}
-.uiPills .left,
-.uiPills .right{ display:flex; gap:10px; align-items:center; }
-.uiPills .row{ display:flex; align-items:flex-end; justify-content:space-between; }
-
-.uiBtn{
-  pointer-events:auto;
-  width:44px;
-  height:44px;
-  border:0;
-  border-radius:999px;
-  background: rgba(255,255,255,.24);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  color: rgba(11,18,32,.45);
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-  opacity:.22;
-  transition: opacity .18s ease, background .18s ease, transform .06s ease;
-}
-.uiBtn:hover{ opacity:.45; background: rgba(255,255,255,.30); }
-.uiBtn:active{ transform: translateY(1px); }
-.uiBtn.is-on{ opacity:.55; background: rgba(48,96,136,.14); }
-
-.uiBtn svg{ width:20px; height:20px; stroke:currentColor; stroke-width:2.4; fill:none; }
-.uiBtn .qmark{ font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif; font-weight:500; font-size:18px; line-height:1; }
-
-/* Close pill alleen actief wanneer lightbox open is */
-body:not(.lb-open) #uiClose{ opacity:0; pointer-events:none; }
-
-/* ===============================
-   v3.3.3 – FLOATING GLASS BOTTOM SHEET
-   =============================== */
-
-.lb{ align-items:flex-end !important; padding:14px !important; touch-action: pan-y; }
-
-/* zachte scrim zodat het niet "blokkerig" voelt */
-.lb::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  background: linear-gradient(to top, rgba(0,0,0,.18), rgba(0,0,0,0) 55%);
-  z-index:0;
-}
-
-.panel{
-  width:100%;
-  height:100%;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-}
-
-.lbCard{
-  width:min(560px, 96vw);
-  max-height: calc(var(--vh, 1vh) * 92);
-  overflow:auto;
-  border-radius:28px;
-  background: rgba(255,255,255,.30);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 24px 80px rgba(0,0,0,.22);
-  border: 1px solid rgba(255,255,255,.35);
-  -webkit-overflow-scrolling: touch;
-}
-
-/* kaart blijft dominant; afbeelding zelf blijft scherp */
-.lbCard img{ border-radius:22px; }
-
-/* pijlen/kruisje in de sheet zelf niet nodig (we gebruiken de bottom pills) */
-.chev, .close{ display:none !important; }
-
-/* uitleg-tekst onder de kaart, clean en even breed */
-.lbHelpText{
-  border-top: 0;
-  padding: 14px 18px 18px;
-  background: transparent;
-}
-.lbHelpDesc{
-  color: rgba(11,18,32,.68);
-  font-size: 14.5px;
-  line-height: 1.55;
-}
-
-/* overlay-tekst (vragen) blijft mooi gecentreerd */
-.lbText{ padding:22px 24px; }
-
-/* touch: UI nog subtieler (geen hover) */
-@media (hover:none) and (pointer:coarse){
-  .uiBtn{ opacity:.28; }
-  .uiBtn.is-on{ opacity:.58; }
-}
-
 </style>
 </head>
 <body>
 
-<div class="grid" id="grid"></div>
-
-<!-- MINIMALE UI: losse icon-only pills -->
-<div class="uiPills" aria-label="Bediening">
-  <div class="row">
-    <div class="left">
-      <button class="uiBtn" id="uitlegBtn" type="button" aria-label="Uitleg" aria-pressed="false"><span class="qmark">?</span></button>
-      <button class="uiBtn" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M16 3h5v5"/>
-          <path d="M21 3l-7 7"/>
-          <path d="M4 20l7-7"/>
-          <path d="M16 21h5v-5"/>
-          <path d="M21 21l-7-7"/>
-        </svg>
-      </button>
+<div class="controlsBar">
+  <div class="inner">
+    <div class="chipGroup left" aria-label="Bediening">
+      <button class="chip" id="shuffleBtn" type="button" aria-pressed="false">Hussel</button>
+      <button class="chip" id="uitlegBtn" type="button" aria-pressed="false">Uitleg</button>
     </div>
-    <div class="right">
-      <button class="uiBtn" id="uiClose" type="button" aria-label="Sluiten">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
-      </button>
+
+    <div class="rightCluster">
+      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
     </div>
   </div>
 </div>
+
+
+<div class="grid" id="grid"></div>
+
+<section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
+  <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
+    <!-- wordt gevuld vanuit intro-data.json -->
+  </div>
+</section>
 
 
 <div class="lb" id="lb" aria-hidden="true">
@@ -1135,7 +1022,7 @@ body:not(.lb-open) #uiClose{ opacity:0; pointer-events:none; }
 
 
 
-<script src="script.js?v=3.3.3"></script>
+<script src="script.js?v=3.3.1"></script>
 
 
 
