@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.1</title>
+<title>Praatkaarten v3.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -84,54 +84,30 @@ body{
 .sep{width:1px;height:18px;background:rgba(0,0,0,.12);margin:0 1px;opacity:.35;}
 
 /* ===============================
-   CLEAN TOGGLES (Hussel / Uitleg)
+   CHIP TOGGLES (Hussel / Uitleg) – v3.2
    =============================== */
-.toggleGroup{display:flex; align-items:center; gap:14px;}
-.toggle{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:8px 10px;
+.chipGroup{display:flex; align-items:center; gap:10px;}
+.chip{
+  appearance:none;
+  border:0;
+  background:transparent;
   border-radius:999px;
-  user-select:none;
-  -webkit-user-select:none;
-}
-.toggleLabel{font-size:13px; line-height:1.2; color:rgba(11,18,32,.45);}
-.toggle input{
-  position:absolute;
-  opacity:0;
-  width:1px;
-  height:1px;
-}
-.switch{
-  width:40px;
-  height:22px;
-  border-radius:999px;
-  background:rgba(11,18,32,.14);
-  position:relative;
+  padding:10px 12px;
+  font-size:13px;
+  line-height:1.2;
+  cursor:pointer;
+  color: rgba(11,18,32,.45);
   box-shadow: inset 0 0 0 1px rgba(11,18,32,.10);
-  transition:background .18s ease;
-  flex:0 0 auto;
+  transition: background .18s ease, box-shadow .18s ease, transform .05s ease;
 }
-.switch::after{
-  content:"";
-  position:absolute;
-  top:2px;
-  left:2px;
-  width:18px;
-  height:18px;
-  border-radius:999px;
-  background:#fff;
-  box-shadow:0 6px 16px rgba(0,0,0,.16);
-  transition:transform .18s ease;
+.chip:hover{ background: rgba(243,245,238,.88); }
+.chip:active{ transform: translateY(1px); }
+.chip.is-on{
+  background: rgba(48,96,136,.12);
+  box-shadow: inset 0 0 0 1px rgba(48,96,136,.22);
+  color: rgba(11,18,32,.58);
 }
-.toggle input:checked + .switch{
-  background:rgba(48,96,136,.38);
-}
-.toggle input:checked + .switch::after{
-  transform:translateX(18px);
-}
-.toggle:focus-within{background:rgba(243,245,238,.88);}
+.chip:focus-visible{ outline: 2px solid rgba(48,96,136,.35); outline-offset: 2px; }
 
 .help{
   transition:opacity .8s ease;
@@ -915,6 +891,20 @@ body.hm-open{overflow:hidden}
 .introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;
   border-radius:24px; box-shadow:var(--shadow);
 }
+.introImgWrap{ position:relative; }
+.introTheme{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight:500;
+  font-size:22px;
+  letter-spacing:.2px;
+  color: rgba(11,18,32,.55);
+  pointer-events:none;
+}
 .introImg{width:100%; height:100%; object-fit:contain; display:block;}
 .introText{
   /* Tekst = pure pagina (geen extra kader, geen eigen achtergrond) */
@@ -928,6 +918,7 @@ body.hm-open{overflow:hidden}
   color:rgba(60,70,80,.78);
   font-size:15px;
   line-height:1.35;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-wrap:anywhere;
   white-space:normal;
 }
@@ -939,18 +930,9 @@ body.hm-open{overflow:hidden}
 
 <div class="controlsBar">
   <div class="inner">
-    <div class="toggleGroup left" aria-label="Bediening">
-      <label class="toggle" for="shuffleToggle">
-        <span class="toggleLabel">Hussel</span>
-        <input id="shuffleToggle" type="checkbox" aria-label="Hussel aan/uit">
-        <span class="switch" aria-hidden="true"></span>
-      </label>
-
-      <label class="toggle" for="uitlegToggle">
-        <span class="toggleLabel">Uitleg</span>
-        <input id="uitlegToggle" type="checkbox" aria-label="Uitleg aan/uit">
-        <span class="switch" aria-hidden="true"></span>
-      </label>
+    <div class="chipGroup left" aria-label="Bediening">
+      <button class="chip" id="shuffleBtn" type="button" aria-pressed="false">Hussel</button>
+      <button class="chip" id="uitlegBtn" type="button" aria-pressed="false">Uitleg</button>
     </div>
 
     <div class="rightCluster">
@@ -960,11 +942,6 @@ body.hm-open{overflow:hidden}
 </div>
 
 <section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
-  <div class="introHead">
-    <div class="introTitle">Uitleg</div>
-    <button class="introToggle" id="introToggle" type="button" aria-expanded="true">Verberg</button>
-  </div>
-
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
@@ -996,7 +973,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.1"></script>
+<script src="script.js?v=3.2"></script>
 
 
 
