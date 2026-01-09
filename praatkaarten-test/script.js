@@ -11,65 +11,23 @@ setVh();
 // - daarna repo-root (bijv. /praatkaarten/)
 // - daarna (optioneel) parent directories
 // ===============================
-function getRepoRoot(){
-  const parts = location.pathname.split('/').filter(Boolean);
-  // GitHub Pages project site: eerste segment is repo-name
-  // /<repo>/... -> repo root = /<repo>/
-  if(parts.length>=1) return `/${parts[0]}/`;
-  return '/';
-}
-function currentDirUrl(){
-  return new URL('./', location.href);
-}
-function resolveResourceUrl(rel){
-  const relClean = rel.replace(/^\//,''); // nooit absolute slash
-  const tries = [];
-  const cur = currentDirUrl();
-  tries.push(new URL(relClean, cur));
+// ===============================
+// Pad-resolver (map-onafhankelijk)
+// We bouwen asset-URLs altijd relatief t.o.v. het scriptbestand.
+// Daardoor maakt het niet uit in welke (sub)map je deze site plaatst.
+// ===============================
+const BASE = new URL('./', document.currentScript.src).href;
+const assetUrl = (p) => new URL(p.replace(/^\//,''), BASE).href;
 
-  // probeer parent directories (max 3 niveaus) voor het geval je nested test-mappen hebt
-  let parent = cur;
-  for(let i=0;i<3;i++){
-    parent = new URL('../', parent);
-    tries.push(new URL(relClean, parent));
-  }
-
-  // repo root als laatste (meest stabiel)
-  const repoRoot = new URL(getRepoRoot(), location.origin);
-  tries.push(new URL(relClean, repoRoot));
-
-  // ook repoRoot + "praatkaarten-main/" fallback (voor oudere structuren)
-  tries.push(new URL(`praatkaarten-main/${relClean}`, repoRoot));
-
-  return tries;
-}
 async function fetchJsonFallback(rel){
-  const urls = resolveResourceUrl(rel);
-  let lastErr = null;
-  for(const u of urls){
-    try{
-      const r = await fetch(u.toString(), { cache: 'no-store' });
-      if(r.ok) return await r.json();
-      lastErr = new Error(`HTTP ${r.status} for ${u}`);
-    }catch(e){
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error(`Kon ${rel} niet laden`);
+  const r = await fetch(assetUrl(rel), { cache: 'no-store' });
+  if(!r.ok) throw new Error(`HTTP ${r.status} for ${rel}`);
+  return await r.json();
 }
 async function fetchTextFallback(rel){
-  const urls = resolveResourceUrl(rel);
-  let lastErr = null;
-  for(const u of urls){
-    try{
-      const r = await fetch(u.toString(), { cache: 'no-store' });
-      if(r.ok) return await r.text();
-      lastErr = new Error(`HTTP ${r.status} for ${u}`);
-    }catch(e){
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error(`Kon ${rel} niet laden`);
+  const r = await fetch(assetUrl(rel), { cache: 'no-store' });
+  if(!r.ok) throw new Error(`HTTP ${r.status} for ${rel}`);
+  return await r.text();
 }
 window.addEventListener('resize', setVh);
 window.addEventListener('orientationchange', setVh);
@@ -78,7 +36,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = '3.2.2';
+const VERSION = '3.3.4';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -106,7 +64,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
 
-  let shuffleOn = false;
+  
+  const closeBtn = document.getElementById('closeBtn');
+let shuffleOn = false;
   let uitlegOn  = false;
 
   function setChip(btn, on){
@@ -607,6 +567,13 @@ document.addEventListener('keydown', (e) => {
   }
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
+  }
+  if(closeBtn){
+    closeBtn.addEventListener('click', () => {
+      // sluit uitleg (mobiel) of viewer (lightbox)
+      if(document.body.classList.contains('show-intro')) setUitleg(false);
+      if(document.body.classList.contains('lb-open')) closeLb();
+    });
   }
 
   (async function init(){
