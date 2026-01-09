@@ -1,0 +1,48 @@
+.uitleg-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+}
+
+/* KAART */
+.kaart-frame {
+  position: relative;
+  width: min(90vw, 420px);
+  aspect-ratio: 2 / 3;
+}
+
+.kaart-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* TITEL IN HET MIDDEN */
+.kaart-titel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #3a5f8f;
+  pointer-events: none;
+  text-align: center;
+}
+
+/* TEKSTVAK – schaalt automatisch mee */
+.uitleg-tekst {
+  width: min(90vw, 420px);
+  background: #ffffff;
+  padding: 16px 18px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  height: auto;
+  min-height: unset;
+  max-height: none;
+  overflow: visible;
+  line-height: 1.45;
+}
