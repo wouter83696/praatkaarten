@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.0</title>
+<title>Praatkaarten v3.3.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -866,7 +866,8 @@ body.hm-open{overflow:hidden}
    =============================== */
 
 @media (max-width: 720px){
-  body{ --introSheetH: min(58vh, 520px); }
+  /* compacter: minder lege ruimte onder tekst */
+  body{ --introSheetH: min(46vh, 440px); }
 }
 
 .mobileIntro{
@@ -874,7 +875,7 @@ body.hm-open{overflow:hidden}
   height: var(--introSheetH, 0px);
   position:fixed;
   left:0; right:0; bottom:0;
-  padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   z-index:2500;
 
   background: rgba(255,255,255,.86);
@@ -907,7 +908,7 @@ body.hm-open{overflow:hidden}
   display:flex;
   gap:14px;
   overflow-x:auto;
-  padding:10px 6px 6px;
+  padding:6px 4px 0;
   height: 100%;
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
@@ -929,12 +930,12 @@ body.hm-open{overflow:hidden}
 /* Kaartdeel */
 .introImgWrap{
   aspect-ratio:241/156;
-  background:#fff;
+  background:transparent;
   overflow:hidden;
-  border-radius:24px;
+  border-radius:16px;
   box-shadow:var(--shadow);
   position:relative;
-  max-height: 42vh;
+  max-height: 40vh;
 }
 .introTheme{
   position:absolute;
@@ -949,7 +950,7 @@ body.hm-open{overflow:hidden}
   color: var(--textBlue);
   pointer-events:none;
 }
-.introImg{width:100%; height:100%; object-fit:contain; display:block;}
+.introImg{width:100%; height:100%; object-fit:cover; display:block;}
 
 /* Tekstdeel (clean) */
 .introText{
@@ -969,9 +970,7 @@ body.hm-open{overflow:hidden}
 }
 
 .introHint{
-  margin:6px 6px 0;
-  color:rgba(60,70,80,.55);
-  font-size:12px;
+  display:none; /* swipe-tekst onderaan uit (voor nu) */
 }
 
 </style>
@@ -998,8 +997,6 @@ body.hm-open{overflow:hidden}
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
-
-  <div class="introHint" aria-hidden="true">← → swipe</div>
 </section>
 
 
@@ -1025,7 +1022,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.0"></script>
+<script src="script.js?v=3.3.1"></script>
 
 
 
