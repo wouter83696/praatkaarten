@@ -14,9 +14,6 @@ if (window.visualViewport){
 const VERSION = '3.2.2';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
-// Touch/coarse: mobiel gedrag (bottom-sheet)
-const isCoarse = window.matchMedia && window.matchMedia('(hover:none) and (pointer:coarse)').matches;
-
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   // State
@@ -175,9 +172,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       btn.addEventListener('click', () => {
         mode = 'cards';
-        if(!isCoarse){
-          try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
-        }
+        // Optie 3: focusplek bovenaan (desktop) / bottom-sheet (mobiel)
+        try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
         openAt(idx);
       });
       frag.appendChild(btn);
@@ -248,14 +244,15 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   function closeLb(){
     // Sluiten = terug naar normale kaartmodus
     if(mode === 'help'){
-      mode = 'cards';
-      helpFiltered = [];
-      // sync knopstatus
+      // Uitleg-chip ook uitzetten
       uitlegOn = false;
       setChip(uitlegBtn, false);
-    }
+      document.body.classList.remove('show-intro');
 
-  lb.classList.remove('help','no-overlay','help-title','open','show-ui');
+      mode = 'cards';
+      helpFiltered = [];
+    }
+    lb.classList.remove('help','no-overlay','help-title','open','show-ui');
     lbImg.src = "";
     lbText.textContent = "";
     if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
@@ -507,16 +504,18 @@ document.addEventListener('keydown', (e) => {
     uitlegOn = !!on;
     setChip(uitlegBtn, uitlegOn);
 
-    if(uitlegOn){
-      showNavHint();
-      mode = 'help';
-      helpFiltered = helpItems.slice();
-      openAt(0);
-    }else{
-      if(mode === 'help') closeLb();
-      mode = 'cards';
-    }
-  }
+    if(isMobile()){
+      // Mobiel: gebruik dezelfde viewer (lightbox) als desktop, maar via bottom-sheet styling.
+      document.body.classList.remove('show-intro');
+      if(uitlegOn){
+        showNavHint();
+        mode = 'help';
+        helpFiltered = helpItems.slice();
+        openAt(0);
+      }else{
+        if(mode === 'help') closeLb();
+        mode = 'cards';
+      }
       return;
     }
 

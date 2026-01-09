@@ -354,6 +354,18 @@ body.lb-open .navHintMini{ opacity:0; }
   -webkit-backface-visibility: hidden;
 }
 
+/* ===============================
+   MOBILE: bottom-sheet viewer
+   =============================== */
+@media (max-width: 720px){
+  .lb{
+    align-items:flex-end;
+    justify-content:flex-end;
+    padding:0;
+
+  }
+}
+
 #lbImg{
   width:100.2%;
   margin-left:-0.1%;
@@ -925,45 +937,25 @@ body.hm-open{overflow:hidden}
 .introHint{margin:8px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
 
 
-/* ===============================
-   UI UPDATE: one viewer (bottom-sheet on mobile)
-   =============================== */
-
-/* We gebruiken nu 1 viewer (lightbox) voor zowel uitleg als kaarten.
-   De inline uitleg-carrousel bovenaan is niet meer nodig. */
-.mobileIntro, .introTrack, .intro, .introHint{ display:none !important; }
-
-/* Mobiel: lightbox = bottom-sheet (focus) */
-@media (hover:none) and (pointer:coarse){
+@media (max-width: 720px){
   .lb{
-    display:none;
     align-items:flex-end;
-    justify-content:center;
-    padding:0 0 calc(10px + env(safe-area-inset-bottom));
-    /* iets donkerder dim voor focus */
-    background:rgba(255,255,255,.30);
+    justify-content:flex-end;
+    padding:0;
   }
-  .lb.open{display:flex;}
-
   .panel{
     align-items:flex-end;
-    justify-content:center;
+    justify-content:flex-end;
   }
-
   .lbCard{
-    width:100%;
-    max-width:100%;
-    border-radius:22px 22px 0 0;
-    box-shadow:0 -12px 45px rgba(0,0,0,.18);
+    width:100vw;
+    max-width:none;
+    border-radius:26px 26px 0 0;
+    box-shadow:0 -18px 45px rgba(0,0,0,.18);
   }
-
-  /* Maak de knoppen wat groter/duimvriendelijk */
-  .chev, .close{
-    width:44px;
-    height:44px;
-  }
+  /* iets meer ademruimte boven de kaart binnen de sheet */
+  .lbCardWrap{ padding:16px 14px calc(22px + env(safe-area-inset-bottom)); }
 }
-
 </style>
 </head>
 <body>
