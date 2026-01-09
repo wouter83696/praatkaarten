@@ -11,7 +11,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = '3.2';
+const VERSION = '3.1';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -35,22 +35,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
-  // Onderbalk: chips (v3.2)
-  const shuffleBtn = document.getElementById('shuffleBtn');
-  const uitlegBtn  = document.getElementById('uitlegBtn');
-
-  let shuffleOn = false;
-  let uitlegOn  = false;
-
-  function setChip(btn, on){
-    if(!btn) return;
-    btn.classList.toggle('is-on', !!on);
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-
-  function isMobile(){
-    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
-  }
+  // Onderbalk toggles (v3.1)
+  const shuffleToggle = document.getElementById('shuffleToggle');
+  const uitlegToggle = document.getElementById('uitlegToggle');
   const lbHelpText = document.getElementById('lbHelpText');
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
@@ -172,6 +159,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       btn.addEventListener('click', () => {
         mode = 'cards';
+        try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
         openAt(idx);
       });
       frag.appendChild(btn);
@@ -258,14 +246,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     document.body.style.overflow = '';
     clearTimeout(hintTimer);
     document.body.classList.remove('show-hint');
-
-    // Sync: als je de uitleg-lightbox op desktop sluit, zet de chip uit
-    try{
-      if(typeof isMobile === 'function' && !isMobile() && typeof uitlegOn !== 'undefined' && uitlegOn){
-        uitlegOn = false;
-        setChip(uitlegBtn, false);
-      }
-    }catch(_e){}
   }
 
   // Swipe / drag overal (ook op de grijze achtergrond):
@@ -487,68 +467,55 @@ document.addEventListener('keydown', (e) => {
   });
 
   // ===============================
-  // v3.2 – Chips onderbalk
+  // v3.1 – Toggles onderbalk
   // - Hussel: aan = 1x shuffle, uit = originele volgorde (reset is dus niet meer nodig)
   // - Uitleg: mobiel = carousel boven grid, desktop = help-lightbox
   // ===============================
 
-  let shuffleOn = false;
-  let uitlegOn  = false;
-
-  function setChip(el, on){
-    if(!el) return;
-    el.classList.toggle('is-on', !!on);
-    el.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-
-  function isMobile(){
-    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
-  }
-
-  function setUitleg(on){
-    uitlegOn = !!on;
-    setChip(uitlegBtn, uitlegOn);
-
-    if(isMobile()){
-      document.body.classList.toggle('show-intro', uitlegOn);
-      if(uitlegOn){
-        try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
-      }
-      return;
-    }
-
-    // Desktop: help-lightbox aan/uit
-    if(uitlegOn){
-      showNavHint();
-      mode = 'help';
-      helpFiltered = helpItems.slice();
-      openAt(0);
-    }else{
-      if(mode === 'help') closeLb();
+  if(shuffleToggle){
+    // start altijd uit
+    shuffleToggle.checked = false;
+    shuffleToggle.addEventListener('change', () => {
       mode = 'cards';
-    }
+      if(shuffleToggle.checked){
+        filtered = shuffle(data.slice());
+      }else{
+        filtered = data.slice();
+      }
+      render(filtered);
+      // netjes: als er een lightbox open is, sluit die (voorkomt verwarring)
+      closeLb();
+    });
   }
 
-  function setShuffle(on){
-    shuffleOn = !!on;
-    setChip(shuffleBtn, shuffleOn);
+  if(uitlegToggle){
+    // start altijd uit
+    uitlegToggle.checked = false;
+    uitlegToggle.addEventListener('change', () => {
+      const isMobile = window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
 
-    mode = 'cards';
-    filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
-    render(filtered);
-    closeLb();
-  }
+      if(isMobile){
+        if(uitlegToggle.checked){
+          document.body.classList.add('show-intro');
+          try{ window.scrollTo({ top: 0, behavior: 'smooth' }); }catch(e){ window.scrollTo(0,0); }
+        }else{
+          document.body.classList.remove('show-intro');
+        }
+        return;
+      }
 
-  // Start: beide uit
-  setChip(shuffleBtn, false);
-  setChip(uitlegBtn, false);
-  document.body.classList.remove('show-intro');
-
-  if(shuffleBtn){
-    shuffleBtn.addEventListener('click', () => setShuffle(!shuffleOn));
-  }
-  if(uitlegBtn){
-    uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
+      // Desktop: help-lightbox aan/uit
+      if(uitlegToggle.checked){
+        showNavHint();
+        mode = 'help';
+        helpFiltered = helpItems.slice();
+        openAt(0);
+      }else{
+        // alleen sluiten als we in help-modus zitten
+        if(mode === 'help') closeLb();
+        mode = 'cards';
+      }
+    });
   }
 
   (async function init(){
@@ -576,7 +543,25 @@ window.go = go;
 
 
 
-// (v3.2) Geen extra "Uitleg/Verberg" header meer op mobiel.
+// ===============================
+// Mobiele uitleg-carousel (v2.9)
+// ===============================
+(function(){
+  const section = document.getElementById('mobileIntro');
+  const btn = document.getElementById('introToggle');
+  if(!section || !btn) return;
+
+  // Start: verborgen. (Alleen op mobiel wordt hij getoond via body.show-intro)
+  document.body.classList.remove('show-intro');
+
+  // "Verberg" knop in de uitleg-header: sluit de hele carousel
+  btn.addEventListener('click', () => {
+    document.body.classList.remove('show-intro');
+    // sync met toggle in de onderbalk
+    const t = document.getElementById('uitlegToggle');
+    if(t) t.checked = false;
+  });
+})();
 
 
 
@@ -613,14 +598,6 @@ async function renderMobileIntro(){
     img.src = withV(s.img || '');
     img.alt = s.alt || s.title || '';
     wrap.appendChild(img);
-
-    // Thema-naam in het midden van de kaart (alleen thema-kaarten, niet de voorkant)
-    if((s.key || '') !== 'cover' && (s.title || '').trim()){
-      const theme = document.createElement('div');
-      theme.className = 'introTheme';
-      theme.textContent = s.title;
-      wrap.appendChild(theme);
-    }
 
     const text = document.createElement('div');
     text.className = 'introText';
