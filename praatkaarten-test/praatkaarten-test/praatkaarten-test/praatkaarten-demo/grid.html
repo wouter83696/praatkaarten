@@ -136,10 +136,9 @@ body{
 .card .q{
   position:absolute;
   inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0 18px;
+  display:grid;
+  place-items:center;
+  padding:18px;
   text-align:center;
 
   font-family:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
@@ -155,27 +154,12 @@ body{
   transform:translateY(2px);
 }
 
-/* Tekst op klein kaartje: vast wit vlak + extra wit onder de tekst */
-.card .q .qText{
-  display:inline-block;
-  max-width:92%;
-  background:rgba(255,255,255,.92);
-  border-radius:14px;
-  padding:10px 14px 22px; /* "enter of twee" wit onder tekst */
-  box-shadow:0 10px 24px rgba(0,0,0,.06);
-}
-
 @media (max-width:520px){
   .card .q{
-    padding:0 14px;
+    padding:14px;
     font-size:9.75px;
     line-height:1.34;
     letter-spacing:-0.006em;
-  }
-  .card .q .qText{
-    padding:9px 12px 18px;
-    border-radius:13px;
-    max-width:94%;
   }
 }
 

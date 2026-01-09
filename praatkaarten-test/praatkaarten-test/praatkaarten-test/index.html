@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Praatkaartjes – uitleg carrousel demo</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <span>Uitleg</span>
+  <button id="toggleUitleg">Toon uitleg</button>
+</header>
+
+<section id="uitlegContainer" class="collapsed">
+  <div class="carousel">
+    <div class="slide active">
+      <div class="card front">Samen onderzoeken</div>
+      <div class="text" id="uitlegText"></div>
+    </div>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="grid-card">Vraag 1</div>
+  <div class="grid-card">Vraag 2</div>
+  <div class="grid-card">Vraag 3</div>
+  <div class="grid-card">Vraag 4</div>
+</section>
+    
+    <!-- INLINE VIEWER (Variant B: verschijnt ONDER de grid) -->
+    <section class="inlineViewer" id="inlineViewer" aria-hidden="true">
+      <div class="inlineViewerBar">
+        <button class="inlineClose" id="inlineClose" type="button" aria-label="Sluiten">✕</button>
+        <div class="inlineNav">
+          <button class="inlineBtn" id="inlinePrev" type="button" aria-label="Vorige">‹</button>
+          <button class="inlineBtn" id="inlineNext" type="button" aria-label="Volgende">›</button>
+        </div>
+      </div>
+
+      <div class="inlineImgWrap">
+        <img class="inlineImg" id="inlineImg" alt="">
+      </div>
+
+      <div class="inlineText" id="inlineText"></div>
+
+      <div class="inlineHelpText" id="inlineHelpText" aria-hidden="true">
+        <div class="inlineHelpDesc" id="inlineHelpDesc"></div>
+      </div>
+    </section>
+
+
+<footer class="bottombar">
+  <span>Hussel</span>
+  <span>Reset</span>
+  <span>Uitleg</span>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
