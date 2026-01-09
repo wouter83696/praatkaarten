@@ -397,38 +397,3 @@ body.hm-open{ overflow:hidden; }
 
 
 
-
-/* ===== v3.3.2 UI tweaks ===== */
-/* Subtiele blur/dim achter de viewer (alleen als open) */
-body.lb-open::before,
-body.show-intro::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  backdrop-filter: blur(3px);
-  background: rgba(0,0,0,0.04);
-  z-index: 8; /* onder lightbox en onder bottom bar */
-  pointer-events:none;
-}
-
-/* Sluitknop in menubalk: alleen zichtbaar als viewer/uitleg open is */
-#closeBtn{ display:none; }
-body.lb-open #closeBtn,
-body.show-intro #closeBtn{ display:inline-flex; }
-
-.chip-close{
-  margin-left: auto;
-  opacity: .8;
-}
-.chip-close:hover{ opacity: 1; }
-
-/* White frame/rand rond kaart voorkomen in viewer */
-.lb .cardWrap,
-.lb .card-wrap,
-#lb .cardWrap,
-#lb .card-wrap{
-  background: transparent !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
