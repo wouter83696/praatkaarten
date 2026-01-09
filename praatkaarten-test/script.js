@@ -1,3 +1,7 @@
+// Auto base-path (map-onafhankelijk)
+const BASE = new URL('.', document.currentScript.src).href;
+const assetUrl = (p) => new URL(p, BASE).href;
+
 // Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
 function setVh(){
   const vh = window.innerHeight * 0.01;

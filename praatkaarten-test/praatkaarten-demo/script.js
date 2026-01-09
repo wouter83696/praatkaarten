@@ -1,3 +1,7 @@
+// Auto base-path (map-onafhankelijk)
+const BASE = new URL('.', document.currentScript.src).href;
+const assetUrl = (p) => new URL(p, BASE).href;
+
 const VERSION = '2.5.2';
 
 // ===============================

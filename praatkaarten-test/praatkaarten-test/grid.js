@@ -1,3 +1,7 @@
+// Auto base-path (map-onafhankelijk)
+const BASE = new URL('.', document.currentScript.src).href;
+const assetUrl = (p) => new URL(p, BASE).href;
+
 const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');

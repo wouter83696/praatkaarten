@@ -1,3 +1,7 @@
+// Auto base-path (map-onafhankelijk)
+const BASE = new URL('.', document.currentScript.src).href;
+const assetUrl = (p) => new URL(p, BASE).href;
+
 (async function(){
   // Let op: deze uitleg draait in een iframe (helpModal) en gebruikt daarom absolute paden
   // naar je GitHub Pages submap.
