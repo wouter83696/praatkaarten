@@ -55,6 +55,67 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
+  // ===============================
+  // DOCKED VIEWER (Variant B) — vast onderin
+  // ===============================
+  const controlsBar = document.querySelector('.controlsBar');
+  const dockViewer = document.getElementById('dockViewer');
+  const dockImg = document.getElementById('dockImg');
+  const dockText = document.getElementById('dockText');
+  const dockHelp = document.getElementById('dockHelp');
+  const dockHelpDesc = document.getElementById('dockHelpDesc');
+  const dockClose = document.getElementById('dockClose');
+  const dockPrev = document.getElementById('dockPrev');
+  const dockNext = document.getElementById('dockNext');
+
+  function setControlsH(){
+    const h = controlsBar ? controlsBar.getBoundingClientRect().height : 74;
+    document.documentElement.style.setProperty('--controlsH', `${Math.round(h)}px`);
+  }
+  setControlsH();
+  window.addEventListener('resize', setControlsH);
+  if (window.visualViewport){ window.visualViewport.addEventListener('resize', setControlsH); }
+
+  function openDock(item){
+    if(!dockViewer) return;
+
+    dockImg.src = item.bg || "";
+
+    if(mode === 'help'){
+      if(dockHelp) dockHelp.classList.add('open');
+      if(dockHelp) dockHelp.setAttribute('aria-hidden','false');
+      if(dockText) dockText.style.display = 'none';
+
+      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
+        ? 'verdiepen'
+        : item.key;
+
+      const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
+      const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
+      if(dockHelpDesc) dockHelpDesc.textContent = desc;
+    }else{
+      if(dockHelp) dockHelp.classList.remove('open');
+      if(dockHelp) dockHelp.setAttribute('aria-hidden','true');
+      if(dockText) dockText.style.display = '';
+      if(dockText) dockText.textContent = item.q || "";
+      if(dockHelpDesc) dockHelpDesc.textContent = "";
+    }
+
+    dockViewer.classList.add('open');
+    dockViewer.setAttribute('aria-hidden','false');
+  }
+
+  function closeDock(){
+    if(!dockViewer) return;
+    dockViewer.classList.remove('open');
+    dockViewer.setAttribute('aria-hidden','true');
+    // Als je sluit terwijl uitleg aan staat: zet toggle uit
+    if(mode === 'help' && uitlegToggle){
+      uitlegToggle.checked = false;
+      mode = 'cards';
+    }
+  }
+
   // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
   if(lbHelpTitle){
     lbHelpTitle.textContent = "";
@@ -189,6 +250,9 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
 
   function openLb(item){
+    // Variant B: docked viewer actief -> gebruik geen overlay
+    if(document.getElementById('dockViewer')){ return; }
+
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
     lbImg.src = item.bg || "";
     if(item.bg) setLightboxBackground(item.bg);
@@ -286,7 +350,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     suppressClickUntil = performance.now() + 450;
     try{ e?.preventDefault?.(); }catch(_e){}
     try{ e?.stopPropagation?.(); }catch(_e){}
-    closeLb();
+    closeDock();
   }
 
   // Fallback: tap/click op de achtergrond (blur) sluit ook (handig als iOS pointer-events raar doet)
@@ -368,7 +432,7 @@ lb.addEventListener('pointerup', (e) => {
     const thrY = fast ? 50 : 80;
 
     if(ay > ax && dy > thrY){
-      closeLb();
+      closeDock();
       return;
     }
     if(ax > ay && ax > thrX){
@@ -449,7 +513,7 @@ lb.addEventListener('pointerup', (e) => {
     }
     e.stopPropagation();
   });
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeDock(); });
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
@@ -461,7 +525,7 @@ lb.addEventListener('pointerup', (e) => {
       if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
         closeFromTap(e);
       } else {
-        closeLb();
+        closeDock();
       }
       return;
     }
@@ -481,7 +545,7 @@ lb.addEventListener('pointerup', (e) => {
   }, true);
 document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLb();
+    if(e.key === 'Escape') closeDock();
     if(e.key === 'ArrowLeft') go(-1);
     if(e.key === 'ArrowRight') go(1);
   });
@@ -512,7 +576,7 @@ document.addEventListener('keydown', (e) => {
       helpFiltered = helpItems.slice();
       openAt(0);
     }else{
-      if(mode === 'help') closeLb();
+      if(mode === 'help') closeDock();
       mode = 'cards';
     }
   }
@@ -524,7 +588,7 @@ document.addEventListener('keydown', (e) => {
     mode = 'cards';
     filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
     render(filtered);
-    closeLb();
+    closeDock();
   }
 
   // Start: beide uit
@@ -539,7 +603,12 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
-  (async function init(){
+  
+  // Docked viewer controls
+  if(dockClose) dockClose.addEventListener('click', (e) => { e.stopPropagation(); closeDock(); });
+  if(dockPrev) dockPrev.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
+  if(dockNext) dockNext.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
+(async function init(){
     const res = await fetch(withV('questions.json'));
     const questions = await res.json();
     data = buildData(questions);
