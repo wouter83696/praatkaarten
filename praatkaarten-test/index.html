@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.5</title>
+<title>Praatkaarten v3.3.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -507,8 +507,6 @@ text-wrap: pretty;
   stroke:currentColor;
   stroke-width:2.6;
   fill:none;
-  stroke-linecap:round;
-  stroke-linejoin:round;
   pointer-events:none;
 }
 
@@ -975,155 +973,94 @@ body.hm-open{overflow:hidden}
   display:none; /* swipe-tekst onderaan uit (voor nu) */
 }
 
-
 /* ===============================
-   UI PILLS (v3.3.5) – terug naar v3.3.2 look, maar icon-only
-   - zelfde kleur/doorzicht als oude menubalk
-   - knoppen hangen boven het venster wanneer lightbox open is
+   ICON PILLS (i.p.v. menubalk)
+   - standaard onderin uitlijnen
+   - bij uitleg open: bovenaan
    =============================== */
 
-.controlsBar{
-  position:fixed;
-  inset:0;
-  z-index:3000;
-  pointer-events:none; /* alleen de buttons zijn klikbaar */
-}
+.controlsBar{ display:none !important; }
 
-/* links onder (default) */
-.controlsBar .pillRow.left{
-  position:absolute;
-  left:12px;
-  bottom:calc(12px + env(safe-area-inset-bottom));
+.pillsDock{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  z-index:3000;
+  padding:12px 12px calc(12px + env(safe-area-inset-bottom));
   display:flex;
-  gap:10px;
-  align-items:center;
+  justify-content:space-between;
+  align-items:flex-end;
   pointer-events:none;
 }
 
-/* rechts onder (default) */
-.controlsBar #closePill{
-  position:absolute;
-  right:12px;
-  bottom:calc(12px + env(safe-area-inset-bottom));
-  pointer-events:auto;
+body.uitleg-open .pillsDock{
+  top:0;
+  bottom:auto;
+  padding-top:calc(12px + env(safe-area-inset-top));
+  padding-bottom:12px;
+  align-items:flex-start;
 }
 
-.uiPill{
-  pointer-events:auto;
-  width:44px;
-  height:44px;
-  padding:0;
+.pillsLeft,
+.pillsRight{display:flex; gap:10px; pointer-events:auto;}
+
+.pill{
+  appearance:none;
   border:0;
+  width:42px;
+  height:42px;
   border-radius:999px;
   display:grid;
   place-items:center;
+  cursor:pointer;
 
   background:rgba(255,255,255,.86);
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
-
-  color: rgba(11,18,32,.45);
-  box-shadow: inset 0 0 0 1px rgba(11,18,32,.08);
-  opacity:.78;
-
-  transition: opacity .22s ease, background-color .22s ease, transform .06s ease;
+  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10), 0 10px 30px rgba(0,0,0,.10);
+  color: var(--uiInk);
+  transition: background .18s ease, box-shadow .18s ease, transform .05s ease, opacity .18s ease;
 }
+.pill:hover{ background: rgba(243,245,238,.88); }
+.pill:active{ transform: translateY(1px); }
+.pill:focus-visible{ outline: 2px solid rgba(48,96,136,.35); outline-offset: 2px; }
 
-@media (hover:hover){
-  .uiPill:hover{
-    opacity:.92;
-    background:rgba(255,255,255,.92);
-  }
-}
+.pill svg{ width:20px; height:20px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95; }
 
-.uiPill:active{ transform: translateY(1px); }
-
-.uiPill svg{
-  width:22px;height:22px;
-  stroke:currentColor;
-  stroke-width:2.6;
-  fill:none;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-
-/* Chip-state (shuffle/uitleg aan) */
-.uiPill.chip.is-on{
+.pill.is-on{
   background: rgba(48,96,136,.12);
-  box-shadow: inset 0 0 0 1px rgba(48,96,136,.22);
-  opacity:.92;
+  box-shadow: inset 0 0 0 1px rgba(48,96,136,.22), 0 10px 30px rgba(0,0,0,.10);
   color: rgba(11,18,32,.58);
 }
 
-/* Close pill standaard uit (tot venster open is) */
-.uiClosePill{
-  opacity:0;
-  pointer-events:none;
+/* Telefoon landscape: verberg de pills (zelfde gedrag als oude menubalk) */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
+  .pillsDock{ display:none !important; }
 }
-
-/* Als lightbox open is: knoppen boven het venster */
-body.lb-open .controlsBar .pillRow.left{
-  bottom:auto;
-  top:calc(12px + env(safe-area-inset-top));
-  pointer-events:none;
-}
-body.lb-open .controlsBar #closePill{
-  bottom:auto;
-  top:calc(12px + env(safe-area-inset-top));
-}
-
-/* Fade-in / fade-out van close bij openen */
-body.lb-open .uiClosePill{
-  pointer-events:auto;
-  animation: closePulse 2200ms ease forwards;
-}
-@keyframes closePulse{
-  0%{ opacity:0; transform: translateY(-4px); }
-  14%{ opacity:1; transform: translateY(0); }
-  70%{ opacity:.90; transform: translateY(0); }
-  100%{ opacity:.55; transform: translateY(0); }
-}
-@media (hover:hover){
-  body.lb-open .uiClosePill:hover{ opacity:.92; }
-}
-
-/* Geen 'lijnen' (separators) meer zichtbaar */
-.controlsBar .sep{ display:none !important; }
 
 </style>
 </head>
 <body>
 
-
-<div class="controlsBar" aria-label="Bediening">
-  <div class="pillRow left">
-    <button class="uiPill chip" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M16 3h5v5" />
-        <path d="M4 7h7l2 3" />
-        <path d="M21 8l-3-3" />
-        <path d="M16 21h5v-5" />
-        <path d="M4 17h7l2-3" />
-        <path d="M21 16l-3 3" />
-      </svg>
+<!-- 3 losse pills (icon-only) i.p.v. menubalk -->
+<div class="pillsDock" aria-label="Bediening">
+  <div class="pillsLeft">
+    <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 7h6l10 10h1"/><path d="M16 21h5v-5"/><path d="M4 17h6l2-2"/><path d="M21 8l-2 2"/></svg>
     </button>
-
-    <button class="uiPill chip" id="uitlegBtn" type="button" aria-label="Uitleg" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 17h.01" />
-        <path d="M9.5 9a2.5 2.5 0 1 1 3.9 2c-.8.6-1.4 1.1-1.4 2V14" />
-        <path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10Z" />
-      </svg>
+    <button class="pill" id="uitlegBtn" type="button" aria-label="Uitleg" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18h.01"/><path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2-3 4"/><path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10z"/></svg>
     </button>
   </div>
 
-  <button class="uiPill uiClosePill" id="closePill" type="button" aria-label="Sluiten">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M18 6L6 18" />
-      <path d="M6 6l12 12" />
-    </svg>
-  </button>
+  <div class="pillsRight">
+    <button class="pill" id="closeAllBtn" type="button" aria-label="Sluiten">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
 </div>
+
 
 <div class="grid" id="grid"></div>
 
@@ -1156,7 +1093,7 @@ body.lb-open .uiClosePill{
 
 
 
-<script src="script.js?v=3.3.5"></script>
+<script src="script.js?v=3.3.3"></script>
 
 
 

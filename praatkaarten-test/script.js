@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.2';
+const VERSION = '3.3.3';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -106,7 +106,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
-  const closePill = document.getElementById('closePill');
+  const closeAllBtn = document.getElementById('closeAllBtn');
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -572,6 +572,9 @@ document.addEventListener('keydown', (e) => {
     uitlegOn = !!on;
     setChip(uitlegBtn, uitlegOn);
 
+    // Pills verplaatsen: onder ↔ boven
+    document.body.classList.toggle('uitleg-open', uitlegOn);
+
     if(isMobile()){
       document.body.classList.toggle('show-intro', uitlegOn);
       return;
@@ -603,6 +606,7 @@ document.addEventListener('keydown', (e) => {
   setChip(shuffleBtn, false);
   setChip(uitlegBtn, false);
   document.body.classList.remove('show-intro');
+  document.body.classList.remove('uitleg-open');
 
   if(shuffleBtn){
     shuffleBtn.addEventListener('click', () => setShuffle(!shuffleOn));
@@ -611,13 +615,17 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
-  if(closePill){
-    closePill.addEventListener('click', () => {
-      // Alleen sluiten als de lightbox open is
-      if(lb && lb.classList.contains('open')) closeLb();
+  // Sluiten (X): sluit wat er open staat
+  if(closeAllBtn){
+    closeAllBtn.addEventListener('click', () => {
+      // 1) uitleg uit (dit sluit ook help-lightbox / mobile intro)
+      if(uitlegOn) setUitleg(false);
+      // 2) shuffle uit (terug naar originele volgorde)
+      if(shuffleOn) setShuffle(false);
+      // 3) lightbox dicht (als er nog iets open staat)
+      if(lb.classList.contains('open')) closeLb();
     });
   }
-
 
   (async function init(){
     const res = await fetch(withV('questions.json'));
