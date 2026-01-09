@@ -642,103 +642,6 @@ display:block;}
     pointer-events:none !important;
   }
 }
-
-
-/* =========================================================
-   DOCKED VIEWER (Variant B) — vast onderin, menu erboven
-   ========================================================= */
-:root{ --controlsH: 74px; }
-
-.dockViewer{
-  position:fixed;
-  left:0; right:0;
-  bottom: calc(var(--controlsH) + env(safe-area-inset-bottom));
-  z-index: 2500;
-  display:none;
-  padding: 10px 12px 12px;
-  box-sizing:border-box;
-}
-
-.dockViewer.open{ display:block; }
-
-.dockViewer{
-  width: min(92vw, 560px);
-  margin: 0 auto;
-  background:#fff;
-  border-radius: 26px;
-  box-shadow: var(--shadow);
-  max-height: calc((var(--vh, 1vh) * 100) - var(--controlsH) - 24px - env(safe-area-inset-bottom));
-  overflow:hidden;
-}
-
-/* bovenbalkje */
-.dockBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding: 10px 10px 8px;
-}
-
-.dockClose{
-  width:40px;height:40px;border:0;border-radius:12px;
-  background:rgba(245,245,245,.95);
-  font:500 20px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color: rgba(80,90,100,.85);
-}
-
-.dockNav{ display:flex; gap:8px; }
-.dockBtn{
-  width:44px;height:40px;border:0;border-radius:12px;
-  background:rgba(245,245,245,.95);
-  font:500 22px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  color: rgba(80,90,100,.85);
-}
-
-/* kaart */
-.dockImgWrap{
-  margin: 0 10px 10px;
-  aspect-ratio:241/156;
-  border-radius:22px;
-  overflow:hidden;
-  background:#fff;
-  box-shadow: var(--shadow);
-}
-.dockImg{ width:100%; height:100%; object-fit:contain; display:block; }
-
-/* tekstgebied scrollt binnen paneel */
-.dockBody{
-  padding: 0 10px 12px;
-  overflow:auto;
-  max-height: calc((var(--vh, 1vh) * 100) - var(--controlsH) - 24px - env(safe-area-inset-bottom) - 120px);
-  -webkit-overflow-scrolling: touch;
-}
-.dockText{
-  padding: 12px 12px 14px;
-  border-radius:18px;
-  background:#fff;
-  box-shadow: var(--shadow);
-  color: rgba(60,70,80,.90);
-  font-size:16px;
-  line-height:1.35;
-  white-space:pre-wrap;
-}
-.dockHelp{ display:none; margin-top:10px; }
-.dockHelp.open{ display:block; }
-.dockHelpDesc{
-  padding: 12px 12px 14px;
-  border-radius:18px;
-  background:#fff;
-  box-shadow: var(--shadow);
-  color: rgba(60,70,80,.90);
-  font-size:16px;
-  line-height:1.35;
-}
-
-/* op desktop iets breder + meer lucht */
-@media (hover:hover) and (pointer:fine){
-  .dockViewer{ width: min(640px, 92vw); }
-}
-
 </style>
 </head>
 <body>
@@ -1144,30 +1047,6 @@ lb.setAttribute('aria-hidden','false');
 </script>
 
 
-
-
-<!-- DOCKED VIEWER (Variant B: vast onderin) -->
-<section class="dockViewer" id="dockViewer" aria-hidden="true">
-  <div class="dockBar">
-    <button class="dockClose" id="dockClose" type="button" aria-label="Sluiten">✕</button>
-    <div class="dockNav">
-      <button class="dockBtn" id="dockPrev" type="button" aria-label="Vorige">‹</button>
-      <button class="dockBtn" id="dockNext" type="button" aria-label="Volgende">›</button>
-    </div>
-  </div>
-
-  <div class="dockImgWrap">
-    <img class="dockImg" id="dockImg" alt="">
-  </div>
-
-  <div class="dockBody" id="dockBody">
-    <div class="dockText" id="dockText"></div>
-
-    <div class="dockHelp" id="dockHelp" aria-hidden="true">
-      <div class="dockHelpDesc" id="dockHelpDesc"></div>
-    </div>
-  </div>
-</section>
 
 </body>
 </html>
