@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v2.5.2</title>
+<title>Praatkaarten v2.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -829,6 +829,44 @@ body.hm-open{overflow:hidden}
 .lbBelow{margin-top:-1px;}
 
 .lb.help-title .lbText{place-items:center; text-align:center;}
+
+
+
+/* ===============================
+   MOBIELE UITLEG-CAROUSEL (v2.7)
+   =============================== */
+
+.mobileIntro{display:none; margin:16px auto 8px; width:min(940px, 100%); padding:0 14px;}
+@media (max-width: 720px){
+  .mobileIntro{display:block;}
+}
+.mobileIntro.is-collapsed .introTrack,
+.mobileIntro.is-collapsed .introHint{display:none;}
+.mobileIntro.is-collapsed{margin-bottom:4px;}
+
+.introHead{display:flex; align-items:center; justify-content:space-between; margin:0 6px 10px;}
+.introTitle{font-weight:500; color:rgba(60,70,80,.75); font-size:14px; letter-spacing:.2px;}
+.introToggle{border:0; background:rgba(255,255,255,.55); backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color:rgba(60,70,80,.75); padding:8px 12px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.08);
+  font:500 13px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.introTrack{display:flex; gap:14px; overflow-x:auto; padding:0 6px 8px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+}
+.introTrack::-webkit-scrollbar{display:none;}
+.introCard{flex:0 0 auto; width:min(86vw, 420px); scroll-snap-align:center;
+  border-radius:24px; overflow:hidden; background:rgba(255,255,255,.55);
+  box-shadow:var(--shadow);
+}
+.introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;}
+.introImg{width:100%; height:100%; object-fit:contain; display:block;}
+.introText{background:#fff; padding:14px 16px 16px;}
+.introTextTitle{font-weight:500; color:rgba(48,96,136,.95); font-size:18px; margin:0 0 6px;}
+.introTextBody{color:rgba(60,70,80,.78); font-size:15px; line-height:1.35; overflow-wrap:anywhere; white-space:normal;}
+.introHint{margin:8px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
+
 </style>
 </head>
 <body>
@@ -847,6 +885,19 @@ body.hm-open{overflow:hidden}
     </div>
   </div>
 </div>
+
+<section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
+  <div class="introHead">
+    <div class="introTitle">Uitleg</div>
+    <button class="introToggle" id="introToggle" type="button" aria-expanded="true">Verberg</button>
+  </div>
+
+  <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
+    <!-- wordt gevuld vanuit intro-data.json -->
+  </div>
+
+  <div class="introHint" aria-hidden="true">← → swipe</div>
+</section>
 
 <div class="grid" id="grid"></div>
 
@@ -872,7 +923,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=2.5.2"></script>
+<script src="script.js?v=2.8"></script>
 
 
 

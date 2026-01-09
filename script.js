@@ -11,7 +11,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = "2.5.2";
+const VERSION = '2.8';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -509,3 +509,91 @@ window.closeLb = closeLb;
 
 
 window.go = go;
+
+
+
+// ===============================
+// Mobiele uitleg-carousel (v2.7)
+// ===============================
+(function(){
+  const section = document.getElementById('mobileIntro');
+  const btn = document.getElementById('introToggle');
+  if(!section || !btn) return;
+
+  const key = 'introCollapsed';
+  const setState = (collapsed) => {
+    section.classList.toggle('is-collapsed', collapsed);
+    btn.textContent = collapsed ? 'Toon' : 'Verberg';
+    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    try{ localStorage.setItem(key, collapsed ? '1' : '0'); }catch(e){}
+  };
+
+  let collapsed = false;
+  try{ collapsed = localStorage.getItem(key) === '1'; }catch(e){}
+  setState(collapsed);
+
+  btn.addEventListener('click', () => setState(!section.classList.contains('is-collapsed')));
+})();
+
+
+
+
+/* ===============================
+   v2.8 – Mobile uitleg-carousel vanuit JSON
+   =============================== */
+async function renderMobileIntro(){
+  const section = document.getElementById('mobileIntro');
+  const track = document.getElementById('introTrack');
+  if(!section || !track) return;
+
+  let data = null;
+  try{
+    const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
+    data = await r.json();
+  }catch(e){
+    return;
+  }
+  if(!data || !Array.isArray(data.slides)) return;
+
+  // Build cards
+  track.innerHTML = '';
+  for(const s of data.slides){
+    const art = document.createElement('article');
+    art.className = 'introCard';
+    art.dataset.intro = s.key || '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'introImgWrap';
+
+    const img = document.createElement('img');
+    img.className = 'introImg';
+    img.src = withV(s.img || '');
+    img.alt = s.alt || s.title || '';
+    wrap.appendChild(img);
+
+    const text = document.createElement('div');
+    text.className = 'introText';
+
+    const t = document.createElement('div');
+    t.className = 'introTextTitle';
+    t.textContent = s.title || '';
+    const b = document.createElement('div');
+    b.className = 'introTextBody';
+    b.textContent = s.body || '';
+
+    text.appendChild(t);
+    text.appendChild(b);
+
+    art.appendChild(wrap);
+    art.appendChild(text);
+    track.appendChild(art);
+  }
+
+  // Hint text (optional)
+  const hintEl = section.querySelector('.introHint');
+  if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
+}
+
+// Fire & forget after DOM is ready
+document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
+
