@@ -36,6 +36,13 @@
       "alt": "Verhelderen"
     },
     {
+      "key": "verdiepen",
+      "title": "Verdiepen",
+      "body": "Bij verdiepen staan we stil bij wat onder de oppervlakte meespeelt in de samenwerking.",
+      "img": "cards/verdiepen.svg",
+      "alt": "Verdiepen"
+    },
+    {
       "key": "vertragen",
       "title": "Vertragen",
       "body": "Bij vertragen staan we stil bij het tempo en nemen we bewust de tijd om rust en overzicht te creëren in de samenwerking.",

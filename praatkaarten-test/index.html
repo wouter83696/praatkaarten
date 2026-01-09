@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaartjes – Samen onderzoeken (v3.4.1)</title>
+<title>Praatkaarten v3.5.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -26,12 +26,6 @@
   /* WARM "INKT" (bruin-grijs) voor cursor + iconen */
   --uiInk: rgba(11,18,32,.45);
   --uiInkSoft: rgba(11,18,32,.22);
-
-  /* hoogte van de icon-pills onderin (voor offset van de mobiele uitleg-sheet) */
-  --pillsDockH: 72px;
-
-  /* vaste kaartverhouding (SVG viewBox 240.94 × 155.91) */
-  --cardAR: 240.94 / 155.91;
 }
 
 *{box-sizing:border-box}
@@ -299,7 +293,7 @@ body.lb-open .navHintMini{ opacity:0; }
   transform: translateX(var(--lb-bg-shift, 0px)) scale(1.08);
   transition: transform .18s ease;
   filter: blur(18px);
-  opacity: .18;
+  opacity: .38;
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -321,7 +315,7 @@ body.lb-open .navHintMini{ opacity:0; }
   width:100vw;
   height:100dvh;
   min-height:100dvh;
-  background: rgba(255,255,255,.42);
+  background: rgba(255,255,255,.22);
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -361,12 +355,9 @@ body.lb-open .navHintMini{ opacity:0; }
 }
 
 #lbImg{
-  width:100%;
+  width:100.2%;
+  margin-left:-0.1%;
   display:block;
-  /* Forceer juiste verhouding (voorkomt 'te hoge' kaarten in uitleg) */
-  aspect-ratio: var(--cardAR);
-  height:auto;
-  object-fit:contain;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
@@ -500,21 +491,9 @@ text-wrap: pretty;
 .lb.show-ui .chev,
 .lb.show-ui .close{opacity:1;}
 
-/* In uitleg-modus moet het kruisje altijd beschikbaar blijven */
-.lb.help .close{opacity:1 !important;}
-
 .chev.left{left:10px;top:50%;transform:translateY(-50%);}
 .chev.right{right:10px;top:50%;transform:translateY(-50%);}
 .close{top:10px;right:10px;}
-
-/* Desktop: geen "witte ringen" rond de overlay-controls; subtieler + fade via show-ui */
-@media (hover:hover) and (pointer:fine){
-  .chev,.close{
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-  }
-}
 /* Touch (telefoon/tablet): alleen kruisje tonen (geen pijlen/cursors) */
 @media (hover:none) and (pointer:coarse){
   .chev{ display:none !important; }
@@ -831,8 +810,7 @@ body.hm-open{overflow:hidden}
   position:relative;
   width:min(560px, 100%);
   height:min(820px, calc(var(--vh, 1vh) * 92));
-  /* overlay/paneel: vierkant (kaart binnenin blijft afgerond) */
-  border-radius:0;
+  border-radius:18px;
   overflow:hidden;
   background:#FAFAF8;
   box-shadow:0 18px 45px rgba(0,0,0,.20);
@@ -860,22 +838,19 @@ body.hm-open{overflow:hidden}
   .lbCard{ cursor:crosshair; }
 }
 
-/* iOS hairline fix (zonder de verhouding te breken) */
+/* iOS hairline fix: overscan afbeelding net over de rand */
 #lbImg{
-  display:block;
-  width:100%;
-  height:auto;
-  aspect-ratio: var(--cardAR);
-  object-fit:contain;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   backface-visibility: hidden;
-  -webkit-backface-visibility:hidden;
 }
 .lb.help #lbImg{
-  width:100%;
-  margin-left:0;
+  width: calc(100% + 2px);
+  margin-left: -1px;
 }
+
+
+#lbImg{display:block; width:calc(100% + 2px); margin-left:-1px; margin-top:-1px; height:auto; transform:translateZ(0); backface-visibility:hidden; -webkit-backface-visibility:hidden;}
 
 .lbBelow{margin-top:-1px;}
 
@@ -899,15 +874,16 @@ body.hm-open{overflow:hidden}
   /* altijd aanwezig, maar standaard buiten beeld */
   height: var(--introSheetH, 0px);
   position:fixed;
-  /* iets hoger zodat de pills de tekst/kaart niet overlappen */
-  left:0; right:0; bottom: var(--pillsDockH);
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  left:0; right:0; bottom:0;
+  /* extra onder-padding zodat de pills nooit over tekst/kaart vallen */
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom) + 64px);
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
   background: transparent;
 
-  border-radius: 18px 18px 0 0;
+  /* overlay/paneel: vierkant (kaart binnenin blijft afgerond) */
+  border-radius: 0;
   /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
   box-shadow:
     0 -18px 55px rgba(0,0,0,.14),
@@ -931,8 +907,9 @@ body.hm-open{overflow:hidden}
   background-size: cover;
   background-position: center;
   transform: scale(1.08);
-  filter: blur(18px);
-  opacity: .18;
+  /* sterk diffuus, niet leesbaar */
+  filter: blur(20px);
+  opacity: .12;
   pointer-events:none;
   z-index:0;
 }
@@ -940,7 +917,8 @@ body.hm-open{overflow:hidden}
   content:"";
   position:absolute;
   inset:0;
-  background: rgba(255,255,255,.42);
+  /* popup bijna opaak voor rust */
+  background: rgba(255,255,255,.94);
   pointer-events:none;
   z-index:1;
 }
@@ -957,9 +935,9 @@ body.hm-open{overflow:hidden}
   }
 }
 
-/* Desktop/tablet: carousel niet gebruiken */
+/* Desktop: iets ruimere sheet, maar nog compact */
 @media (min-width: 721px){
-  .mobileIntro{ display:none; }
+  body{ --introSheetH: min(42vh, 520px); }
 }
 
 .introTrack{
@@ -1009,12 +987,6 @@ body.hm-open{overflow:hidden}
   pointer-events:none;
 }
 .introImg{width:100%; height:100%; object-fit:cover; display:block;}
-
-/* Uitleg-kaarten mogen niet "inzoomen"; toon de volledige SVG in verhouding */
-.introImg{ object-fit:contain; background:#fff; }
-
-/* Uitleg-kaarten moeten volledig zichtbaar blijven (geen crop) */
-.introImg{ object-fit:contain; background:#fff; }
 
 /* Tekstdeel (clean) */
 .introText{
@@ -1066,6 +1038,12 @@ body.hm-open{overflow:hidden}
 
 .pillsLeft,
 .pillsRight{display:flex; gap:10px; pointer-events:auto;}
+
+/* Mobile: extra sluitknop alleen zinvol als de carousel open is */
+@media (hover:none) and (pointer:coarse){
+  .pillsRight{ opacity:0; pointer-events:none; transition:opacity .18s ease; }
+  body.show-intro .pillsRight{ opacity:1; pointer-events:auto; }
+}
 
 .pill{
   appearance:none;
@@ -1123,7 +1101,11 @@ body.hm-open{overflow:hidden}
     </button>
   </div>
 
-  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
+  <div class="pillsRight">
+    <button class="pill" id="closeIntroBtn" type="button" aria-label="Sluiten" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+    </button>
+  </div>
 </div>
 
 
@@ -1159,7 +1141,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.4.0"></script>
+<script src="script.js?v=3.5.0"></script>
 
 
 

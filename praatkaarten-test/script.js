@@ -79,11 +79,10 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.4.1';
+const VERSION = '3.5.0';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
-// Definitieve set (6 thema's) – 'verhelderen' is de vervanger van 'verdiepen'
-const THEMES = ["verkennen","duiden","verbinden","verhelderen","vertragen","bewegen"];
+const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
 
   // State
   let data = [];
@@ -110,6 +109,7 @@ const THEMES = ["verkennen","duiden","verbinden","verhelderen","vertragen","bewe
   const uitlegBtn  = document.getElementById('uitlegBtn');
   // (v3.3.7) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
+  const closeIntroBtn = document.getElementById('closeIntroBtn');
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -121,7 +121,7 @@ const THEMES = ["verkennen","duiden","verbinden","verhelderen","vertragen","bewe
   }
 
   function isMobile(){
-    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
+    return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
   }
   const lbHelpText = document.getElementById('lbHelpText');
   const lbHelpTitle = document.getElementById('lbHelpTitle');
@@ -223,6 +223,11 @@ const THEMES = ["verkennen","duiden","verbinden","verhelderen","vertragen","bewe
       btn.appendChild(inner);
 
       btn.addEventListener('click', () => {
+        // Mobiel: kaarten openen in dezelfde carousel (uitleg-viewer)
+        if(isMobile()){
+          openCarouselToCard(idx);
+          return;
+        }
         mode = 'cards';
         openAt(idx);
       });
@@ -559,27 +564,16 @@ document.addEventListener('keydown', (e) => {
   // - Uitleg: mobiel = carousel boven grid, desktop = help-lightbox
   // ===============================
 
-  function setUitleg(on){
+  function setUitleg(on, opts = {}){
     uitlegOn = !!on;
     setChip(uitlegBtn, uitlegOn);
 
-    // Pills verplaatsen: onder ↔ boven
-    document.body.classList.toggle('uitleg-open', uitlegOn);
-
-    if(isMobile()){
-      document.body.classList.toggle('show-intro', uitlegOn);
-      return;
-    }
-
-    // Desktop: help-lightbox aan/uit
+    // Carousel viewer (mobiel + desktop)
+    document.body.classList.toggle('show-intro', uitlegOn);
     if(uitlegOn){
-      // (v3.3.7) geen swipe-hint
-      mode = 'help';
-      helpFiltered = helpItems.slice();
-      openAt(0);
-    }else{
-      if(mode === 'help') closeLb();
-      mode = 'cards';
+      renderUnifiedCarousel();
+      const startIndex = (typeof opts.startIndex === 'number') ? opts.startIndex : UNIFIED_INDEX.cover;
+      openCarouselAtIndex(startIndex);
     }
   }
 
@@ -590,6 +584,8 @@ document.addEventListener('keydown', (e) => {
     mode = 'cards';
     filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
     render(filtered);
+    // Carousel opnieuw opbouwen zodat de kaart-volgorde matcht
+    renderUnifiedCarousel();
     closeLb();
   }
 
@@ -604,6 +600,10 @@ document.addEventListener('keydown', (e) => {
   }
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
+  }
+
+  if(closeIntroBtn){
+    closeIntroBtn.addEventListener('click', () => setUitleg(false));
   }
 
   // ===============================
@@ -707,65 +707,192 @@ window.go = go;
 
 
 /* ===============================
-   v2.8 – Mobile uitleg-carousel vanuit JSON
+   v3.5 – Unified carousel
+   - één carousel voor uitleg + gewone kaarten
+   - oneindig scrollen (loop)
+   - werkt op mobiel én desktop
    =============================== */
-async function renderMobileIntro(){
-  const section = document.getElementById('mobileIntro');
-  const track = document.getElementById('introTrack');
-  if(!section || !track) return;
 
-  let data = null;
-  try{
-    const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
-    data = await r.json();
-  }catch(e){
-    return;
-  }
-  if(!data || !Array.isArray(data.slides)) return;
+const UNIFIED_INDEX = { cover: 0, cardsStart: 0 };
+let _carouselBaseCount = 0;
+let _carouselIntroCount = 0;
+let _carouselReady = false;
 
-  // Build cards
-  track.innerHTML = '';
-  for(const s of data.slides){
-    const art = document.createElement('article');
-    art.className = 'introCard';
-    art.dataset.intro = s.key || '';
+function getTrack(){ return document.getElementById('introTrack'); }
 
-    const wrap = document.createElement('div');
-    wrap.className = 'introImgWrap';
+function buildIntroSlide(s){
+  const art = document.createElement('article');
+  art.className = 'introCard';
+  art.dataset.kind = 'intro';
+  art.dataset.key = s.key || '';
 
-    const img = document.createElement('img');
-    img.className = 'introImg';
-    img.src = withV(s.img || '');
-    img.alt = s.alt || s.title || '';
-    wrap.appendChild(img);
+  const wrap = document.createElement('div');
+  wrap.className = 'introImgWrap';
 
-    // Thema-naam in het midden van de kaart (alleen thema-kaarten, niet de voorkant)
-    if((s.key || '') !== 'cover' && (s.title || '').trim()){
-      const theme = document.createElement('div');
-      theme.className = 'introTheme';
-      theme.textContent = s.title;
-      wrap.appendChild(theme);
-    }
+  const img = document.createElement('img');
+  img.className = 'introImg';
+  img.src = withV(s.img || '');
+  img.alt = s.alt || s.title || '';
+  wrap.appendChild(img);
 
-    const text = document.createElement('div');
-    text.className = 'introText';
-
-    const b = document.createElement('div');
-    b.className = 'introTextBody';
-    b.textContent = s.body || '';
-
-    text.appendChild(b);
-
-    art.appendChild(wrap);
-    art.appendChild(text);
-    track.appendChild(art);
+  if((s.key || '') !== 'cover' && (s.title || '').trim()){
+    const theme = document.createElement('div');
+    theme.className = 'introTheme';
+    theme.textContent = s.title;
+    wrap.appendChild(theme);
   }
 
-  // Hint text (optional)
-  const hintEl = section.querySelector('.introHint');
-  if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
+  const text = document.createElement('div');
+  text.className = 'introText';
+  const b = document.createElement('div');
+  b.className = 'introTextBody';
+  b.textContent = s.body || '';
+  text.appendChild(b);
+
+  art.appendChild(wrap);
+  art.appendChild(text);
+  return art;
 }
 
-// Fire & forget after DOM is ready
-document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
+function buildCardSlide(item, idx){
+  const art = document.createElement('article');
+  art.className = 'introCard';
+  art.dataset.kind = 'card';
+  art.dataset.cardIndex = String(idx);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'introImgWrap';
+
+  const img = document.createElement('img');
+  img.className = 'introImg';
+  img.src = item.bg;
+  img.alt = '';
+  wrap.appendChild(img);
+
+  // Geen extra thema-overlay: de kaart zelf bevat de thema-kop/tekst.
+
+  const text = document.createElement('div');
+  text.className = 'introText';
+  const b = document.createElement('div');
+  b.className = 'introTextBody';
+  b.textContent = '';
+  text.appendChild(b);
+
+  art.appendChild(wrap);
+  art.appendChild(text);
+  return art;
+}
+
+function measureStep(track){
+  const kids = Array.from(track.children);
+  if(kids.length < 2) return 0;
+  const a = kids[0].offsetLeft;
+  const b = kids[1].offsetLeft;
+  return Math.max(1, b - a);
+}
+
+function setupInfiniteLoop(track, baseCount){
+  _carouselBaseCount = baseCount;
+  // Start altijd in het midden (set 2 van 3)
+  requestAnimationFrame(() => {
+    const step = measureStep(track);
+    if(step){
+      track.scrollLeft = step * baseCount; // start of middle set
+    }
+  });
+
+  let lock = false;
+  track.addEventListener('scroll', () => {
+    if(lock) return;
+    const step = measureStep(track);
+    if(!step) return;
+    const left = track.scrollLeft;
+    const min = step * 0.5;
+    const max = step * baseCount * 2 - step * 0.5;
+
+    if(left < min){
+      lock = true;
+      track.style.scrollBehavior = 'auto';
+      track.scrollLeft = left + step * baseCount;
+      requestAnimationFrame(() => { track.style.scrollBehavior = ''; lock = false; });
+    }else if(left > max){
+      lock = true;
+      track.style.scrollBehavior = 'auto';
+      track.scrollLeft = left - step * baseCount;
+      requestAnimationFrame(() => { track.style.scrollBehavior = ''; lock = false; });
+    }
+  }, {passive:true});
+}
+
+async function renderUnifiedCarousel(){
+  const section = document.getElementById('mobileIntro');
+  const track = getTrack();
+  if(!section || !track) return;
+
+  // Load intro JSON
+  let intro = null;
+  try{
+    const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
+    intro = await r.json();
+  }catch(_e){
+    intro = { slides: [] };
+  }
+  const introSlides = (intro && Array.isArray(intro.slides)) ? intro.slides : [];
+  _carouselIntroCount = introSlides.length;
+  UNIFIED_INDEX.cover = 0;
+  UNIFIED_INDEX.cardsStart = _carouselIntroCount;
+
+  // Build base slides (intro + kaarten)
+  const baseNodes = [];
+  for(const s of introSlides){ baseNodes.push(buildIntroSlide(s)); }
+  const cards = Array.isArray(filtered) ? filtered : [];
+  cards.forEach((it, idx) => baseNodes.push(buildCardSlide(it, idx)));
+
+  _carouselReady = false;
+  track.innerHTML = '';
+
+  // 3x set voor oneindig scrollen
+  const frag = document.createDocumentFragment();
+  for(let rep=0; rep<3; rep++){
+    for(const n of baseNodes){ frag.appendChild(n.cloneNode(true)); }
+  }
+  track.appendChild(frag);
+
+  // Zet lb-bg-url voor de diffuus achtergrond (pak cover als basis)
+  try{
+    const firstImg = track.querySelector('img');
+    if(firstImg && firstImg.getAttribute('src')){
+      document.body.style.setProperty('--lb-bg-url', `url("${firstImg.getAttribute('src')}")`);
+    }
+  }catch(_e){}
+
+  setupInfiniteLoop(track, baseNodes.length);
+  _carouselReady = true;
+}
+
+function openCarouselAtIndex(baseIndex){
+  const track = getTrack();
+  if(!track) return;
+  // Wacht tot de carousel klaar is
+  const go = () => {
+    const step = measureStep(track);
+    if(!step) return;
+    const baseCount = _carouselBaseCount || (track.children.length / 3);
+    const target = step * (baseCount + baseIndex);
+    track.scrollTo({ left: target, behavior: 'auto' });
+  };
+  if(_carouselReady){
+    requestAnimationFrame(go);
+  }else{
+    requestAnimationFrame(() => requestAnimationFrame(go));
+  }
+}
+
+function openCarouselToCard(cardIdx){
+  // Zorg dat uitleg (carousel) open is, en scroll naar de kaart
+  const startIndex = UNIFIED_INDEX.cardsStart + cardIdx;
+  setUitleg(true, { startIndex });
+}
+
+document.addEventListener('DOMContentLoaded', () => { renderUnifiedCarousel(); });
 
