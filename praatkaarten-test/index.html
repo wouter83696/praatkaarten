@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.5.0</title>
+<title>Praatkaarten v3.5.2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -875,15 +875,13 @@ body.hm-open{overflow:hidden}
   height: var(--introSheetH, 0px);
   position:fixed;
   left:0; right:0; bottom:0;
-  /* extra onder-padding zodat de pills nooit over tekst/kaart vallen */
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom) + 64px);
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
   background: transparent;
 
-  /* overlay/paneel: vierkant (kaart binnenin blijft afgerond) */
-  border-radius: 0;
+  border-radius: 18px 18px 0 0;
   /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
   box-shadow:
     0 -18px 55px rgba(0,0,0,.14),
@@ -907,7 +905,6 @@ body.hm-open{overflow:hidden}
   background-size: cover;
   background-position: center;
   transform: scale(1.08);
-  /* sterk diffuus, niet leesbaar */
   filter: blur(20px);
   opacity: .12;
   pointer-events:none;
@@ -917,7 +914,6 @@ body.hm-open{overflow:hidden}
   content:"";
   position:absolute;
   inset:0;
-  /* popup bijna opaak voor rust */
   background: rgba(255,255,255,.94);
   pointer-events:none;
   z-index:1;
@@ -935,9 +931,9 @@ body.hm-open{overflow:hidden}
   }
 }
 
-/* Desktop: iets ruimere sheet, maar nog compact */
+/* Desktop/tablet: carousel niet gebruiken */
 @media (min-width: 721px){
-  body{ --introSheetH: min(42vh, 520px); }
+  .mobileIntro{ display:none; }
 }
 
 .introTrack{
@@ -1039,12 +1035,6 @@ body.hm-open{overflow:hidden}
 .pillsLeft,
 .pillsRight{display:flex; gap:10px; pointer-events:auto;}
 
-/* Mobile: extra sluitknop alleen zinvol als de carousel open is */
-@media (hover:none) and (pointer:coarse){
-  .pillsRight{ opacity:0; pointer-events:none; transition:opacity .18s ease; }
-  body.show-intro .pillsRight{ opacity:1; pointer-events:auto; }
-}
-
 .pill{
   appearance:none;
   border:0;
@@ -1101,11 +1091,7 @@ body.hm-open{overflow:hidden}
     </button>
   </div>
 
-  <div class="pillsRight">
-    <button class="pill" id="closeIntroBtn" type="button" aria-label="Sluiten" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
-    </button>
-  </div>
+  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
 </div>
 
 
@@ -1141,7 +1127,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.5.0"></script>
+<script src="script.js?v=3.5.2"></script>
 
 
 
