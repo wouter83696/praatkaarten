@@ -226,3 +226,9 @@ body.show-hint .navHintMini{ opacity:.72; }
   background: #fff;
   padding: 16px 20px 18px;
 }
+
+
+/* v2.6 – uitleg SVG onderkant recht */
+.kaart-beeld img{
+  border-radius: 0 !important;
+}
