@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.2';
+const VERSION = '3.3.3';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -103,9 +103,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
-  // Onderbalk: chips (v3.2)
+  // UI pills (v3.3.3)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
+  const uiCloseBtn = document.getElementById('uiClose');
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -153,6 +154,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
   let hintTimer = null;
+  let closeHintTimer = null;
   const HINT_KEY = 'pk_nav_hint_shown';
   const IS_TOUCH = (
     (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
@@ -282,8 +284,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
+      // In help-mode: thema-naam in het midden van de kaart (cover = leeg)
+      lbText.textContent = (item.theme || "").trim();
       lb.classList.add('no-overlay');
       lb.classList.remove('help-title');
     }
@@ -300,6 +302,14 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
     document.body.classList.add('lb-open');
+
+    // Close-button: automatisch even duidelijker (fade-in), daarna weer subtiel
+    document.body.classList.add('show-close-hint');
+    if(closeHintTimer) clearTimeout(closeHintTimer);
+    closeHintTimer = setTimeout(()=>{
+      document.body.classList.remove('show-close-hint');
+    }, 2200);
+
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
@@ -328,6 +338,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     currentIndex = -1;
     lb.setAttribute('aria-hidden','true');
     document.body.classList.remove('lb-open');
+    if(closeHintTimer) clearTimeout(closeHintTimer);
+    document.body.classList.remove('show-close-hint');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     clearTimeout(hintTimer);
@@ -524,6 +536,9 @@ lb.addEventListener('pointerup', (e) => {
     e.stopPropagation();
   });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  if(uiCloseBtn){
+    uiCloseBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  }
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
@@ -571,12 +586,7 @@ document.addEventListener('keydown', (e) => {
     uitlegOn = !!on;
     setChip(uitlegBtn, uitlegOn);
 
-    if(isMobile()){
-      document.body.classList.toggle('show-intro', uitlegOn);
-      return;
-    }
-
-    // Desktop: help-lightbox aan/uit
+    // v3.3.3: uitleg altijd via dezelfde floating bottom sheet (alle devices)
     if(uitlegOn){
       showNavHint();
       mode = 'help';
@@ -608,6 +618,12 @@ document.addEventListener('keydown', (e) => {
   }
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
+  }
+  if(uiCloseBtn){
+    uiCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(lb && lb.classList.contains('open')) closeLb();
+    });
   }
 
   (async function init(){
