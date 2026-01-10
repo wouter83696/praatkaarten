@@ -64,10 +64,9 @@ html,body{
 .lb{
   position:fixed;
   inset:0;
-  /* Minder drukke achtergrond achter de kaart: leesbaarheid eerst */
-  background:rgba(250,250,248,.78);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
   z-index:999;
 }
 
