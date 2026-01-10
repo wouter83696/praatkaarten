@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.23';
+const VERSION = '3.3.21';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -924,17 +924,3 @@ async function renderMobileIntro(){
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
-
-
-
-// SAFETY: close button delegation (v3.3.28)
-document.addEventListener('click', (e) => {
-  const closeEl = e.target && (e.target.closest ? e.target.closest('.close') : null);
-  const lb = document.getElementById('lb');
-  if (!lb) return;
-  if (lb.classList.contains('open') && closeEl) {
-    e.preventDefault();
-    e.stopPropagation();
-    try { closeLb(); } catch(_) {}
-  }
-}, true);
