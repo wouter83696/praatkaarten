@@ -605,14 +605,31 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
-  // Mobiel: vaste kruis-knop in uitleg (rechtsboven)
-  const introCloseBtn = document.getElementById('introClose');
-  if(introCloseBtn){
-    introCloseBtn.addEventListener('click', (e) => {
+  // Mobiel: sluit-knop in de hoek van het plaatje (wordt per kaart gerenderd)
+  // Gebruik event delegation zodat clones ook werken.
+  if(mobileIntroEl){
+    mobileIntroEl.addEventListener('click', (e) => {
+      const btn = e.target && e.target.closest && e.target.closest('.introClose');
+      if(!btn) return;
       e.stopPropagation();
       setUitleg(false);
     });
   }
+
+  // Houd altijd genoeg "safe space" boven de fixed pills (links-onder),
+  // zodat tekst nooit onder de pills valt. Dynamisch (iOS safe-area + grootte).
+  const updatePillsSafe = () => {
+    const dock = document.querySelector('.pillsDock');
+    if(!dock) return;
+    const rect = dock.getBoundingClientRect();
+    const h = Math.max(0, rect.height);
+    // +10px ademruimte
+    document.documentElement.style.setProperty('--pillsSafe', `${Math.ceil(h + 10)}px`);
+  };
+  window.addEventListener('resize', updatePillsSafe, {passive:true});
+  window.addEventListener('orientationchange', updatePillsSafe, {passive:true});
+  // eerste run
+  requestAnimationFrame(updatePillsSafe);
 
   // ===============================
   // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
@@ -745,6 +762,14 @@ async function renderMobileIntro(){
 
     const wrap = document.createElement('div');
     wrap.className = 'introImgWrap';
+
+    // Sluitknop op de hoek van het plaatje (bespaart ruimte)
+    const close = document.createElement('button');
+    close.className = 'introClose';
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Sluiten');
+    close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>';
+    wrap.appendChild(close);
 
     const img = document.createElement('img');
     img.className = 'introImg';
