@@ -126,19 +126,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
-  // POSITION OVERLAY CLOSE v3.3.34
-  const overlayClose = document.getElementById('close');
-  function positionOverlayClose(){
-    if(!overlayClose || !lbCard) return;
-    const r = lbCard.getBoundingClientRect();
-    const top = Math.round(r.top + 8);
-    const left = Math.round(r.right - 8 - 44);
-    overlayClose.style.top = top + 'px';
-    overlayClose.style.left = left + 'px';
-  }
-  window.addEventListener('resize', positionOverlayClose, {passive:true});
-  window.addEventListener('scroll', positionOverlayClose, {passive:true});
-
   // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
   if(lbHelpTitle){
     lbHelpTitle.textContent = "";
@@ -179,8 +166,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   let uiTimer = null;
   function showUI(){
-    try{ positionOverlayClose(); }catch(_e){}
-
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
     const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
@@ -299,8 +284,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    try{ positionOverlayClose(); }catch(_e){}
-document.body.classList.add('lb-open');
+    document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
@@ -524,13 +508,6 @@ lb.addEventListener('pointerup', (e) => {
     e.stopPropagation();
   });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
-
-  // CLOSE FIX v3.3.34: force pointerdown so gestures can't swallow close
-  closeBtn.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    closeLb();
-  }, {capture:true});
 
   // CLOSE FIX v3.3.30: op mobiel kan 'click' soms niet afvuren door gesture/capture; forceer pointerdown
   closeBtn.addEventListener('pointerdown', (e) => {
@@ -967,15 +944,4 @@ document.addEventListener('click', (e) => {
     e.stopPropagation();
     try { closeLb(); } catch(_) {}
   }
-}, true);
-
-// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #close of .close
-document.addEventListener('pointerdown', (e) => {
-  const lb = document.getElementById('lb');
-  if (!lb || !lb.classList.contains('open')) return;
-  const closeEl = e.target && (e.target.closest ? e.target.closest('#close, .close') : null);
-  if (!closeEl) return;
-  e.preventDefault();
-  e.stopPropagation();
-  try { closeLb(); } catch(_) {}
 }, true);
