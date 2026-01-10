@@ -945,3 +945,14 @@ document.addEventListener('click', (e) => {
     try { closeLb(); } catch(_) {}
   }
 }, true);
+
+// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #close of .close
+document.addEventListener('pointerdown', (e) => {
+  const lb = document.getElementById('lb');
+  if (!lb || !lb.classList.contains('open')) return;
+  const closeEl = e.target && (e.target.closest ? e.target.closest('#close, .close') : null);
+  if (!closeEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try { closeLb(); } catch(_) {}
+}, true);
