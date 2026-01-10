@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.40</title>
+<title>Praatkaarten v3.3.38</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -320,6 +320,34 @@ button,
   fill:none; stroke: rgba(125,125,125,.92);
   stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
 }
+
+
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.38 */
+#closeHitbox{
+  position: fixed;
+  width: 64px;
+  height: 64px;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+}
+.lb.open #closeHitbox{ pointer-events: auto; }
+
+#debugHud{
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 100001;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.65);
+  color: #fff;
+  font: 12px/1.25 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  max-width: calc(100vw - 16px);
+  white-space: pre-wrap;
+  display: none;
+}
+.debug-on #debugHud{ display: block; }
 </style>
 </head>
 <body>
@@ -375,12 +403,12 @@ button,
 </div>
 
 <div class="lb" id="lb" aria-hidden="true">
-  <button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
+    <button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
     </svg>
   </button>
-
+  <div id="closeHitbox" aria-hidden="true"></div>
 <div class="panel" role="dialog" aria-modal="true">
     <button class="chev left" id="prev" aria-label="Vorige">‹</button>
     <button class="chev right" id="next" aria-label="Volgende">›</button>
@@ -465,7 +493,7 @@ document.body.classList.add('lb-open');
 
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
 
-  // CLOSE HANDLER v3.3.40 (altijd werken, los van swipe/gestures)
+  // CLOSE HANDLER v3.3.38 (altijd werken, los van swipe/gestures)
   function onClosePress(e){
     e.preventDefault();
     e.stopPropagation();
@@ -474,7 +502,7 @@ document.body.classList.add('lb-open');
   }
   closeBtn.addEventListener('pointerdown', onClosePress, {capture:true});
   closeBtn.addEventListener('click', onClosePress, {capture:true});
-  // CLOSE FIX v3.3.40
+  // CLOSE FIX v3.3.38
   closeBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); closeLb(); }, {capture:true});
 closeLb(); });
 
@@ -550,7 +578,7 @@ closeLb(); });
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
 
-  // POSITION OVERLAY CLOSE v3.3.40
+  // POSITION OVERLAY CLOSE v3.3.38
   const overlayClose = document.getElementById('close');
   function positionOverlayClose(){
     const panel = document.querySelector('.panel');
@@ -562,88 +590,75 @@ closeLb(); });
   window.addEventListener('resize', positionOverlayClose, {passive:true});
   window.addEventListener('scroll', positionOverlayClose, {passive:true});
 
-  // DOCUMENT CLOSE FALLBACK v3.3.40
+  // DOCUMENT CLOSE FALLBACK v3.3.38
   document.addEventListener('pointerdown', (e) => {
     const t = e.target && (e.target.closest ? e.target.closest('#close') : null);
     if (t && lb.classList.contains('open')) onClosePress(e);
   }, true);
-// PATCH v3.3.40: overlay close + vertical swipe close
+
+
+// KEIHARDE CLOSE FIX v3.3.38
 (function(){
   const lb = document.getElementById('lb');
-  const panel = document.querySelector('.panel');
   const closeBtn = document.getElementById('close');
-  if(!lb || !panel || !closeBtn) return;
+  const closeHitbox = document.getElementById('closeHitbox');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !closeBtn || !closeHitbox) return;
 
-  function positionClose(){
-    const r = panel.getBoundingClientRect();
-    closeBtn.style.top = Math.round(r.top + 8) + 'px';
-    closeBtn.style.left = Math.round(r.right - 8 - 44) + 'px';
-  }
-  window.addEventListener('resize', positionClose, {passive:true});
-  window.addEventListener('scroll', positionClose, {passive:true});
+  function setHud(t){ if(hud) hud.textContent = t; }
+  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
 
-  function onClose(e){
-    e.preventDefault(); e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    if (typeof closeLb === 'function') closeLb();
-  }
-  closeBtn.addEventListener('click', onClose, true);
-  closeBtn.addEventListener('pointerup', onClose, true);
-
-  // vertical swipe
-  let startX=0, startY=0, dragging=false, locked=false, dir=null, id=null;
-  const THRESH=90, MAX=260;
-
-  function reset(){
-    panel.style.transition='transform 180ms ease';
-    panel.style.transform='';
-    setTimeout(()=>panel.style.transition='', 200);
+  function positionCloseHitbox(){
+    const r = closeBtn.getBoundingClientRect();
+    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
+    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
   }
 
-  panel.addEventListener('pointerdown', (e)=>{
+  window.addEventListener('resize', positionCloseHitbox, {passive:true});
+  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
+
+  let taps = 0, tmr = null;
+  document.addEventListener('click', (e)=>{
     if(!lb.classList.contains('open')) return;
-    if(e.target && e.target.closest && e.target.closest('#close')) return;
-    id=e.pointerId; startX=e.clientX; startY=e.clientY;
-    dragging=true; locked=false; dir=null;
-    try{ panel.setPointerCapture(id); }catch(_){}
-  }, {passive:true});
-
-  panel.addEventListener('pointermove', (e)=>{
-    if(!dragging || e.pointerId!==id) return;
-    const dx=e.clientX-startX, dy=e.clientY-startY;
-    if(!locked && (Math.abs(dx)>8 || Math.abs(dy)>8)){
-      locked=true; dir=(Math.abs(dy)>Math.abs(dx))?'v':'h';
+    if(e.target && e.target.closest && e.target.closest('#close,#closeHitbox')) return;
+    taps++;
+    clearTimeout(tmr);
+    tmr = setTimeout(()=>{ taps=0; }, 500);
+    if(taps>=3){
+      document.documentElement.classList.toggle('debug-on');
+      taps=0;
     }
-    if(dir!=='v') return;
-    const down=Math.max(0,dy);
-    const clamped=Math.min(MAX,down);
-    panel.style.transform='translateY(' + clamped + 'px)';
-    e.preventDefault(); e.stopPropagation();
-  }, {passive:false});
+  }, true);
 
-  panel.addEventListener('pointerup', (e)=>{
-    if(!dragging || e.pointerId!==id) return;
-    dragging=false;
-    const dy=e.clientY-startY;
-    if(dir==='v' && dy>THRESH){ if(typeof closeLb==='function') closeLb(); }
-    else reset();
-    id=null;
-  }, {passive:true});
-
-  panel.addEventListener('pointercancel', ()=>{ dragging=false; reset(); id=null; }, {passive:true});
-
-  // keep close aligned when opening
-  const _openAt = (typeof openAt === 'function') ? openAt : null;
-  if(_openAt){
-    window.openAt = function(i){
-      _openAt(i);
-      positionClose();
-    }
+  function forceClose(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if(typeof closeLb === 'function') closeLb();
   }
-  // if there is a function that adds 'open' class directly, we still reposition on click opening
-  document.addEventListener('click', ()=>{ if(lb.classList.contains('open')) positionClose(); }, true);
+
+  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
+  closeHitbox.addEventListener('click', forceClose, {capture:true});
+
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) positionCloseHitbox();
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !isDebug()) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
+    );
+  }, true);
 })();
 </script>
 
+
+<div id="debugHud" aria-hidden="true"></div>
 </body>
 </html>

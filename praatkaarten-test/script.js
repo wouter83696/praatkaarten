@@ -101,16 +101,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const navHint = null;
 
   const closeBtn = document.getElementById('close');
-// POSITION OVERLAY CLOSE v3.3.40
-const overlayClose = document.getElementById('close');
-function positionOverlayClose(){
-  if(!overlayClose || !lbCard) return;
-  const r = lbCard.getBoundingClientRect();
-  overlayClose.style.top = Math.round(r.top + 8) + 'px';
-  overlayClose.style.left = Math.round(r.right - 8 - 44) + 'px';
-}
-window.addEventListener('resize', positionOverlayClose, {passive:true});
-window.addEventListener('scroll', positionOverlayClose, {passive:true});
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
@@ -309,8 +299,7 @@ window.addEventListener('scroll', positionOverlayClose, {passive:true});
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    positionOverlayClose();
-try{ positionOverlayClose(); }catch(_e){}
+    try{ positionOverlayClose(); }catch(_e){}
 document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
@@ -534,15 +523,19 @@ lb.addEventListener('pointerup', (e) => {
     }
     e.stopPropagation();
   });
-  closeLb(); });
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
 
   // CLOSE FIX v3.3.34: force pointerdown so gestures can't swallow close
-  e.stopPropagation();
+  closeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     closeLb();
   }, {capture:true});
 
   // CLOSE FIX v3.3.30: op mobiel kan 'click' soms niet afvuren door gesture/capture; forceer pointerdown
-  e.stopPropagation();
+  closeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     closeLb();
   }, {capture:true});
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
@@ -986,65 +979,64 @@ document.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
   try { closeLb(); } catch(_) {}
 }, true);
-// CLOSE HANDLER v3.3.40 (betrouwbaar + conflictvrij)
-function onClosePress(e){
-  e.preventDefault();
-  e.stopPropagation();
-  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-  closeLb();
-}
-closeBtn.addEventListener('click', onClosePress, true);
-closeBtn.addEventListener('pointerup', onClosePress, true);
-// VERTICAL SWIPE CLOSE v3.3.40
+
+
+// KEIHARDE CLOSE FIX v3.3.38
 (function(){
-  const panel = document.querySelector('.panel');
-  const lbEl = document.getElementById('lb');
-  if(!panel || !lbEl) return;
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('close');
+  const closeHitbox = document.getElementById('closeHitbox');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !closeBtn || !closeHitbox) return;
 
-  let startX=0, startY=0, dragging=false, locked=false, lockDir=null, activeId=null;
-  const THRESH=90, MAX_DRAG=260;
+  function setHud(t){ if(hud) hud.textContent = t; }
+  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
 
-  function resetPos(){
-    panel.style.transition='transform 180ms ease';
-    panel.style.transform='';
-    setTimeout(()=>panel.style.transition='', 200);
+  function positionCloseHitbox(){
+    const r = closeBtn.getBoundingClientRect();
+    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
+    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
   }
 
-  function onDown(e){
-    if(!lbEl.classList.contains('open')) return;
-    if(e.target && e.target.closest && e.target.closest('#close')) return;
-    activeId=e.pointerId;
-    startX=e.clientX; startY=e.clientY;
-    dragging=true; locked=false; lockDir=null;
-    try{ panel.setPointerCapture(activeId); }catch(_){}
-  }
+  window.addEventListener('resize', positionCloseHitbox, {passive:true});
+  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
 
-  function onMove(e){
-    if(!dragging || e.pointerId!==activeId) return;
-    const dx=e.clientX-startX;
-    const dy=e.clientY-startY;
-    if(!locked && (Math.abs(dy)>8 || Math.abs(dx)>8)){
-      locked=true;
-      lockDir=(Math.abs(dy)>Math.abs(dx))?'v':'h';
+  let taps = 0, tmr = null;
+  document.addEventListener('click', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    if(e.target && e.target.closest && e.target.closest('#close,#closeHitbox')) return;
+    taps++;
+    clearTimeout(tmr);
+    tmr = setTimeout(()=>{ taps=0; }, 500);
+    if(taps>=3){
+      document.documentElement.classList.toggle('debug-on');
+      taps=0;
     }
-    if(lockDir!=='v') return;
-    const down=Math.max(0,dy);
-    const clamped=Math.min(MAX_DRAG,down);
-    panel.style.transform='translateY(' + clamped + 'px)';
-    e.preventDefault(); e.stopPropagation();
+  }, true);
+
+  function forceClose(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if(typeof closeLb === 'function') closeLb();
   }
 
-  function onUp(e){
-    if(!dragging || e.pointerId!==activeId) return;
-    dragging=false;
-    const dy=e.clientY-startY;
-    if(lockDir==='v' && dy>THRESH){ closeLb(); }
-    else resetPos();
-    activeId=null;
-  }
+  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
+  closeHitbox.addEventListener('click', forceClose, {capture:true});
 
-  panel.addEventListener('pointerdown', onDown, {passive:true});
-  panel.addEventListener('pointermove', onMove, {passive:false});
-  panel.addEventListener('pointerup', onUp, {passive:true});
-  panel.addEventListener('pointercancel', onUp, {passive:true});
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) positionCloseHitbox();
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !isDebug()) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
+    );
+  }, true);
 })();
