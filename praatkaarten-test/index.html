@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.15</title>
+<title>Praatkaarten v3.3.17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -877,14 +877,11 @@ body.hm-open{overflow:hidden}
    - kaart + tekst in één oogopslag
    =============================== */
 
-@media (max-width: 720px){
-  /* compacter: minder lege ruimte onder tekst */
-  body{ --introSheetH: min(46vh, 440px); }
-}
-
 .mobileIntro{
   /* altijd aanwezig, maar standaard buiten beeld */
-  height: var(--introSheetH, 0px);
+  /* geen verticale scroll in uitleg: sheet groeit mee met de tekst (tot een max) */
+  height:auto;
+  max-height: calc(100dvh - 88px);
   position:fixed;
   left:0; right:0; bottom:0;
   /* compacter: minder 'witte' ruimte bovenin */
@@ -1071,10 +1068,15 @@ body.hm-open{overflow:hidden}
   align-items:flex-end;
   pointer-events:none;
   transition: opacity .18s ease;
+  opacity:1;
 }
 
-/* Uitleg open: pills blijven links-onder, maar tekst krijgt al safe space via --pillsSafe */
-body.show-intro .pillsDock{ opacity:1; }
+/* Uitleg open: pills faden weg (gebruik je bijna niet in uitleg)
+   maar we houden wél safe-space (--pillsSafe) zodat het nooit tekst overlapt
+   als je ze later toch weer aan zet. */
+body.show-intro .pillsDock{ opacity:0; }
+body.show-intro .pillsLeft,
+body.show-intro .pillsRight{ pointer-events:none; }
 
 .pillsLeft,
 .pillsRight{display:flex; gap:10px; pointer-events:auto;}
