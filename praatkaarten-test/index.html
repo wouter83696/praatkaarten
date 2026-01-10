@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.21</title>
+<title>Praatkaarten v3.3.22</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -19,6 +19,12 @@
   --radius:16px;
   --shadow:0 14px 50px rgba(0,0,0,.12);
   --shadowHover:0 18px 70px rgba(0,0,0,.16);
+
+  /* Uitleg-sheet (Google Maps / Apple-achtig) */
+  --sheet-bg: #FCFAF6;               /* warm, niet-spierwit */
+  --sheet-bg-2: #F7F2E9;
+  --sheet-border: rgba(0,0,0,.10);  /* subtiele hairline */
+  --sheet-radius: 16px;
 
   /* safe space zodat fixed pills (links-onder) nooit over uitleg-tekst heen vallen */
   --pillsSafe: 58px;
@@ -891,16 +897,12 @@ body.hm-open{overflow:hidden}
   padding:4px 8px calc(8px + env(safe-area-inset-bottom) + min(var(--pillsSafe), 56px));
   z-index:2500;
 
-  /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
-  background: transparent;
+  /* Google Maps / Apple-achtig: warm vlak + hairline rand, géén elevation */
+  background: var(--sheet-bg);
 
-  border-radius: 18px 18px 0 0;
-  /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
-  box-shadow:
-    0 -14px 45px rgba(0,0,0,.12),
-    0 8px 28px rgba(0,0,0,.08);
-  /* rand zo minimaal mogelijk */
-  border: 0;
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+  box-shadow: none;
+  border: 1px solid var(--sheet-border);
   overflow: hidden;
   background-clip: padding-box;
   isolation: isolate;
@@ -911,28 +913,10 @@ body.hm-open{overflow:hidden}
 }
 
 /* Geblurde achtergrond (zelfde SVG als grid/lightbox) */
-.mobileIntro::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image: var(--lb-bg-url);
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.08);
-  filter: blur(18px);
-  /* minder doorzichtig: achtergrond minder zichtbaar */
-  opacity: .10;
-  pointer-events:none;
-  z-index:0;
-}
+/* Geen glass/blur lagen achter de uitlegkaart (rustiger, functioneler) */
+.mobileIntro::before,
 .mobileIntro::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  /* minder doorzichtig: glaze veel opaquer */
-  background: rgba(255,255,255,.92);
-  pointer-events:none;
-  z-index:1;
+  content:none;
 }
 
 /* Sluitknop op de hoek van het plaatje (rechts-boven)
@@ -1014,7 +998,8 @@ body.hm-open{overflow:hidden}
   background:transparent;
   overflow:hidden;
   border-radius:16px;
-  box-shadow:var(--shadow);
+  box-shadow:none;
+  border: 1px solid var(--sheet-border);
   position:relative;
   max-height: 40vh;
 }
