@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.5.2';
+const VERSION = '3.3.8';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -107,6 +107,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
+  const introCloseBtn = document.getElementById('introCloseBtn');
   // (v3.3.7) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
 
@@ -604,6 +605,9 @@ document.addEventListener('keydown', (e) => {
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
+  if(introCloseBtn){
+    introCloseBtn.addEventListener('click', () => setUitleg(false));
+  }
 
   // ===============================
   // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
@@ -720,20 +724,11 @@ async function renderMobileIntro(){
   }catch(e){
     return;
   }
-  if(!data || !Array.isArray(data.slides) || data.slides.length === 0) return;
-
-  // ===============================
-  // Infinite carousel (loop) voor uitlegkaarten
-  // - we renderen 3× dezelfde set
-  // - starten in het midden
-  // - bij scrollen "wrap" terug naar midden
-  // ===============================
-  const baseSlides = data.slides.slice();
-  const slides = baseSlides.concat(baseSlides, baseSlides);
+  if(!data || !Array.isArray(data.slides)) return;
 
   // Build cards
   track.innerHTML = '';
-  for(const s of slides){
+  for(const s of data.slides){
     const art = document.createElement('article');
     art.className = 'introCard';
     art.dataset.intro = s.key || '';
@@ -766,73 +761,12 @@ async function renderMobileIntro(){
 
     art.appendChild(wrap);
     art.appendChild(text);
-    // onthoud (voor background switching)
-    art.dataset.bg = withV(s.img || '');
-
     track.appendChild(art);
   }
 
   // Hint text (optional)
   const hintEl = section.querySelector('.introHint');
   if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
-
-  // Start in het midden (de 2e copy)
-  requestAnimationFrame(() => {
-    const cards = Array.from(track.querySelectorAll('.introCard'));
-    if(cards.length === 0) return;
-    const midStartIndex = baseSlides.length; // begin van de 2e set
-    const target = cards[midStartIndex];
-    if(!target) return;
-    const left = target.offsetLeft - (track.clientWidth - target.clientWidth) / 2;
-    track.scrollLeft = Math.max(0, left);
-    // zet achtergrond meteen goed
-    setLightboxBackground(target.dataset.bg || '');
-  });
-
-  // Helper: bepaal "active" kaart op basis van middenpunt
-  let raf = 0;
-  const updateActive = () => {
-    raf = 0;
-    const rect = track.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + Math.min(rect.height * 0.35, 120); // iets boven midden
-    const el = document.elementFromPoint(cx, cy);
-    const card = el && el.closest ? el.closest('.introCard') : null;
-    if(card && card.dataset && card.dataset.bg){
-      setLightboxBackground(card.dataset.bg);
-    }
-  };
-
-  const scheduleActive = () => {
-    if(raf) return;
-    raf = requestAnimationFrame(updateActive);
-  };
-
-  // Wrap logic: als je in 1e of 3e set komt, spring terug naar midden-set
-  const wrapIfNeeded = () => {
-    const cards = Array.from(track.querySelectorAll('.introCard'));
-    if(cards.length === 0) return;
-    const oneSet = baseSlides.length;
-    const start1 = cards[0];
-    const start2 = cards[oneSet];
-    const start3 = cards[oneSet * 2];
-    if(!start1 || !start2 || !start3) return;
-
-    const setWidth = start2.offsetLeft - start1.offsetLeft; // breedte van één set (incl. gaps)
-    const min = start2.offsetLeft - setWidth * 0.5;
-    const max = start3.offsetLeft - setWidth * 0.5;
-
-    if(track.scrollLeft < min){
-      track.scrollLeft += setWidth;
-    }else if(track.scrollLeft > max){
-      track.scrollLeft -= setWidth;
-    }
-  };
-
-  track.addEventListener('scroll', () => {
-    wrapIfNeeded();
-    scheduleActive();
-  }, { passive:true });
 }
 
 // Fire & forget after DOM is ready

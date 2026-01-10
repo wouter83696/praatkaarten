@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.5.2</title>
+<title>Praatkaarten v3.3.9</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -352,6 +352,17 @@ body.lb-open .navHintMini{ opacity:0; }
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+/* Mobiel: voorkom stroef/"klem" scrollen wanneer help-tekst lang is (o.a. Verhelderen) */
+@media (hover:none) and (pointer:coarse){
+  .lbCard{
+    max-height: calc(var(--vh, 1vh) * 100 - 24px);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #lbImg{ flex: 0 0 auto; }
+  .lbHelpText{ flex: 0 0 auto; }
 }
 
 #lbImg{
@@ -875,7 +886,8 @@ body.hm-open{overflow:hidden}
   height: var(--introSheetH, 0px);
   position:fixed;
   left:0; right:0; bottom:0;
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  /* extra ruimte onderaan zodat de pillsDock nooit over de tekst heen valt */
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom) + 64px);
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
@@ -886,7 +898,8 @@ body.hm-open{overflow:hidden}
   box-shadow:
     0 -18px 55px rgba(0,0,0,.14),
     0 10px 35px rgba(0,0,0,.10);
-  border: 1px solid rgba(11,18,32,.08);
+  /* geen zichtbare rand (die gaf "border"-effect tegen de kaartkleur) */
+  border: 0;
   overflow: hidden;
   background-clip: padding-box;
   isolation: isolate;
@@ -905,8 +918,8 @@ body.hm-open{overflow:hidden}
   background-size: cover;
   background-position: center;
   transform: scale(1.08);
-  filter: blur(20px);
-  opacity: .12;
+  filter: blur(18px);
+  opacity: .38;
   pointer-events:none;
   z-index:0;
 }
@@ -914,7 +927,8 @@ body.hm-open{overflow:hidden}
   content:"";
   position:absolute;
   inset:0;
-  background: rgba(255,255,255,.94);
+  /* niet spierwit: anders zie je harde randen t.o.v. de kaart */
+  background: rgba(243,245,238,.22);
   pointer-events:none;
   z-index:1;
 }
@@ -1058,6 +1072,18 @@ body.hm-open{overflow:hidden}
 
 .pill svg{ width:20px; height:20px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95; }
 
+/* Sluit-knop links (alleen zichtbaar wanneer uitleg open is) */
+#introCloseBtn{
+  opacity:0;
+  pointer-events:none;
+  transform: translateY(2px);
+}
+body.show-intro #introCloseBtn{
+  opacity:1;
+  pointer-events:auto;
+  transform: none;
+}
+
 .pill.is-on{
   background: rgba(48,96,136,.12);
   box-shadow: inset 0 0 0 1px rgba(48,96,136,.22), 0 10px 30px rgba(0,0,0,.10);
@@ -1087,6 +1113,14 @@ body.hm-open{overflow:hidden}
         <circle cx="12" cy="12" r="10" />
         <path d="M12 16v-4" />
         <path d="M12 8h.01" />
+      </svg>
+    </button>
+
+    <!-- Sluiten (alleen zichtbaar wanneer uitleg open is) -->
+    <button class="pill" id="introCloseBtn" type="button" aria-label="Sluiten">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 6L6 18" />
+        <path d="M6 6l12 12" />
       </svg>
     </button>
   </div>
@@ -1127,7 +1161,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.5.2"></script>
+<script src="script.js?v=3.3.9"></script>
 
 
 
