@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.26</title>
+<title>Praatkaarten v3.3.28</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1116,6 +1116,63 @@ body.hm-open{overflow:hidden}
   .pillsDock{ display:none !important; }
 }
 
+
+
+
+/* ===============================
+   UI PATCH v3.3.28
+   - Harder (Google Maps-like) icons for Shuffle/Info
+   - Force Close button to be visible + clickable on mobile when overlay is open
+   =============================== */
+
+:root{
+  --iconHard: rgba(0,0,0,.74);
+  --iconHardActive: rgba(0,0,0,.90);
+  --pillBg: rgba(255,255,255,.92);
+  --pillBorder: rgba(0,0,0,.12);
+}
+
+/* Top pills (shuffle/info) */
+.pillsDock .pill,
+.controlsBar .pill,
+.pillsLeft .pill,
+.pill.btn,
+button.pill,
+.btn.pill{
+  background: var(--pillBg) !important;
+  border: 1px solid var(--pillBorder) !important;
+  box-shadow: none !important;
+  color: var(--iconHard) !important;
+}
+
+/* Press feedback */
+.pillsDock .pill:active,
+.controlsBar .pill:active,
+.pillsLeft .pill:active,
+.pill.btn:active,
+button.pill:active,
+.btn.pill:active{
+  background: rgba(0,0,0,.06) !important;
+  color: var(--iconHardActive) !important;
+}
+
+/* Close button: always available when lightbox is open */
+.lb.open .close,
+.lb.open #close{
+  display: grid !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 999 !important;
+}
+
+.lb.open #close{
+  background: var(--pillBg) !important;
+  border: 1px solid var(--pillBorder) !important;
+  border-radius: 999px !important;
+}
+
+/* keep it tappable */
+#close{ touch-action: manipulation; }
 </style>
 </head>
 <body>

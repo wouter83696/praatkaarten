@@ -924,3 +924,17 @@ async function renderMobileIntro(){
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
+
+
+
+// SAFETY: close button delegation (v3.3.28)
+document.addEventListener('click', (e) => {
+  const closeEl = e.target && (e.target.closest ? e.target.closest('.close') : null);
+  const lb = document.getElementById('lb');
+  if (!lb) return;
+  if (lb.classList.contains('open') && closeEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    try { closeLb(); } catch(_) {}
+  }
+}, true);
