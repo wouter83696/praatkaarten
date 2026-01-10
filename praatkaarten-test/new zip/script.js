@@ -107,9 +107,24 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
+  const introCloseBtn = document.getElementById('introClose');
   // (v3.3.7) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
-  const introCloseBtn = document.getElementById('introClose');
+  const pillsDockEl = document.querySelector('.pillsDock');
+
+  function updatePillsForIntro(){
+    if(!pillsDockEl) return;
+    if(!(uitlegOn && isMobile() && mobileIntroEl)){
+      pillsDockEl.style.transform = 'translateY(0px)';
+      return;
+    }
+    const sheetRect = mobileIntroEl.getBoundingClientRect();
+    const baseTop = parseFloat(getComputedStyle(pillsDockEl).top) || 0;
+    const pillsH = pillsDockEl.getBoundingClientRect().height || 42;
+    const desiredTop = Math.max(8, sheetRect.top - 12 - pillsH);
+    const dy = desiredTop - baseTop;
+    pillsDockEl.style.transform = `translateY(${Math.round(dy)}px)`;
+  }
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -539,20 +554,12 @@ lb.addEventListener('pointerup', (e) => {
       performance.now() < suppressClickUntil &&
       !lb.contains(e.target) &&
       !(mobileIntroEl && mobileIntroEl.contains(e.target)) &&
-      !(e.target && e.target.closest && e.target.closest('.floatingPills'))
+      !(e.target && e.target.closest && e.target.closest('.pillsDock'))
     ) {
       e.stopPropagation();
       e.preventDefault();
     }
   }, true);
-
-  // Sluitknop in het mobiele uitleg-sheet (fade wordt via CSS gedaan)
-  if(introCloseBtn){
-    introCloseBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if(uitlegOn) setUitleg(false);
-    });
-  }
 document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('open')) return;
     if(e.key === 'Escape') closeLb();
@@ -576,6 +583,13 @@ document.addEventListener('keydown', (e) => {
 
     if(isMobile()){
       document.body.classList.toggle('show-intro', uitlegOn);
+
+      // na class-toggle even wachten op layout/transition
+      requestAnimationFrame(() => {
+        updatePillsForIntro();
+        setTimeout(updatePillsForIntro, 60);
+      });
+
       return;
     }
 
@@ -614,14 +628,23 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
-  // Close-knop in het uitlegvenster (mobiel)
+  // Sluitknop rechtsboven ín het uitlegvenster (mobiel)
   if(introCloseBtn){
     introCloseBtn.addEventListener('click', (e) => {
-      e.preventDefault();
       e.stopPropagation();
       setUitleg(false);
     });
   }
+
+  // Houd positie van de zwevende pills correct bij resize/rotatie
+  window.addEventListener('resize', () => {
+    if(uitlegOn && isMobile()){
+      requestAnimationFrame(() => {
+        updatePillsForIntro();
+        setTimeout(updatePillsForIntro, 60);
+      });
+    }
+  });
 
   // ===============================
   // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
@@ -740,11 +763,9 @@ async function renderMobileIntro(){
   }
   if(!data || !Array.isArray(data.slides)) return;
 
-  // Build cards – 3× render voor infinity scroll
   const slides = data.slides.slice();
-  track.innerHTML = '';
+  if(!slides.length) return;
 
-  // helper: maak 1 kaart
   const makeCard = (s) => {
     const art = document.createElement('article');
     art.className = 'introCard';
@@ -773,7 +794,6 @@ async function renderMobileIntro(){
     const b = document.createElement('div');
     b.className = 'introTextBody';
     b.textContent = s.body || '';
-
     text.appendChild(b);
 
     art.appendChild(wrap);
@@ -781,40 +801,43 @@ async function renderMobileIntro(){
     return art;
   };
 
-  for(let pass=0; pass<3; pass++){
+  // Infinity-scroll: render 3x dezelfde set en start in het midden.
+  // Bij "te ver" links/rechts springen we onzichtbaar terug naar het midden.
+  track.innerHTML = '';
+  for(let rep=0; rep<3; rep++){
     for(const s of slides){
       track.appendChild(makeCard(s));
     }
   }
 
-  // Start in het midden (zodat je direct beide kanten op “oneindig” kunt)
-  // We wachten 1 frame zodat layout/width klopt.
-  requestAnimationFrame(() => {
-    const first = track.querySelector('.introCard');
-    if(!first) return;
-    const rect = first.getBoundingClientRect();
-    const gap = 14; // moet matchen met CSS .introTrack gap
-    const step = rect.width + gap;
-    track.scrollLeft = step * slides.length; // middenblok
+  const positionToMiddle = () => {
+    const oneSet = track.scrollWidth / 3;
+    if(!isFinite(oneSet) || oneSet <= 0) return;
+    track.scrollLeft = oneSet; // begin van de middelste set
+  };
 
-    // Wrap-around tijdens scroll
-    let ticking = false;
-    track.addEventListener('scroll', () => {
-      if(ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        const left = track.scrollLeft;
-        const block = step * slides.length;
-        // Als je te dicht bij begin/eind komt, spring naar overeenkomstige positie in midden
-        if(left < block * 0.5){
-          track.scrollLeft = left + block;
-        }else if(left > block * 2.5){
-          track.scrollLeft = left - block;
-        }
-      });
-    }, { passive:true });
+  // Wacht 1 tick zodat layout/afmetingen er zijn
+  requestAnimationFrame(() => {
+    positionToMiddle();
+    setTimeout(positionToMiddle, 40);
   });
+
+  let lock = false;
+  track.addEventListener('scroll', () => {
+    if(lock) return;
+    const oneSet = track.scrollWidth / 3;
+    if(!isFinite(oneSet) || oneSet <= 0) return;
+    // thresholds rond de set-grenzen
+    if(track.scrollLeft < oneSet * 0.35){
+      lock = true;
+      track.scrollLeft += oneSet;
+      requestAnimationFrame(() => { lock = false; });
+    }else if(track.scrollLeft > oneSet * 1.65){
+      lock = true;
+      track.scrollLeft -= oneSet;
+      requestAnimationFrame(() => { lock = false; });
+    }
+  }, {passive:true});
 
   // Hint text (optional)
   const hintEl = section.querySelector('.introHint');

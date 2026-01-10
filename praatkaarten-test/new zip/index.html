@@ -940,10 +940,12 @@ body.hm-open{overflow:hidden}
   display:flex;
   gap:14px;
   overflow-x:auto;
+  overflow-y:hidden;
   padding:6px 4px 0;
   height: 100%;
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
+  touch-action: pan-x;
 }
 .introTrack::-webkit-scrollbar{display:none;}
 
@@ -1006,36 +1008,31 @@ body.hm-open{overflow:hidden}
 }
 
 /* ===============================
-   FLOATING PILLS (Hussel + Info) – v3.3.9
-   - vaste zwevende set linksboven in de viewport
-   - als uitleg open is (mobiel): schuift mee omlaag en hangt net boven het uitlegvenster
-   - onderste pills bestaan niet meer
+   FLOATING ICON PILLS (Hussel + Info)
+   - vaste set linksboven in viewport
+   - als uitleg (mobiele bottom-sheet) opent: schuift mee omlaag en hangt net boven het venster
+   - geen onderste pills meer op mobiel
    =============================== */
 
 .controlsBar{ display:none !important; }
 
-.floatingPills{
+.pillsDock{
   position:fixed;
-  left:14px;
-  top:14px;
-  z-index:3200;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 12px;
+  z-index:3000;
   display:flex;
   gap:10px;
   pointer-events:auto;
-  transition: top .28s ease, bottom .28s ease, transform .28s ease, opacity .18s ease;
+  transform: translateY(0px);
+  transition: transform .28s ease, opacity .18s ease;
 }
 
-/* Als uitleg open is op mobiel: cluster hangt net boven het sheet */
-@media (max-width: 720px){
-  body.show-intro .floatingPills{
-    top:auto;
-    bottom: calc(var(--introSheetH) + 12px + env(safe-area-inset-bottom));
-  }
-}
+/* Op desktop/tablet is dit ook prima (subtiel, maar altijd bereikbaar) */
 
-/* Telefoon landscape: verberg de floating pills (zelfde gedrag als oude menubalk) */
+/* Telefoon landscape: verberg (zelfde gedrag als eerder) */
 @media (hover: none) and (pointer: coarse) and (orientation: landscape){
-  .floatingPills{ display:none !important; }
+  .pillsDock{ display:none !important; }
 }
 
 .pill{
@@ -1067,53 +1064,46 @@ body.hm-open{overflow:hidden}
   color: rgba(11,18,32,.58);
 }
 
-/* ===============================
-   MOBILE INTRO: swipe horizontaal dominant + close knop in sheet
-   =============================== */
-
-.introTrack{ touch-action: pan-x; overflow-y:hidden; }
-
+/* Close button in mobiele uitleg (rechtsboven in het venster) */
 .introClose{
   position:absolute;
   top:10px;
   right:10px;
-  width:44px;
-  height:44px;
+  width:44px;height:44px;
   border:0;
   border-radius:999px;
+  background:rgba(255,255,255,.75);
   cursor:pointer;
-  background:rgba(255,255,255,.78);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10), 0 10px 30px rgba(0,0,0,.10);
-  color: var(--uiInk);
-  display:grid;
-  place-items:center;
-
+  color:var(--uiInk);
   opacity:0;
   pointer-events:none;
   transition: opacity .22s ease;
 }
-.introClose svg{ width:20px; height:20px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-body.show-intro .introClose{ opacity:1; pointer-events:auto; }
+.introClose svg{ width:20px; height:20px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95; }
 .introClose:hover{ background:rgba(255,255,255,.92); }
+body.show-intro .introClose{ opacity:1; pointer-events:auto; }
 
 </style>
 </head>
 <body>
 
-<!-- Zwevende controls (🔀 + ℹ️) -->
-<div class="floatingPills" aria-label="Bediening">
-  <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 7h6l10 10h1"/><path d="M16 21h5v-5"/><path d="M4 17h6l2-2"/><path d="M21 8l-2 2"/></svg>
-  </button>
-  <button class="pill" id="uitlegBtn" type="button" aria-label="Info" aria-pressed="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 16v-4" />
-      <path d="M12 8h.01" />
-    </svg>
-  </button>
+<!-- 3 losse pills (icon-only) i.p.v. menubalk -->
+<div class="pillsDock" aria-label="Bediening">
+  <div class="pillsLeft">
+    <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 7h6l10 10h1"/><path d="M16 21h5v-5"/><path d="M4 17h6l2-2"/><path d="M21 8l-2 2"/></svg>
+    </button>
+    <button class="pill" id="uitlegBtn" type="button" aria-label="Info" aria-pressed="false">
+      <!-- info-icoon (i) i.p.v. vraagteken -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
 </div>
 
 
