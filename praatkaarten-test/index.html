@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.22</title>
+<title>Praatkaarten v3.3.23</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -208,11 +208,20 @@ body.lb-open .navHintMini{ opacity:0; }
   height:auto;
   display:block;
   border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  transition:box-shadow .14s ease;
+
+  /* Grid-kaartjes: geen schaduw → één geheel met de rustige sheet-stijl */
+  box-shadow:none;
+
+  /* Subtiele hairline rand i.p.v. elevation */
+  border:1px solid rgba(0,0,0,.10);
+
+  transition:border-color .14s ease, transform .14s ease;
 }
 
-.card:hover img{box-shadow:var(--shadowHover);}
+.card:hover img{
+  border-color: rgba(0,0,0,.16);
+}
+
 
 /* ===============================
    TEKST OP KLEINE KAARTJES
@@ -1052,29 +1061,20 @@ body.hm-open{overflow:hidden}
 
 .pillsDock{
   position:fixed;
-  left:0; right:0;
+  left:12px; right:auto;
   /* Pills: altijd links-onder (duim-bereik) */
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  top:auto;
+  top: calc(12px + env(safe-area-inset-top));
+  bottom:auto;
   z-index:3000;
-  padding:0 12px;
+  padding:0;
   display:flex;
   justify-content:flex-start;
-  align-items:flex-end;
+  align-items:flex-start;
   pointer-events:none;
   transition: opacity .18s ease;
   opacity:1;
 }
 
-/* Uitleg open (mobiel): pills faden weg voor rust.
-   We houden wél safe-space (--pillsSafe) zodat tekst nooit onder de pills kan vallen
-   op het moment dat ze (kort) zichtbaar zijn. */
-@media (max-width: 720px){
-  body.show-intro .pillsDock{
-    opacity:0;
-    pointer-events:none;
-  }
-}
 
 
 .pillsLeft,
