@@ -1040,3 +1040,54 @@ document.addEventListener('pointerdown', (e) => {
     );
   }, true);
 })();
+
+
+
+// DEBUG ALWAYS-ON + LONGPRESS TOGGLE v3.3.39
+(function(){
+  const lb = document.getElementById('lb');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !hud) return;
+
+  function setHud(t){ hud.textContent = t; }
+
+  // Always show basic state when open
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) setHud('lb=open (debug on)');
+    else setHud('lb=closed');
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  // Long press anywhere (600ms) toggles extra verbose mode
+  let pressT=null;
+  let verbose=false;
+
+  function startPress(e){
+    if(!lb.classList.contains('open')) return;
+    clearTimeout(pressT);
+    pressT = setTimeout(()=>{
+      verbose = !verbose;
+      document.documentElement.classList.toggle('debug-verbose', verbose);
+      setHud('lb=open\nverbose=' + (verbose?'on':'off') + '\n(long-press toggled)');
+    }, 600);
+  }
+  function endPress(){ clearTimeout(pressT); }
+
+  document.addEventListener('pointerdown', startPress, true);
+  document.addEventListener('pointerup', endPress, true);
+  document.addEventListener('pointercancel', endPress, true);
+
+  // Show pointerdown targets when verbose
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !verbose) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '\n' +
+      'verbose=on'
+    );
+  }, true);
+})();
+
