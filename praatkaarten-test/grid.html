@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten</title>
+<title>Praatkaarten v3.3.39</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -295,6 +295,31 @@ button,
   box-shadow:none !important;
 }
 
+/* overlay close (outside swipe layer) */
+.overlayClose{
+  position: fixed;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb.open .overlayClose{
+  opacity: 1;
+  pointer-events: auto;
+}
+.overlayClose svg{ width:22px; height:22px; }
+.overlayClose svg path{
+  fill:none; stroke: rgba(125,125,125,.92);
+  stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
+}
 </style>
 </head>
 <body>
@@ -350,12 +375,15 @@ button,
 </div>
 
 <div class="lb" id="lb" aria-hidden="true">
-  <div class="panel" role="dialog" aria-modal="true">
+    <button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+    </svg>
+  </button>
+<div class="panel" role="dialog" aria-modal="true">
     <button class="chev left" id="prev" aria-label="Vorige">‹</button>
     <button class="chev right" id="next" aria-label="Volgende">›</button>
-
-    <button class="close" id="close" type="button" aria-label="Sluiten">×</button>
-    <img id="lbImg" alt="">
+<img id="lbImg" alt="">
   </div>
 </div>
 
@@ -403,7 +431,8 @@ button,
     currentIndex = ((index % list.length) + list.length) % list.length;
     lbImg.src = list[currentIndex].getAttribute('data-src');
     lb.classList.add('open');
-    document.body.classList.add('lb-open');
+    positionOverlayClose();
+document.body.classList.add('lb-open');
     document.body.style.overflow = 'hidden';
     showUI();
   }
@@ -434,7 +463,18 @@ button,
   });
 
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+
+  // CLOSE HANDLER v3.3.39 (altijd werken, los van swipe/gestures)
+  function onClosePress(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    closeLb();
+  }
+  closeBtn.addEventListener('click', onClosePress, {capture:true});
+  // CLOSE FIX v3.3.39
+  e.stopPropagation(); closeLb(); }, {capture:true});
+closeLb(); });
 
   function shuffle(nodes){
     for(let i=nodes.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nodes[i],nodes[j]]=[nodes[j],nodes[i]]; }
@@ -507,6 +547,101 @@ button,
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
+
+  // POSITION OVERLAY CLOSE v3.3.39
+  const overlayClose = document.getElementById('close');
+  function positionOverlayClose(){
+    const panel = document.querySelector('.panel');
+    if(!overlayClose || !panel) return;
+    const r = panel.getBoundingClientRect();
+    overlayClose.style.top = Math.round(r.top + 8) + 'px';
+    overlayClose.style.left = Math.round(r.right - 8 - 44) + 'px';
+  }
+  window.addEventListener('resize', positionOverlayClose, {passive:true});
+  window.addEventListener('scroll', positionOverlayClose, {passive:true});
+
+  // DOCUMENT CLOSE FALLBACK v3.3.39
+  document.addEventListener('pointerdown', (e) => {
+    const t = e.target && (e.target.closest ? e.target.closest('#close') : null);
+    if (t && lb.classList.contains('open')) onClosePress(e);
+  }, true);
+
+
+  // VERTICAL SWIPE CLOSE v3.3.39
+  (function() {
+    const panel = document.querySelector('.panel');
+    const lbEl = document.getElementById('lb');
+    if (!panel || !lbEl) return;
+
+    let startX = 0, startY = 0;
+    let dragging = false;
+    let locked = false;
+    let lockDir = null; // 'v' or 'h'
+    let activeId = null;
+
+    const THRESH = 90;
+    const MAX_DRAG = 260;
+
+    function resetPos() {
+      panel.style.transition = 'transform 180ms ease';
+      panel.style.transform = '';
+      setTimeout(() => panel.style.transition = '', 200);
+    }
+
+    function onDown(e) {
+      if (!lbEl.classList.contains('open')) return;
+      if (e.target && e.target.closest && (e.target.closest('#close') || e.target.closest('.overlayClose'))) return;
+      activeId = e.pointerId;
+      startX = e.clientX;
+      startY = e.clientY;
+      dragging = true;
+      locked = false;
+      lockDir = null;
+      try { panel.setPointerCapture(activeId); } catch(_){}
+    }
+
+    function onMove(e) {
+      if (!dragging || e.pointerId !== activeId) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (!locked && (Math.abs(dy) > 8 || Math.abs(dx) > 8)) {
+        locked = true;
+        lockDir = (Math.abs(dy) > Math.abs(dx)) ? 'v' : 'h';
+      }
+      if (lockDir !== 'v') return;
+
+      const down = Math.max(0, dy);
+      const clamped = Math.min(MAX_DRAG, down);
+      panel.style.transform = `translateY(${clamped}px)`;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function onUp(e) {
+      if (!dragging || e.pointerId !== activeId) return;
+      dragging = false;
+      const dy = e.clientY - startY;
+      if (lockDir === 'v' && dy > THRESH) closeLb();
+      else resetPos();
+      activeId = null;
+    }
+
+    panel.addEventListener('pointerdown', onDown, {passive:true});
+    panel.addEventListener('pointermove', onMove, {passive:false});
+    panel.addEventListener('pointerup', onUp, {passive:true});
+    panel.addEventListener('pointercancel', onUp, {passive:true});
+  })();
+
+  // CLOSE CLICK v3.3.39
+  function onClosePress(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    closeLb();
+  }
+  closeBtn.addEventListener('click', onClosePress, true);
+  closeBtn.addEventListener('pointerup', onClosePress, true);
 </script>
 
 </body>

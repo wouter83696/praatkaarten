@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.21';
+const VERSION = '3.3.23';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -126,6 +126,19 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
+  // POSITION OVERLAY CLOSE v3.3.34
+  const overlayClose = document.getElementById('close');
+  function positionOverlayClose(){
+    if(!overlayClose || !lbCard) return;
+    const r = lbCard.getBoundingClientRect();
+    const top = Math.round(r.top + 8);
+    const left = Math.round(r.right - 8 - 44);
+    overlayClose.style.top = top + 'px';
+    overlayClose.style.left = left + 'px';
+  }
+  window.addEventListener('resize', positionOverlayClose, {passive:true});
+  window.addEventListener('scroll', positionOverlayClose, {passive:true});
+
   // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
   if(lbHelpTitle){
     lbHelpTitle.textContent = "";
@@ -166,6 +179,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   let uiTimer = null;
   function showUI(){
+    try{ positionOverlayClose(); }catch(_e){}
+
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
     const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
@@ -284,7 +299,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    document.body.classList.add('lb-open');
+    try{ positionOverlayClose(); }catch(_e){}
+document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
@@ -508,6 +524,16 @@ lb.addEventListener('pointerup', (e) => {
     e.stopPropagation();
   });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+
+  // CLOSE FIX v3.3.34: force pointerdown so gestures can't swallow close
+  e.stopPropagation();
+    closeLb();
+  }, {capture:true});
+
+  // CLOSE FIX v3.3.30: op mobiel kan 'click' soms niet afvuren door gesture/capture; forceer pointerdown
+  e.stopPropagation();
+    closeLb();
+  }, {capture:true});
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
@@ -924,3 +950,92 @@ async function renderMobileIntro(){
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
+
+
+
+// SAFETY: close button delegation (v3.3.28)
+document.addEventListener('click', (e) => {
+  const closeEl = e.target && (e.target.closest ? e.target.closest('.close') : null);
+  const lb = document.getElementById('lb');
+  if (!lb) return;
+  if (lb.classList.contains('open') && closeEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    try { closeLb(); } catch(_) {}
+  }
+}, true);
+
+// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #close of .close
+document.addEventListener('pointerdown', (e) => {
+  const lb = document.getElementById('lb');
+  if (!lb || !lb.classList.contains('open')) return;
+  const closeEl = e.target && (e.target.closest ? e.target.closest('#close, .close') : null);
+  if (!closeEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try { closeLb(); } catch(_) {}
+}, true);
+
+// VERTICAL SWIPE CLOSE v3.3.39 (main)
+(function(){
+  const panel = document.querySelector('.panel');
+  const lbEl = document.getElementById('lb');
+  if(!panel || !lbEl) return;
+
+  let startX=0, startY=0, dragging=false, locked=false, lockDir=null, activeId=null;
+  const THRESH=90, MAX_DRAG=260;
+
+  function resetPos(){
+    panel.style.transition='transform 180ms ease';
+    panel.style.transform='';
+    setTimeout(()=>panel.style.transition='', 200);
+  }
+
+  function onDown(e){
+    if(!lbEl.classList.contains('open')) return;
+    if(e.target && e.target.closest && (e.target.closest('#close') || e.target.closest('.overlayClose'))) return;
+    activeId=e.pointerId;
+    startX=e.clientX; startY=e.clientY;
+    dragging=true; locked=false; lockDir=null;
+    try{ panel.setPointerCapture(activeId); }catch(_){}
+  }
+
+  function onMove(e){
+    if(!dragging || e.pointerId!==activeId) return;
+    const dx=e.clientX-startX;
+    const dy=e.clientY-startY;
+    if(!locked && (Math.abs(dy)>8 || Math.abs(dx)>8)){
+      locked=true;
+      lockDir=(Math.abs(dy)>Math.abs(dx))?'v':'h';
+    }
+    if(lockDir!=='v') return;
+    const down=Math.max(0,dy);
+    const clamped=Math.min(MAX_DRAG,down);
+    panel.style.transform=`translateY(${clamped}px)`;
+    e.preventDefault(); e.stopPropagation();
+  }
+
+  function onUp(e){
+    if(!dragging || e.pointerId!==activeId) return;
+    dragging=false;
+    const dy=e.clientY-startY;
+    if(lockDir==='v' && dy>THRESH){ closeLb(); }
+    else resetPos();
+    activeId=null;
+  }
+
+  panel.addEventListener('pointerdown', onDown, {passive:true});
+  panel.addEventListener('pointermove', onMove, {passive:false});
+  panel.addEventListener('pointerup', onUp, {passive:true});
+  panel.addEventListener('pointercancel', onUp, {passive:true});
+})();
+
+// CLOSE CLICK v3.3.39 (main)
+function onClosePress(e){
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+  closeLb();
+}
+closeBtn.addEventListener('click', onClosePress, true);
+closeBtn.addEventListener('pointerup', onClosePress, true);
