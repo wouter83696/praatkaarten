@@ -508,6 +508,13 @@ lb.addEventListener('pointerup', (e) => {
     e.stopPropagation();
   });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+
+  // CLOSE FIX v3.3.30: op mobiel kan 'click' soms niet afvuren door gesture/capture; forceer pointerdown
+  closeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLb();
+  }, {capture:true});
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
