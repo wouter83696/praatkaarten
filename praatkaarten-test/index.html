@@ -342,15 +342,15 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100%;
   background:transparent;
   display:flex;
-  /* kaart iets hoger: minder top-witruimte */
-  align-items:flex-start;
+  /* kaart weer netjes gecentreerd (desktop) */
+  align-items:center;
   justify-content:center;
 }
 
 .lbCard{
   position:relative;
-  width:min(560px,92vw);
-  /* Desktop: grotere kaart zoals bij thema-overlay */
+  /* Houd dezelfde verhouding/maat als de 'grote' kaarten uit het grid */
+  width:min(480px,92vw);
   border-radius:22px;
   overflow:hidden;
   background:#fff;
@@ -935,25 +935,30 @@ body.hm-open{overflow:hidden}
   z-index:1;
 }
 
-/* Sluitknop op de hoek van het plaatje (links-boven) */
+/* Sluitknop op de hoek van het plaatje (rechts-boven)
+   - zonder witte 'button' eromheen
+   - alleen het kruisje (wel met comfortabele hit-area)
+*/
 .introClose{
   position:absolute;
-  top:8px;
-  left:8px;
-  right:auto;
+  top:10px;
+  right:10px;
+  left:auto;
   z-index:5;
   appearance:none;
   border:0;
   width:34px;
   height:34px;
-  border-radius:999px;
   display:grid;
   place-items:center;
   cursor:pointer;
-  background:rgba(255,255,255,.86);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10), 0 8px 22px rgba(0,0,0,.10);
+
+  /* geen witte achtergrond/cirkel */
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+
   color: rgba(11,18,32,.55);
 }
 .introClose svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
@@ -1076,8 +1081,16 @@ body.hm-open{overflow:hidden}
   opacity:1;
 }
 
-/* Uitleg open: pills blijven zichtbaar (zoals gevraagd).
-   We houden wél safe-space (--pillsSafe) zodat de tekst nooit onder de pills komt. */
+/* Uitleg open (mobiel): pills faden weg voor rust.
+   We houden wél safe-space (--pillsSafe) zodat tekst nooit onder de pills kan vallen
+   op het moment dat ze (kort) zichtbaar zijn. */
+@media (max-width: 720px){
+  body.show-intro .pillsDock{
+    opacity:0;
+    pointer-events:none;
+  }
+}
+
 
 .pillsLeft,
 .pillsRight{display:flex; gap:10px; pointer-events:auto;}
