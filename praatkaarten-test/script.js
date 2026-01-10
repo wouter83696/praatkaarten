@@ -107,10 +107,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
-  // Telefoon: controls in de uitleg-sheet
-  const shuffleBtnIntro = document.getElementById('shuffleBtnIntro');
-  const uitlegBtnIntro  = document.getElementById('uitlegBtnIntro');
-  const introCloseBtn   = document.getElementById('introCloseBtn');
+  // Mobiele uitleg-controls (boven het sheet)
+  const shuffleBtnTop = document.getElementById('shuffleBtnTop');
+  const uitlegBtnTop  = document.getElementById('uitlegBtnTop');
+  const closeIntroBtn = document.getElementById('closeIntroBtn');
   // (v3.3.7) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
 
@@ -565,7 +565,8 @@ document.addEventListener('keydown', (e) => {
   function setUitleg(on){
     uitlegOn = !!on;
     setChip(uitlegBtn, uitlegOn);
-    setChip(uitlegBtnIntro, uitlegOn);
+    setChip(uitlegBtnTop, uitlegOn);
+    setChip(uitlegBtnTop, uitlegOn);
 
     // Pills verplaatsen: onder ↔ boven
     document.body.classList.toggle('uitleg-open', uitlegOn);
@@ -590,7 +591,8 @@ document.addEventListener('keydown', (e) => {
   function setShuffle(on){
     shuffleOn = !!on;
     setChip(shuffleBtn, shuffleOn);
-    setChip(shuffleBtnIntro, shuffleOn);
+    setChip(shuffleBtnTop, shuffleOn);
+    setChip(shuffleBtnTop, shuffleOn);
 
     mode = 'cards';
     filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
@@ -601,25 +603,26 @@ document.addEventListener('keydown', (e) => {
   // Start: beide uit
   setChip(shuffleBtn, false);
   setChip(uitlegBtn, false);
+  setChip(shuffleBtnTop, false);
+  setChip(uitlegBtnTop, false);
   document.body.classList.remove('show-intro');
   document.body.classList.remove('uitleg-open');
 
   if(shuffleBtn){
     shuffleBtn.addEventListener('click', () => setShuffle(!shuffleOn));
   }
+  if(shuffleBtnTop){
+    shuffleBtnTop.addEventListener('click', () => setShuffle(!shuffleOn));
+  }
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
-
-  if(shuffleBtnIntro){
-    shuffleBtnIntro.addEventListener('click', () => setShuffle(!shuffleOn));
+  if(uitlegBtnTop){
+    // In de uitleg-view togglet dit dezelfde uitleg state.
+    uitlegBtnTop.addEventListener('click', () => setUitleg(!uitlegOn));
   }
-  if(uitlegBtnIntro){
-    // In de sheet werkt Info als toggle
-    uitlegBtnIntro.addEventListener('click', () => setUitleg(!uitlegOn));
-  }
-  if(introCloseBtn){
-    introCloseBtn.addEventListener('click', () => setUitleg(false));
+  if(closeIntroBtn){
+    closeIntroBtn.addEventListener('click', () => setUitleg(false));
   }
 
   // ===============================
