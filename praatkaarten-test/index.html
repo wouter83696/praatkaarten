@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.10</title>
+<title>Praatkaarten v3.3.8</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -354,17 +354,6 @@ body.lb-open .navHintMini{ opacity:0; }
   -webkit-backface-visibility: hidden;
 }
 
-/* Mobiel: voorkom stroef/"klem" scrollen wanneer help-tekst lang is (o.a. Verhelderen) */
-@media (hover:none) and (pointer:coarse){
-  .lbCard{
-    max-height: calc(var(--vh, 1vh) * 100 - 24px);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  #lbImg{ flex: 0 0 auto; }
-  .lbHelpText{ flex: 0 0 auto; }
-}
-
 #lbImg{
   width:100.2%;
   margin-left:-0.1%;
@@ -571,9 +560,16 @@ html, body{
   pointer-events:none;
 }
 
-/* 3) Balk: alleen desktop/tablet. Op telefoon werken we met icon-pills. */
-@media (min-width: 721px){
-  .controlsBar{ display:flex; }
+/* 3) Balk: WEL in portrait, WEG in landscape (telefoon)
+      (geen max-width; detecteer telefoon via coarse pointer) */
+.controlsBar{ display:flex; }
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
+}
+@media (max-height: 520px) and (orientation: landscape){
+  .controlsBar{ display:none !important; }
+  body{ padding-bottom: 0 !important; }
 }
 
 
@@ -879,21 +875,18 @@ body.hm-open{overflow:hidden}
   height: var(--introSheetH, 0px);
   position:fixed;
   left:0; right:0; bottom:0;
-  /* extra ruimte onderaan zodat de pillsDock nooit over de tekst heen valt */
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom) + 64px);
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
-  /* basis moet weer (bijna) wit ogen, net als eerder */
-  background: rgba(255,255,255,.86);
+  background: transparent;
 
   border-radius: 18px 18px 0 0;
   /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
   box-shadow:
     0 -18px 55px rgba(0,0,0,.14),
     0 10px 35px rgba(0,0,0,.10);
-  /* geen zichtbare rand (die gaf "border"-effect tegen de kaartkleur) */
-  border: 0;
+  border: 1px solid rgba(11,18,32,.08);
   overflow: hidden;
   background-clip: padding-box;
   isolation: isolate;
@@ -903,29 +896,7 @@ body.hm-open{overflow:hidden}
   display:block;
 }
 
-/* Geblurde achtergrond (zelfde SVG als grid/lightbox) */
-.mobileIntro::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image: var(--lb-bg-url);
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.08);
-  filter: blur(18px);
-  opacity: .38;
-  pointer-events:none;
-  z-index:0;
-}
-.mobileIntro::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  /* weer wit zoals eerst (subtiel), zonder harde randen */
-  background: rgba(255,255,255,.22);
-  pointer-events:none;
-  z-index:1;
-}
+/* (mobiel) geen blur-lagen meer */
 
 /* Zorg dat de inhoud boven de pseudo-lagen ligt */
 .mobileIntro > *{ position:relative; z-index:2; }
@@ -948,13 +919,10 @@ body.hm-open{overflow:hidden}
   display:flex;
   gap:14px;
   overflow-x:auto;
-  overflow-y:hidden;
   padding:6px 4px 0;
   height: 100%;
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
-  /* help iOS: maak horizontaal swipen voorspelbaar */
-  touch-action: pan-x;
 }
 .introTrack::-webkit-scrollbar{display:none;}
 
@@ -1069,22 +1037,32 @@ body.hm-open{overflow:hidden}
 
 .pill svg{ width:20px; height:20px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95; }
 
-/* Sluit-knop links (alleen zichtbaar wanneer uitleg open is) */
-#introCloseBtn{
-  opacity:0;
-  pointer-events:none;
-  transform: translateY(2px);
-}
-body.show-intro #introCloseBtn{
-  opacity:1;
-  pointer-events:auto;
-  transform: none;
-}
-
 .pill.is-on{
   background: rgba(48,96,136,.12);
   box-shadow: inset 0 0 0 1px rgba(48,96,136,.22), 0 10px 30px rgba(0,0,0,.10);
   color: rgba(11,18,32,.58);
+}
+
+/* Telefoon: iconen in de uitleg-sheet (links-boven) */
+.introPills{
+  position:absolute;
+  top:10px;
+  left:12px;
+  z-index:5;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  opacity:0;
+  transform: translateY(2px);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events:none;
+}
+@media (max-width: 720px){
+  body.show-intro .introPills{
+    opacity:1;
+    transform:none;
+    pointer-events:auto;
+  }
 }
 
 /* Pills blijven altijd zichtbaar (ook als uitleg open is) */
@@ -1112,18 +1090,9 @@ body.show-intro #introCloseBtn{
         <path d="M12 8h.01" />
       </svg>
     </button>
-
   </div>
 
-  <!-- Sluiten rechts (alleen zichtbaar wanneer uitleg open is) -->
-  <div class="pillsRight">
-    <button class="pill" id="introCloseBtn" type="button" aria-label="Sluiten">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M18 6L6 18" />
-        <path d="M6 6l12 12" />
-      </svg>
-    </button>
-  </div>
+  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
 </div>
 
 
@@ -1131,6 +1100,19 @@ body.show-intro #introCloseBtn{
 <div class="grid" id="grid"></div>
 
 <section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
+  <!-- Telefoon: controls in de sheet (links-boven) -->
+  <div class="introPills" aria-label="Uitleg bediening">
+    <button class="pill" id="introCloseBtn" type="button" aria-label="Sluiten">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+    </button>
+    <button class="pill" id="uitlegBtnIntro" type="button" aria-label="Info" aria-pressed="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+    </button>
+    <button class="pill" id="shuffleBtnIntro" type="button" aria-label="Hussel" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 7h6l10 10h1"/><path d="M16 21h5v-5"/><path d="M4 17h6l2-2"/><path d="M21 8l-2 2"/></svg>
+    </button>
+  </div>
+
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
@@ -1159,7 +1141,7 @@ body.show-intro #introCloseBtn{
 
 
 
-<script src="script.js?v=3.3.9"></script>
+<script src="script.js?v=3.3.8"></script>
 
 
 

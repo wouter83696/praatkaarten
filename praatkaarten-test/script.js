@@ -107,7 +107,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
-  const introCloseBtn = document.getElementById('introCloseBtn');
+  // Telefoon: controls in de uitleg-sheet
+  const shuffleBtnIntro = document.getElementById('shuffleBtnIntro');
+  const uitlegBtnIntro  = document.getElementById('uitlegBtnIntro');
+  const introCloseBtn   = document.getElementById('introCloseBtn');
   // (v3.3.7) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
 
@@ -562,6 +565,7 @@ document.addEventListener('keydown', (e) => {
   function setUitleg(on){
     uitlegOn = !!on;
     setChip(uitlegBtn, uitlegOn);
+    setChip(uitlegBtnIntro, uitlegOn);
 
     // Pills verplaatsen: onder ↔ boven
     document.body.classList.toggle('uitleg-open', uitlegOn);
@@ -586,6 +590,7 @@ document.addEventListener('keydown', (e) => {
   function setShuffle(on){
     shuffleOn = !!on;
     setChip(shuffleBtn, shuffleOn);
+    setChip(shuffleBtnIntro, shuffleOn);
 
     mode = 'cards';
     filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
@@ -604,6 +609,14 @@ document.addEventListener('keydown', (e) => {
   }
   if(uitlegBtn){
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
+  }
+
+  if(shuffleBtnIntro){
+    shuffleBtnIntro.addEventListener('click', () => setShuffle(!shuffleOn));
+  }
+  if(uitlegBtnIntro){
+    // In de sheet werkt Info als toggle
+    uitlegBtnIntro.addEventListener('click', () => setUitleg(!uitlegOn));
   }
   if(introCloseBtn){
     introCloseBtn.addEventListener('click', () => setUitleg(false));
