@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.22</title>
+<title>Praatkaarten v3.3.21</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -882,23 +882,19 @@ body.hm-open{overflow:hidden}
   height:auto;
   max-height: calc(100dvh - 88px);
   position:fixed;
-  /* Maak de uitleg-sheet net zo breed als de kaartjes (rustiger, minder 'modal') */
-  left:50%;
-  right:auto;
-  bottom:0;
-  width:min(86vw, 420px);
+  left:0; right:0; bottom:0;
   /* compacter: minder 'witte' ruimte bovenin */
   /* extra onderruimte zodat de fixed pills links-onder nooit over uitleg-tekst heen vallen */
   /* minimaliseer witruimte boven */
   /* zo min mogelijk wit kader: strakker rondom inhoud */
   /* Telefoon: minder witruimte (± helft) maar wél ruimte voor de pills als ze zichtbaar zijn */
-  padding:6px 6px calc(8px + env(safe-area-inset-bottom) + min(var(--pillsSafe), 56px));
+  padding:4px 8px calc(8px + env(safe-area-inset-bottom) + min(var(--pillsSafe), 56px));
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
   background: transparent;
 
-  border-radius: 18px;
+  border-radius: 18px 18px 0 0;
   /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
   box-shadow:
     0 -14px 45px rgba(0,0,0,.12),
@@ -909,9 +905,8 @@ body.hm-open{overflow:hidden}
   background-clip: padding-box;
   isolation: isolate;
 
-  transform: translate3d(-50%, 110%, 0) scale(.98);
-  transition: transform .42s cubic-bezier(.2,.9,.2,1);
-  will-change: transform;
+  transform: translateY(103%);
+  transition: transform .28s ease;
   display:block;
 }
 
@@ -958,9 +953,6 @@ body.hm-open{overflow:hidden}
   place-items:center;
   cursor:pointer;
 
-  /* altijd klikbaar, ook boven pseudo-lagen */
-  pointer-events:auto;
-
   /* geen witte achtergrond/cirkel */
   background:transparent;
   box-shadow:none;
@@ -981,7 +973,7 @@ body.hm-open{overflow:hidden}
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
-  body.show-intro .mobileIntro{ transform: translate3d(-50%, 0, 0) scale(1); }
+  body.show-intro .mobileIntro{ transform: translateY(0); }
   /* Pills blijven altijd links-onder in beeld; geen opschuiven boven de uitleg */
 }
 
@@ -992,12 +984,11 @@ body.hm-open{overflow:hidden}
 
 .introTrack{
   display:flex;
-  /* Elke slide vult de sheet-breedte; geen extra ruimte naast de kaart */
-  gap:0;
+  gap:12px;
   overflow-x:auto;
   overflow-y:hidden;
   /* kaart/tekst hoger (minder top-ruimte) */
-  padding:0;
+  padding:0 2px 0;
   height: 100%;
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
@@ -1006,8 +997,8 @@ body.hm-open{overflow:hidden}
 .introTrack::-webkit-scrollbar{display:none;}
 
 .introCard{
-  flex:0 0 100%;
-  width:100%;
+  flex:0 0 auto;
+  width:min(86vw, 420px);
   scroll-snap-align:center;
   background:transparent;
   box-shadow:none;
@@ -1148,12 +1139,13 @@ body.hm-open{overflow:hidden}
 <div class="pillsDock" aria-label="Bediening">
   <div class="pillsLeft">
     <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
-      <!-- Shuffle-icoon (rustiger: minder losse segmenten, betere symmetrie) -->
+      <!-- strakkere shuffle (nettere lijnen/hoeken) -->
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M16 3h5v5"/>
-        <path d="M4 7h10a4 4 0 0 1 4 4"/>
-        <path d="M4 17h10a4 4 0 0 0 4-4"/>
+        <path d="M4 7h5l6 6"/>
         <path d="M21 8l-5-5"/>
+        <path d="M4 17h5l6-6"/>
+        <path d="M16 21h5v-5"/>
         <path d="M21 16l-5 5"/>
       </svg>
     </button>
@@ -1202,7 +1194,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.22"></script>
+<script src="script.js?v=3.3.20"></script>
 
 
 

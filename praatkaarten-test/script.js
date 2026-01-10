@@ -675,8 +675,7 @@ document.addEventListener('keydown', (e) => {
       dragging = true;
       lastDy = dy;
       const t = resistance(dy);
-      // Let op: de sheet staat gecentreerd met translateX(-50%). Behoud die tijdens drag.
-      mobileIntroEl.style.transform = `translate3d(-50%, ${t}px, 0) scale(1)`;
+      mobileIntroEl.style.transform = `translateY(${t}px)`;
     };
 
     const end = () => {
@@ -701,7 +700,7 @@ document.addEventListener('keydown', (e) => {
       }
 
       // veer terug
-      mobileIntroEl.style.transform = 'translate3d(-50%, 0px, 0) scale(1)';
+      mobileIntroEl.style.transform = 'translateY(0px)';
       const cleanup = () => {
         mobileIntroEl.style.transition = '';
         mobileIntroEl.style.transform = '';
