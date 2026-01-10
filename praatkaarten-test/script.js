@@ -101,6 +101,16 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const navHint = null;
 
   const closeBtn = document.getElementById('close');
+// POSITION OVERLAY CLOSE v3.3.40
+const overlayClose = document.getElementById('close');
+function positionOverlayClose(){
+  if(!overlayClose || !lbCard) return;
+  const r = lbCard.getBoundingClientRect();
+  overlayClose.style.top = Math.round(r.top + 8) + 'px';
+  overlayClose.style.left = Math.round(r.right - 8 - 44) + 'px';
+}
+window.addEventListener('resize', positionOverlayClose, {passive:true});
+window.addEventListener('scroll', positionOverlayClose, {passive:true});
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
@@ -299,7 +309,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    try{ positionOverlayClose(); }catch(_e){}
+    positionOverlayClose();
+try{ positionOverlayClose(); }catch(_e){}
 document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
@@ -523,7 +534,7 @@ lb.addEventListener('pointerup', (e) => {
     }
     e.stopPropagation();
   });
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  closeLb(); });
 
   // CLOSE FIX v3.3.34: force pointerdown so gestures can't swallow close
   e.stopPropagation();
@@ -975,8 +986,16 @@ document.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
   try { closeLb(); } catch(_) {}
 }, true);
-
-// VERTICAL SWIPE CLOSE v3.3.39 (main)
+// CLOSE HANDLER v3.3.40 (betrouwbaar + conflictvrij)
+function onClosePress(e){
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+  closeLb();
+}
+closeBtn.addEventListener('click', onClosePress, true);
+closeBtn.addEventListener('pointerup', onClosePress, true);
+// VERTICAL SWIPE CLOSE v3.3.40
 (function(){
   const panel = document.querySelector('.panel');
   const lbEl = document.getElementById('lb');
@@ -993,7 +1012,7 @@ document.addEventListener('pointerdown', (e) => {
 
   function onDown(e){
     if(!lbEl.classList.contains('open')) return;
-    if(e.target && e.target.closest && (e.target.closest('#close') || e.target.closest('.overlayClose'))) return;
+    if(e.target && e.target.closest && e.target.closest('#close')) return;
     activeId=e.pointerId;
     startX=e.clientX; startY=e.clientY;
     dragging=true; locked=false; lockDir=null;
@@ -1011,7 +1030,7 @@ document.addEventListener('pointerdown', (e) => {
     if(lockDir!=='v') return;
     const down=Math.max(0,dy);
     const clamped=Math.min(MAX_DRAG,down);
-    panel.style.transform=`translateY(${clamped}px)`;
+    panel.style.transform='translateY(' + clamped + 'px)';
     e.preventDefault(); e.stopPropagation();
   }
 
@@ -1029,13 +1048,3 @@ document.addEventListener('pointerdown', (e) => {
   panel.addEventListener('pointerup', onUp, {passive:true});
   panel.addEventListener('pointercancel', onUp, {passive:true});
 })();
-
-// CLOSE CLICK v3.3.39 (main)
-function onClosePress(e){
-  e.preventDefault();
-  e.stopPropagation();
-  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-  closeLb();
-}
-closeBtn.addEventListener('click', onClosePress, true);
-closeBtn.addEventListener('pointerup', onClosePress, true);

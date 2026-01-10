@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.39</title>
+<title>Praatkaarten v3.3.40</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1120,7 +1120,7 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   UI PATCH v3.3.39
+   UI PATCH v3.3.40
    - Harder (Google Maps-like) icons for Shuffle/Info
    - Force Close button to be visible + clickable on mobile when overlay is open
    =============================== */
@@ -1182,7 +1182,7 @@ button.pill:active,
 
 
 /* ===============================
-   PATCH v3.3.39
+   PATCH v3.3.40
    - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
    - Close button altijd tappable
    - Shuffle icon harder (zoals voorbeeld)
@@ -1252,7 +1252,7 @@ button.pill:active,
 
 
 /* ===============================
-   FIX v3.3.39
+   FIX v3.3.40
    - Less whitespace: white panel reaches bottom on mobile
    - Close button works: remove pointer-events:none on lbCard + layer close above image
    =============================== */
@@ -1351,12 +1351,12 @@ button.pill:active,
 }
 .lb.open #close.overlayClose{ display:grid !important; }
 
-/* Icon style v3.3.39 */
+/* Icon style v3.3.40 */
 .iconShuffle path,
 .iconInfo rect{
   fill: rgba(120,120,120,.9);
 }
-/* ICONS LOOK v3.3.39 (zoals voorbeeld) */
+/* ICONS LOOK v3.3.40 (zoals voorbeeld) */
 .pill{
   background: rgba(255,255,255,.92) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
@@ -1377,6 +1377,26 @@ button.pill:active,
   stroke-linejoin: round !important;
 }
 /* dot of the i */
+.iconInfo path:last-child{ stroke-width: 4.2 !important; }
+/* ICONS LOOK v3.3.40 */
+.pill{
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10) !important;
+}
+.pill:active{
+  box-shadow: 0 6px 18px rgba(0,0,0,.12) !important;
+  transform: translateY(0.5px);
+}
+.iconShuffle path,
+.iconInfo path{
+  fill: none !important;
+  stroke: rgba(125,125,125,.92) !important;
+  stroke-width: 2.4 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
 .iconInfo path:last-child{ stroke-width: 4.2 !important; }
 </style>
 </head>
@@ -1432,7 +1452,8 @@ button.pill:active,
     </svg>
   </button>
 
-  <div class="panel" role="dialog" aria-modal="true">
+  <!-- Overlay close button (outside gesture layer) -->
+<div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
