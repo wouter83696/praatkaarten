@@ -605,6 +605,15 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
+  // Mobiel: vaste kruis-knop in uitleg (rechtsboven)
+  const introCloseBtn = document.getElementById('introClose');
+  if(introCloseBtn){
+    introCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setUitleg(false);
+    });
+  }
+
   // ===============================
   // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
   // - robuuster: luister capture + pointer events (iOS/Safari) + touch fallback
@@ -724,7 +733,12 @@ async function renderMobileIntro(){
 
   // Build cards
   track.innerHTML = '';
-  for(const s of data.slides){
+
+  const slides = data.slides.slice();
+  const realCount = slides.length;
+
+  // helper om één kaart te bouwen
+  const buildCard = (s) => {
     const art = document.createElement('article');
     art.className = 'introCard';
     art.dataset.intro = s.key || '';
@@ -757,12 +771,70 @@ async function renderMobileIntro(){
 
     art.appendChild(wrap);
     art.appendChild(text);
-    track.appendChild(art);
+    return art;
+  };
+
+  // (Infinity scroll) clones aan beide kanten zodat je "oneindig" door kan swipen
+  const CLONE_N = Math.min(2, realCount);
+  if(realCount > 1){
+    for(let i=realCount-CLONE_N; i<realCount; i++){
+      const c = buildCard(slides[i]);
+      c.dataset.clone = '1';
+      track.appendChild(c);
+    }
+  }
+
+  for(const s of slides){
+    track.appendChild(buildCard(s));
+  }
+
+  if(realCount > 1){
+    for(let i=0; i<CLONE_N; i++){
+      const c = buildCard(slides[i]);
+      c.dataset.clone = '1';
+      track.appendChild(c);
+    }
   }
 
   // Hint text (optional)
   const hintEl = section.querySelector('.introHint');
   if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
+
+  // Infinity scroll: na layout (widths bekend) scroll naar eerste echte item
+  if(realCount > 1){
+    requestAnimationFrame(() => {
+      const firstReal = track.querySelectorAll('.introCard')[CLONE_N];
+      if(!firstReal) return;
+      const gap = 14; // gelijk aan CSS
+      const step = firstReal.getBoundingClientRect().width + gap;
+      let jumping = false;
+
+      // Startpositie: op eerste echte kaart
+      track.scrollLeft = step * CLONE_N;
+
+      const onScroll = () => {
+        if(jumping) return;
+        const max = step * (realCount + CLONE_N);
+        const min = step * (CLONE_N - 1);
+        const x = track.scrollLeft;
+
+        // Te ver naar links -> spring naar dezelfde positie achteraan
+        if(x <= min){
+          jumping = true;
+          track.scrollLeft = x + step * realCount;
+          requestAnimationFrame(() => { jumping = false; });
+        }
+        // Te ver naar rechts -> spring naar dezelfde positie vooraan
+        else if(x >= max){
+          jumping = true;
+          track.scrollLeft = x - step * realCount;
+          requestAnimationFrame(() => { jumping = false; });
+        }
+      };
+
+      track.addEventListener('scroll', onScroll, { passive:true });
+    });
+  }
 }
 
 // Fire & forget after DOM is ready

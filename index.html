@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.8</title>
+<title>Praatkaarten v3.3.12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -19,6 +19,9 @@
   --radius:16px;
   --shadow:0 14px 50px rgba(0,0,0,.12);
   --shadowHover:0 18px 70px rgba(0,0,0,.16);
+
+  /* safe space zodat fixed pills (links-onder) nooit over uitleg-tekst heen vallen */
+  --pillsSafe: 74px;
 
   --textBlue: rgba(48,96,136,.95);
   --uiBlue: rgba(48,96,136,.85);
@@ -875,7 +878,9 @@ body.hm-open{overflow:hidden}
   height: var(--introSheetH, 0px);
   position:fixed;
   left:0; right:0; bottom:0;
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  /* compacter: minder 'witte' ruimte bovenin */
+  /* extra onderruimte zodat de fixed pills links-onder nooit over uitleg-tekst heen vallen */
+  padding:6px 12px calc(10px + env(safe-area-inset-bottom) + var(--pillsSafe));
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
@@ -906,7 +911,8 @@ body.hm-open{overflow:hidden}
   background-position: center;
   transform: scale(1.08);
   filter: blur(18px);
-  opacity: .38;
+  /* minder doorzichtig: achtergrond minder zichtbaar */
+  opacity: .18;
   pointer-events:none;
   z-index:0;
 }
@@ -914,10 +920,38 @@ body.hm-open{overflow:hidden}
   content:"";
   position:absolute;
   inset:0;
-  background: rgba(255,255,255,.22);
+  /* minder doorzichtig: glaze veel opaquer */
+  background: rgba(255,255,255,.78);
   pointer-events:none;
   z-index:1;
 }
+
+/* Vaste sluitknop rechtsboven in uitleg (mobiel) */
+.introClose{
+  position:absolute;
+  top:10px;
+  left:12px;
+  z-index:5;
+  appearance:none;
+  border:0;
+  width:40px;
+  height:40px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10), 0 10px 30px rgba(0,0,0,.12);
+  color: rgba(11,18,32,.55);
+}
+.introClose svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.introClose:active{ transform: translateY(1px); }
+.introClose:focus-visible{ outline:2px solid rgba(48,96,136,.35); outline-offset:2px; }
+
+/* (pills-positionering staat bij .pillsDock zelf: bovenin als uitleg dicht is,
+   en net boven het uitlegvenster als uitleg open is) */
 
 /* Zorg dat de inhoud boven de pseudo-lagen ligt */
 .mobileIntro > *{ position:relative; z-index:2; }
@@ -940,10 +974,13 @@ body.hm-open{overflow:hidden}
   display:flex;
   gap:14px;
   overflow-x:auto;
-  padding:6px 4px 0;
+  overflow-y:hidden;
+  /* kaart/tekst hoger (minder top-ruimte) */
+  padding:0 4px 0;
   height: 100%;
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
+  touch-action: pan-x;
 }
 .introTrack::-webkit-scrollbar{display:none;}
 
@@ -1015,22 +1052,21 @@ body.hm-open{overflow:hidden}
 
 .pillsDock{
   position:fixed;
-  left:0; right:0; bottom:0;
+  left:0; right:0;
+  /* Pills: altijd links-onder (duim-bereik) */
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  top:auto;
   z-index:3000;
-  padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+  padding:0 12px;
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-start;
   align-items:flex-end;
   pointer-events:none;
+  transition: opacity .18s ease;
 }
 
-/* Mobiel: pills blijven ook bij uitleg open onderaan (geen bewegende knoppen) */
-
-/* Desktop: pills altijd onder, geen close button */
-@media (hover:hover) and (pointer:fine){
-  .pillsDock{ justify-content:flex-start; }
-  .pillsRight{ display:none; }
-}
+/* Uitleg open: pills blijven links-onder, maar tekst krijgt al safe space via --pillsSafe */
+body.show-intro .pillsDock{ opacity:1; }
 
 .pillsLeft,
 .pillsRight{display:flex; gap:10px; pointer-events:auto;}
@@ -1099,6 +1135,9 @@ body.hm-open{overflow:hidden}
 <div class="grid" id="grid"></div>
 
 <section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
+  <button class="introClose" id="introClose" type="button" aria-label="Sluiten">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+  </button>
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
@@ -1127,7 +1166,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.8"></script>
+<script src="script.js?v=3.3.12"></script>
 
 
 
