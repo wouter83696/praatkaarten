@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.33</title>
+<title>Praatkaarten v3.3.34</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1120,7 +1120,7 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   UI PATCH v3.3.33
+   UI PATCH v3.3.34
    - Harder (Google Maps-like) icons for Shuffle/Info
    - Force Close button to be visible + clickable on mobile when overlay is open
    =============================== */
@@ -1182,7 +1182,7 @@ button.pill:active,
 
 
 /* ===============================
-   PATCH v3.3.33
+   PATCH v3.3.34
    - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
    - Close button altijd tappable
    - Shuffle icon harder (zoals voorbeeld)
@@ -1252,7 +1252,7 @@ button.pill:active,
 
 
 /* ===============================
-   FIX v3.3.33
+   FIX v3.3.34
    - Less whitespace: white panel reaches bottom on mobile
    - Close button works: remove pointer-events:none on lbCard + layer close above image
    =============================== */
@@ -1317,6 +1317,39 @@ button.pill:active,
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* Overlay close: stays visually on the card, but lives outside gesture layer */
+.overlayClose{
+  position: fixed; /* positioned via JS to match lbCard corner */
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 999px;
+  box-shadow: none !important;
+  color: rgba(0,0,0,.74);
+  z-index: 99999 !important;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb.open .overlayClose{
+  opacity: 1;
+  pointer-events: auto;
+}
+.overlayClose svg{
+  width: 22px;
+  height: 22px;
+}
+.overlayClose svg path{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lb.open #close.overlayClose{ display:grid !important; }
 </style>
 </head>
 <body>
@@ -1358,12 +1391,18 @@ button.pill:active,
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="lbBg" aria-hidden="true"></div>
+  <!-- Overlay close button (outside gesture layer) -->
+  <button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+    </svg>
+  </button>
+
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
-      <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
-            <img id="lbImg" alt="">
+<img id="lbImg" alt="">
       <div class="lbText" id="lbText"></div>
     </div>
 
