@@ -110,9 +110,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Mobiele uitleg-controls (boven het sheet)
   const shuffleBtnTop = document.getElementById('shuffleBtnTop');
   const uitlegBtnTop  = document.getElementById('uitlegBtnTop');
-  const closeIntroBtn = document.getElementById('closeIntroBtn');
+  const closeIntroCorner = document.getElementById('closeIntroCorner');
   // (v3.3.7) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
+  const introPillsEl = document.querySelector('.introPillsTop');
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -126,7 +127,24 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   function isMobile(){
     return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
   }
-  const lbHelpText = document.getElementById('lbHelpText');
+  
+
+function updateIntroPillsShift(){
+  if(!isMobile() || !introPillsEl || !mobileIntroEl) return;
+  if(!uitlegOn){
+    document.documentElement.style.setProperty('--introPillsShift','0px');
+    return;
+  }
+  // doel: de pills los zwevend net boven het sheet laten hangen
+  const pillsRect = introPillsEl.getBoundingClientRect();
+  const sheetRect = mobileIntroEl.getBoundingClientRect();
+  const gap = 10; // px tussen pills en sheet
+  const targetTop = sheetRect.top - gap - pillsRect.height;
+  const baseTop = 12; // CSS top:12px
+  const shift = Math.round(targetTop - baseTop);
+  document.documentElement.style.setProperty('--introPillsShift', `${shift}px`);
+}
+const lbHelpText = document.getElementById('lbHelpText');
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
@@ -573,6 +591,8 @@ document.addEventListener('keydown', (e) => {
 
     if(isMobile()){
       document.body.classList.toggle('show-intro', uitlegOn);
+      // Pills schuiven mee naar de sheet (maar blijven fixed, ook bij scroll)
+      updateIntroPillsShift();
       return;
     }
 
@@ -607,6 +627,7 @@ document.addEventListener('keydown', (e) => {
   setChip(uitlegBtnTop, false);
   document.body.classList.remove('show-intro');
   document.body.classList.remove('uitleg-open');
+  updateIntroPillsShift();
 
   if(shuffleBtn){
     shuffleBtn.addEventListener('click', () => setShuffle(!shuffleOn));
@@ -621,9 +642,14 @@ document.addEventListener('keydown', (e) => {
     // In de uitleg-view togglet dit dezelfde uitleg state.
     uitlegBtnTop.addEventListener('click', () => setUitleg(!uitlegOn));
   }
-  if(closeIntroBtn){
-    closeIntroBtn.addEventListener('click', () => setUitleg(false));
+  if(closeIntroCorner){
+    closeIntroCorner.addEventListener('click', () => setUitleg(false));
   }
+
+
+// Houd de zwevende uitleg-controls netjes op hun plek bij scroll/resize
+window.addEventListener('resize', updateIntroPillsShift, {passive:true});
+window.addEventListener('scroll', updateIntroPillsShift, {passive:true});
 
   // ===============================
   // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)

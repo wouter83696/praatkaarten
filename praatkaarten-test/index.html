@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.13</title>
+<title>Praatkaarten 3.3.14 v3.3.13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -871,6 +871,8 @@ body.hm-open{overflow:hidden}
 }
 
 .mobileIntro{
+  position: fixed;
+
   /* altijd aanwezig, maar standaard buiten beeld */
   height: var(--introSheetH, 0px);
   position:fixed;
@@ -908,26 +910,29 @@ body.hm-open{overflow:hidden}
 
 /* Uitleg-controls: één groep linksboven, net boven het sheet (alleen zichtbaar als open) */
 .introPillsTop{
-  position:absolute;
+  position:fixed;
   left:12px;
-  top:-54px;
+  top:12px;
   display:flex;
   gap:10px;
+  z-index: 60;
   opacity:0;
   pointer-events:none;
-  transform: translateY(6px);
-  transition: opacity .18s ease, transform .18s ease;
+  transform: translateY(var(--introPillsShift, 0px));
+  transition: opacity .18s ease, transform .22s ease;
 }
 @media (max-width: 720px){
-  body.show-intro .introPillsTop{ opacity:1; pointer-events:auto; transform:none; }
-  /* Als uitleg open is, verberg de onder-pills: rust + geen overlap */
-  body.show-intro .pillsDock{ opacity:0; pointer-events:none; }
+  .introPillsTop{ opacity:1; pointer-events:auto; }
+  /* Onderste pills bestaan niet op mobiel */
+  .pillsDock{ display:none !important; }
 }
+@media (max-width: 720px){
+  /* Als uitleg open is, verberg de onder-pills: rust + geen overlap */
+  }
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
   /* Als uitleg open is: achtergrond niet meescrollen. */
-  body.show-intro{ overflow:hidden; }
   body.show-intro .mobileIntro{ transform: translateY(0); }
   /* Menubalk erboven zodra uitleg open is */
   body.show-intro .controlsBar{
@@ -938,6 +943,39 @@ body.hm-open{overflow:hidden}
 /* Desktop/tablet: carousel niet gebruiken */
 @media (min-width: 721px){
   .mobileIntro{ display:none; }
+}
+
+/* Sluiten (X) vast rechtsboven in het uitlegvenster */
+.introCloseCorner{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.0);
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transform: translateY(-2px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+body.show-intro .introCloseCorner{
+  opacity:1;
+  pointer-events:auto;
+  transform:none;
+}
+.introCloseCorner svg{
+  width:20px; height:20px;
+  fill:none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
 }
 
 .introTrack{
@@ -1120,10 +1158,10 @@ body.hm-open{overflow:hidden}
         <path d="M12 8h.01" />
       </svg>
     </button>
-    <button class="pill" id="closeIntroBtn" type="button" aria-label="Sluiten" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
-    </button>
-  </div>
+</div>
+  <button class="introCloseCorner" id="closeIntroCorner" type="button" aria-label="Sluiten">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+  </button>
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
@@ -1152,7 +1190,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.13"></script>
+<script src="script.js?v=3.3.14"></script>
 
 
 
