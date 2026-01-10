@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.14</title>
+<title>Praatkaarten v3.3.15</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -58,12 +58,12 @@ body{
 }
 
 .controlsBar .inner{
-  max-width:1600px;
-  margin:0 auto;
+  max-width:none;
+  margin:0;
   display:flex;
   gap:12px;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-start;
 }
 
 .btn{
@@ -270,10 +270,11 @@ body.lb-open .navHintMini{ opacity:0; }
   display:none;
   align-items:center;
   justify-content:center;
-  padding:22px;
+  /* minder witruimte boven: strakker in het viewport */
+  padding:12px 22px 22px;
 
-  /* basis-overlay; echte "meebewegende" blur zit in .lbBg */
-  background:rgba(255,255,255,.10);
+  /* basis-overlay: minder doorzichtig */
+  background:rgba(255,255,255,.55);
 
   /* Touch: verticale scroll moet altijd gewoon kunnen (lange kaarten) */
   touch-action: pan-y;
@@ -296,7 +297,8 @@ body.lb-open .navHintMini{ opacity:0; }
   transform: translateX(var(--lb-bg-shift, 0px)) scale(1.08);
   transition: transform .18s ease;
   filter: blur(18px);
-  opacity: .38;
+  /* minder doorzichtig */
+  opacity: .20;
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -318,7 +320,8 @@ body.lb-open .navHintMini{ opacity:0; }
   width:100vw;
   height:100dvh;
   min-height:100dvh;
-  background: rgba(255,255,255,.22);
+  /* extra witte glaze zodat de uitleg rustiger/opaquer wordt */
+  background: rgba(255,255,255,.72);
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -339,7 +342,8 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100%;
   background:transparent;
   display:flex;
-  align-items:center;
+  /* kaart iets hoger: minder top-witruimte */
+  align-items:flex-start;
   justify-content:center;
 }
 
@@ -497,6 +501,11 @@ text-wrap: pretty;
 .chev.left{left:10px;top:50%;transform:translateY(-50%);}
 .chev.right{right:10px;top:50%;transform:translateY(-50%);}
 .close{top:10px;right:10px;}
+
+/* Op mobiel nog iets strakker tegen de SVG-hoek aan */
+@media (hover:none) and (pointer:coarse){
+  .close{ top:8px; right:8px; }
+}
 /* Touch (telefoon/tablet): alleen kruisje tonen (geen pijlen/cursors) */
 @media (hover:none) and (pointer:coarse){
   .chev{ display:none !important; }
@@ -880,7 +889,8 @@ body.hm-open{overflow:hidden}
   left:0; right:0; bottom:0;
   /* compacter: minder 'witte' ruimte bovenin */
   /* extra onderruimte zodat de fixed pills links-onder nooit over uitleg-tekst heen vallen */
-  padding:6px 12px calc(10px + env(safe-area-inset-bottom) + var(--pillsSafe));
+  /* minimaliseer witruimte boven */
+  padding:4px 12px calc(10px + env(safe-area-inset-bottom) + var(--pillsSafe));
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
@@ -912,7 +922,7 @@ body.hm-open{overflow:hidden}
   transform: scale(1.08);
   filter: blur(18px);
   /* minder doorzichtig: achtergrond minder zichtbaar */
-  opacity: .18;
+  opacity: .12;
   pointer-events:none;
   z-index:0;
 }
@@ -921,7 +931,7 @@ body.hm-open{overflow:hidden}
   position:absolute;
   inset:0;
   /* minder doorzichtig: glaze veel opaquer */
-  background: rgba(255,255,255,.78);
+  background: rgba(255,255,255,.88);
   pointer-events:none;
   z-index:1;
 }
@@ -929,8 +939,9 @@ body.hm-open{overflow:hidden}
 /* Vaste sluitknop rechtsboven in uitleg (mobiel) */
 .introClose{
   position:absolute;
-  top:10px;
-  right:12px;
+  /* zo dicht mogelijk bij de rechterhoek van de SVG */
+  top:6px;
+  right:8px;
   z-index:5;
   appearance:none;
   border:0;
@@ -959,10 +970,7 @@ body.hm-open{overflow:hidden}
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
   body.show-intro .mobileIntro{ transform: translateY(0); }
-  /* Menubalk erboven zodra uitleg open is */
-  body.show-intro .controlsBar{
-    bottom: var(--introSheetH);
-  }
+  /* Pills blijven altijd links-onder in beeld; geen opschuiven boven de uitleg */
 }
 
 /* Desktop/tablet: carousel niet gebruiken */
