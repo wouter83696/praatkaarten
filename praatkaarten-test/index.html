@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.35</title>
+<title>Praatkaarten v3.3.36</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1120,7 +1120,7 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   UI PATCH v3.3.35
+   UI PATCH v3.3.36
    - Harder (Google Maps-like) icons for Shuffle/Info
    - Force Close button to be visible + clickable on mobile when overlay is open
    =============================== */
@@ -1182,7 +1182,7 @@ button.pill:active,
 
 
 /* ===============================
-   PATCH v3.3.35
+   PATCH v3.3.36
    - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
    - Close button altijd tappable
    - Shuffle icon harder (zoals voorbeeld)
@@ -1252,7 +1252,7 @@ button.pill:active,
 
 
 /* ===============================
-   FIX v3.3.35
+   FIX v3.3.36
    - Less whitespace: white panel reaches bottom on mobile
    - Close button works: remove pointer-events:none on lbCard + layer close above image
    =============================== */
@@ -1351,11 +1351,33 @@ button.pill:active,
 }
 .lb.open #close.overlayClose{ display:grid !important; }
 
-/* Icon style v3.3.35 */
+/* Icon style v3.3.36 */
 .iconShuffle path,
 .iconInfo rect{
   fill: rgba(120,120,120,.9);
 }
+/* ICONS LOOK v3.3.36 (zoals voorbeeld) */
+.pill{
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10) !important; /* subtiel, zoals Maps */
+}
+.pill:active{
+  box-shadow: 0 6px 18px rgba(0,0,0,.12) !important;
+  transform: translateY(0.5px);
+}
+
+.iconShuffle path,
+.iconInfo path{
+  fill: none !important;
+  stroke: rgba(125,125,125,.92) !important;
+  stroke-width: 2.4 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+/* dot of the i */
+.iconInfo path:last-child{ stroke-width: 4.2 !important; }
 </style>
 </head>
 <body>
@@ -1367,10 +1389,12 @@ button.pill:active,
       <!-- strakkere shuffle (nettere lijnen/hoeken) -->
                               
 <svg viewBox="0 0 24 24" aria-hidden="true" class="iconShuffle">
-  <path d="M4 7h4.2c1.3 0 2.4.6 3.2 1.6l1.3 1.7-1.3 1.7c-.8 1-1.9 1.6-3.2 1.6H4" />
-  <path d="M14 7l3-3v2h3v2h-3v2z" />
-  <path d="M4 17h4.2c1.3 0 2.4-.6 3.2-1.6l1.3-1.7 1.3 1.7c.8 1 1.9 1.6 3.2 1.6H20" />
-  <path d="M14 17l3 3v-2h3v-2h-3v-2z" />
+  <path d="M16 3h3v3"/>
+  <path d="M5 7h6c1.1 0 2.1.5 2.8 1.4l1.2 1.6"/>
+  <path d="M5 17h6c1.1 0 2.1-.5 2.8-1.4l1.2-1.6"/>
+  <path d="M19 3l-4 4"/>
+  <path d="M16 21h3v-3"/>
+  <path d="M19 21l-4-4"/>
 </svg>
 
     </button>
@@ -1378,8 +1402,8 @@ button.pill:active,
       <!-- info-icoon (i) i.p.v. vraagteken -->
             
 <svg viewBox="0 0 24 24" aria-hidden="true" class="iconInfo">
-  <rect x="11" y="10" width="2" height="8" rx="1"/>
-  <rect x="11" y="6" width="2" height="2" rx="1"/>
+  <path d="M12 10v7"/>
+  <path d="M12 7h.01"/>
 </svg>
 
     </button>
