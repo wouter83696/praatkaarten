@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.9</title>
+<title>Praatkaarten v3.3.10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -571,16 +571,9 @@ html, body{
   pointer-events:none;
 }
 
-/* 3) Balk: WEL in portrait, WEG in landscape (telefoon)
-      (geen max-width; detecteer telefoon via coarse pointer) */
-.controlsBar{ display:flex; }
-@media (hover: none) and (pointer: coarse) and (orientation: landscape){
-  .controlsBar{ display:none !important; }
-  body{ padding-bottom: 0 !important; }
-}
-@media (max-height: 520px) and (orientation: landscape){
-  .controlsBar{ display:none !important; }
-  body{ padding-bottom: 0 !important; }
+/* 3) Balk: alleen desktop/tablet. Op telefoon werken we met icon-pills. */
+@media (min-width: 721px){
+  .controlsBar{ display:flex; }
 }
 
 
@@ -891,7 +884,8 @@ body.hm-open{overflow:hidden}
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
-  background: transparent;
+  /* basis moet weer (bijna) wit ogen, net als eerder */
+  background: rgba(255,255,255,.86);
 
   border-radius: 18px 18px 0 0;
   /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
@@ -927,8 +921,8 @@ body.hm-open{overflow:hidden}
   content:"";
   position:absolute;
   inset:0;
-  /* niet spierwit: anders zie je harde randen t.o.v. de kaart */
-  background: rgba(243,245,238,.22);
+  /* weer wit zoals eerst (subtiel), zonder harde randen */
+  background: rgba(255,255,255,.22);
   pointer-events:none;
   z-index:1;
 }
@@ -954,10 +948,13 @@ body.hm-open{overflow:hidden}
   display:flex;
   gap:14px;
   overflow-x:auto;
+  overflow-y:hidden;
   padding:6px 4px 0;
   height: 100%;
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
+  /* help iOS: maak horizontaal swipen voorspelbaar */
+  touch-action: pan-x;
 }
 .introTrack::-webkit-scrollbar{display:none;}
 
@@ -1116,7 +1113,10 @@ body.show-intro #introCloseBtn{
       </svg>
     </button>
 
-    <!-- Sluiten (alleen zichtbaar wanneer uitleg open is) -->
+  </div>
+
+  <!-- Sluiten rechts (alleen zichtbaar wanneer uitleg open is) -->
+  <div class="pillsRight">
     <button class="pill" id="introCloseBtn" type="button" aria-label="Sluiten">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M18 6L6 18" />
@@ -1124,8 +1124,6 @@ body.show-intro #introCloseBtn{
       </svg>
     </button>
   </div>
-
-  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
 </div>
 
 
