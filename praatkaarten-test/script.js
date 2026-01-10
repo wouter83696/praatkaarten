@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.15';
+const VERSION = '3.3.21';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -623,8 +623,8 @@ document.addEventListener('keydown', (e) => {
     if(!dock) return;
     const rect = dock.getBoundingClientRect();
     const h = Math.max(0, rect.height);
-    // +10px ademruimte
-    document.documentElement.style.setProperty('--pillsSafe', `${Math.ceil(h + 10)}px`);
+    // +6px ademruimte (compacter op mobiel)
+    document.documentElement.style.setProperty('--pillsSafe', `${Math.ceil(h + 6)}px`);
   };
   window.addEventListener('resize', updatePillsSafe, {passive:true});
   window.addEventListener('orientationchange', updatePillsSafe, {passive:true});
@@ -637,21 +637,77 @@ document.addEventListener('keydown', (e) => {
   // ===============================
   const introTrackEl  = document.getElementById('introTrack');
   if(mobileIntroEl){
+    // Interactie-eis:
+    // - Tijdens drag: uitlegkaart blijft volledig zichtbaar en beweegt mee (met weerstand)
+    // - Geen fade tijdens drag
+    // - Release: onder drempel => veer terug, boven drempel => sluit
     let sy = 0, sx = 0, active = false;
+    let dragging = false;
+    let lastDy = 0;
+    const THRESH = 110;
 
-    const start = (x,y) => { sx = x; sy = y; active = true; };
-    const end = (x,y) => {
-      if(!active) return;
-      active = false;
-      if(!uitlegOn) return;
+    const resistance = (dy) => {
+      // zachte weerstand: eerste stuk 1:1, daarna afvlakkend
+      const d = Math.max(0, dy);
+      return d * 0.85;
+    };
+
+    const start = (x,y) => {
+      sx = x; sy = y; active = true; dragging = false; lastDy = 0;
+      // tijdens drag geen CSS transition, zodat het 'plakt' aan je vinger
+      mobileIntroEl.style.transition = 'none';
+      mobileIntroEl.style.willChange = 'transform';
+    };
+
+    const move = (x,y) => {
+      if(!active || !uitlegOn) return;
       const dy = y - sy;
       const dx = x - sx;
       const ay = Math.abs(dy);
       const ax = Math.abs(dx);
-      // Duidelijke swipe omlaag: verticaal dominant + voldoende afstand
-      if(ay > ax * 1.2 && dy > 85){
-        setUitleg(false);
+
+      // alleen omlaag (geen omhoog trekken)
+      if(dy <= 0) return;
+
+      // verticaal moet dominant zijn, anders is het een horizontale swipe in de carousel
+      if(ay <= ax * 1.15) return;
+
+      dragging = true;
+      lastDy = dy;
+      const t = resistance(dy);
+      mobileIntroEl.style.transform = `translateY(${t}px)`;
+    };
+
+    const end = () => {
+      if(!active) return;
+      active = false;
+      if(!uitlegOn){
+        mobileIntroEl.style.transition = '';
+        mobileIntroEl.style.transform = '';
+        mobileIntroEl.style.willChange = '';
+        return;
       }
+
+      // release animatie
+      mobileIntroEl.style.transition = 'transform .28s cubic-bezier(.2,.9,.2,1)';
+
+      if(dragging && lastDy > THRESH){
+        // laat CSS weer de leiding nemen
+        mobileIntroEl.style.transform = '';
+        mobileIntroEl.style.willChange = '';
+        setUitleg(false);
+        return;
+      }
+
+      // veer terug
+      mobileIntroEl.style.transform = 'translateY(0px)';
+      const cleanup = () => {
+        mobileIntroEl.style.transition = '';
+        mobileIntroEl.style.transform = '';
+        mobileIntroEl.style.willChange = '';
+        mobileIntroEl.removeEventListener('transitionend', cleanup);
+      };
+      mobileIntroEl.addEventListener('transitionend', cleanup);
     };
 
     // Pointer events (meest betrouwbaar, ook op moderne iOS)
@@ -661,11 +717,13 @@ document.addEventListener('keydown', (e) => {
       if(e.isPrimary === false) return;
       start(e.clientX, e.clientY);
     };
-    const onPointerUp = (e) => end(e.clientX, e.clientY);
+    const onPointerMove = (e) => move(e.clientX, e.clientY);
+    const onPointerUp = () => end();
 
     mobileIntroEl.addEventListener('pointerdown', onPointerDown, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('pointermove', onPointerMove, {passive:true, capture:true});
     mobileIntroEl.addEventListener('pointerup', onPointerUp, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('pointercancel', () => { active = false; }, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('pointercancel', () => { active = false; end(); }, {passive:true, capture:true});
 
     // Touch fallback (oudere iOS)
     mobileIntroEl.addEventListener('touchstart', (e) => {
@@ -674,10 +732,13 @@ document.addEventListener('keydown', (e) => {
       if(!t) return;
       start(t.clientX, t.clientY);
     }, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('touchend', (e) => {
-      const t = e.changedTouches && e.changedTouches[0];
+    mobileIntroEl.addEventListener('touchmove', (e) => {
+      const t = e.touches && e.touches[0];
       if(!t) return;
-      end(t.clientX, t.clientY);
+      move(t.clientX, t.clientY);
+    }, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('touchend', (e) => {
+      end();
     }, {passive:true, capture:true});
 
     // Extra: als je swipe start op de track zelf, vang die ook af (bubbelt niet altijd lekker bij momentum scroll)
@@ -689,9 +750,7 @@ document.addEventListener('keydown', (e) => {
         start(t.clientX, t.clientY);
       }, {passive:true, capture:true});
       introTrackEl.addEventListener('touchend', (e) => {
-        const t = e.changedTouches && e.changedTouches[0];
-        if(!t) return;
-        end(t.clientX, t.clientY);
+        end();
       }, {passive:true, capture:true});
     }
   }

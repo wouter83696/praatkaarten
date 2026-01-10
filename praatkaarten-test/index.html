@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.20</title>
+<title>Praatkaarten v3.3.21</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -439,7 +439,13 @@ text-wrap: pretty;
 .lbHelpText{
   display:none;
   width:min(480px,92vw);
-  padding:0 6px;
+  /* Herstel: wit veld om de tekst (zoals eerder) */
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.10);
 }
 .lbHelpTitle{
   font-weight:500;
@@ -466,8 +472,8 @@ text-wrap: pretty;
 /* Alleen in uitleg-modus tonen */
 .lb.help .lbHelpText{ display:block; }
 
-/* In uitleg-modus: geen overlay-tekst op de kaart */
-.lb.help .lbText{ display:none !important; }
+/* In uitleg-modus: overlay-tekst alleen verbergen als er géén thema-titel is */
+.lb.help:not(.help-title) .lbText{ display:none !important; }
 
 /* ===============================
    ICONS
@@ -881,7 +887,8 @@ body.hm-open{overflow:hidden}
   /* extra onderruimte zodat de fixed pills links-onder nooit over uitleg-tekst heen vallen */
   /* minimaliseer witruimte boven */
   /* zo min mogelijk wit kader: strakker rondom inhoud */
-  padding:6px 10px calc(10px + env(safe-area-inset-bottom) + var(--pillsSafe));
+  /* Telefoon: minder witruimte (± helft) maar wél ruimte voor de pills als ze zichtbaar zijn */
+  padding:4px 8px calc(8px + env(safe-area-inset-bottom) + min(var(--pillsSafe), 56px));
   z-index:2500;
 
   /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
@@ -977,11 +984,11 @@ body.hm-open{overflow:hidden}
 
 .introTrack{
   display:flex;
-  gap:14px;
+  gap:12px;
   overflow-x:auto;
   overflow-y:hidden;
   /* kaart/tekst hoger (minder top-ruimte) */
-  padding:0 4px 0;
+  padding:0 2px 0;
   height: 100%;
   scroll-snap-type:x mandatory;
   -webkit-overflow-scrolling:touch;
@@ -998,7 +1005,7 @@ body.hm-open{overflow:hidden}
   overflow:visible;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:8px;
 }
 
 /* Kaartdeel */
@@ -1032,7 +1039,7 @@ body.hm-open{overflow:hidden}
 /* Tekstdeel (clean) */
 .introText{
   background:transparent;
-  padding:0 2px 0;
+  padding:0 2px 2px;
   border-radius:0;
   box-shadow:none;
 }
@@ -1132,7 +1139,15 @@ body.hm-open{overflow:hidden}
 <div class="pillsDock" aria-label="Bediening">
   <div class="pillsLeft">
     <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 7h6l10 10h1"/><path d="M16 21h5v-5"/><path d="M4 17h6l2-2"/><path d="M21 8l-2 2"/><path d="M21 16l-2-2"/></svg>
+      <!-- strakkere shuffle (nettere lijnen/hoeken) -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16 3h5v5"/>
+        <path d="M4 7h5l6 6"/>
+        <path d="M21 8l-5-5"/>
+        <path d="M4 17h5l6-6"/>
+        <path d="M16 21h5v-5"/>
+        <path d="M21 16l-5 5"/>
+      </svg>
     </button>
     <button class="pill" id="uitlegBtn" type="button" aria-label="Info" aria-pressed="false">
       <!-- info-icoon (i) i.p.v. vraagteken -->
