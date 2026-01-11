@@ -1059,3 +1059,22 @@ document.addEventListener('pointerdown', (e) => {
     el.addEventListener('click', nukeClose, {capture:true});
   });
 })();
+
+// TOAST CLOSE DEBUG v3.3.40
+(function(){
+  const toast = document.getElementById('toast');
+  function showToast(msg){
+    if(!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove('show'), 900);
+  }
+  document.addEventListener('pointerdown', (e)=>{
+    const t = e.target && (e.target.closest ? e.target.closest('#close,#closeHitbox') : null);
+    if(t){
+      showToast('close tapped (v3.3.40)');
+      console.log('close tapped v3.3.40', e.target);
+    }
+  }, true);
+})();

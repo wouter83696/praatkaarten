@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.39</title>
+<title>Praatkaarten v3.3.40</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1120,7 +1120,7 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   UI PATCH v3.3.39
+   UI PATCH v3.3.40
    - Harder (Google Maps-like) icons for Shuffle/Info
    - Force Close button to be visible + clickable on mobile when overlay is open
    =============================== */
@@ -1182,7 +1182,7 @@ button.pill:active,
 
 
 /* ===============================
-   PATCH v3.3.39
+   PATCH v3.3.40
    - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
    - Close button altijd tappable
    - Shuffle icon harder (zoals voorbeeld)
@@ -1252,7 +1252,7 @@ button.pill:active,
 
 
 /* ===============================
-   FIX v3.3.39
+   FIX v3.3.40
    - Less whitespace: white panel reaches bottom on mobile
    - Close button works: remove pointer-events:none on lbCard + layer close above image
    =============================== */
@@ -1351,12 +1351,12 @@ button.pill:active,
 }
 .lb.open #close.overlayClose{ display:grid !important; }
 
-/* Icon style v3.3.39 */
+/* Icon style v3.3.40 */
 .iconShuffle path,
 .iconInfo rect{
   fill: rgba(120,120,120,.9);
 }
-/* ICONS LOOK v3.3.39 (zoals voorbeeld) */
+/* ICONS LOOK v3.3.40 (zoals voorbeeld) */
 .pill{
   background: rgba(255,255,255,.92) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
@@ -1380,7 +1380,7 @@ button.pill:active,
 .iconInfo path:last-child{ stroke-width: 4.2 !important; }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.39 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.40 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -1406,7 +1406,7 @@ button.pill:active,
   display: none;
 }
 .debug-on #debugHud{ display: block; }
-/* CLOSE NUCLEAR v3.3.39
+/* CLOSE NUCLEAR v3.3.40
    Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
 .lb{ transform:none !important; }
 .panel{ transform:none !important; }
@@ -1435,6 +1435,35 @@ button.pill:active,
   pointer-events: none !important;
   opacity: 0 !important;
 }
+/* Debug visibility v3.3.40 */
+#versionBadge{
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 8px;
+  z-index: 2000000;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font: 12px/1 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  pointer-events: none;
+}
+#toast{
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  transform: translateX(-50%);
+  z-index: 2000001;
+  background: rgba(0,0,0,.75);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font: 14px/1.1 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+#toast.show{ opacity: 1; }
 </style>
 </head>
 <body>
@@ -1521,5 +1550,8 @@ button.pill:active,
 
 
 <div id="debugHud" aria-hidden="true"></div>
+
+<div id="versionBadge" aria-hidden="true">v3.3.40</div>
+<div id="toast" aria-hidden="true"></div>
 </body>
 </html>
