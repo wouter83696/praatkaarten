@@ -267,17 +267,50 @@ html,body{
   .controlsBar{ display:none !important; }
 }
 
+/*
+  BELANGRIJK (mobiel): verberg alleen de swipe-pijlen,
+  maar laat het sluitkruisje wél klikbaar.
+  In eerdere builds werd alles in de overlay uitgezet (display:none/pointer-events:none),
+  waardoor het kruisje op telefoon "dood" werd.
+*/
 @media (pointer: coarse){
-  .lb .chev,
-  .lb .close,
-  .lb button,
-  .lb [role="button"],
-  .lightbox button,
-  .lightbox [role="button"]{
+  .lb .chev{ 
     display:none !important;
     opacity:0 !important;
     pointer-events:none !important;
   }
+  /* Close moet altijd kunnen */
+  .lb #close,
+  .lb .overlayClose{
+    display:flex !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
+  }
+}
+
+/* Overlay close staat boven alles en blijft altijd klikbaar */
+.lb .overlayClose{
+  position: fixed;
+  z-index: 1002;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
+/* Extra (onzichtbare) hitbox om mobiel te sluiten, zonder dat je precies hoeft te mikken */
+#closeHitbox{
+  position: fixed;
+  z-index: 1001;
+  width: 76px;
+  height: 76px;
+  background: transparent;
+  border-radius: 999px;
+  pointer-events: auto;
 }
 
 /* ===============================
@@ -397,3 +430,104 @@ body.hm-open{ overflow:hidden; }
 
 
 
+
+
+
+/* ===============================
+   UI REFINEMENT v3.3.26 (phone-first)
+   - Icon controls: calm pill, no shadow
+   - Grid cards: clear selectable objects (no shadow), slightly tighter radius than sheet
+   - Sheet/explain: warmer + softer radius
+   =============================== */
+
+:root{
+  --sheet-bg: #FCFAF6;
+  --sheet-border: rgba(0,0,0,.08);
+  --grid-bg: #FFFFFF;
+  --grid-border: rgba(0,0,0,.14);
+  --icon-fg: rgba(0,0,0,.45);
+  --icon-fg-active: rgba(0,0,0,.65);
+  --radius-sheet: 18px;
+  --radius-card: 12px;
+}
+
+/* --- ICON PILLS (shuffle + info) --- */
+.pillsDock, .controlsBar, .pillsLeft{
+  /* keep placement logic as-is; only visuals here */
+}
+
+.pillsDock .pill,
+.controlsBar .pill,
+.pillsLeft .pill,
+.pill.btn,
+button.pill,
+.btn.pill{
+  background: color-mix(in srgb, var(--sheet-bg) 92%, transparent);
+  border: 1px solid var(--sheet-border);
+  border-radius: 999px;
+  box-shadow: none !important;
+  color: var(--icon-fg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pillsDock .pill:active,
+.controlsBar .pill:active,
+.pillsLeft .pill:active,
+.pill.btn:active,
+button.pill:active{
+  background: rgba(0,0,0,.05);
+  color: var(--icon-fg-active);
+}
+
+/* If icons are SVG paths, inherit currentColor */
+.pill svg, .pill svg *{ fill: currentColor; stroke: currentColor; }
+
+/* --- CLOSE BUTTON (inside sheet) --- */
+.close, .btn.close, button.close{
+  background: color-mix(in srgb, var(--sheet-bg) 92%, transparent);
+  border: 1px solid var(--sheet-border);
+  border-radius: 999px;
+  box-shadow: none !important;
+  color: var(--icon-fg);
+}
+.close:active{ background: rgba(0,0,0,.05); color: var(--icon-fg-active); }
+
+/* --- GRID CARDS --- */
+.grid .card,
+.grid .lbCard,
+.grid .cardShell,
+.grid .cardShell .card,
+.cardShell .card,
+.lbCard{
+  background: var(--grid-bg);
+  border: 1px solid var(--grid-border);
+  border-radius: var(--radius-card);
+  box-shadow: none !important;
+  overflow: hidden;
+}
+
+/* subtle press feedback (mobile) */
+.grid .card:active,
+.grid .lbCard:active,
+.grid .cardShell:active,
+.lbCard:active{
+  background: rgba(0,0,0,.03);
+}
+
+/* --- EXPLAIN/SHEET --- */
+.sheet, .explainCard, .explain-card, .uitleg, .overlaySheet{
+  background: var(--sheet-bg);
+  border: 1px solid var(--sheet-border);
+  border-radius: var(--radius-sheet);
+  box-shadow: none !important;
+}
+
+
+
+/* UI PATCH v3.3.28: harder icon tone */
+.pillsDock .pill, .controlsBar .pill, .pillsLeft .pill, .pill.btn, button.pill, .btn.pill{
+  color: rgba(0,0,0,.74) !important;
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(0,0,0,.12) !important;
+  box-shadow:none !important;
+}

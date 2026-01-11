@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.2.3</title>
+<title>Praatkaarten v3.3.41</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -19,6 +19,15 @@
   --radius:16px;
   --shadow:0 14px 50px rgba(0,0,0,.12);
   --shadowHover:0 18px 70px rgba(0,0,0,.16);
+
+  /* Uitleg-sheet (Google Maps / Apple-achtig) */
+  --sheet-bg: #FCFAF6;               /* warm, niet-spierwit */
+  --sheet-bg-2: #F7F2E9;
+  --sheet-border: rgba(0,0,0,.10);  /* subtiele hairline */
+  --sheet-radius: 16px;
+
+  /* safe space zodat fixed pills (links-onder) nooit over uitleg-tekst heen vallen */
+  --pillsSafe: 58px;
 
   --textBlue: rgba(48,96,136,.95);
   --uiBlue: rgba(48,96,136,.85);
@@ -55,12 +64,12 @@ body{
 }
 
 .controlsBar .inner{
-  max-width:1600px;
-  margin:0 auto;
+  max-width:none;
+  margin:0;
   display:flex;
   gap:12px;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-start;
 }
 
 .btn{
@@ -199,11 +208,20 @@ body.lb-open .navHintMini{ opacity:0; }
   height:auto;
   display:block;
   border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  transition:box-shadow .14s ease;
+
+  /* Grid-kaartjes: geen schaduw → één geheel met de rustige sheet-stijl */
+  box-shadow:none;
+
+  /* Subtiele hairline rand i.p.v. elevation */
+  border:1px solid rgba(0,0,0,.10);
+
+  transition:border-color .14s ease, transform .14s ease;
 }
 
-.card:hover img{box-shadow:var(--shadowHover);}
+.card:hover img{
+  border-color: rgba(0,0,0,.16);
+}
+
 
 /* ===============================
    TEKST OP KLEINE KAARTJES
@@ -267,10 +285,11 @@ body.lb-open .navHintMini{ opacity:0; }
   display:none;
   align-items:center;
   justify-content:center;
-  padding:22px;
+  /* minder witruimte boven: strakker in het viewport */
+  padding:12px 22px 22px;
 
-  /* basis-overlay; echte "meebewegende" blur zit in .lbBg */
-  background:rgba(255,255,255,.10);
+  /* basis-overlay: minder doorzichtig */
+  background:rgba(255,255,255,.55);
 
   /* Touch: verticale scroll moet altijd gewoon kunnen (lange kaarten) */
   touch-action: pan-y;
@@ -293,7 +312,8 @@ body.lb-open .navHintMini{ opacity:0; }
   transform: translateX(var(--lb-bg-shift, 0px)) scale(1.08);
   transition: transform .18s ease;
   filter: blur(18px);
-  opacity: .38;
+  /* minder doorzichtig */
+  opacity: .20;
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -315,7 +335,8 @@ body.lb-open .navHintMini{ opacity:0; }
   width:100vw;
   height:100dvh;
   min-height:100dvh;
-  background: rgba(255,255,255,.22);
+  /* extra witte glaze zodat de uitleg rustiger/opaquer wordt */
+  background: rgba(255,255,255,.72);
   pointer-events:none;
   z-index:0;
   /* robuuste viewport hoogte (rotatie / browser-UI) */
@@ -336,14 +357,18 @@ body.lb-open .navHintMini{ opacity:0; }
   height:100%;
   background:transparent;
   display:flex;
+  flex-direction:column;
+  /* kaart + uitleg samen gecentreerd (desktop) */
   align-items:center;
   justify-content:center;
+  gap:12px;
 }
 
 .lbCard{
   position:relative;
-  width:min(560px,92vw);
-  /* Desktop: grotere kaart zoals bij thema-overlay */
+  /* Houd dezelfde verhouding/maat als de 'grote' kaarten uit het grid */
+  width:min(480px,92vw);
+  aspect-ratio:241/156;
   border-radius:22px;
   overflow:hidden;
   background:#fff;
@@ -355,9 +380,10 @@ body.lb-open .navHintMini{ opacity:0; }
 }
 
 #lbImg{
-  width:100.2%;
-  margin-left:-0.1%;
+  width:100%;
+  height:100%;
   display:block;
+  object-fit:cover;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
@@ -421,18 +447,20 @@ text-wrap: pretty;
 
 /* ===============================
    UITLEG (HELP)
-   - Witte tekstvlak zit "vast" onder de kaart (geen overlay)
-   - Hoogte groeit automatisch mee met de tekst
-   - Kaart-afbeelding behoudt z'n originele ratio
+   - Kaart blijft exact dezelfde ratio als het grid
+   - Tekst staat eronder (los), zodat de kaart niet "uit verhouding" raakt
    =============================== */
-.lbCard{ display:flex; flex-direction:column; }
 
 .lbHelpText{
   display:none;
-  position:static;
-  background:#fff;
-  border-top:1px solid rgba(0,0,0,.06);
-  padding:14px 18px 18px;
+  width:min(480px,92vw);
+  /* Herstel: wit veld om de tekst (zoals eerder) */
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.10);
 }
 .lbHelpTitle{
   font-weight:500;
@@ -459,15 +487,8 @@ text-wrap: pretty;
 /* Alleen in uitleg-modus tonen */
 .lb.help .lbHelpText{ display:block; }
 
-/* In uitleg-modus: geen los tekstvak onder de kaart */
-.lb.help .lbBelow{ display:none !important; }
-
-/* In uitleg-modus: kaartbeeld krijgt ruimte boven de tekst (zonder aspect ratio te breken) */
-.lb.help #lbImg{
-  display:block;
-  width:100%;
-  height:auto;
-}
+/* In uitleg-modus: overlay-tekst alleen verbergen als er géén thema-titel is */
+.lb.help:not(.help-title) .lbText{ display:none !important; }
 
 /* ===============================
    ICONS
@@ -493,7 +514,12 @@ text-wrap: pretty;
 
 .chev.left{left:10px;top:50%;transform:translateY(-50%);}
 .chev.right{right:10px;top:50%;transform:translateY(-50%);}
-.close{top:10px;right:10px;}
+.close{top:6px;right:6px;}
+
+/* Op mobiel nog iets strakker tegen de SVG-hoek aan */
+@media (hover:none) and (pointer:coarse){
+  .close{ top:6px; right:6px; }
+}
 /* Touch (telefoon/tablet): alleen kruisje tonen (geen pijlen/cursors) */
 @media (hover:none) and (pointer:coarse){
   .chev{ display:none !important; }
@@ -859,39 +885,136 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   MOBIELE UITLEG-CAROUSEL (v3.0)
-   - opent/sluit via knop "Uitleg" in de onderste balk
-   - tekst staat los onder de kaart (clean)
+   MOBIELE UITLEG-CAROUSEL (v3.3)
+   - staat ONDERAAN als bottom-sheet
+   - menubalk (controlsBar) staat erboven wanneer uitleg open is
+   - kaart + tekst in één oogopslag
    =============================== */
 
-/* standaard verborgen; we tonen 'm pas als de gebruiker op Uitleg tikt */
-.mobileIntro{display:none; margin:12px auto 0; width:min(940px, 100%); padding:0 14px;}
+.mobileIntro{
+  /* altijd aanwezig, maar standaard buiten beeld */
+  /* geen verticale scroll in uitleg: sheet groeit mee met de tekst (tot een max) */
+  height:auto;
+  max-height: calc(100dvh - 88px);
+  position:fixed;
+  left:0; right:0; bottom:0;
+  /* compacter: minder 'witte' ruimte bovenin */
+  /* extra onderruimte zodat de fixed pills links-onder nooit over uitleg-tekst heen vallen */
+  /* minimaliseer witruimte boven */
+  /* zo min mogelijk wit kader: strakker rondom inhoud */
+  /* Telefoon: minder witruimte (± helft) maar wél ruimte voor de pills als ze zichtbaar zijn */
+  padding:4px 8px calc(8px + env(safe-area-inset-bottom) + min(var(--pillsSafe), 56px));
+  z-index:2500;
+
+  /* Google Maps / Apple-achtig: warm vlak + hairline rand, géén elevation */
+  background: var(--sheet-bg);
+
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+  box-shadow: none;
+  border: 1px solid var(--sheet-border);
+  overflow: hidden;
+  background-clip: padding-box;
+  isolation: isolate;
+
+  transform: translateY(103%);
+  transition: transform .28s ease;
+  display:block;
+}
+
+/* Geblurde achtergrond (zelfde SVG als grid/lightbox) */
+/* Geen glass/blur lagen achter de uitlegkaart (rustiger, functioneler) */
+.mobileIntro::before,
+.mobileIntro::after{
+  content:none;
+}
+
+/* Sluitknop op de hoek van het plaatje (rechts-boven)
+   - zonder witte 'button' eromheen
+   - alleen het kruisje (wel met comfortabele hit-area)
+*/
+.introClose{
+  position:absolute;
+  top:10px;
+  right:10px;
+  left:auto;
+  z-index:5;
+  appearance:none;
+  border:0;
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+
+  /* geen witte achtergrond/cirkel */
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+
+  color: rgba(11,18,32,.55);
+}
+.introClose svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.introClose:active{ transform: translateY(1px); }
+.introClose:focus-visible{ outline:2px solid rgba(48,96,136,.35); outline-offset:2px; }
+
+/* (pills-positionering staat bij .pillsDock zelf: bovenin als uitleg dicht is,
+   en net boven het uitlegvenster als uitleg open is) */
+
+/* Zorg dat de inhoud boven de pseudo-lagen ligt */
+.mobileIntro > *{ position:relative; z-index:2; }
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
-  body.show-intro .mobileIntro{display:block;}
+  body.show-intro .mobileIntro{ transform: translateY(0); }
+  /* Pills blijven altijd links-onder in beeld; geen opschuiven boven de uitleg */
 }
 
-.introHead{display:flex; align-items:center; justify-content:space-between; margin:0 6px 10px;}
-.introTitle{font-weight:500; color:rgba(60,70,80,.75); font-size:14px; letter-spacing:.2px;}
-.introToggle{border:0; background:rgba(255,255,255,.55); backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color:rgba(60,70,80,.75); padding:8px 12px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.08);
-  font:500 13px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+/* Desktop/tablet: carousel niet gebruiken */
+@media (min-width: 721px){
+  .mobileIntro{ display:none; }
 }
 
-.introTrack{display:flex; gap:14px; overflow-x:auto; padding:16px 14px 12px;
-  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+.introTrack{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  /* kaart/tekst hoger (minder top-ruimte) */
+  padding:0 2px 0;
+  height: 100%;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  touch-action: pan-x;
 }
 .introTrack::-webkit-scrollbar{display:none;}
-.introCard{flex:0 0 auto; width:min(86vw, 420px); scroll-snap-align:center;
-  background:transparent; box-shadow:none; overflow:visible;
-  display:flex; flex-direction:column; gap:10px;
+
+.introCard{
+  flex:0 0 auto;
+  width:min(86vw, 420px);
+  scroll-snap-align:center;
+  background:transparent;
+  box-shadow:none;
+  overflow:visible;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
-.introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;
-  border-radius:24px; box-shadow:var(--shadow);
+
+/* Kaartdeel */
+.introImgWrap{
+  aspect-ratio:241/156;
+  background:transparent;
+  overflow:hidden;
+  border-radius:16px;
+  box-shadow:none;
+  border: 1px solid var(--sheet-border);
+  position:relative;
+  max-height: 40vh;
 }
-.introImgWrap{ position:relative; }
+
+/* Sluitknop echt in het plaatje (zodat hij meeschuift met de kaart) */
+.introImgWrap .introClose{ position:absolute; }
 .introTheme{
   position:absolute;
   inset:0;
@@ -905,11 +1028,12 @@ body.hm-open{overflow:hidden}
   color: var(--textBlue);
   pointer-events:none;
 }
-.introImg{width:100%; height:100%; object-fit:contain; display:block;}
+.introImg{width:100%; height:100%; object-fit:cover; display:block;}
+
+/* Tekstdeel (clean) */
 .introText{
-  /* Tekst = pure pagina (geen extra kader, geen eigen achtergrond) */
   background:transparent;
-  padding:2px 2px 0;
+  padding:0 2px 2px;
   border-radius:0;
   box-shadow:none;
 }
@@ -922,58 +1046,498 @@ body.hm-open{overflow:hidden}
   overflow-wrap:anywhere;
   white-space:normal;
 }
-.introHint{margin:4px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
 
+.introHint{
+  display:none; /* swipe-tekst onderaan uit (voor nu) */
+}
+
+/* ===============================
+   ICON PILLS (i.p.v. menubalk)
+   - standaard onderin uitlijnen
+   - knoppen blijven altijd onderaan
+   =============================== */
+
+.controlsBar{ display:none !important; }
+
+.pillsDock{
+  position:fixed;
+  left:12px; right:auto;
+  /* Pills: altijd links-onder (duim-bereik) */
+  top: calc(12px + env(safe-area-inset-top));
+  bottom:auto;
+  z-index:3000;
+  padding:0;
+  display:flex;
+  justify-content:flex-start;
+  align-items:flex-start;
+  pointer-events:none;
+  transition: opacity .18s ease;
+  opacity:1;
+}
+
+
+
+.pillsLeft,
+.pillsRight{display:flex; gap:10px; pointer-events:auto;}
+
+.pill{
+  appearance:none;
+  border:0;
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10), 0 10px 30px rgba(0,0,0,.10);
+  color: var(--uiInk);
+  transition: background .18s ease, box-shadow .18s ease, transform .05s ease, opacity .18s ease;
+}
+.pill:hover{ background: rgba(243,245,238,.88); }
+.pill:active{ transform: translateY(1px); }
+.pill:focus-visible{ outline: 2px solid rgba(48,96,136,.35); outline-offset: 2px; }
+
+.pill svg{ width:20px; height:20px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95; }
+
+.pill.is-on{
+  background: rgba(48,96,136,.12);
+  box-shadow: inset 0 0 0 1px rgba(48,96,136,.22), 0 10px 30px rgba(0,0,0,.10);
+  color: rgba(11,18,32,.58);
+}
+
+/* Pills blijven altijd zichtbaar (ook als uitleg open is) */
+
+/* Telefoon landscape: verberg de pills (zelfde gedrag als oude menubalk) */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape){
+  .pillsDock{ display:none !important; }
+}
+
+
+
+
+/* ===============================
+   UI PATCH v3.3.41
+   - Harder (Google Maps-like) icons for Shuffle/Info
+   - Force Close button to be visible + clickable on mobile when overlay is open
+   =============================== */
+
+:root{
+  --iconHard: rgba(0,0,0,.74);
+  --iconHardActive: rgba(0,0,0,.90);
+  --pillBg: rgba(255,255,255,.92);
+  --pillBorder: rgba(0,0,0,.12);
+}
+
+/* Top pills (shuffle/info) */
+.pillsDock .pill,
+.controlsBar .pill,
+.pillsLeft .pill,
+.pill.btn,
+button.pill,
+.btn.pill{
+  background: var(--pillBg) !important;
+  border: 1px solid var(--pillBorder) !important;
+  box-shadow: none !important;
+  color: var(--iconHard) !important;
+}
+
+/* Press feedback */
+.pillsDock .pill:active,
+.controlsBar .pill:active,
+.pillsLeft .pill:active,
+.pill.btn:active,
+button.pill:active,
+.btn.pill:active{
+  background: rgba(0,0,0,.06) !important;
+  color: var(--iconHardActive) !important;
+}
+
+/* Close button: always available when lightbox is open */
+.lb.open .close,
+.lb.open #close{
+  display: grid !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 999 !important;
+}
+
+.lb.open #close{
+  background: var(--pillBg) !important;
+  border: 1px solid var(--pillBorder) !important;
+  border-radius: 999px !important;
+}
+
+/* keep it tappable */
+#close{ touch-action: manipulation; }
+/* Shuffle icon (cross arrows) */
+.iconShuffle{
+  width: 22px;
+  height: 22px;
+}
+
+
+
+/* ===============================
+   PATCH v3.3.41
+   - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
+   - Close button altijd tappable
+   - Shuffle icon harder (zoals voorbeeld)
+   =============================== */
+
+/* Minder witruimte onder in lightbox op mobiel */
+@media (max-width: 720px){
+  .lb{
+    padding: 10px 12px 0 !important; /* onderkant = 0, sheet sluit aan */
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+  }
+  .panel{
+    height: 100% !important;
+    justify-content: flex-end !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .lbCard{
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 16px 16px 0 0 !important; /* boven rond, onder vlak zodat het aansluit */
+  }
+  .lbHelpText{
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important; /* loopt door tot onder */
+    background: #ffffff !important;
+    border: 1px solid rgba(0,0,0,.10) !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+    padding: 14px 16px 18px !important;
+    flex: 1 1 auto !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Close knop: altijd bovenop en klikbaar */
+#close.close{
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+.lb.open #close{
+  display: grid !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Shuffle icon: harder, meer zoals voorbeeld (dikkere lijnen, rechte uiteinden) */
+
+
+/* Subtiele shuffle iconen */
+.iconShuffle path{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+
+/* ===============================
+   FIX v3.3.41
+   - Less whitespace: white panel reaches bottom on mobile
+   - Close button works: remove pointer-events:none on lbCard + layer close above image
+   =============================== */
+
+@media (max-width: 720px){
+  .lb{
+    padding: 10px 12px 0 !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+  }
+  .panel{
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+  }
+  .lbCard{
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 16px 16px 0 0 !important;
+    pointer-events: auto !important; /* CRUCIAAL: anders werkt close nooit */
+    transform: none !important; /* voorkomt extra 'lucht' */
+  }
+  .lbHelpText{
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(0,0,0,.10) !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+    padding: 14px 16px 18px !important;
+    flex: 1 1 auto !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Close knop bovenop de afbeelding */
+#close{
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+/* Shuffle icoon (gecorrigeerd) */
+.iconShuffle{
+  width: 22px;
+  height: 22px;
+}
+.iconShuffle path,
+.iconShuffle polyline{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Overlay close: stays visually on the card, but lives outside gesture layer */
+.overlayClose{
+  position: fixed; /* positioned via JS to match lbCard corner */
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 999px;
+  box-shadow: none !important;
+  color: rgba(0,0,0,.74);
+  z-index: 99999 !important;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb.open .overlayClose{
+  opacity: 1;
+  pointer-events: auto;
+}
+.overlayClose svg{
+  width: 22px;
+  height: 22px;
+}
+.overlayClose svg path{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lb.open #close.overlayClose{ display:grid !important; }
+
+/* Icon style v3.3.41 */
+.iconShuffle path,
+.iconInfo rect{
+  fill: rgba(120,120,120,.9);
+}
+/* ICONS LOOK v3.3.41 (zoals voorbeeld) */
+.pill{
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10) !important; /* subtiel, zoals Maps */
+}
+.pill:active{
+  box-shadow: 0 6px 18px rgba(0,0,0,.12) !important;
+  transform: translateY(0.5px);
+}
+
+.iconShuffle path,
+.iconInfo path{
+  fill: none !important;
+  stroke: rgba(125,125,125,.92) !important;
+  stroke-width: 2.4 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+/* dot of the i */
+.iconInfo path:last-child{ stroke-width: 4.2 !important; }
+
+
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.41 */
+#closeHitbox{
+  position: fixed;
+  width: 64px;
+  height: 64px;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+}
+.lb.open #closeHitbox{ pointer-events: auto; }
+
+#debugHud{
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 100001;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.65);
+  color: #fff;
+  font: 12px/1.25 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  max-width: calc(100vw - 16px);
+  white-space: pre-wrap;
+  display: none;
+}
+.debug-on #debugHud{ display: block; }
+/* CLOSE NUCLEAR v3.3.41
+   Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
+.lb{ transform:none !important; }
+.panel{ transform:none !important; }
+#close.overlayClose{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+  right: 10px !important;
+  left: auto !important;
+  z-index: 1000000 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+#closeHitbox{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 2px) !important;
+  right: 2px !important;
+  left: auto !important;
+  width: 84px !important;
+  height: 84px !important;
+  z-index: 1000001 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+}
+.lb:not(.open) #close,
+.lb:not(.open) #closeHitbox{
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+/* Debug visibility v3.3.41 */
+#versionBadge{
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 8px;
+  z-index: 2000000;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font: 12px/1 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  pointer-events: none;
+}
+#toast{
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  transform: translateX(-50%);
+  z-index: 2000001;
+  background: rgba(0,0,0,.75);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font: 14px/1.1 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+#toast.show{ opacity: 1; }
 </style>
 </head>
 <body>
 
-<div class="controlsBar">
-  <div class="inner">
-    <div class="chipGroup left" aria-label="Bediening">
-      <button class="chip" id="shuffleBtn" type="button" aria-pressed="false">Hussel</button>
-      <button class="chip" id="uitlegBtn" type="button" aria-pressed="false">Uitleg</button>
-    </div>
+<!-- 3 losse pills (icon-only) i.p.v. menubalk -->
+<div class="pillsDock" aria-label="Bediening">
+  <div class="pillsLeft">
+    <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
+      <!-- strakkere shuffle (nettere lijnen/hoeken) -->
+                              
+<svg viewBox="0 0 24 24" aria-hidden="true" class="iconShuffle">
+  <path d="M16 3h3v3"/>
+  <path d="M5 7h6c1.1 0 2.1.5 2.8 1.4l1.2 1.6"/>
+  <path d="M5 17h6c1.1 0 2.1-.5 2.8-1.4l1.2-1.6"/>
+  <path d="M19 3l-4 4"/>
+  <path d="M16 21h3v-3"/>
+  <path d="M19 21l-4-4"/>
+</svg>
 
-    <div class="rightCluster">
-      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
-    </div>
+    </button>
+    <button class="pill" id="uitlegBtn" type="button" aria-label="Info" aria-pressed="false">
+      <!-- info-icoon (i) i.p.v. vraagteken -->
+            
+<svg viewBox="0 0 24 24" aria-hidden="true" class="iconInfo">
+  <path d="M12 10v7"/>
+  <path d="M12 7h.01"/>
+</svg>
+
+    </button>
   </div>
+
+  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
 </div>
+
+
+
+<div class="grid" id="grid"></div>
 
 <section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
-
-  <div class="introHint" aria-hidden="true">← → swipe</div>
 </section>
 
-<div class="grid" id="grid"></div>
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="lbBg" aria-hidden="true"></div>
+  <!-- Overlay close button (outside gesture layer) -->
+  <button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+    </svg>
+  </button>
+  <div id="closeHitbox" aria-hidden="true"></div>
+
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
-      <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
-            <img id="lbImg" alt="">
+<img id="lbImg" alt="">
       <div class="lbText" id="lbText"></div>
+    </div>
 
-      <!-- UITLEG (tekst in de kaart, zonder verhouding te veranderen) -->
-      <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
-        <div class="lbHelpTitle" id="lbHelpTitle"></div>
-        <div class="lbHelpDesc" id="lbHelpDesc"></div>
-      </div>
-
+    <!-- UITLEG (tekst onder de kaart, zodat de kaart dezelfde ratio houdt als het grid) -->
+    <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
+      <div class="lbHelpTitle" id="lbHelpTitle"></div>
+      <div class="lbHelpDesc" id="lbHelpDesc"></div>
     </div>
   </div>
 </div>
 
 
 
-<script src="script.js?v=3.2.2"></script>
+<script src="script.js?v=3.3.41"></script>
 
 
 
@@ -984,5 +1548,10 @@ body.hm-open{overflow:hidden}
 
 
 
+
+<div id="debugHud" aria-hidden="true"></div>
+
+<div id="versionBadge" aria-hidden="true">v3.3.41</div>
+<div id="toast" aria-hidden="true"></div>
 </body>
 </html>
