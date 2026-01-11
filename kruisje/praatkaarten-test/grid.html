@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.44</title>
+<title>Praatkaarten v3.3.39</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -322,7 +322,7 @@ button,
 }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.44 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.39 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -348,7 +348,7 @@ button,
   display: none;
 }
 .debug-on #debugHud{ display: block; }
-/* CLOSE NUCLEAR v3.3.44
+/* CLOSE NUCLEAR v3.3.39
    Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
 .lb{ transform:none !important; }
 .panel{ transform:none !important; }
@@ -445,7 +445,266 @@ button,
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+  const grid = document.getElementById('grid');
+  const lb = document.getElementById('lb');
+  const lbImg = document.getElementById('lbImg');
+  const closeBtn = document.getElementById('close');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+
+  const initial = Array.from(grid.children).map(n => n.outerHTML);
+
+  function titleCase(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function applyThemes(){
+    for(const btn of cards()){
+      const src = btn.getAttribute('data-src')||'';
+      const m = src.match(/cards\/([a-zA-ZÀ-ſ-]+?)(?:-\d+)?\.svg$/);
+      if(!m) continue;
+      const raw = m[1].split('-')[0];
+      btn.dataset.theme = titleCase(raw);
+    }
+  }
+
+  // init theme labels
+  applyThemes();
+
+  const canHover = window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  let currentIndex = -1;
+  let uiTimer = null;
+
+  function cards(){
+    return Array.from(grid.querySelectorAll('button.card'));
+  }
+
+  function showUI(){
+    lb.classList.add('show-ui');
+    clearTimeout(uiTimer);
+    const hideMs = canHover ? 900 : 1100; // sneller weg, maar nog wel leesbaar
+    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), hideMs);
+  }
+
+  function openLbAt(index){
+    const list = cards();
+    currentIndex = ((index % list.length) + list.length) % list.length;
+    lbImg.src = list[currentIndex].getAttribute('data-src');
+    lb.classList.add('open');
+    positionOverlayClose();
+document.body.classList.add('lb-open');
+    document.body.style.overflow = 'hidden';
+    showUI();
+  }
+
+  function closeLb(){
+    lb.classList.remove('open');
+    lb.classList.remove('show-ui');
+    document.body.classList.remove('lb-open');
+    lbImg.src = '';
+    document.body.style.overflow = '';
+    currentIndex = -1;
+  }
+
+  function go(delta){
+    const list = cards();
+    if(!list.length || currentIndex < 0) return;
+    currentIndex = (currentIndex + delta + list.length) % list.length;
+    lbImg.src = list[currentIndex].getAttribute('data-src');
+    showUI();
+  }
+
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.card');
+    if(!btn) return;
+    const list = cards();
+    const idx = list.indexOf(btn);
+    if(idx > -1) openLbAt(idx);
+  });
+
+  lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
+
+  // CLOSE HANDLER v3.3.39 (altijd werken, los van swipe/gestures)
+  function onClosePress(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    closeLb();
+  }
+  closeBtn.addEventListener('pointerdown', onClosePress, {capture:true});
+  closeBtn.addEventListener('click', onClosePress, {capture:true});
+  // CLOSE FIX v3.3.39
+  closeBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); closeLb(); }, {capture:true});
+closeLb(); });
+
+  function shuffle(nodes){
+    for(let i=nodes.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nodes[i],nodes[j]]=[nodes[j],nodes[i]]; }
+    return nodes;
+  }
+  document.getElementById('shuffle').addEventListener('click', () => {
+    const nodes = Array.from(grid.children);
+    shuffle(nodes);
+    nodes.forEach(n => grid.appendChild(n));
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    grid.innerHTML = initial.join('');
+    applyThemes();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.key === 'ArrowLeft') go(-1);
+    if(e.key === 'ArrowRight') go(1);
+  });
+
+  // Swipe / drag overal (ook op de grijze achtergrond):
+  // - links/rechts = vorige/volgende
+  // - omlaag = sluiten
+  let startX = 0, startY = 0, startT = 0;
+  let pointerDown = false;
+
+  lb.addEventListener('pointerdown', (e) => {
+    if(!lb.classList.contains('open')) return;
+    if(e.target.closest('.chev, .close')) return;
+    pointerDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    startT = performance.now();
+    lb.setPointerCapture?.(e.pointerId);
+    showUI();
+  });
+
+  lb.addEventListener('pointerup', (e) => {
+    if(!pointerDown) return;
+    pointerDown = false;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    const dt = performance.now() - startT;
+    const ax = Math.abs(dx);
+    const ay = Math.abs(dy);
+
+    // snelle veeg of duidelijke afstand
+    const fast = dt < 420;
+    const thrX = fast ? 40 : 60;
+    const thrY = fast ? 50 : 80;
+
+    if(ay > ax && dy > thrY){
+      closeLb();
+      return;
+    }
+    if(ax > ay && ax > thrX){
+      go(dx > 0 ? -1 : 1);
+      return;
+    }
+  });
+
+  // UI tonen bij interactie
+  lb.addEventListener('mousemove', showUI);
+  lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
+
+
+  // POSITION OVERLAY CLOSE v3.3.39
+  const overlayClose = document.getElementById('close');
+  function positionOverlayClose(){
+    const panel = document.querySelector('.panel');
+    if(!overlayClose || !panel) return;
+    const r = panel.getBoundingClientRect();
+    overlayClose.style.top = Math.round(r.top + 8) + 'px';
+    overlayClose.style.left = Math.round(r.right - 8 - 44) + 'px';
+  }
+  window.addEventListener('resize', positionOverlayClose, {passive:true});
+  window.addEventListener('scroll', positionOverlayClose, {passive:true});
+
+  // DOCUMENT CLOSE FALLBACK v3.3.39
+  document.addEventListener('pointerdown', (e) => {
+    const t = e.target && (e.target.closest ? e.target.closest('#close') : null);
+    if (t && lb.classList.contains('open')) onClosePress(e);
+  }, true);
+
+
+// KEIHARDE CLOSE FIX v3.3.39
+(function(){
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('close');
+  const closeHitbox = document.getElementById('closeHitbox');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !closeBtn || !closeHitbox) return;
+
+  function setHud(t){ if(hud) hud.textContent = t; }
+  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
+
+  function positionCloseHitbox(){
+    const r = closeBtn.getBoundingClientRect();
+    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
+    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
+  }
+
+  window.addEventListener('resize', positionCloseHitbox, {passive:true});
+  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
+
+  let taps = 0, tmr = null;
+  document.addEventListener('click', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    if(e.target && e.target.closest && e.target.closest('#close,#closeHitbox')) return;
+    taps++;
+    clearTimeout(tmr);
+    tmr = setTimeout(()=>{ taps=0; }, 500);
+    if(taps>=3){
+      document.documentElement.classList.toggle('debug-on');
+      taps=0;
+    }
+  }, true);
+
+  function forceClose(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if(typeof closeLb === 'function') closeLb();
+  }
+
+  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
+  closeHitbox.addEventListener('click', forceClose, {capture:true});
+
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) positionCloseHitbox();
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !isDebug()) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
+    );
+  }, true);
+})();
+
+
+/* CLOSE NUCLEAR JS v3.3.39 */
+(function(){
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('close');
+  const hit = document.getElementById('closeHitbox');
+  function nukeClose(e){
+    e.preventDefault(); e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    try{ closeLb(); }catch(_){}
+  }
+  [closeBtn, hit].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('touchstart', nukeClose, {capture:true, passive:false});
+    el.addEventListener('pointerdown', nukeClose, {capture:true});
+    el.addEventListener('click', nukeClose, {capture:true});
+  });
+})();
+</script>
 
 
 <div id="debugHud" aria-hidden="true"></div>
