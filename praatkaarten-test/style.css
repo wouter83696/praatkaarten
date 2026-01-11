@@ -594,6 +594,13 @@ button.pill:active{
    =============================== */
 .mobileIntro{
   background: transparent;
+  touch-action: none;
+  will-change: transform;
+}
+
+body.show-intro{
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 body.show-intro .mobileIntro{
@@ -613,6 +620,7 @@ body.show-intro .mobileIntro{
   border-top-right-radius: var(--radius-sheet);
   border: 1px solid var(--sheet-border);
   border-bottom: none;
+  touch-action: pan-x;
 }
 
 /* zorg dat controls altijd boven het sheet zitten */
