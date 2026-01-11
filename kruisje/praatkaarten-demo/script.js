@@ -1,23 +1,4 @@
-// Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
-function setVh(){
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-setVh();
-window.addEventListener('resize', setVh);
-window.addEventListener('orientationchange', setVh);
-if (window.visualViewport){
-  window.visualViewport.addEventListener('resize', setVh);
-}
-
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
-
-  // State
-  let data = [];
-  let filtered = [];      // huidige (eventueel gehusselde) kaartset
-  let helpFiltered = [];  // uitlegkaartjes
-  let currentIndex = -1;
-
 
   const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
@@ -33,49 +14,23 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   const shuffleBtn = document.getElementById('shuffle');
   const resetBtn = document.getElementById('reset');
-  const uitlegBtn = document.getElementById('uitleg');
-  const lbHelpText = document.getElementById('lbHelpText');
-  const lbHelpTitle = document.getElementById('lbHelpTitle');
-  const lbHelpDesc = document.getElementById('lbHelpDesc');
 
-  
+  let data = [];       // full list
+  let filtered = [];   // current order
+  let currentIndex = -1;
 
-  let mode = 'cards'; // 'cards' of 'help'
-  let helpData = {};
-
-  function firstSentence(txt){
-    const t = String(txt || "").trim().replace(/\s+/g,' ');
-    const m = t.match(/^[\s\S]*?[.!?]/);
-    return m ? m[0].trim() : t;
-  }
-  // Uitleg-modus: voorkant + 6 thema-kaarten (alles in dezelfde lightbox).
-  // Let op: sommige data-bestanden gebruiken nog "verdiepen" i.p.v. "verhelderen"; we ondersteunen beide.
-  const helpItems = [
-    { theme:'',            key:'cover',       bg:'voorkant.svg' },
-    { theme:'Verkennen',   key:'verkennen',   bg:'cards/verkennen.svg' },
-    { theme:'Duiden',      key:'duiden',      bg:'cards/duiden.svg' },
-    { theme:'Verbinden',   key:'verbinden',   bg:'cards/verbinden.svg' },
-    { theme:'Verhelderen', key:'verhelderen', bg:'cards/verhelderen.svg' },
-    { theme:'Vertragen',   key:'vertragen',   bg:'cards/vertragen.svg' },
-    { theme:'Bewegen',     key:'bewegen',     bg:'cards/bewegen.svg' }
-  ];
-
-  // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
+  // Nav hint (rechts): kort zichtbaar bij openen
   let hintTimer = null;
   const HINT_KEY = 'pk_nav_hint_shown';
-  const IS_TOUCH = (
-    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
-    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
-  );
   function showNavHint(){
     if(!navHint) return;
     document.body.classList.add('show-hint');
     clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 20000);
+    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 8000);
   }
   function maybeShowNavHintOnce(){
-    // Alleen tonen op touch-apparaten
-    if(!IS_TOUCH) return;
+    // Alleen tonen wanneer de viewer via touch/pen is geopend (dus niet met muis/desktop)
+    if(lastPointerType === 'mouse') return;
     try{
       if(sessionStorage.getItem(HINT_KEY) === '1') return;
       sessionStorage.setItem(HINT_KEY,'1');
@@ -116,8 +71,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
 
   function render(items){
-    // Bewaar de huidige (zichtbare) kaartset voor navigatie
-    filtered = items;
     grid.innerHTML = "";
     const frag = document.createDocumentFragment();
 
@@ -137,77 +90,28 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
       const q = document.createElement('div');
       q.className = 'q';
-      // Tekst op een vast wit vlak (met extra wit onder de tekst)
-      const qText = document.createElement('span');
-      qText.className = 'qText';
-      qText.textContent = item.q;
-      q.appendChild(qText);
+      q.textContent = item.q;
 
       inner.appendChild(img);
       inner.appendChild(q);
       btn.appendChild(inner);
 
-      btn.addEventListener('click', () => {
-        mode = 'cards';
-        openAt(idx);
-      });
+      btn.addEventListener('click', () => openAt(idx));
       frag.appendChild(btn);
     });
 
     grid.appendChild(frag);
   }
 
-  function setLightboxBackground(url){
-    // Geblurde achtergrond = dezelfde SVG als huidige kaart
-    // (werkt ook als de img zelf nog laadt)
-    try{
-      lb.style.setProperty('--lb-bg-url', `url("${url}")`);
-    }catch(_e){}
-  }
-
   function openLb(item){
-    // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    lbImg.src = item.bg || "";
-    if(item.bg) setLightboxBackground(item.bg);
-
-    if(mode === 'help'){
-      lb.classList.add('help');
-
-      // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
-      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      if(lbHelpTitle) lbHelpTitle.textContent = item.theme || "";
-      // Support: sommige data-bestanden gebruiken nog 'verdiepen'
-      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
-        ? 'verdiepen'
-        : item.key;
-
-      const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
-      // Geen geforceerde enters: laat de browser het netjes afbreken.
-      const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
-      if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
-      lb.classList.remove('help-title');
-    }
-
-    else{
-      lb.classList.remove('help');
-      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-      if(lbHelpTitle) lbHelpTitle.textContent = "";
-      if(lbHelpDesc) lbHelpDesc.textContent = "";
-
-      lbText.textContent = item.q || "";
-    }
-
+    lbImg.src = item.bg;
+    lbText.textContent = item.q || "";
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
     document.body.classList.add('lb-open');
-
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
-
     showUI();
     maybeShowNavHintOnce();
 
@@ -217,20 +121,13 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
 
   function closeLb(){
-    // Sluiten = terug naar normale kaartmodus
-    if(mode === 'help'){
-      mode = 'cards';
-      helpFiltered = [];
-    }
-    lb.classList.remove('help','no-overlay','help-title','open','show-ui');
+    lb.setAttribute('aria-hidden','true');
+    lb.classList.remove('open');
+    lb.classList.remove('is-swiping');
+    document.body.classList.remove('lb-open');
     lbImg.src = "";
     lbText.textContent = "";
-    if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-    if(lbHelpTitle) lbHelpTitle.textContent = "";
-    if(lbHelpDesc) lbHelpDesc.textContent = "";
     currentIndex = -1;
-    lb.setAttribute('aria-hidden','true');
-    document.body.classList.remove('lb-open');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     clearTimeout(hintTimer);
@@ -258,36 +155,14 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     closeLb();
   }
 
-  // Fallback: tap/click op de achtergrond (blur) sluit ook (handig als iOS pointer-events raar doet)
-  const lbBg = lb.querySelector('.lbBg');
-  if(lbBg){
-    lbBg.addEventListener('click', (e) => {
-      if(!lb.classList.contains('open')) return;
-      // voorkom dubbele click na touch
-      if(performance.now() < suppressClickUntil) return;
-      closeFromTap(e);
-    });
-    lbBg.addEventListener('touchend', (e) => {
-      if(!lb.classList.contains('open')) return;
-      closeFromTap(e);
-    }, {passive:false});
-  }
-
-
-
   lb.addEventListener('pointerdown', (e) => {
     if(!lb.classList.contains('open')) return;
     lastPointerType = e.pointerType || 'mouse';
     // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
-    // Als je start in het uitleg-tekstvak: laat verticale scroll met rust (geen swipe-gesture).
     // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
     if (e.target.closest && e.target.closest('button')) {
       gestureArmed = false;
       showUI();
-      return;
-    }
-    if (e.target.closest && (e.target.closest('.lbHelpText') || e.target.closest('.lbHelpDesc'))){
-      gestureArmed = false;
       return;
     }
     pointerDown = true;
@@ -354,21 +229,14 @@ lb.addEventListener('pointerup', (e) => {
     }
   });
 
-  function activeItems(){
-    return (mode === 'help') ? helpFiltered : filtered;
-  }
-
   function openAt(index){
-    const items = activeItems();
     currentIndex = index;
-    openLb(items[currentIndex]);
+    openLb(filtered[currentIndex]);
   }
 
   function go(delta){
-
     if (currentIndex < 0) return;
-    const items = activeItems();
-    const total = items.length;
+    const total = filtered.length;
     let next = currentIndex + delta;
     if (next < 0) next = total - 1;
     if (next >= total) next = 0;
@@ -455,27 +323,15 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'ArrowRight') go(1);
   });
 
-  resetBtn?.addEventListener('click', () => {
-    mode = 'cards';
-    filtered = data.slice();
-    render(filtered);
-    closeLb();
-  });
-
   shuffleBtn.addEventListener('click', () => {
     filtered = shuffle(filtered.slice());
     render(filtered);
   });
 
-  
-  if(uitlegBtn){
-    uitlegBtn.addEventListener('click', () => {
-      showNavHint();
-      mode = 'help';
-      helpFiltered = helpItems.slice();
-      openAt(0);
-    });
-  }
+  resetBtn.addEventListener('click', () => {
+    filtered = data.slice();
+    render(filtered);
+  });
 
   (async function init(){
     const res = await fetch('questions.json');
@@ -483,14 +339,6 @@ document.addEventListener('keydown', (e) => {
     data = buildData(questions);
     filtered = data.slice();
     render(filtered);
-
-    // uitleg-teksten (later invulbaar)
-    try{
-      const hr = await fetch('uitleg-data.json', { cache:'no-store' });
-      helpData = await hr.json();
-    }catch(e){
-      helpData = {};
-    }
   })();
 
 
