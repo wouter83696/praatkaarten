@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.39</title>
+<title>Praatkaarten v3.3.40</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -322,7 +322,7 @@ button,
 }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.39 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.40 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -351,8 +351,24 @@ button,
 
 
 
-/* DEBUG ALWAYS-ON WHEN OPEN v3.3.39 */
+/* DEBUG ALWAYS-ON WHEN OPEN v3.3.40 */
 .lb.open #debugHud{ display:block !important; }
+
+
+
+
+/* PANIC CLOSE ZONE (carousel) v3.3.40 */
+#closePanic{
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 96px;
+  height: 96px;
+  z-index: 200000;
+  opacity: 0;          /* invisible */
+  pointer-events: none;/* only when open */
+}
+.lb.open #closePanic{ pointer-events: auto; }
 
 </style>
 </head>
@@ -409,7 +425,10 @@ button,
 </div>
 
 <div class="lb" id="lb" aria-hidden="true">
-    <button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
+    
+  <!-- Panic close zone (carousel only) -->
+  <div id="closePanic" aria-label="Sluiten" role="button"></div>
+<button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
     </svg>
@@ -499,7 +518,7 @@ document.body.classList.add('lb-open');
 
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
 
-  // CLOSE HANDLER v3.3.39 (altijd werken, los van swipe/gestures)
+  // CLOSE HANDLER v3.3.40 (altijd werken, los van swipe/gestures)
   function onClosePress(e){
     e.preventDefault();
     e.stopPropagation();
@@ -508,7 +527,7 @@ document.body.classList.add('lb-open');
   }
   closeBtn.addEventListener('pointerdown', onClosePress, {capture:true});
   closeBtn.addEventListener('click', onClosePress, {capture:true});
-  // CLOSE FIX v3.3.39
+  // CLOSE FIX v3.3.40
   closeBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); closeLb(); }, {capture:true});
 closeLb(); });
 
@@ -584,7 +603,7 @@ closeLb(); });
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
 
-  // POSITION OVERLAY CLOSE v3.3.39
+  // POSITION OVERLAY CLOSE v3.3.40
   const overlayClose = document.getElementById('close');
   function positionOverlayClose(){
     const panel = document.querySelector('.panel');
@@ -596,14 +615,14 @@ closeLb(); });
   window.addEventListener('resize', positionOverlayClose, {passive:true});
   window.addEventListener('scroll', positionOverlayClose, {passive:true});
 
-  // DOCUMENT CLOSE FALLBACK v3.3.39
+  // DOCUMENT CLOSE FALLBACK v3.3.40
   document.addEventListener('pointerdown', (e) => {
     const t = e.target && (e.target.closest ? e.target.closest('#close') : null);
     if (t && lb.classList.contains('open')) onClosePress(e);
   }, true);
 
 
-// KEIHARDE CLOSE FIX v3.3.39
+// KEIHARDE CLOSE FIX v3.3.40
 (function(){
   const lb = document.getElementById('lb');
   const closeBtn = document.getElementById('close');
@@ -665,7 +684,7 @@ closeLb(); });
 
 
 
-// DEBUG ALWAYS-ON + LONGPRESS TOGGLE v3.3.39
+// DEBUG ALWAYS-ON + LONGPRESS TOGGLE v3.3.40
 (function(){
   const lb = document.getElementById('lb');
   const hud = document.getElementById('debugHud');
@@ -713,6 +732,22 @@ closeLb(); });
   }, true);
 })();
 
+// PANIC CLOSE HANDLER v3.3.40 (carousel)
+(function(){
+  const lb = document.getElementById('lb');
+  const panic = document.getElementById('closePanic');
+  if(!lb || !panic) return;
+
+  function panicClose(e){
+    if(!lb.classList.contains('open')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    try{ closeLb(); }catch(_){}
+  }
+  panic.addEventListener('pointerdown', panicClose, {capture:true});
+  panic.addEventListener('click', panicClose, {capture:true});
+})();
 </script>
 
 
