@@ -1,14 +1,12 @@
 
-fetch('questions.json')
+fetch('./questions.json')
   .then(r => r.json())
   .then(data => {
     const grid = document.getElementById('grid');
     if(!grid) return;
 
-    const themes = Object.keys(data);
-
-    themes.forEach(theme => {
-      data[theme].forEach((q, i) => {
+    Object.keys(data).forEach(theme => {
+      data[theme].forEach(q => {
         const btn = document.createElement('button');
         btn.className = 'card';
         btn.textContent = q;
@@ -17,6 +15,4 @@ fetch('questions.json')
       });
     });
   })
-  .catch(err => {
-    console.error('Grid load failed:', err);
-  });
+  .catch(err => console.error('Grid load failed:', err));
