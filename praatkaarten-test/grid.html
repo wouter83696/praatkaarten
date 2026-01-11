@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.41</title>
+<title>Praatkaarten v3.3.39</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -322,7 +322,7 @@ button,
 }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.41 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.39 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -348,28 +348,35 @@ button,
   display: none;
 }
 .debug-on #debugHud{ display: block; }
-
-
-
-/* DEBUG ALWAYS-ON WHEN OPEN v3.3.41 */
-.lb.open #debugHud{ display:block !important; }
-
-
-
-
-/* PANIC CLOSE ZONE (carousel) v3.3.41 */
-#closePanic{
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 96px;
-  height: 96px;
-  z-index: 200000;
-  opacity: 0;          /* invisible */
-  pointer-events: none;/* only when open */
+/* CLOSE NUCLEAR v3.3.39
+   Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
+.lb{ transform:none !important; }
+.panel{ transform:none !important; }
+#close.overlayClose{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+  right: 10px !important;
+  left: auto !important;
+  z-index: 1000000 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
-.lb.open #closePanic{ pointer-events: auto; }
-
+#closeHitbox{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 2px) !important;
+  right: 2px !important;
+  left: auto !important;
+  width: 84px !important;
+  height: 84px !important;
+  z-index: 1000001 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+}
+.lb:not(.open) #close,
+.lb:not(.open) #closeHitbox{
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
 </style>
 </head>
 <body>
@@ -425,15 +432,12 @@ button,
 </div>
 
 <div class="lb" id="lb" aria-hidden="true">
-    
-  <!-- Panic close zone (carousel only) -->
-  <div id="closePanic" aria-label="Sluiten" role="button"></div>
-<button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
+    <button class="close overlayClose" id="close" type="button" aria-label="Sluiten" onclick="try{closeLb()}catch(e){}">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
     </svg>
   </button>
-  <div id="closeHitbox" aria-hidden="true"></div>
+  <div id="closeHitbox" aria-hidden="true" onclick="try{closeLb()}catch(e){}"></div>
 <div class="panel" role="dialog" aria-modal="true">
     <button class="chev left" id="prev" aria-label="Vorige">‹</button>
     <button class="chev right" id="next" aria-label="Volgende">›</button>
@@ -518,7 +522,7 @@ document.body.classList.add('lb-open');
 
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
 
-  // CLOSE HANDLER v3.3.41 (altijd werken, los van swipe/gestures)
+  // CLOSE HANDLER v3.3.39 (altijd werken, los van swipe/gestures)
   function onClosePress(e){
     e.preventDefault();
     e.stopPropagation();
@@ -527,7 +531,7 @@ document.body.classList.add('lb-open');
   }
   closeBtn.addEventListener('pointerdown', onClosePress, {capture:true});
   closeBtn.addEventListener('click', onClosePress, {capture:true});
-  // CLOSE FIX v3.3.41
+  // CLOSE FIX v3.3.39
   closeBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); closeLb(); }, {capture:true});
 closeLb(); });
 
@@ -603,7 +607,7 @@ closeLb(); });
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
 
-  // POSITION OVERLAY CLOSE v3.3.41
+  // POSITION OVERLAY CLOSE v3.3.39
   const overlayClose = document.getElementById('close');
   function positionOverlayClose(){
     const panel = document.querySelector('.panel');
@@ -615,14 +619,14 @@ closeLb(); });
   window.addEventListener('resize', positionOverlayClose, {passive:true});
   window.addEventListener('scroll', positionOverlayClose, {passive:true});
 
-  // DOCUMENT CLOSE FALLBACK v3.3.41
+  // DOCUMENT CLOSE FALLBACK v3.3.39
   document.addEventListener('pointerdown', (e) => {
     const t = e.target && (e.target.closest ? e.target.closest('#close') : null);
     if (t && lb.classList.contains('open')) onClosePress(e);
   }, true);
 
 
-// KEIHARDE CLOSE FIX v3.3.41
+// KEIHARDE CLOSE FIX v3.3.39
 (function(){
   const lb = document.getElementById('lb');
   const closeBtn = document.getElementById('close');
@@ -683,70 +687,22 @@ closeLb(); });
 })();
 
 
-
-// DEBUG ALWAYS-ON + LONGPRESS TOGGLE v3.3.41
+/* CLOSE NUCLEAR JS v3.3.39 */
 (function(){
   const lb = document.getElementById('lb');
-  const hud = document.getElementById('debugHud');
-  if(!lb || !hud) return;
-
-  function setHud(t){ hud.textContent = t; }
-
-  // Always show basic state when open
-  const obs = new MutationObserver(()=>{
-    if(lb.classList.contains('open')) setHud('lb=open (debug on)');
-    else setHud('lb=closed');
-  });
-  obs.observe(lb, {attributes:true, attributeFilter:['class']});
-
-  // Long press anywhere (600ms) toggles extra verbose mode
-  let pressT=null;
-  let verbose=false;
-
-  function startPress(e){
-    if(!lb.classList.contains('open')) return;
-    clearTimeout(pressT);
-    pressT = setTimeout(()=>{
-      verbose = !verbose;
-      document.documentElement.classList.toggle('debug-verbose', verbose);
-      setHud('lb=open\nverbose=' + (verbose?'on':'off') + '\n(long-press toggled)');
-    }, 600);
-  }
-  function endPress(){ clearTimeout(pressT); }
-
-  document.addEventListener('pointerdown', startPress, true);
-  document.addEventListener('pointerup', endPress, true);
-  document.addEventListener('pointercancel', endPress, true);
-
-  // Show pointerdown targets when verbose
-  document.addEventListener('pointerdown', (e)=>{
-    if(!lb.classList.contains('open') || !verbose) return;
-    const el = e.target;
-    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
-    setHud(
-      'pointerdown\n' +
-      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
-      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '\n' +
-      'verbose=on'
-    );
-  }, true);
-})();
-
-// PANIC CLOSE HANDLER v3.3.41 (carousel)
-(function(){
-  const lb = document.getElementById('lb');
-  const panic = document.getElementById('closePanic');
-  if(!lb || !panic) return;
-
-  function panicClose(e){
-    if(!lb.classList.contains('open')) return;
-    e.preventDefault();
-    e.stopPropagation();
+  const closeBtn = document.getElementById('close');
+  const hit = document.getElementById('closeHitbox');
+  function nukeClose(e){
+    e.preventDefault(); e.stopPropagation();
     if(e.stopImmediatePropagation) e.stopImmediatePropagation();
     try{ closeLb(); }catch(_){}
   }
-  panic.addEventListener('pointerdown', panicClose, {capture:true});
-  panic.addEventListener('click', panicClose, {capture:true});
+  [closeBtn, hit].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('touchstart', nukeClose, {capture:true, passive:false});
+    el.addEventListener('pointerdown', nukeClose, {capture:true});
+    el.addEventListener('click', nukeClose, {capture:true});
+  });
 })();
 </script>
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.41</title>
+<title>Praatkaarten v3.3.39</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -1120,7 +1120,7 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   UI PATCH v3.3.41
+   UI PATCH v3.3.39
    - Harder (Google Maps-like) icons for Shuffle/Info
    - Force Close button to be visible + clickable on mobile when overlay is open
    =============================== */
@@ -1182,7 +1182,7 @@ button.pill:active,
 
 
 /* ===============================
-   PATCH v3.3.41
+   PATCH v3.3.39
    - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
    - Close button altijd tappable
    - Shuffle icon harder (zoals voorbeeld)
@@ -1252,7 +1252,7 @@ button.pill:active,
 
 
 /* ===============================
-   FIX v3.3.41
+   FIX v3.3.39
    - Less whitespace: white panel reaches bottom on mobile
    - Close button works: remove pointer-events:none on lbCard + layer close above image
    =============================== */
@@ -1351,12 +1351,12 @@ button.pill:active,
 }
 .lb.open #close.overlayClose{ display:grid !important; }
 
-/* Icon style v3.3.41 */
+/* Icon style v3.3.39 */
 .iconShuffle path,
 .iconInfo rect{
   fill: rgba(120,120,120,.9);
 }
-/* ICONS LOOK v3.3.41 (zoals voorbeeld) */
+/* ICONS LOOK v3.3.39 (zoals voorbeeld) */
 .pill{
   background: rgba(255,255,255,.92) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
@@ -1380,7 +1380,7 @@ button.pill:active,
 .iconInfo path:last-child{ stroke-width: 4.2 !important; }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.41 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.39 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -1406,26 +1406,35 @@ button.pill:active,
   display: none;
 }
 .debug-on #debugHud{ display: block; }
-
-
-
-/* DEBUG ALWAYS-ON WHEN OPEN v3.3.41 */
-.lb.open #debugHud{ display:block !important; }
-
-
-
-/* PANIC CLOSE ZONE (uitleg carousel) v3.3.41 */
-#closePanic{
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 96px;
-  height: 96px;
-  z-index: 200000;
-  opacity: 0;
-  pointer-events: none;
+/* CLOSE NUCLEAR v3.3.39
+   Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
+.lb{ transform:none !important; }
+.panel{ transform:none !important; }
+#close.overlayClose{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+  right: 10px !important;
+  left: auto !important;
+  z-index: 1000000 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
-.lb.open #closePanic{ pointer-events: auto; }
+#closeHitbox{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 2px) !important;
+  right: 2px !important;
+  left: auto !important;
+  width: 84px !important;
+  height: 84px !important;
+  z-index: 1000001 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+}
+.lb:not(.open) #close,
+.lb:not(.open) #closeHitbox{
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
 </style>
 </head>
 <body>
@@ -1473,15 +1482,13 @@ button.pill:active,
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="lbBg" aria-hidden="true"></div>
-  <!-- Panic close zone (uitleg carousel) -->
-  <div id="closePanic" aria-label="Sluiten" role="button"></div>
   <!-- Overlay close button (outside gesture layer) -->
-  <button class="close overlayClose" id="close" type="button" aria-label="Sluiten">
+  <button class="close overlayClose" id="close" type="button" aria-label="Sluiten" onclick="try{closeLb()}catch(e){}">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
     </svg>
   </button>
-  <div id="closeHitbox" aria-hidden="true"></div>
+  <div id="closeHitbox" aria-hidden="true" onclick="try{closeLb()}catch(e){}"></div>
 
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
