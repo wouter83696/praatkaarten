@@ -4,6 +4,73 @@ function setVh(){
   document.documentElement.style.setProperty('--vh', `${vh}px`);
 }
 setVh();
+
+// ===============================
+// Path-resolver (werkt in ELKE directory op GitHub Pages)
+// - probeert eerst huidige directory
+// - daarna repo-root (bijv. /praatkaarten/)
+// - daarna (optioneel) parent directories
+// ===============================
+function getRepoRoot(){
+  const parts = location.pathname.split('/').filter(Boolean);
+  // GitHub Pages project site: eerste segment is repo-name
+  // /<repo>/... -> repo root = /<repo>/
+  if(parts.length>=1) return `/${parts[0]}/`;
+  return '/';
+}
+function currentDirUrl(){
+  return new URL('./', location.href);
+}
+function resolveResourceUrl(rel){
+  const relClean = rel.replace(/^\//,''); // nooit absolute slash
+  const tries = [];
+  const cur = currentDirUrl();
+  tries.push(new URL(relClean, cur));
+
+  // probeer parent directories (max 3 niveaus) voor het geval je nested test-mappen hebt
+  let parent = cur;
+  for(let i=0;i<3;i++){
+    parent = new URL('../', parent);
+    tries.push(new URL(relClean, parent));
+  }
+
+  // repo root als laatste (meest stabiel)
+  const repoRoot = new URL(getRepoRoot(), location.origin);
+  tries.push(new URL(relClean, repoRoot));
+
+  // ook repoRoot + "praatkaarten-main/" fallback (voor oudere structuren)
+  tries.push(new URL(`praatkaarten-main/${relClean}`, repoRoot));
+
+  return tries;
+}
+async function fetchJsonFallback(rel){
+  const urls = resolveResourceUrl(rel);
+  let lastErr = null;
+  for(const u of urls){
+    try{
+      const r = await fetch(u.toString(), { cache: 'no-store' });
+      if(r.ok) return await r.json();
+      lastErr = new Error(`HTTP ${r.status} for ${u}`);
+    }catch(e){
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error(`Kon ${rel} niet laden`);
+}
+async function fetchTextFallback(rel){
+  const urls = resolveResourceUrl(rel);
+  let lastErr = null;
+  for(const u of urls){
+    try{
+      const r = await fetch(u.toString(), { cache: 'no-store' });
+      if(r.ok) return await r.text();
+      lastErr = new Error(`HTTP ${r.status} for ${u}`);
+    }catch(e){
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error(`Kon ${rel} niet laden`);
+}
 window.addEventListener('resize', setVh);
 window.addEventListener('orientationchange', setVh);
 if (window.visualViewport){
@@ -11,7 +78,8 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-const VERSION = "2.4";
+// Versie (ook gebruikt als cache-buster op GitHub Pages)
+const VERSION = '3.3.53';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -29,18 +97,47 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
-  const navHint = document.getElementById('navHint');
+  // (v3.3.7) swipe-hint is bewust verwijderd
+  const navHint = null;
 
-  const closeBtn = document.getElementById('close');
+  const closeBtn = document.getElementById('lbClose');
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
-  const shuffleBtn = document.getElementById('shuffle');
-  const resetBtn = document.getElementById('reset');
-  const uitlegBtn = document.getElementById('uitleg');
+  // Onderbalk: chips (v3.2)
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  const uitlegBtn  = document.getElementById('uitlegBtn');
+  // (v3.3.7) geen extra sluitknoppen in de pills
+  const mobileIntroEl = document.getElementById('mobileIntro');
+
+  let shuffleOn = false;
+  let uitlegOn  = false;
+
+  function setChip(btn, on){
+    if(!btn) return;
+    btn.classList.toggle('is-on', !!on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+
+  function isMobile(){
+    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
+  }
   const lbHelpText = document.getElementById('lbHelpText');
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
+
+  // POSITION OVERLAY CLOSE (mobiel/desktop)
+  // Zorg dat het kruisje (én de hitbox) altijd bovenop de kaart ligt.
+  // Close knop (opnieuw geplaatst)
+  const overlayClose = document.getElementById('lbClose');
+  const overlayCloseHitbox = document.getElementById('lbCloseHitbox');
+  function positionOverlayClose(){
+    // In deze build staat het kruisje "vast" (position: fixed) rechtsboven in de viewport.
+    // Dus we hoeven niets te positioneren via JS. (Dit voorkomt gezeik met transforms/gesture layers.)
+    return;
+  }
+  window.addEventListener('resize', positionOverlayClose, {passive:true});
+  window.addEventListener('scroll', positionOverlayClose, {passive:true});
 
   // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
   if(lbHelpTitle){
@@ -70,28 +167,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
   ];
 
-  // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
+  // (v3.3.7) swipe-hint verwijderd: geen timers/tekst meer
   let hintTimer = null;
-  const HINT_KEY = 'pk_nav_hint_shown';
-  const IS_TOUCH = (
-    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
-    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
-  );
-  function showNavHint(){
-    if(!navHint) return;
-    document.body.classList.add('show-hint');
-    clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 20000);
-  }
-  function maybeShowNavHintOnce(){
-    // Alleen tonen op touch-apparaten
-    if(!IS_TOUCH) return;
-    try{
-      if(sessionStorage.getItem(HINT_KEY) === '1') return;
-      sessionStorage.setItem(HINT_KEY,'1');
-    }catch(_e){}
-    showNavHint();
-  }
 
 // UI chrome (pijlen + sluiten)
   // - Touch: iets langer zichtbaar
@@ -102,6 +179,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   let uiTimer = null;
   function showUI(){
+    try{ positionOverlayClose(); }catch(_e){}
+
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
     const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
@@ -124,6 +203,46 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     }
     return out;
   }
+  
+  // ===============================
+  // v3.3.47 – Init grid (portable)
+  // - gebruikt embedded JSON (#questions-json) voor file://
+  // - fallback: fetch ./questions.json voor hosting
+  // - bouwt originele kaartjes (SVG achtergrond + tekst) zoals vóórheen
+  // ===============================
+  function readEmbeddedQuestions(){
+    const el = document.getElementById('questions-json');
+    if(!el) return null;
+    try{ return JSON.parse(el.textContent); }catch(_e){ return null; }
+  }
+
+  async function loadQuestions(){
+    const embedded = readEmbeddedQuestions();
+    if(embedded) return embedded;
+    // fallback via fetch (werkt op GitHub Pages / server)
+    try{
+      const r = await fetch('./questions.json', {cache:'no-store'});
+      if(r.ok) return await r.json();
+    }catch(_e){}
+    return null;
+  }
+
+  (async function initGrid(){
+    try{
+      const q = await loadQuestions();
+      if(!q){
+        // laat debug tekst i.p.v. leeg
+        if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Kon vragen niet laden.</div>';
+        return;
+      }
+      data = buildData(q);
+      // start zonder shuffle
+      render(data.slice());
+    }catch(e){
+      console.error(e);
+      if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Fout bij laden.</div>';
+    }
+  })();
 
   function render(items){
     // Bewaar de huidige (zichtbare) kaartset voor navigatie
@@ -177,8 +296,14 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    lbImg.src = item.bg || "";
-    if(item.bg) setLightboxBackground(item.bg);
+    // FIX: gebruik de bg van het item (niet het <img>-element zelf), anders breekt klikken.
+    const bg = (item && item.bg) ? String(item.bg).trim() : "";
+    const bgResolved = (!bg)
+      ? ""
+      : (/^https?:\/\//i.test(bg) ? bg : resolveResourceUrl(bg)[0].toString());
+
+    lbImg.src = bgResolved;
+    if(bgResolved) setLightboxBackground(bgResolved);
 
     if(mode === 'help'){
       lb.classList.add('help');
@@ -195,10 +320,12 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
-      lbText.textContent = "";
-      lb.classList.add('no-overlay');
-      lb.classList.remove('help-title');
+      // In help-mode: thema-naam in het midden (net als op mobiel), behalve op de voorkant.
+      const isCover = (item && item.key === 'cover');
+      const t = (!isCover && item && typeof item.theme === 'string') ? item.theme.trim() : '';
+      lbText.textContent = t;
+      lb.classList.toggle('help-title', !!t);
+      lb.classList.remove('no-overlay');
     }
 
     else{
@@ -212,14 +339,15 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    document.body.classList.add('lb-open');
+    try{ positionOverlayClose(); }catch(_e){}
+document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
 
     showUI();
-    maybeShowNavHintOnce();
+    // (v3.3.7) geen swipe-hint
 
     // Oneindig doorlopen: pijlen nooit uitschakelen
     if(prevBtn) prevBtn.disabled = false;
@@ -243,8 +371,15 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     document.body.classList.remove('lb-open');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    clearTimeout(hintTimer);
-    document.body.classList.remove('show-hint');
+    // (v3.3.7) geen swipe-hint
+
+    // Sync: als je de uitleg-lightbox op desktop sluit, zet de chip uit
+    try{
+      if(typeof isMobile === 'function' && !isMobile() && typeof uitlegOn !== 'undefined' && uitlegOn){
+        uitlegOn = false;
+        setChip(uitlegBtn, false);
+      }
+    }catch(_e){}
   }
 
   // Swipe / drag overal (ook op de grijze achtergrond):
@@ -428,7 +563,23 @@ lb.addEventListener('pointerup', (e) => {
     }
     e.stopPropagation();
   });
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  // Sluiten moet altijd werken (ook op mobiel waar 'click' soms niet afvuurt)
+  closeBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeLb(); });
+  closeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLb();
+  }, {capture:true});
+
+  // Extra (onzichtbare) hitbox naast/om het kruisje voor makkelijke bediening op telefoon
+  if(overlayCloseHitbox){
+    overlayCloseHitbox.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeLb(); });
+    overlayCloseHitbox.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeLb();
+    }, {capture:true});
+  }
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
@@ -453,7 +604,14 @@ lb.addEventListener('pointerup', (e) => {
   // Onderdruk 'click-through' direct na een touch-tap-close.
   // Dit voorkomt dat er meteen weer een kaart opent op de plek waar je tikt.
   document.addEventListener('click', (e) => {
-    if (performance.now() < suppressClickUntil) {
+    // Alleen onderdrukken als de click buiten overlays/controls valt.
+    // Anders kan bijvoorbeeld de close-knop soms "dood" aanvoelen op mobiel.
+    if (
+      performance.now() < suppressClickUntil &&
+      !lb.contains(e.target) &&
+      !(mobileIntroEl && mobileIntroEl.contains(e.target)) &&
+      !(e.target && e.target.closest && e.target.closest('.pillsDock'))
+    ) {
       e.stopPropagation();
       e.preventDefault();
     }
@@ -465,47 +623,717 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'ArrowRight') go(1);
   });
 
-  resetBtn?.addEventListener('click', () => {
-    mode = 'cards';
-    filtered = data.slice();
-    render(filtered);
-    closeLb();
-  });
+  // ===============================
+  // v3.2 – Chips onderbalk
+  // (Let op: shuffleOn/uitlegOn, setChip() en isMobile() worden al bovenin gedeclareerd.)
+  // - Hussel: aan = 1x shuffle, uit = originele volgorde
+  // - Uitleg: mobiel = carousel boven grid, desktop = help-lightbox
+  // ===============================
 
-  shuffleBtn.addEventListener('click', () => {
-    filtered = shuffle(filtered.slice());
-    render(filtered);
-  });
+  function setUitleg(on){
+    uitlegOn = !!on;
+    setChip(uitlegBtn, uitlegOn);
 
-  
-  if(uitlegBtn){
-    uitlegBtn.addEventListener('click', () => {
-      showNavHint();
+    // Pills verplaatsen: onder ↔ boven
+    document.body.classList.toggle('uitleg-open', uitlegOn);
+
+    if(isMobile()){
+      // Mobiel: bottom-sheet (uitleg carousel)
+      if(uitlegOn) openIntroSheet();
+      else closeIntroSheet();
+      return;
+    }
+
+    // Desktop: help-lightbox aan/uit
+    if(uitlegOn){
+      // (v3.3.7) geen swipe-hint
       mode = 'help';
       helpFiltered = helpItems.slice();
       openAt(0);
+    }else{
+      if(mode === 'help') closeLb();
+      mode = 'cards';
+    }
+  }
+
+  function setShuffle(on){
+    shuffleOn = !!on;
+    setChip(shuffleBtn, shuffleOn);
+
+    mode = 'cards';
+    filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
+    render(filtered);
+    closeLb();
+  }
+
+  // Start: beide uit
+  setChip(shuffleBtn, false);
+  setChip(uitlegBtn, false);
+  document.body.classList.remove('show-intro');
+  document.body.classList.remove('uitleg-open');
+
+  if(shuffleBtn){
+    shuffleBtn.addEventListener('click', () => setShuffle(!shuffleOn));
+  }
+  if(uitlegBtn){
+    uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
+  }
+
+  // Mobiel: sluit-knop in de hoek van het plaatje (wordt per kaart gerenderd)
+  // Gebruik event delegation zodat clones ook werken.
+  if(mobileIntroEl){
+    mobileIntroEl.addEventListener('click', (e) => {
+      const btn = e.target && e.target.closest && e.target.closest('.introClose');
+      if(!btn) return;
+      e.stopPropagation();
+      setUitleg(false);
     });
   }
 
-  (async function init(){
-    const res = await fetch(withV('questions.json'));
-    const questions = await res.json();
-    data = buildData(questions);
-    filtered = data.slice();
-    render(filtered);
+  // Houd altijd genoeg "safe space" boven de fixed pills (links-onder),
+  // zodat tekst nooit onder de pills valt. Dynamisch (iOS safe-area + grootte).
+  const updatePillsSafe = () => {
+    const dock = document.querySelector('.pillsDock');
+    if(!dock) return;
+    const rect = dock.getBoundingClientRect();
+    const h = Math.max(0, rect.height);
+    // +6px ademruimte (compacter op mobiel)
+    document.documentElement.style.setProperty('--pillsSafe', `${Math.ceil(h + 6)}px`);
+  };
+  window.addEventListener('resize', updatePillsSafe, {passive:true});
+  window.addEventListener('orientationchange', updatePillsSafe, {passive:true});
+  // eerste run
+  requestAnimationFrame(updatePillsSafe);
 
-    // uitleg-teksten (later invulbaar)
-    try{
-      const hr = await fetch(withV('uitleg-data.json'), { cache:'no-store' });
-      helpData = await hr.json();
-    }catch(e){
-      helpData = {};
+  // ===============================
+  // v3.3.50 – Mobile bottom-sheet gedrag (uitleg)
+  // Eisen:
+  // - Tijdens drag: sheet volgt vinger (geen opacity/fade/mee-bewegen UI)
+  // - Animaties alleen bij loslaten
+  // - Horizontaal swipen: licht (native scroll), Verticaal omlaag: zwaar met weerstand
+  // - Drempel: onder = veer terug, boven = sluit onherroepelijk
+  // - ✕ alleen zichtbaar als sheet volledig open & stabiel; verdwijnt bij drag-start
+  // ===============================
+
+  const introSheet = document.getElementById('mobileIntro');
+
+  // ✕ gedrag tijdens horizontaal bladeren:
+  // - bij horizontaal scrollen (links/rechts) mag het kruisje even wegfaden
+  // - bij verticale drag blijft hij sowieso verborgen (dat regelen we via .is-stable)
+  // - zodra het scrollen stopt komt hij weer netjes terug (fade)
+  (function setupIntroCloseFadeOnXScroll(){
+    const introTrack = document.getElementById('introTrack');
+    if(!introSheet || !introTrack) return;
+    let t = null;
+    introTrack.addEventListener('scroll', () => {
+      if(!document.body.classList.contains('show-intro')) return;
+      introSheet.classList.add('x-scrolling');
+      clearTimeout(t);
+      t = setTimeout(() => introSheet.classList.remove('x-scrolling'), 220);
+    }, {passive:true});
+  })();
+  let sheetAnim = null;
+
+  function setSheetStable(stable){
+    if(!introSheet) return;
+    introSheet.classList.toggle('is-stable', !!stable);
+  }
+
+  function animateSheet(toY, {duration=160, overshoot=false} = {}){
+    if(!introSheet) return;
+    try{ sheetAnim?.cancel?.(); }catch(_e){}
+    introSheet.style.transition = 'none';
+
+    const from = getCurrentSheetY();
+    const frames = overshoot
+      ? [
+          { transform: `translateY(${from}px)` },
+          { transform: `translateY(${Math.min(-8, toY)}px)` },
+          { transform: `translateY(${toY}px)` },
+        ]
+      : [
+          { transform: `translateY(${from}px)` },
+          { transform: `translateY(${toY}px)` },
+        ];
+
+    sheetAnim = introSheet.animate(frames, {
+      duration,
+      easing: 'cubic-bezier(.2,.9,.2,1)',
+      fill: 'forwards'
+    });
+    sheetAnim.onfinish = () => {
+      introSheet.style.transform = `translateY(${toY}px)`;
+      sheetAnim = null;
+    };
+  }
+
+  function getCurrentSheetY(){
+    if(!introSheet) return 0;
+    const t = getComputedStyle(introSheet).transform;
+    if(!t || t === 'none') return 0;
+    // matrix(a,b,c,d,tx,ty)
+    const m = t.match(/matrix\([^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*([^)]+)\)/);
+    if(m) return parseFloat(m[1]) || 0;
+    // matrix3d(..., ty)
+    const m3 = t.match(/matrix3d\((?:[^,]+,){13}\s*([^,]+)\s*\)/);
+    if(m3) return parseFloat(m3[1]) || 0;
+    return 0;
+  }
+
+  function openIntroSheet(){
+    if(!introSheet) return;
+    document.body.classList.add('show-intro');
+    // Start net onder beeld
+    introSheet.style.transform = 'translateY(103%)';
+    setSheetStable(false);
+    // Open in 120–180ms met mini-overshoot
+    requestAnimationFrame(() => {
+      animateSheet(0, {duration:160, overshoot:true});
+      // Markeer als stabiel na de animatie
+      setTimeout(() => setSheetStable(true), 170);
+    });
+  }
+
+  function closeIntroSheet(){
+    if(!introSheet) return;
+    setSheetStable(false);
+    // Sluiten iets sneller dan openen
+    animateSheet(introSheet.getBoundingClientRect().height + 24, {duration:140, overshoot:false});
+    // Na close: class weg (zodat layout/aria consistent is)
+    setTimeout(() => {
+      document.body.classList.remove('show-intro');
+      introSheet.style.transform = 'translateY(103%)';
+    }, 145);
+  }
+
+  // --- Drag gedrag ---
+  (function setupIntroSheetDrag(){
+    if(!introSheet) return;
+    const introTrack = document.getElementById('introTrack');
+    // Swipes starten vaak op de kaarten/track zelf.
+    // Als we de gesture direct aan de track hangen kan (met touch-action/scroll-snap)
+    // de browser de verticale beweging overnemen (dan krijg je 'scroll' i.p.v. sheet-drag).
+    // Daarom luisteren we op de SHEET (capture), zodat we altijd de beweging zien.
+    // Horizontaal bladeren blijft native via de track; verticaal (omlaag) claimen we pas na beslissing.
+    const dragEl = introSheet;
+    let down = false;
+    let armed = false;
+    let decided = false;
+    let vertical = false;
+    let sx=0, sy=0;
+    let currentY = 0;
+    let threshold = 160;
+    let lockedClose = false;
+
+    const DEAD = 14; // 10–15px: bijna geen beweging
+
+    function computeThreshold(){
+      const h = Math.max(1, introSheet.getBoundingClientRect().height);
+      // ~35% van sheet, met sane caps
+      threshold = Math.max(120, Math.min(220, h * 0.35));
     }
+
+    function setY(y){
+      currentY = Math.max(0, y);
+      introSheet.style.transform = `translateY(${currentY}px)`;
+    }
+
+    function resistance(d){
+      // zwaar gevoel: eerst deadzone, daarna voelbaar meegeven
+      const x = Math.max(0, d - DEAD);
+      let y = x * 0.55;
+      if(x > 220) y = 220 * 0.55 + (x - 220) * 0.25;
+      return y;
+    }
+
+    function disableHorizontalScroll(){
+      if(!introTrack) return;
+      // tijdens verticale drag tijdelijk blokkeren zodat iOS/Android niet 'pakt' op horizontaal scrollen
+      introTrack.dataset._ox = introTrack.style.overflowX || '';
+      introTrack.style.overflowX = 'hidden';
+      introTrack.dataset._ta = introTrack.style.touchAction || '';
+      introTrack.style.touchAction = 'none';
+    }
+    function restoreHorizontalScroll(){
+      if(!introTrack) return;
+      if('_ox' in introTrack.dataset) introTrack.style.overflowX = introTrack.dataset._ox;
+      if('_ta' in introTrack.dataset) introTrack.style.touchAction = introTrack.dataset._ta;
+      delete introTrack.dataset._ox;
+      delete introTrack.dataset._ta;
+    }
+
+    dragEl.addEventListener('pointerdown', (e) => {
+      if(!document.body.classList.contains('show-intro')) return;
+      // Start mag óók op de horizontale track (kaarten).
+      // We beslissen pas bij de eerste beweging: horizontaal = bladeren, verticaal (omlaag) = sheet drag.
+      // Ook niet op buttons (zoals ✕)
+      if(e.target && e.target.closest && e.target.closest('button')){
+        return;
+      }
+
+      down = true;
+      armed = true;
+      decided = false;
+      vertical = false;
+      lockedClose = false;
+      sx = e.clientX;
+      sy = e.clientY;
+      currentY = 0;
+      computeThreshold();
+      // ✕ NIET verbergen bij pointerdown (anders verdwijnt hij ook bij zijdelings scrollen).
+      // We verbergen ✕ pas zodra we zeker weten dat dit een verticale drag is.
+      introSheet.style.transition = 'none';
+      try{ dragEl.setPointerCapture?.(e.pointerId); }catch(_e){}
+    }, {passive:true, capture:true});
+
+    dragEl.addEventListener('pointermove', (e) => {
+      if(!down || !armed) return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+
+      if(!decided){
+        if(ax < 8 && ay < 8) return;
+        decided = true;
+        vertical = (ay > ax);
+        if(!vertical){
+          // Horizontaal: laat alles los (native scroll blijft licht)
+          armed = false;
+          down = false;
+          setSheetStable(true);
+          return;
+        }
+        // Verticaal: nu pas echt claimen — ✕ verdwijnt zodra de verticale drag start
+        setSheetStable(false);
+        disableHorizontalScroll();
+      }
+
+      // Alleen omlaag trekken
+      if(dy <= 0){
+        if(!lockedClose) setY(0);
+        return;
+      }
+
+      // Prevent background scroll tijdens verticale drag
+      try{ e.preventDefault(); }catch(_e){}
+
+      let y = resistance(dy);
+
+      // Drempel: boven = onherroepelijk (niet meer terug)
+      if(y >= threshold){
+        lockedClose = true;
+        const over = y - threshold;
+        y = threshold + over * 1.1; // lichte versnelling / snap-gevoel
+      }
+      if(lockedClose) y = Math.max(threshold, y);
+
+      setY(y);
+    }, {passive:false, capture:true});
+
+    function release(){
+      if(!down) return;
+      down = false;
+      restoreHorizontalScroll();
+      if(!decided){
+        // Geen drag: sheet blijft open
+        setSheetStable(true);
+        return;
+      }
+      if(!vertical){
+        setSheetStable(true);
+        return;
+      }
+
+      if(lockedClose || currentY >= threshold){
+        // Onherroepelijk sluiten
+        setSheetStable(false);
+        closeIntroSheet();
+        return;
+      }
+      // Altijd terugveren onder drempel
+      animateSheet(0, {duration:150, overshoot:true});
+      setTimeout(() => setSheetStable(true), 155);
+    }
+
+    dragEl.addEventListener('pointerup', release, {passive:true});
+    dragEl.addEventListener('pointercancel', release, {passive:true});
+
+    // --- Touch fallback (iOS/Safari): pointer-events + touch-action geven soms geen betrouwbare verticale drag.
+    // We gebruiken dezelfde logica, maar dan met touchstart/move/end.
+    let tActive = false;
+    dragEl.addEventListener('touchstart', (e) => {
+      if(!document.body.classList.contains('show-intro')) return;
+      const touch = e.touches && e.touches[0];
+      if(!touch) return;
+      if(e.target && e.target.closest && e.target.closest('button')) return;
+
+      tActive = true;
+      down = true;
+      armed = true;
+      decided = false;
+      vertical = false;
+      lockedClose = false;
+      sx = touch.clientX;
+      sy = touch.clientY;
+      currentY = 0;
+      computeThreshold();
+      // ✕ NIET verbergen bij touchstart (anders verdwijnt hij ook bij zijdelings scrollen).
+      // We verbergen ✕ pas zodra we zeker weten dat dit een verticale drag is.
+      introSheet.style.transition = 'none';
+    }, {passive:true, capture:true});
+
+    dragEl.addEventListener('touchmove', (e) => {
+      if(!tActive || !down || !armed) return;
+      const touch = e.touches && e.touches[0];
+      if(!touch) return;
+      const dx = touch.clientX - sx;
+      const dy = touch.clientY - sy;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+
+      if(!decided){
+        if(ax < 8 && ay < 8) return;
+        decided = true;
+        vertical = (ay > ax);
+        if(!vertical){
+          // horizontaal: laat native scroll
+          armed = false;
+          down = false;
+          setSheetStable(true);
+          return;
+        }
+        // Verticaal: claimen — ✕ verbergen
+        setSheetStable(false);
+        disableHorizontalScroll();
+      }
+
+      if(!vertical) return;
+      if(dy <= 0){
+        if(!lockedClose) setY(0);
+        return;
+      }
+
+      // Cruciaal: stop page scroll tijdens verticale drag
+      e.preventDefault();
+
+      let y = resistance(dy);
+      if(y >= threshold){
+        lockedClose = true;
+        const over = y - threshold;
+        y = threshold + over * 1.1;
+      }
+      if(lockedClose) y = Math.max(threshold, y);
+      setY(y);
+    }, {passive:false, capture:true});
+
+    function touchRelease(){
+      if(!tActive) return;
+      tActive = false;
+      release();
+    }
+    dragEl.addEventListener('touchend', touchRelease, {passive:true, capture:true});
+    dragEl.addEventListener('touchcancel', touchRelease, {passive:true, capture:true});
   })();
 
+  // Swipe-down verwijderd voor stabiliteit (v3.3.42)
+
+// (v3.2) Geen extra "Uitleg/Verberg" header meer op mobiel.
 
 
-window.closeLb = closeLb;
 
 
-window.go = go;
+
+/* ===============================
+   v2.8 – Mobile uitleg-carousel vanuit JSON
+   =============================== */
+async function renderMobileIntro(){
+  const section = document.getElementById('mobileIntro');
+  const track = document.getElementById('introTrack');
+  if(!section || !track) return;
+
+  let data = null;
+  try{
+    const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
+    data = await r.json();
+  }catch(e){
+    return;
+  }
+  if(!data || !Array.isArray(data.slides)) return;
+
+  // Build cards
+  track.innerHTML = '';
+
+  const slides = data.slides.slice();
+  const realCount = slides.length;
+
+  // helper om één kaart te bouwen
+  const buildCard = (s) => {
+    const art = document.createElement('article');
+    art.className = 'introCard';
+    art.dataset.intro = s.key || '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'introImgWrap';
+
+    // Sluitknop op de hoek van het plaatje (bespaart ruimte)
+    const close = document.createElement('button');
+    close.className = 'introClose';
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Sluiten');
+    close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>';
+    wrap.appendChild(close);
+
+    const img = document.createElement('img');
+    img.className = 'introImg';
+    img.src = withV(s.img || '');
+    img.alt = s.alt || s.title || '';
+    wrap.appendChild(img);
+
+    // Thema-naam in het midden van de kaart (alleen thema-kaarten, niet de voorkant)
+    if((s.key || '') !== 'cover' && (s.title || '').trim()){
+      const theme = document.createElement('div');
+      theme.className = 'introTheme';
+      theme.textContent = s.title;
+      wrap.appendChild(theme);
+    }
+
+    const text = document.createElement('div');
+    text.className = 'introText';
+
+    const b = document.createElement('div');
+    b.className = 'introTextBody';
+    b.textContent = s.body || '';
+
+    text.appendChild(b);
+
+    art.appendChild(wrap);
+    art.appendChild(text);
+    return art;
+  };
+
+  // (Infinity scroll) clones aan beide kanten zodat je "oneindig" door kan swipen
+  const CLONE_N = Math.min(2, realCount);
+  if(realCount > 1){
+    for(let i=realCount-CLONE_N; i<realCount; i++){
+      const c = buildCard(slides[i]);
+      c.dataset.clone = '1';
+      track.appendChild(c);
+    }
+  }
+
+  for(const s of slides){
+    track.appendChild(buildCard(s));
+  }
+
+  if(realCount > 1){
+    for(let i=0; i<CLONE_N; i++){
+      const c = buildCard(slides[i]);
+      c.dataset.clone = '1';
+      track.appendChild(c);
+    }
+  }
+
+  // Hint text (optional)
+  const hintEl = section.querySelector('.introHint');
+  if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
+
+  // Infinity scroll: na layout (widths bekend) scroll naar eerste echte item
+  if(realCount > 1){
+    requestAnimationFrame(() => {
+      const firstReal = track.querySelectorAll('.introCard')[CLONE_N];
+      if(!firstReal) return;
+      const gap = 14; // gelijk aan CSS
+      const step = firstReal.getBoundingClientRect().width + gap;
+      let jumping = false;
+
+      // Startpositie: op eerste echte kaart
+      track.scrollLeft = step * CLONE_N;
+
+      const onScroll = () => {
+        if(jumping) return;
+        const max = step * (realCount + CLONE_N);
+        const min = step * (CLONE_N - 1);
+        const x = track.scrollLeft;
+
+        // Te ver naar links -> spring naar dezelfde positie achteraan
+        if(x <= min){
+          jumping = true;
+          track.scrollLeft = x + step * realCount;
+          requestAnimationFrame(() => { jumping = false; });
+        }
+        // Te ver naar rechts -> spring naar dezelfde positie vooraan
+        else if(x >= max){
+          jumping = true;
+          track.scrollLeft = x - step * realCount;
+          requestAnimationFrame(() => { jumping = false; });
+        }
+      };
+
+      track.addEventListener('scroll', onScroll, { passive:true });
+    });
+  }
+}
+
+// Fire & forget after DOM is ready
+document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
+
+
+
+
+// SAFETY: close button delegation (v3.3.28)
+document.addEventListener('click', (e) => {
+  const closeEl = e.target && (e.target.closest ? e.target.closest('.lbClose, .close') : null);
+  const lb = document.getElementById('lb');
+  if (!lb) return;
+  if (lb.classList.contains('open') && closeEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    try { closeLb(); } catch(_) {}
+  }
+}, true);
+
+// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #lbClose of .lbClose
+document.addEventListener('pointerdown', (e) => {
+  const lb = document.getElementById('lb');
+  if (!lb || !lb.classList.contains('open')) return;
+  const closeEl = e.target && (e.target.closest ? e.target.closest('#lbClose, .lbClose, .close') : null);
+  if (!closeEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try { closeLb(); } catch(_) {}
+}, true);
+
+
+// KEIHARDE CLOSE FIX v3.3.38
+(function(){
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('lbClose');
+  const closeHitbox = document.getElementById('lbCloseHitbox');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !closeBtn || !closeHitbox) return;
+
+  function setHud(t){ if(hud) hud.textContent = t; }
+  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
+
+  function positionCloseHitbox(){
+    const r = closeBtn.getBoundingClientRect();
+    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
+    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
+  }
+
+  window.addEventListener('resize', positionCloseHitbox, {passive:true});
+  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
+
+  let taps = 0, tmr = null;
+  document.addEventListener('click', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    if(e.target && e.target.closest && e.target.closest('#lbClose,#lbCloseHitbox')) return;
+    taps++;
+    clearTimeout(tmr);
+    tmr = setTimeout(()=>{ taps=0; }, 500);
+    if(taps>=3){
+      document.documentElement.classList.toggle('debug-on');
+      taps=0;
+    }
+  }, true);
+
+  function forceClose(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if(typeof closeLb === 'function') closeLb();
+  }
+
+  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
+  closeHitbox.addEventListener('click', forceClose, {capture:true});
+
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) positionCloseHitbox();
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !isDebug()) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
+    );
+  }, true);
+})();
+
+
+/* ------------------------------------------------------------
+   CLOSE (opnieuw opgebouwd)
+   - Eén centrale binding voor #lbClose en #lbCloseHitbox
+   - Backdrop tap sluit ook (buiten .panel)
+------------------------------------------------------------ */
+(function(){
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('lbClose');
+  const hit = document.getElementById('lbCloseHitbox');
+  if(!lb) return;
+
+  function hardClose(){
+    lb.classList.remove('open','dragging','closing','is-dragging','is-swiping');
+    lb.style.transform = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+  }
+
+  function safeClose(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+    try{
+      if(typeof closeLb === 'function'){
+        closeLb();
+        // Als closeLb door iets vroegtijdig stopt, val dan terug.
+        setTimeout(()=>{ if(lb.classList.contains('open')) hardClose(); }, 0);
+      } else {
+        hardClose();
+      }
+    }catch(_){
+      hardClose();
+    }
+  }
+
+  [closeBtn, hit].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('touchstart', safeClose, {capture:true, passive:false});
+    el.addEventListener('pointerdown', safeClose, {capture:true});
+    el.addEventListener('click', safeClose, {capture:true});
+  });
+
+  // Backdrop klik/tap sluit (maar niet binnen de kaart/panel)
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    const insidePanel = e.target && e.target.closest && e.target.closest('.panel');
+    const isClose = e.target && e.target.closest && e.target.closest('#lbClose,#lbCloseHitbox');
+    if(!insidePanel && !isClose) safeClose(e);
+  }, true);
+})();
+
+
+/* v3.3.50 – Horizontaal swipen in de uitleg gebeurt native via scroll-snap.
+   Geen JS-gestures nodig (houdt het licht, vloeiend en conflictvrij). */
+
+
+/* v3.3.42 – Harde swipe reset */
+function resetSwipe(){
+  document.body.style.touchAction = '';
+}
+
+const _origClose = window.closeLb;
+window.closeLb = function(){
+  resetSwipe();
+  if(_origClose) _origClose();
+};
