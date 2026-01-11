@@ -639,7 +639,36 @@ document.addEventListener('keydown', (e) => {
     document.body.classList.toggle('uitleg-open', uitlegOn);
 
     if(isMobile()){
-      document.body.classList.toggle('show-intro', uitlegOn);
+      // Bottom-sheet open/close animatie (met overshoot) + snelle opacity
+      if(uitlegOn){
+        if(mobileIntroEl) mobileIntroEl.classList.remove('is-closing');
+        // toggle (ipv add) zodat animatie opnieuw triggert als je snel wisselt
+        document.body.classList.add('show-intro');
+      }else{
+        if(!mobileIntroEl){
+          document.body.classList.remove('show-intro');
+          return;
+        }
+        // Laat de sheet eerst animeren, verwijder daarna pas de show-intro class
+        mobileIntroEl.classList.add('is-closing');
+
+        const finish = () => {
+          mobileIntroEl.classList.remove('is-closing');
+          document.body.classList.remove('show-intro');
+        };
+
+        const onEnd = (e) => {
+          if(e && e.animationName && e.animationName !== 'introOut') return;
+          finish();
+        };
+
+        mobileIntroEl.addEventListener('animationend', onEnd, { once:true });
+
+        // Fallback (als animationend niet vuurt op sommige mobiele browsers)
+        setTimeout(() => {
+          if(mobileIntroEl.classList.contains('is-closing')) finish();
+        }, 340);
+      }
       return;
     }
 

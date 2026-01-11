@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.48</title>
+<title>Praatkaarten v3.3.49</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -917,7 +917,9 @@ body.hm-open{overflow:hidden}
   isolation: isolate;
 
   transform: translateY(103%);
-  transition: transform .28s ease;
+  opacity:0;
+  will-change: transform, opacity;
+  transition:none;
   display:block;
 }
 
@@ -926,6 +928,28 @@ body.hm-open{overflow:hidden}
 .mobileIntro::before,
 .mobileIntro::after{
   content:none;
+}
+
+/* Bottom-sheet animatie (must)
+   - korte ease met kleine overshoot
+   - opacity in 120–180ms
+*/
+@keyframes introIn{
+  0%   { transform: translateY(103%); opacity:0; }
+  55%  { opacity:1; }
+  82%  { transform: translateY(-8px); opacity:1; }
+  100% { transform: translateY(0); opacity:1; }
+}
+@keyframes introOut{
+  0%   { transform: translateY(0); opacity:1; }
+  55%  { opacity:0; }
+  100% { transform: translateY(103%); opacity:0; }
+}
+
+/* Respecteer reduced motion */
+@media (prefers-reduced-motion: reduce){
+  body.show-intro .mobileIntro{ animation:none !important; transform: translateY(0); opacity:1; }
+  .mobileIntro.is-closing{ animation:none !important; transform: translateY(103%); opacity:0; }
 }
 
 /* Sluitknop op de hoek van het plaatje (rechts-boven)
@@ -966,7 +990,13 @@ body.hm-open{overflow:hidden}
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
-  body.show-intro .mobileIntro{ transform: translateY(0); }
+  body.show-intro .mobileIntro{
+    opacity:1;
+    animation: introIn .32s cubic-bezier(.22,1,.36,1) both;
+  }
+  .mobileIntro.is-closing{
+    animation: introOut .26s cubic-bezier(.4,0,.2,1) both;
+  }
   /* Pills blijven altijd links-onder in beeld; geen opschuiven boven de uitleg */
 }
 
@@ -1120,7 +1150,7 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   UI PATCH v3.3.48
+   UI PATCH v3.3.49
    - Harder (Google Maps-like) icons for Shuffle/Info
    - Force Close button to be visible + clickable on mobile when overlay is open
    =============================== */
@@ -1182,7 +1212,7 @@ button.pill:active,
 
 
 /* ===============================
-   PATCH v3.3.48
+   PATCH v3.3.49
    - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
    - Close button altijd tappable
    - Shuffle icon harder (zoals voorbeeld)
@@ -1252,7 +1282,7 @@ button.pill:active,
 
 
 /* ===============================
-   FIX v3.3.48
+   FIX v3.3.49
    - Less whitespace: white panel reaches bottom on mobile
    - Close button works: remove pointer-events:none on lbCard + layer close above image
    =============================== */
@@ -1351,12 +1381,12 @@ button.pill:active,
 }
 .lb.open #close.overlayClose{ display:grid !important; }
 
-/* Icon style v3.3.48 */
+/* Icon style v3.3.49 */
 .iconShuffle path,
 .iconInfo rect{
   fill: rgba(120,120,120,.9);
 }
-/* ICONS LOOK v3.3.48 (zoals voorbeeld) */
+/* ICONS LOOK v3.3.49 (zoals voorbeeld) */
 .pill{
   background: rgba(255,255,255,.92) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
@@ -1380,7 +1410,7 @@ button.pill:active,
 .iconInfo path:last-child{ stroke-width: 4.2 !important; }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.48 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.49 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -1406,7 +1436,7 @@ button.pill:active,
   display: none;
 }
 .debug-on #debugHud{ display: block; }
-/* CLOSE NUCLEAR v3.3.48
+/* CLOSE NUCLEAR v3.3.49
    Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
 .lb{ transform:none !important; }
 .panel{ transform:none !important; }
@@ -1435,7 +1465,7 @@ button.pill:active,
   pointer-events: none !important;
   opacity: 0 !important;
 }
-/* Debug visibility v3.3.48 */
+/* Debug visibility v3.3.49 */
 #versionBadge{
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 8px);
@@ -1553,7 +1583,7 @@ button.pill:active,
 
 <div id="debugHud" aria-hidden="true"></div>
 
-<div id="versionBadge" aria-hidden="true">v3.3.48</div>
+<div id="versionBadge" aria-hidden="true">v3.3.49</div>
 <div id="toast" aria-hidden="true"></div>
 
 <script id="questions-json" type="application/json">
