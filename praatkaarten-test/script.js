@@ -235,7 +235,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
         if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Kon vragen niet laden.</div>';
         return;
       }
-      const data = buildData(q);
+      data = buildData(q);
       // start zonder shuffle
       render(data.slice());
     }catch(e){
