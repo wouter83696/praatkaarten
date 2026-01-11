@@ -794,6 +794,10 @@ document.addEventListener('keydown', (e) => {
   // --- Drag gedrag ---
   (function setupIntroSheetDrag(){
     if(!introSheet) return;
+    const introTrack = document.getElementById('introTrack');
+    // Swipes starten vrijwel altijd op de kaarten/track zelf.
+    // Om 'geen drag' issues op mobiel te voorkomen, hangen we listeners aan de track.
+    const dragEl = introTrack || introSheet;
     let down = false;
     let armed = false;
     let decided = false;
@@ -824,7 +828,23 @@ document.addEventListener('keydown', (e) => {
       return y;
     }
 
-    introSheet.addEventListener('pointerdown', (e) => {
+    function disableHorizontalScroll(){
+      if(!introTrack) return;
+      // tijdens verticale drag tijdelijk blokkeren zodat iOS/Android niet 'pakt' op horizontaal scrollen
+      introTrack.dataset._ox = introTrack.style.overflowX || '';
+      introTrack.style.overflowX = 'hidden';
+      introTrack.dataset._ta = introTrack.style.touchAction || '';
+      introTrack.style.touchAction = 'none';
+    }
+    function restoreHorizontalScroll(){
+      if(!introTrack) return;
+      if('_ox' in introTrack.dataset) introTrack.style.overflowX = introTrack.dataset._ox;
+      if('_ta' in introTrack.dataset) introTrack.style.touchAction = introTrack.dataset._ta;
+      delete introTrack.dataset._ox;
+      delete introTrack.dataset._ta;
+    }
+
+    dragEl.addEventListener('pointerdown', (e) => {
       if(!document.body.classList.contains('show-intro')) return;
       // Start mag óók op de horizontale track (kaarten).
       // We beslissen pas bij de eerste beweging: horizontaal = bladeren, verticaal (omlaag) = sheet drag.
@@ -844,10 +864,10 @@ document.addEventListener('keydown', (e) => {
       computeThreshold();
       setSheetStable(false); // ✕ verdwijnt zodra drag start
       introSheet.style.transition = 'none';
-      try{ introSheet.setPointerCapture?.(e.pointerId); }catch(_e){}
-    }, {passive:true});
+      try{ dragEl.setPointerCapture?.(e.pointerId); }catch(_e){}
+    }, {passive:true, capture:true});
 
-    introSheet.addEventListener('pointermove', (e) => {
+    dragEl.addEventListener('pointermove', (e) => {
       if(!down || !armed) return;
       const dx = e.clientX - sx;
       const dy = e.clientY - sy;
@@ -865,6 +885,8 @@ document.addEventListener('keydown', (e) => {
           setSheetStable(true);
           return;
         }
+        // Verticaal: nu pas echt claimen
+        disableHorizontalScroll();
       }
 
       // Alleen omlaag trekken
@@ -887,11 +909,12 @@ document.addEventListener('keydown', (e) => {
       if(lockedClose) y = Math.max(threshold, y);
 
       setY(y);
-    }, {passive:false});
+    }, {passive:false, capture:true});
 
     function release(){
       if(!down) return;
       down = false;
+      restoreHorizontalScroll();
       if(!decided){
         // Geen drag: sheet blijft open
         setSheetStable(true);
@@ -913,8 +936,81 @@ document.addEventListener('keydown', (e) => {
       setTimeout(() => setSheetStable(true), 155);
     }
 
-    introSheet.addEventListener('pointerup', release, {passive:true});
-    introSheet.addEventListener('pointercancel', release, {passive:true});
+    dragEl.addEventListener('pointerup', release, {passive:true});
+    dragEl.addEventListener('pointercancel', release, {passive:true});
+
+    // --- Touch fallback (iOS/Safari): pointer-events + touch-action geven soms geen betrouwbare verticale drag.
+    // We gebruiken dezelfde logica, maar dan met touchstart/move/end.
+    let tActive = false;
+    dragEl.addEventListener('touchstart', (e) => {
+      if(!document.body.classList.contains('show-intro')) return;
+      const touch = e.touches && e.touches[0];
+      if(!touch) return;
+      if(e.target && e.target.closest && e.target.closest('button')) return;
+
+      tActive = true;
+      down = true;
+      armed = true;
+      decided = false;
+      vertical = false;
+      lockedClose = false;
+      sx = touch.clientX;
+      sy = touch.clientY;
+      currentY = 0;
+      computeThreshold();
+      setSheetStable(false);
+      introSheet.style.transition = 'none';
+    }, {passive:true, capture:true});
+
+    dragEl.addEventListener('touchmove', (e) => {
+      if(!tActive || !down || !armed) return;
+      const touch = e.touches && e.touches[0];
+      if(!touch) return;
+      const dx = touch.clientX - sx;
+      const dy = touch.clientY - sy;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+
+      if(!decided){
+        if(ax < 8 && ay < 8) return;
+        decided = true;
+        vertical = (ay > ax);
+        if(!vertical){
+          // horizontaal: laat native scroll
+          armed = false;
+          down = false;
+          setSheetStable(true);
+          return;
+        }
+        disableHorizontalScroll();
+      }
+
+      if(!vertical) return;
+      if(dy <= 0){
+        if(!lockedClose) setY(0);
+        return;
+      }
+
+      // Cruciaal: stop page scroll tijdens verticale drag
+      e.preventDefault();
+
+      let y = resistance(dy);
+      if(y >= threshold){
+        lockedClose = true;
+        const over = y - threshold;
+        y = threshold + over * 1.1;
+      }
+      if(lockedClose) y = Math.max(threshold, y);
+      setY(y);
+    }, {passive:false, capture:true});
+
+    function touchRelease(){
+      if(!tActive) return;
+      tActive = false;
+      release();
+    }
+    dragEl.addEventListener('touchend', touchRelease, {passive:true, capture:true});
+    dragEl.addEventListener('touchcancel', touchRelease, {passive:true, capture:true});
   })();
 
   // Swipe-down verwijderd voor stabiliteit (v3.3.42)

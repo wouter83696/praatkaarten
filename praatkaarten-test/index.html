@@ -978,6 +978,8 @@ body.hm-open{overflow:hidden}
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
+  /* Tijdens open sheet: achtergrond niet scrollen (anders 'pakt' swipe-down niet betrouwbaar) */
+  body.show-intro{ overflow:hidden; overscroll-behavior: contain; }
   body.show-intro .mobileIntro{ transform: translateY(0); }
   /* Pills blijven altijd links-onder in beeld; geen opschuiven boven de uitleg */
 }
@@ -1565,7 +1567,7 @@ button.pill:active,
 
 <div id="debugHud" aria-hidden="true"></div>
 
-<div id="versionBadge" aria-hidden="true">v3.3.48</div>
+<div id="versionBadge" aria-hidden="true">v3.3.51</div>
 <div id="toast" aria-hidden="true"></div>
 
 <script id="questions-json" type="application/json">
