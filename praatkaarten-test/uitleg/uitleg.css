@@ -323,13 +323,3 @@ button.pill:active{
   border-radius: var(--radius-sheet);
   box-shadow: none !important;
 }
-
-
-
-/* UI PATCH v3.3.28: harder icon tone */
-.pillsDock .pill, .controlsBar .pill, .pillsLeft .pill, .pill.btn, button.pill, .btn.pill{
-  color: rgba(0,0,0,.74) !important;
-  background: rgba(255,255,255,.92) !important;
-  border: 1px solid rgba(0,0,0,.12) !important;
-  box-shadow:none !important;
-}
