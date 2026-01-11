@@ -203,6 +203,47 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     }
     return out;
   }
+  
+  // ===============================
+  // v3.3.47 – Init grid (portable)
+  // - gebruikt embedded JSON (#questions-json) voor file://
+  // - fallback: fetch ./questions.json voor hosting
+  // - bouwt originele kaartjes (SVG achtergrond + tekst) zoals vóórheen
+  // ===============================
+  function readEmbeddedQuestions(){
+    const el = document.getElementById('questions-json');
+    if(!el) return null;
+    try{ return JSON.parse(el.textContent); }catch(_e){ return null; }
+  }
+
+  async function loadQuestions(){
+    const embedded = readEmbeddedQuestions();
+    if(embedded) return embedded;
+    // fallback via fetch (werkt op GitHub Pages / server)
+    try{
+      const r = await fetch('./questions.json', {cache:'no-store'});
+      if(r.ok) return await r.json();
+    }catch(_e){}
+    return null;
+  }
+
+  (async function initGrid(){
+    try{
+      const q = await loadQuestions();
+      if(!q){
+        // laat debug tekst i.p.v. leeg
+        if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Kon vragen niet laden.</div>';
+        return;
+      }
+      const data = buildData(q);
+      // start zonder shuffle
+      render(data.slice());
+    }catch(e){
+      console.error(e);
+      if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Fout bij laden.</div>';
+    }
+  })();
+
 
   function render(items){
     // Bewaar de huidige (zichtbare) kaartset voor navigatie
