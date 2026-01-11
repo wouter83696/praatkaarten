@@ -3,26 +3,30 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Uitleg</title>
+  <title>Praatkaarten v2.8</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="uitleg.css" />
+  <link rel="stylesheet" href="uitleg.css?v=2.8" />
 </head>
 <body>
   <main class="wrap">
     <section class="viewer" aria-label="Uitleg kaarten">
-      <div class="stage" id="stage" aria-live="polite">
-        <button class="chev left" id="prevSlide" aria-label="Vorige">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <button class="chev right" id="nextSlide" aria-label="Volgende">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-        </button>
-      </div>
+      <!-- Eén kaart: SVG boven + tekstvlak onder (vast aan elkaar, auto-hoogte) -->
+      <div class="cardShell" aria-live="polite">
+        <div class="stage" id="stage">
+          <button class="chev left" id="prevSlide" aria-label="Vorige">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <button class="chev right" id="nextSlide" aria-label="Volgende">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
 
-      <div class="meta">
-        <div class="desc" id="desc"></div>
+        <div class="meta">
+          <!-- Geen kop: alleen uitlegtekst -->
+          <div class="desc" id="desc"></div>
+        </div>
       </div>
     </section>
   </main>
@@ -40,6 +44,6 @@
     </div>
   </div>
 
-  <script src="uitleg.js"></script>
+  <script src="uitleg.js?v=2.8"></script>
 </body>
 </html>
