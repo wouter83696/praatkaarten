@@ -717,6 +717,25 @@ document.addEventListener('keydown', (e) => {
 
   const introSheet = document.getElementById('mobileIntro');
 
+  function forceCloseIntroSheet(immediate=true){
+    if(!introSheet) return;
+    document.body.classList.remove('show-intro');
+    setSheetStable(false);
+    introSheet.classList.remove('x-scrolling','is-stable');
+    // Zorg dat de sheet echt buiten beeld staat en niets blokkeert
+    if(immediate){
+      introSheet.style.transition = 'none';
+      introSheet.style.transform = 'translateY(103%)';
+    }else{
+      introSheet.style.transform = 'translateY(103%)';
+    }
+  }
+
+  // SAFETY: start altijd met gesloten sheet (grid moet altijd zichtbaar zijn)
+  window.addEventListener('DOMContentLoaded', () => {
+    forceCloseIntroSheet(true);
+  });
+
   // ✕ gedrag tijdens horizontaal bladeren:
   // - bij horizontaal scrollen (links/rechts) mag het kruisje even wegfaden
   // - bij verticale drag blijft hij sowieso verborgen (dat regelen we via .is-stable)
@@ -801,8 +820,7 @@ document.addEventListener('keydown', (e) => {
     animateSheet(introSheet.getBoundingClientRect().height + 24, {duration:140, overshoot:false});
     // Na close: class weg (zodat layout/aria consistent is)
     setTimeout(() => {
-      document.body.classList.remove('show-intro');
-      introSheet.style.transform = 'translateY(103%)';
+      forceCloseIntroSheet(true);
     }, 145);
   }
 
@@ -894,9 +912,20 @@ document.addEventListener('keydown', (e) => {
       const ay = Math.abs(dy);
 
       if(!decided){
-        if(ax < 8 && ay < 8) return;
-        decided = true;
-        vertical = (ay > ax);
+        // Richtingbeslissing met duidelijke voorkeur:
+        // - Eerst een kleine deadzone
+        // - Daarna pas kiezen op basis van ratio (voorkomt dat mini-horizontale drift je verticale drag blokkeert)
+        if(ax < 12 && ay < 12) return;
+        if(ay > ax * 1.2){
+          decided = true;
+          vertical = true;
+        }else if(ax > ay * 1.2){
+          decided = true;
+          vertical = false;
+        }else{
+          // nog ambigu: wacht op iets duidelijkere richting
+          return;
+        }
         if(!vertical){
           // Horizontaal: laat alles los (native scroll blijft licht)
           armed = false;
@@ -911,7 +940,12 @@ document.addEventListener('keydown', (e) => {
 
       // Alleen omlaag trekken
       if(dy <= 0){
-        if(!lockedClose) setY(0);
+        // Als we al over de drempel zijn: niet meer terug te trekken.
+        if(lockedClose){
+          setY(Math.max(threshold, currentY));
+        }else{
+          setY(0);
+        }
         return;
       }
 
@@ -993,9 +1027,20 @@ document.addEventListener('keydown', (e) => {
       const ay = Math.abs(dy);
 
       if(!decided){
-        if(ax < 8 && ay < 8) return;
-        decided = true;
-        vertical = (ay > ax);
+        // Richtingbeslissing met duidelijke voorkeur:
+        // - Eerst een kleine deadzone
+        // - Daarna pas kiezen op basis van ratio (voorkomt dat mini-horizontale drift je verticale drag blokkeert)
+        if(ax < 12 && ay < 12) return;
+        if(ay > ax * 1.2){
+          decided = true;
+          vertical = true;
+        }else if(ax > ay * 1.2){
+          decided = true;
+          vertical = false;
+        }else{
+          // nog ambigu: wacht op iets duidelijkere richting
+          return;
+        }
         if(!vertical){
           // horizontaal: laat native scroll
           armed = false;
@@ -1009,8 +1054,13 @@ document.addEventListener('keydown', (e) => {
       }
 
       if(!vertical) return;
-      if(dy <= 0){
-        if(!lockedClose) setY(0);
+            if(dy <= 0){
+        // Als we al over de drempel zijn: niet meer terug te trekken.
+        if(lockedClose){
+          setY(Math.max(threshold, currentY));
+        }else{
+          setY(0);
+        }
         return;
       }
 
