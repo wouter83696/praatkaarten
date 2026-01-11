@@ -1,3 +1,5 @@
+const VERSION = '2.5.1';
+const withV = (u) => (u.includes('?') ? u + '&v=' + VERSION : u + '?v=' + VERSION);
 const grid = document.getElementById('grid');
   const lb = document.getElementById('lb');
   const lbImg = document.getElementById('lbImg');
