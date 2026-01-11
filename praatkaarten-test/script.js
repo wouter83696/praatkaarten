@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.50';
+const VERSION = '3.3.53';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -243,7 +243,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Fout bij laden.</div>';
     }
   })();
-
 
   function render(items){
     // Bewaar de huidige (zichtbare) kaartset voor navigatie
@@ -717,6 +716,22 @@ document.addEventListener('keydown', (e) => {
   // ===============================
 
   const introSheet = document.getElementById('mobileIntro');
+
+  // ✕ gedrag tijdens horizontaal bladeren:
+  // - bij horizontaal scrollen (links/rechts) mag het kruisje even wegfaden
+  // - bij verticale drag blijft hij sowieso verborgen (dat regelen we via .is-stable)
+  // - zodra het scrollen stopt komt hij weer netjes terug (fade)
+  (function setupIntroCloseFadeOnXScroll(){
+    const introTrack = document.getElementById('introTrack');
+    if(!introSheet || !introTrack) return;
+    let t = null;
+    introTrack.addEventListener('scroll', () => {
+      if(!document.body.classList.contains('show-intro')) return;
+      introSheet.classList.add('x-scrolling');
+      clearTimeout(t);
+      t = setTimeout(() => introSheet.classList.remove('x-scrolling'), 220);
+    }, {passive:true});
+  })();
   let sheetAnim = null;
 
   function setSheetStable(stable){
@@ -795,9 +810,12 @@ document.addEventListener('keydown', (e) => {
   (function setupIntroSheetDrag(){
     if(!introSheet) return;
     const introTrack = document.getElementById('introTrack');
-    // Swipes starten vrijwel altijd op de kaarten/track zelf.
-    // Om 'geen drag' issues op mobiel te voorkomen, hangen we listeners aan de track.
-    const dragEl = introTrack || introSheet;
+    // Swipes starten vaak op de kaarten/track zelf.
+    // Als we de gesture direct aan de track hangen kan (met touch-action/scroll-snap)
+    // de browser de verticale beweging overnemen (dan krijg je 'scroll' i.p.v. sheet-drag).
+    // Daarom luisteren we op de SHEET (capture), zodat we altijd de beweging zien.
+    // Horizontaal bladeren blijft native via de track; verticaal (omlaag) claimen we pas na beslissing.
+    const dragEl = introSheet;
     let down = false;
     let armed = false;
     let decided = false;

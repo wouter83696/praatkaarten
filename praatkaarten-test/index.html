@@ -966,6 +966,12 @@ body.hm-open{overflow:hidden}
   opacity: 1;
   pointer-events: auto;
 }
+
+/* Tijdens horizontaal scrollen (links/rechts) fades de ✕ even weg */
+.mobileIntro.x-scrolling .introClose{
+  opacity: 0;
+  pointer-events: none;
+}
 .introClose svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .introClose:active{ transform: translateY(1px); }
 .introClose:focus-visible{ outline:2px solid rgba(48,96,136,.35); outline-offset:2px; }
