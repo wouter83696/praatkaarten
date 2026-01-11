@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.21</title>
+<title>Praatkaarten v3.3.48</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -19,6 +19,12 @@
   --radius:16px;
   --shadow:0 14px 50px rgba(0,0,0,.12);
   --shadowHover:0 18px 70px rgba(0,0,0,.16);
+
+  /* Uitleg-sheet (Google Maps / Apple-achtig) */
+  --sheet-bg: #FCFAF6;               /* warm, niet-spierwit */
+  --sheet-bg-2: #F7F2E9;
+  --sheet-border: rgba(0,0,0,.10);  /* subtiele hairline */
+  --sheet-radius: 16px;
 
   /* safe space zodat fixed pills (links-onder) nooit over uitleg-tekst heen vallen */
   --pillsSafe: 58px;
@@ -202,11 +208,20 @@ body.lb-open .navHintMini{ opacity:0; }
   height:auto;
   display:block;
   border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  transition:box-shadow .14s ease;
+
+  /* Grid-kaartjes: geen schaduw → één geheel met de rustige sheet-stijl */
+  box-shadow:none;
+
+  /* Subtiele hairline rand i.p.v. elevation */
+  border:1px solid rgba(0,0,0,.10);
+
+  transition:border-color .14s ease, transform .14s ease;
 }
 
-.card:hover img{box-shadow:var(--shadowHover);}
+.card:hover img{
+  border-color: rgba(0,0,0,.16);
+}
+
 
 /* ===============================
    TEKST OP KLEINE KAARTJES
@@ -891,48 +906,27 @@ body.hm-open{overflow:hidden}
   padding:4px 8px calc(8px + env(safe-area-inset-bottom) + min(var(--pillsSafe), 56px));
   z-index:2500;
 
-  /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
-  background: transparent;
+  /* Google Maps / Apple-achtig: warm vlak + hairline rand, géén elevation */
+  background: var(--sheet-bg);
 
-  border-radius: 18px 18px 0 0;
-  /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
-  box-shadow:
-    0 -14px 45px rgba(0,0,0,.12),
-    0 8px 28px rgba(0,0,0,.08);
-  /* rand zo minimaal mogelijk */
-  border: 0;
+  border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+  box-shadow: none;
+  border: 1px solid var(--sheet-border);
   overflow: hidden;
   background-clip: padding-box;
   isolation: isolate;
 
   transform: translateY(103%);
-  transition: transform .28s ease;
+  /* v3.3.50: animatie via JS (WAAPI) + drag volgt vinger */
+  transition: none;
   display:block;
 }
 
 /* Geblurde achtergrond (zelfde SVG als grid/lightbox) */
-.mobileIntro::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image: var(--lb-bg-url);
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.08);
-  filter: blur(18px);
-  /* minder doorzichtig: achtergrond minder zichtbaar */
-  opacity: .10;
-  pointer-events:none;
-  z-index:0;
-}
+/* Geen glass/blur lagen achter de uitlegkaart (rustiger, functioneler) */
+.mobileIntro::before,
 .mobileIntro::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  /* minder doorzichtig: glaze veel opaquer */
-  background: rgba(255,255,255,.92);
-  pointer-events:none;
-  z-index:1;
+  content:none;
 }
 
 /* Sluitknop op de hoek van het plaatje (rechts-boven)
@@ -960,6 +954,23 @@ body.hm-open{overflow:hidden}
   -webkit-backdrop-filter:none;
 
   color: rgba(11,18,32,.55);
+
+  /* v3.3.50: ✕ alleen zichtbaar als sheet volledig open & stabiel is */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+/* zichtbaar wanneer de sheet 'stabiel' is (na open animatie, niet tijdens drag) */
+.mobileIntro.is-stable .introClose{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tijdens horizontaal scrollen (links/rechts) fades de ✕ even weg */
+.mobileIntro.x-scrolling .introClose{
+  opacity: 0;
+  pointer-events: none;
 }
 .introClose svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .introClose:active{ transform: translateY(1px); }
@@ -973,6 +984,8 @@ body.hm-open{overflow:hidden}
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
+  /* Tijdens open sheet: achtergrond niet scrollen (anders 'pakt' swipe-down niet betrouwbaar) */
+  body.show-intro{ overflow:hidden; overscroll-behavior: contain; }
   body.show-intro .mobileIntro{ transform: translateY(0); }
   /* Pills blijven altijd links-onder in beeld; geen opschuiven boven de uitleg */
 }
@@ -1014,7 +1027,8 @@ body.hm-open{overflow:hidden}
   background:transparent;
   overflow:hidden;
   border-radius:16px;
-  box-shadow:var(--shadow);
+  box-shadow:none;
+  border: 1px solid var(--sheet-border);
   position:relative;
   max-height: 40vh;
 }
@@ -1067,29 +1081,20 @@ body.hm-open{overflow:hidden}
 
 .pillsDock{
   position:fixed;
-  left:0; right:0;
+  left:12px; right:auto;
   /* Pills: altijd links-onder (duim-bereik) */
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  top:auto;
+  top: calc(12px + env(safe-area-inset-top));
+  bottom:auto;
   z-index:3000;
-  padding:0 12px;
+  padding:0;
   display:flex;
   justify-content:flex-start;
-  align-items:flex-end;
+  align-items:flex-start;
   pointer-events:none;
   transition: opacity .18s ease;
   opacity:1;
 }
 
-/* Uitleg open (mobiel): pills faden weg voor rust.
-   We houden wél safe-space (--pillsSafe) zodat tekst nooit onder de pills kan vallen
-   op het moment dat ze (kort) zichtbaar zijn. */
-@media (max-width: 720px){
-  body.show-intro .pillsDock{
-    opacity:0;
-    pointer-events:none;
-  }
-}
 
 
 .pillsLeft,
@@ -1131,6 +1136,354 @@ body.hm-open{overflow:hidden}
   .pillsDock{ display:none !important; }
 }
 
+
+
+
+/* ===============================
+   UI PATCH v3.3.48
+   - Harder (Google Maps-like) icons for Shuffle/Info
+   - Force Close button to be visible + clickable on mobile when overlay is open
+   =============================== */
+
+:root{
+  --iconHard: rgba(0,0,0,.74);
+  --iconHardActive: rgba(0,0,0,.90);
+  --pillBg: rgba(255,255,255,.92);
+  --pillBorder: rgba(0,0,0,.12);
+}
+
+/* Top pills (shuffle/info) */
+.pillsDock .pill,
+.controlsBar .pill,
+.pillsLeft .pill,
+.pill.btn,
+button.pill,
+.btn.pill{
+  background: var(--pillBg) !important;
+  border: 1px solid var(--pillBorder) !important;
+  box-shadow: none !important;
+  color: var(--iconHard) !important;
+}
+
+/* Press feedback */
+.pillsDock .pill:active,
+.controlsBar .pill:active,
+.pillsLeft .pill:active,
+.pill.btn:active,
+button.pill:active,
+.btn.pill:active{
+  background: rgba(0,0,0,.06) !important;
+  color: var(--iconHardActive) !important;
+}
+
+/* Close button: always available when lightbox is open */
+.lb.open .close,
+.lb.open #close{
+  display: grid !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 999 !important;
+}
+
+.lb.open #close{
+  background: var(--pillBg) !important;
+  border: 1px solid var(--pillBorder) !important;
+  border-radius: 999px !important;
+}
+
+/* keep it tappable */
+#close{ touch-action: manipulation; }
+/* Shuffle icon (cross arrows) */
+.iconShuffle{
+  width: 22px;
+  height: 22px;
+}
+
+
+
+/* ===============================
+   PATCH v3.3.48
+   - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
+   - Close button altijd tappable
+   - Shuffle icon harder (zoals voorbeeld)
+   =============================== */
+
+/* Minder witruimte onder in lightbox op mobiel */
+@media (max-width: 720px){
+  .lb{
+    padding: 10px 12px 0 !important; /* onderkant = 0, sheet sluit aan */
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+  }
+  .panel{
+    height: 100% !important;
+    justify-content: flex-end !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .lbCard{
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 16px 16px 0 0 !important; /* boven rond, onder vlak zodat het aansluit */
+  }
+  .lbHelpText{
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important; /* loopt door tot onder */
+    background: #ffffff !important;
+    border: 1px solid rgba(0,0,0,.10) !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+    padding: 14px 16px 18px !important;
+    flex: 1 1 auto !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Close knop: altijd bovenop en klikbaar */
+#close.close{
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+.lb.open #close{
+  display: grid !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Shuffle icon: harder, meer zoals voorbeeld (dikkere lijnen, rechte uiteinden) */
+
+
+/* Subtiele shuffle iconen */
+.iconShuffle path{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+
+/* ===============================
+   FIX v3.3.48
+   - Less whitespace: white panel reaches bottom on mobile
+   - Close button works: remove pointer-events:none on lbCard + layer close above image
+   =============================== */
+
+@media (max-width: 720px){
+  .lb{
+    padding: 10px 12px 0 !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+  }
+  .panel{
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+  }
+  .lbCard{
+    width: 100% !important;
+    max-width: none !important;
+    border-radius: 16px 16px 0 0 !important;
+    pointer-events: auto !important; /* CRUCIAAL: anders werkt close nooit */
+    transform: none !important; /* voorkomt extra 'lucht' */
+  }
+  .lbHelpText{
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(0,0,0,.10) !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+    padding: 14px 16px 18px !important;
+    flex: 1 1 auto !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Close knop bovenop de afbeelding */
+#close{
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+/* Shuffle icoon (gecorrigeerd) */
+.iconShuffle{
+  width: 22px;
+  height: 22px;
+}
+.iconShuffle path,
+.iconShuffle polyline{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Overlay close: stays visually on the card, but lives outside gesture layer */
+.overlayClose{
+  position: fixed; /* positioned via JS to match lbCard corner */
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 999px;
+  box-shadow: none !important;
+  color: rgba(0,0,0,.74);
+  z-index: 99999 !important;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb.open .overlayClose{
+  opacity: 1;
+  pointer-events: auto;
+}
+.overlayClose svg{
+  width: 22px;
+  height: 22px;
+}
+.overlayClose svg path{
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lb.open #close.overlayClose{ display:grid !important; }
+
+/* Icon style v3.3.48 */
+.iconShuffle path,
+.iconInfo rect{
+  fill: rgba(120,120,120,.9);
+}
+/* ICONS LOOK v3.3.48 (zoals voorbeeld) */
+.pill{
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10) !important; /* subtiel, zoals Maps */
+}
+.pill:active{
+  box-shadow: 0 6px 18px rgba(0,0,0,.12) !important;
+  transform: translateY(0.5px);
+}
+
+.iconShuffle path,
+.iconInfo path{
+  fill: none !important;
+  stroke: rgba(125,125,125,.92) !important;
+  stroke-width: 2.4 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+/* dot of the i */
+.iconInfo path:last-child{ stroke-width: 4.2 !important; }
+
+
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.48 */
+#closeHitbox{
+  position: fixed;
+  width: 64px;
+  height: 64px;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+}
+.lb.open #closeHitbox{ pointer-events: auto; }
+
+#debugHud{
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  z-index: 100001;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.65);
+  color: #fff;
+  font: 12px/1.25 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  max-width: calc(100vw - 16px);
+  white-space: pre-wrap;
+  display: none;
+}
+.debug-on #debugHud{ display: block; }
+/* CLOSE NUCLEAR v3.3.48
+   Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
+.lb{ transform:none !important; }
+.panel{ transform:none !important; }
+#close.overlayClose{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
+  right: 10px !important;
+  left: auto !important;
+  z-index: 1000000 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+#closeHitbox{
+  position: fixed !important;
+  top: calc(env(safe-area-inset-top, 0px) + 2px) !important;
+  right: 2px !important;
+  left: auto !important;
+  width: 84px !important;
+  height: 84px !important;
+  z-index: 1000001 !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+}
+.lb:not(.open) #close,
+.lb:not(.open) #closeHitbox{
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+/* Debug visibility v3.3.48 */
+#versionBadge{
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 8px;
+  z-index: 2000000;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font: 12px/1 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  pointer-events: none;
+}
+#toast{
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  transform: translateX(-50%);
+  z-index: 2000001;
+  background: rgba(0,0,0,.75);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font: 14px/1.1 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+#toast.show{ opacity: 1; }
 </style>
 </head>
 <body>
@@ -1140,22 +1493,25 @@ body.hm-open{overflow:hidden}
   <div class="pillsLeft">
     <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
       <!-- strakkere shuffle (nettere lijnen/hoeken) -->
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M16 3h5v5"/>
-        <path d="M4 7h5l6 6"/>
-        <path d="M21 8l-5-5"/>
-        <path d="M4 17h5l6-6"/>
-        <path d="M16 21h5v-5"/>
-        <path d="M21 16l-5 5"/>
-      </svg>
+                              
+<svg viewBox="0 0 24 24" aria-hidden="true" class="iconShuffle">
+  <path d="M16 3h3v3"/>
+  <path d="M5 7h6c1.1 0 2.1.5 2.8 1.4l1.2 1.6"/>
+  <path d="M5 17h6c1.1 0 2.1-.5 2.8-1.4l1.2-1.6"/>
+  <path d="M19 3l-4 4"/>
+  <path d="M16 21h3v-3"/>
+  <path d="M19 21l-4-4"/>
+</svg>
+
     </button>
     <button class="pill" id="uitlegBtn" type="button" aria-label="Info" aria-pressed="false">
       <!-- info-icoon (i) i.p.v. vraagteken -->
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 16v-4" />
-        <path d="M12 8h.01" />
-      </svg>
+            
+<svg viewBox="0 0 24 24" aria-hidden="true" class="iconInfo">
+  <path d="M12 10v7"/>
+  <path d="M12 7h.01"/>
+</svg>
+
     </button>
   </div>
 
@@ -1175,12 +1531,21 @@ body.hm-open{overflow:hidden}
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="lbBg" aria-hidden="true"></div>
+  <!-- Close (helemaal opnieuw opgebouwd, los van oude selectors) -->
+  <button class="lbClose" id="lbClose" type="button" aria-label="Sluiten">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 6L6 18"/>
+      <path d="M6 6l12 12"/>
+    </svg>
+  </button>
+  <!-- grotere onzichtbare hitbox voor mobiel -->
+  <div id="lbCloseHitbox" aria-hidden="true"></div>
+
   <div class="panel" role="dialog" aria-modal="true">
     <div class="lbCard" id="lbCard">
 <button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
       <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
-      <button class="close" id="close" type="button" aria-label="Sluiten"><svg viewBox="0 0 24 24"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg></button>
-            <img id="lbImg" alt="">
+<img id="lbImg" alt="">
       <div class="lbText" id="lbText"></div>
     </div>
 
@@ -1194,7 +1559,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.20"></script>
+
 
 
 
@@ -1205,5 +1570,122 @@ body.hm-open{overflow:hidden}
 
 
 
+
+<div id="debugHud" aria-hidden="true"></div>
+
+<div id="versionBadge" aria-hidden="true">v3.3.52</div>
+<div id="toast" aria-hidden="true"></div>
+
+<script id="questions-json" type="application/json">
+{
+  "verkennen": [
+    "Wat zien we op dit moment gebeuren in onze samenwerking?",
+    "Wat valt ons op in onze manier van samenwerken?",
+    "Herkennen we patronen in onze manier van samenwerken?",
+    "Waar zijn we aan gewend geraakt?",
+    "Wat krijgt nu minder aandacht?",
+    "Blijven er dingen onbesproken?"
+  ],
+  "duiden": [
+    "Wat proberen we als team goed te doen?",
+    "Wat nemen we wel of niet als vanzelfsprekend aan?",
+    "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+    "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?",
+    "Welke patronen blijven we terugzien in onze samenwerking?",
+    "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?"
+  ],
+  "verbinden": [
+    "Waar worden we enthousiast van?",
+    "Wanneer voel jij je echt onderdeel van het team?",
+    "Mogen er verschillen bestaan in ons team?",
+    "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
+    "Wat helpt ons om onszelf te laten zien in de samenwerking?",
+    "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?"
+  ],
+  "vertragen": [
+    "Wanneer nemen we in onze samenwerking eigenlijk de tijd?",
+    "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?",
+    "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
+    "Welke patronen worden zichtbaar wanneer de druk toeneemt?",
+    "Welke rol nemen we automatisch aan in momenten van spanning?",
+    "Wanneer merken we dat vertragen helpend zou zijn?"
+  ],
+  "bewegen": [
+    "Wat doen we met ideeën die ontstaan?",
+    "Wanneer komt er beweging in het team?",
+    "Wat helpt ons om van praten naar doen te gaan?",
+    "Welke ideeën blijven liggen, en waarom?",
+    "Wat houdt ons tegen om in actie te komen?",
+    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
+  ]
+}
+</script>
+<script id="intro-json" type="application/json">
+{
+  "slides": [
+    {
+      "key": "cover",
+      "title": "Samen onderzoeken",
+      "body": "Deze kaarten proberen je uit te nodigen om samen te kijken naar wat er speelt, zichtbaar wordt en onbesproken blijft in de samenwerking.",
+      "img": "voorkant.svg",
+      "alt": "Samen onderzoeken – Gesprekskaarten voor teams"
+    },
+    {
+      "key": "verkennen",
+      "title": "Verkennen",
+      "body": "Bij verkennen staan we stil bij wat we waarnemen in de samenwerking.",
+      "img": "cards/verkennen.svg",
+      "alt": "Verkennen"
+    },
+    {
+      "key": "duiden",
+      "title": "Duiden",
+      "body": "Bij duiden staan we stil bij de betekenis die we geven aan wat er gebeurt in de samenwerking.",
+      "img": "cards/duiden.svg",
+      "alt": "Duiden"
+    },
+    {
+      "key": "verbinden",
+      "title": "Verbinden",
+      "body": "Bij verbinden staan we stil bij hoe we ons tot elkaar verhouden in de samenwerking.",
+      "img": "cards/verbinden.svg",
+      "alt": "Verbinden"
+    },
+    {
+      "key": "verhelderen",
+      "title": "Verhelderen",
+      "body": "Bij verhelderen staan we stil bij wat onduidelijk is in de samenwerking.",
+      "img": "cards/verhelderen.svg",
+      "alt": "Verhelderen"
+    },
+    {
+      "key": "verdiepen",
+      "title": "Verdiepen",
+      "body": "Bij verdiepen staan we stil bij wat onder de oppervlakte meespeelt in de samenwerking.",
+      "img": "cards/verdiepen.svg",
+      "alt": "Verdiepen"
+    },
+    {
+      "key": "vertragen",
+      "title": "Vertragen",
+      "body": "Bij vertragen staan we stil bij het tempo en nemen we bewust de tijd om rust en overzicht te creëren in de samenwerking.",
+      "img": "cards/vertragen.svg",
+      "alt": "Vertragen"
+    },
+    {
+      "key": "bewegen",
+      "title": "Bewegen",
+      "body": "Bij bewegen staan we stil bij wat een volgende stap kan zijn in de samenwerking.",
+      "img": "cards/bewegen.svg",
+      "alt": "Bewegen"
+    }
+  ],
+  "hint": "← → swipe"
+}
+</script>
+
+
+<script src="./script.js"></script>
 </body>
+
 </html>
