@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.49';
+const VERSION = '3.3.50';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -707,7 +707,7 @@ document.addEventListener('keydown', (e) => {
   requestAnimationFrame(updatePillsSafe);
 
   // ===============================
-  // v3.3.49 – Mobile bottom-sheet gedrag (uitleg)
+  // v3.3.50 – Mobile bottom-sheet gedrag (uitleg)
   // Eisen:
   // - Tijdens drag: sheet volgt vinger (geen opacity/fade/mee-bewegen UI)
   // - Animaties alleen bij loslaten
@@ -826,10 +826,8 @@ document.addEventListener('keydown', (e) => {
 
     introSheet.addEventListener('pointerdown', (e) => {
       if(!document.body.classList.contains('show-intro')) return;
-      // Start niet op horizontale track: laat native scroll daar winnen
-      if(e.target && e.target.closest && e.target.closest('#introTrack')){
-        return;
-      }
+      // Start mag óók op de horizontale track (kaarten).
+      // We beslissen pas bij de eerste beweging: horizontaal = bladeren, verticaal (omlaag) = sheet drag.
       // Ook niet op buttons (zoals ✕)
       if(e.target && e.target.closest && e.target.closest('button')){
         return;
@@ -1206,7 +1204,7 @@ document.addEventListener('pointerdown', (e) => {
 })();
 
 
-/* v3.3.49 – Horizontaal swipen in de uitleg gebeurt native via scroll-snap.
+/* v3.3.50 – Horizontaal swipen in de uitleg gebeurt native via scroll-snap.
    Geen JS-gestures nodig (houdt het licht, vloeiend en conflictvrij). */
 
 
