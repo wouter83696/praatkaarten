@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.21';
+const VERSION = '3.3.41';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -100,7 +100,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // (v3.3.7) swipe-hint is bewust verwijderd
   const navHint = null;
 
-  const closeBtn = document.getElementById('close');
+  const closeBtn = document.getElementById('lbClose');
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
@@ -125,6 +125,19 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbHelpText = document.getElementById('lbHelpText');
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
+
+  // POSITION OVERLAY CLOSE (mobiel/desktop)
+  // Zorg dat het kruisje (én de hitbox) altijd bovenop de kaart ligt.
+  // Close knop (opnieuw geplaatst)
+  const overlayClose = document.getElementById('lbClose');
+  const overlayCloseHitbox = document.getElementById('lbCloseHitbox');
+  function positionOverlayClose(){
+    // In deze build staat het kruisje "vast" (position: fixed) rechtsboven in de viewport.
+    // Dus we hoeven niets te positioneren via JS. (Dit voorkomt gezeik met transforms/gesture layers.)
+    return;
+  }
+  window.addEventListener('resize', positionOverlayClose, {passive:true});
+  window.addEventListener('scroll', positionOverlayClose, {passive:true});
 
   // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
   if(lbHelpTitle){
@@ -166,6 +179,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   let uiTimer = null;
   function showUI(){
+    try{ positionOverlayClose(); }catch(_e){}
+
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
     const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
@@ -284,7 +299,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    document.body.classList.add('lb-open');
+    try{ positionOverlayClose(); }catch(_e){}
+document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
@@ -507,7 +523,23 @@ lb.addEventListener('pointerup', (e) => {
     }
     e.stopPropagation();
   });
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+  // Sluiten moet altijd werken (ook op mobiel waar 'click' soms niet afvuurt)
+  closeBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeLb(); });
+  closeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLb();
+  }, {capture:true});
+
+  // Extra (onzichtbare) hitbox naast/om het kruisje voor makkelijke bediening op telefoon
+  if(overlayCloseHitbox){
+    overlayCloseHitbox.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeLb(); });
+    overlayCloseHitbox.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeLb();
+    }, {capture:true});
+  }
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
@@ -924,3 +956,146 @@ async function renderMobileIntro(){
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
+
+
+
+// SAFETY: close button delegation (v3.3.28)
+document.addEventListener('click', (e) => {
+  const closeEl = e.target && (e.target.closest ? e.target.closest('.lbClose, .close') : null);
+  const lb = document.getElementById('lb');
+  if (!lb) return;
+  if (lb.classList.contains('open') && closeEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    try { closeLb(); } catch(_) {}
+  }
+}, true);
+
+// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #lbClose of .lbClose
+document.addEventListener('pointerdown', (e) => {
+  const lb = document.getElementById('lb');
+  if (!lb || !lb.classList.contains('open')) return;
+  const closeEl = e.target && (e.target.closest ? e.target.closest('#lbClose, .lbClose, .close') : null);
+  if (!closeEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try { closeLb(); } catch(_) {}
+}, true);
+
+
+// KEIHARDE CLOSE FIX v3.3.38
+(function(){
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('lbClose');
+  const closeHitbox = document.getElementById('lbCloseHitbox');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !closeBtn || !closeHitbox) return;
+
+  function setHud(t){ if(hud) hud.textContent = t; }
+  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
+
+  function positionCloseHitbox(){
+    const r = closeBtn.getBoundingClientRect();
+    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
+    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
+  }
+
+  window.addEventListener('resize', positionCloseHitbox, {passive:true});
+  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
+
+  let taps = 0, tmr = null;
+  document.addEventListener('click', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    if(e.target && e.target.closest && e.target.closest('#lbClose,#lbCloseHitbox')) return;
+    taps++;
+    clearTimeout(tmr);
+    tmr = setTimeout(()=>{ taps=0; }, 500);
+    if(taps>=3){
+      document.documentElement.classList.toggle('debug-on');
+      taps=0;
+    }
+  }, true);
+
+  function forceClose(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if(typeof closeLb === 'function') closeLb();
+  }
+
+  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
+  closeHitbox.addEventListener('click', forceClose, {capture:true});
+
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) positionCloseHitbox();
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !isDebug()) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
+    );
+  }, true);
+})();
+
+
+/* ------------------------------------------------------------
+   CLOSE (opnieuw opgebouwd)
+   - Eén centrale binding voor #lbClose en #lbCloseHitbox
+   - Backdrop tap sluit ook (buiten .panel)
+------------------------------------------------------------ */
+(function(){
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('lbClose');
+  const hit = document.getElementById('lbCloseHitbox');
+  if(!lb) return;
+
+  function hardClose(){
+    lb.classList.remove('open','dragging','closing','is-dragging','is-swiping');
+    lb.style.transform = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+  }
+
+  function safeClose(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+    try{
+      if(typeof closeLb === 'function'){
+        closeLb();
+        // Als closeLb door iets vroegtijdig stopt, val dan terug.
+        setTimeout(()=>{ if(lb.classList.contains('open')) hardClose(); }, 0);
+      } else {
+        hardClose();
+      }
+    }catch(_){
+      hardClose();
+    }
+  }
+
+  [closeBtn, hit].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('touchstart', safeClose, {capture:true, passive:false});
+    el.addEventListener('pointerdown', safeClose, {capture:true});
+    el.addEventListener('click', safeClose, {capture:true});
+  });
+
+  // Backdrop klik/tap sluit (maar niet binnen de kaart/panel)
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    const insidePanel = e.target && e.target.closest && e.target.closest('.panel');
+    const isClose = e.target && e.target.closest && e.target.closest('#lbClose,#lbCloseHitbox');
+    if(!insidePanel && !isClose) safeClose(e);
+  }, true);
+})();
