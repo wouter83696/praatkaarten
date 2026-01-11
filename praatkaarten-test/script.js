@@ -663,161 +663,10 @@ document.addEventListener('keydown', (e) => {
   // eerste run
   requestAnimationFrame(updatePillsSafe);
 
-  // ===============================
-  // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
-  // - robuuster: luister capture + pointer events (iOS/Safari) + touch fallback
-  // ===============================
-  const introTrackEl  = document.getElementById('introTrack');
-  if(mobileIntroEl){
-    // Interactie-eis:
-    // - Tijdens drag: uitlegkaart blijft volledig zichtbaar en beweegt mee (met weerstand)
-    // - Geen fade tijdens drag
-    // - Release: onder drempel => veer terug, boven drempel => sluit
-    let sy = 0, sx = 0, active = false;
-    let dragging = false;
-    let lastDy = 0;
-    const THRESH = 110;
-
-    const resistance = (dy) => {
-      // zachte weerstand: eerste stuk 1:1, daarna afvlakkend
-      const d = Math.max(0, dy);
-      return d * 0.85;
-    };
-
-    const start = (x,y) => {
-      sx = x; sy = y; active = true; dragging = false; lastDy = 0;
-      // tijdens drag geen CSS transition, zodat het 'plakt' aan je vinger
-      mobileIntroEl.style.transition = 'none';
-      mobileIntroEl.style.willChange = 'transform';
-    };
-
-    const move = (x,y) => {
-      if(!active || !uitlegOn) return;
-      const dy = y - sy;
-      const dx = x - sx;
-      const ay = Math.abs(dy);
-      const ax = Math.abs(dx);
-
-      // alleen omlaag (geen omhoog trekken)
-      if(dy <= 0) return;
-
-      // verticaal moet dominant zijn, anders is het een horizontale swipe in de carousel
-      if(ay <= ax * 1.15) return;
-
-      dragging = true;
-      lastDy = dy;
-      const t = resistance(dy);
-      mobileIntroEl.style.transform = `translateY(${t}px)`;
-    };
-
-    const end = () => {
-      if(!active) return;
-      active = false;
-      if(!uitlegOn){
-        mobileIntroEl.style.transition = '';
-        mobileIntroEl.style.transform = '';
-        mobileIntroEl.style.willChange = '';
-        return;
-      }
-
-      // release animatie
-      mobileIntroEl.style.transition = 'transform .28s cubic-bezier(.2,.9,.2,1)';
-
-      if(dragging && lastDy > THRESH){
-        // laat CSS weer de leiding nemen
-        mobileIntroEl.style.transform = '';
-        mobileIntroEl.style.willChange = '';
-        setUitleg(false);
-        return;
-      }
-
-      // veer terug
-      mobileIntroEl.style.transform = 'translateY(0px)';
-      const cleanup = () => {
-        mobileIntroEl.style.transition = '';
-        mobileIntroEl.style.transform = '';
-        mobileIntroEl.style.willChange = '';
-        mobileIntroEl.removeEventListener('transitionend', cleanup);
-      };
-      mobileIntroEl.addEventListener('transitionend', cleanup);
-    };
-
-    // Pointer events (meest betrouwbaar, ook op moderne iOS)
-    const onPointerDown = (e) => {
-      if(!uitlegOn) return;
-      // alleen primaire pointer
-      if(e.isPrimary === false) return;
-      start(e.clientX, e.clientY);
-    };
-    const onPointerMove = (e) => move(e.clientX, e.clientY);
-    const onPointerUp = () => end();
-
-    mobileIntroEl.addEventListener('pointerdown', onPointerDown, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('pointermove', onPointerMove, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('pointerup', onPointerUp, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('pointercancel', () => { active = false; end(); }, {passive:true, capture:true});
-
-    // Touch fallback (oudere iOS)
-    mobileIntroEl.addEventListener('touchstart', (e) => {
-      if(!uitlegOn) return;
-      const t = e.touches && e.touches[0];
-      if(!t) return;
-      start(t.clientX, t.clientY);
-    }, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('touchmove', (e) => {
-      const t = e.touches && e.touches[0];
-      if(!t) return;
-      move(t.clientX, t.clientY);
-    }, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('touchend', (e) => {
-      end();
-    }, {passive:true, capture:true});
-
-    // Extra: als je swipe start op de track zelf, vang die ook af (bubbelt niet altijd lekker bij momentum scroll)
-    if(introTrackEl){
-      introTrackEl.addEventListener('touchstart', (e) => {
-        if(!uitlegOn) return;
-        const t = e.touches && e.touches[0];
-        if(!t) return;
-        start(t.clientX, t.clientY);
-      }, {passive:true, capture:true});
-      introTrackEl.addEventListener('touchend', (e) => {
-        end();
-      }, {passive:true, capture:true});
-    }
-  }
-
-  // (v3.3.7) sluiten gaat via:
-  // - Uitleg-knop opnieuw (toggle)
-  // - swipe omlaag op het uitleg-venster (mobiel)
-  // - ESC / klik buiten de kaart / swipe omlaag in lightbox
-
-  (async function init(){
-    const res = await fetch(withV('questions.json'));
-    const questions = await res.json();
-    data = buildData(questions);
-    filtered = data.slice();
-    render(filtered);
-
-    // uitleg-teksten (later invulbaar)
-    try{
-      const hr = await fetch(withV('uitleg-data.json'), { cache:'no-store' });
-      helpData = await hr.json();
-    }catch(e){
-      helpData = {};
-    }
-  })();
-
-
-
-window.closeLb = closeLb;
-
-
-window.go = go;
-
-
+  // Swipe-down verwijderd voor stabiliteit (v3.3.42)
 
 // (v3.2) Geen extra "Uitleg/Verberg" header meer op mobiel.
+
 
 
 
@@ -1099,3 +948,46 @@ document.addEventListener('pointerdown', (e) => {
     if(!insidePanel && !isClose) safeClose(e);
   }, true);
 })();
+
+
+/* v3.3.42 – Swipe alleen op carousel, niet op overlay */
+(function(){
+  const track = document.getElementById('introTrack');
+  if(!track) return;
+
+  let sx = 0, sy = 0, active = false;
+
+  track.addEventListener('pointerdown', e => {
+    active = true;
+    sx = e.clientX;
+    sy = e.clientY;
+  }, {passive:true});
+
+  track.addEventListener('pointermove', e => {
+    if(!active) return;
+    const dx = e.clientX - sx;
+    const dy = Math.abs(e.clientY - sy);
+
+    // Alleen horizontaal swipen
+    if(Math.abs(dx) > 40 && dy < 30){
+      if(dx > 0) go(-1);
+      else go(1);
+      active = false;
+    }
+  }, {passive:true});
+
+  track.addEventListener('pointerup', () => active = false, {passive:true});
+  track.addEventListener('pointercancel', () => active = false, {passive:true});
+})();
+
+
+/* v3.3.42 – Harde swipe reset */
+function resetSwipe(){
+  document.body.style.touchAction = '';
+}
+
+const _origClose = window.closeLb;
+window.closeLb = function(){
+  resetSwipe();
+  if(_origClose) _origClose();
+};
