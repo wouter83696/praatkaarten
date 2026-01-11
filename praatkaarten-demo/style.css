@@ -343,5 +343,3 @@ html,body{
 @media (hover: hover) and (pointer: fine){
   .controlsBar .help{ display:none !important; }
 }
-
-

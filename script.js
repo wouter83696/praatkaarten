@@ -4,73 +4,6 @@ function setVh(){
   document.documentElement.style.setProperty('--vh', `${vh}px`);
 }
 setVh();
-
-// ===============================
-// Path-resolver (werkt in ELKE directory op GitHub Pages)
-// - probeert eerst huidige directory
-// - daarna repo-root (bijv. /praatkaarten/)
-// - daarna (optioneel) parent directories
-// ===============================
-function getRepoRoot(){
-  const parts = location.pathname.split('/').filter(Boolean);
-  // GitHub Pages project site: eerste segment is repo-name
-  // /<repo>/... -> repo root = /<repo>/
-  if(parts.length>=1) return `/${parts[0]}/`;
-  return '/';
-}
-function currentDirUrl(){
-  return new URL('./', location.href);
-}
-function resolveResourceUrl(rel){
-  const relClean = rel.replace(/^\//,''); // nooit absolute slash
-  const tries = [];
-  const cur = currentDirUrl();
-  tries.push(new URL(relClean, cur));
-
-  // probeer parent directories (max 3 niveaus) voor het geval je nested test-mappen hebt
-  let parent = cur;
-  for(let i=0;i<3;i++){
-    parent = new URL('../', parent);
-    tries.push(new URL(relClean, parent));
-  }
-
-  // repo root als laatste (meest stabiel)
-  const repoRoot = new URL(getRepoRoot(), location.origin);
-  tries.push(new URL(relClean, repoRoot));
-
-  // ook repoRoot + "praatkaarten-main/" fallback (voor oudere structuren)
-  tries.push(new URL(`praatkaarten-main/${relClean}`, repoRoot));
-
-  return tries;
-}
-async function fetchJsonFallback(rel){
-  const urls = resolveResourceUrl(rel);
-  let lastErr = null;
-  for(const u of urls){
-    try{
-      const r = await fetch(u.toString(), { cache: 'no-store' });
-      if(r.ok) return await r.json();
-      lastErr = new Error(`HTTP ${r.status} for ${u}`);
-    }catch(e){
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error(`Kon ${rel} niet laden`);
-}
-async function fetchTextFallback(rel){
-  const urls = resolveResourceUrl(rel);
-  let lastErr = null;
-  for(const u of urls){
-    try{
-      const r = await fetch(u.toString(), { cache: 'no-store' });
-      if(r.ok) return await r.text();
-      lastErr = new Error(`HTTP ${r.status} for ${u}`);
-    }catch(e){
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error(`Kon ${rel} niet laden`);
-}
 window.addEventListener('resize', setVh);
 window.addEventListener('orientationchange', setVh);
 if (window.visualViewport){
@@ -78,8 +11,7 @@ if (window.visualViewport){
 }
 
 // Versie + cache-buster (handig op GitHub Pages)
-// Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.15';
+const VERSION = "2.4";
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -97,31 +29,15 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
-  // (v3.3.7) swipe-hint is bewust verwijderd
-  const navHint = null;
+  const navHint = document.getElementById('navHint');
 
   const closeBtn = document.getElementById('close');
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
 
-  // Onderbalk: chips (v3.2)
-  const shuffleBtn = document.getElementById('shuffleBtn');
-  const uitlegBtn  = document.getElementById('uitlegBtn');
-  // (v3.3.7) geen extra sluitknoppen in de pills
-  const mobileIntroEl = document.getElementById('mobileIntro');
-
-  let shuffleOn = false;
-  let uitlegOn  = false;
-
-  function setChip(btn, on){
-    if(!btn) return;
-    btn.classList.toggle('is-on', !!on);
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  }
-
-  function isMobile(){
-    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
-  }
+  const shuffleBtn = document.getElementById('shuffle');
+  const resetBtn = document.getElementById('reset');
+  const uitlegBtn = document.getElementById('uitleg');
   const lbHelpText = document.getElementById('lbHelpText');
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
@@ -154,8 +70,28 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
   ];
 
-  // (v3.3.7) swipe-hint verwijderd: geen timers/tekst meer
+  // Nav hint (rechts): alleen op touch-apparaten, eenmalig per sessie
   let hintTimer = null;
+  const HINT_KEY = 'pk_nav_hint_shown';
+  const IS_TOUCH = (
+    (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+  );
+  function showNavHint(){
+    if(!navHint) return;
+    document.body.classList.add('show-hint');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => document.body.classList.remove('show-hint'), 20000);
+  }
+  function maybeShowNavHintOnce(){
+    // Alleen tonen op touch-apparaten
+    if(!IS_TOUCH) return;
+    try{
+      if(sessionStorage.getItem(HINT_KEY) === '1') return;
+      sessionStorage.setItem(HINT_KEY,'1');
+    }catch(_e){}
+    showNavHint();
+  }
 
 // UI chrome (pijlen + sluiten)
   // - Touch: iets langer zichtbaar
@@ -241,14 +177,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   function openLb(item){
     // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    // FIX: gebruik de bg van het item (niet het <img>-element zelf), anders breekt klikken.
-    const bg = (item && item.bg) ? String(item.bg).trim() : "";
-    const bgResolved = (!bg)
-      ? ""
-      : (/^https?:\/\//i.test(bg) ? bg : resolveResourceUrl(bg)[0].toString());
-
-    lbImg.src = bgResolved;
-    if(bgResolved) setLightboxBackground(bgResolved);
+    lbImg.src = item.bg || "";
+    if(item.bg) setLightboxBackground(item.bg);
 
     if(mode === 'help'){
       lb.classList.add('help');
@@ -265,12 +195,10 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       // Geen geforceerde enters: laat de browser het netjes afbreken.
       const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
       if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: thema-naam in het midden (net als op mobiel), behalve op de voorkant.
-      const isCover = (item && item.key === 'cover');
-      const t = (!isCover && item && typeof item.theme === 'string') ? item.theme.trim() : '';
-      lbText.textContent = t;
-      lb.classList.toggle('help-title', !!t);
-      lb.classList.remove('no-overlay');
+      // In help-mode: geen overlay-tekst over de kaart (alleen tekst onderin)
+      lbText.textContent = "";
+      lb.classList.add('no-overlay');
+      lb.classList.remove('help-title');
     }
 
     else{
@@ -291,7 +219,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     document.body.style.overflow = 'hidden';
 
     showUI();
-    // (v3.3.7) geen swipe-hint
+    maybeShowNavHintOnce();
 
     // Oneindig doorlopen: pijlen nooit uitschakelen
     if(prevBtn) prevBtn.disabled = false;
@@ -315,15 +243,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     document.body.classList.remove('lb-open');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    // (v3.3.7) geen swipe-hint
-
-    // Sync: als je de uitleg-lightbox op desktop sluit, zet de chip uit
-    try{
-      if(typeof isMobile === 'function' && !isMobile() && typeof uitlegOn !== 'undefined' && uitlegOn){
-        uitlegOn = false;
-        setChip(uitlegBtn, false);
-      }
-    }catch(_e){}
+    clearTimeout(hintTimer);
+    document.body.classList.remove('show-hint');
   }
 
   // Swipe / drag overal (ook op de grijze achtergrond):
@@ -532,14 +453,7 @@ lb.addEventListener('pointerup', (e) => {
   // Onderdruk 'click-through' direct na een touch-tap-close.
   // Dit voorkomt dat er meteen weer een kaart opent op de plek waar je tikt.
   document.addEventListener('click', (e) => {
-    // Alleen onderdrukken als de click buiten overlays/controls valt.
-    // Anders kan bijvoorbeeld de close-knop soms "dood" aanvoelen op mobiel.
-    if (
-      performance.now() < suppressClickUntil &&
-      !lb.contains(e.target) &&
-      !(mobileIntroEl && mobileIntroEl.contains(e.target)) &&
-      !(e.target && e.target.closest && e.target.closest('.pillsDock'))
-    ) {
+    if (performance.now() < suppressClickUntil) {
       e.stopPropagation();
       e.preventDefault();
     }
@@ -551,155 +465,27 @@ document.addEventListener('keydown', (e) => {
     if(e.key === 'ArrowRight') go(1);
   });
 
-  // ===============================
-  // v3.2 – Chips onderbalk
-  // (Let op: shuffleOn/uitlegOn, setChip() en isMobile() worden al bovenin gedeclareerd.)
-  // - Hussel: aan = 1x shuffle, uit = originele volgorde
-  // - Uitleg: mobiel = carousel boven grid, desktop = help-lightbox
-  // ===============================
+  resetBtn?.addEventListener('click', () => {
+    mode = 'cards';
+    filtered = data.slice();
+    render(filtered);
+    closeLb();
+  });
 
-  function setUitleg(on){
-    uitlegOn = !!on;
-    setChip(uitlegBtn, uitlegOn);
+  shuffleBtn.addEventListener('click', () => {
+    filtered = shuffle(filtered.slice());
+    render(filtered);
+  });
 
-    // Pills verplaatsen: onder ↔ boven
-    document.body.classList.toggle('uitleg-open', uitlegOn);
-
-    if(isMobile()){
-      document.body.classList.toggle('show-intro', uitlegOn);
-      return;
-    }
-
-    // Desktop: help-lightbox aan/uit
-    if(uitlegOn){
-      // (v3.3.7) geen swipe-hint
+  
+  if(uitlegBtn){
+    uitlegBtn.addEventListener('click', () => {
+      showNavHint();
       mode = 'help';
       helpFiltered = helpItems.slice();
       openAt(0);
-    }else{
-      if(mode === 'help') closeLb();
-      mode = 'cards';
-    }
-  }
-
-  function setShuffle(on){
-    shuffleOn = !!on;
-    setChip(shuffleBtn, shuffleOn);
-
-    mode = 'cards';
-    filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
-    render(filtered);
-    closeLb();
-  }
-
-  // Start: beide uit
-  setChip(shuffleBtn, false);
-  setChip(uitlegBtn, false);
-  document.body.classList.remove('show-intro');
-  document.body.classList.remove('uitleg-open');
-
-  if(shuffleBtn){
-    shuffleBtn.addEventListener('click', () => setShuffle(!shuffleOn));
-  }
-  if(uitlegBtn){
-    uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
-  }
-
-  // Mobiel: sluit-knop in de hoek van het plaatje (wordt per kaart gerenderd)
-  // Gebruik event delegation zodat clones ook werken.
-  if(mobileIntroEl){
-    mobileIntroEl.addEventListener('click', (e) => {
-      const btn = e.target && e.target.closest && e.target.closest('.introClose');
-      if(!btn) return;
-      e.stopPropagation();
-      setUitleg(false);
     });
   }
-
-  // Houd altijd genoeg "safe space" boven de fixed pills (links-onder),
-  // zodat tekst nooit onder de pills valt. Dynamisch (iOS safe-area + grootte).
-  const updatePillsSafe = () => {
-    const dock = document.querySelector('.pillsDock');
-    if(!dock) return;
-    const rect = dock.getBoundingClientRect();
-    const h = Math.max(0, rect.height);
-    // +10px ademruimte
-    document.documentElement.style.setProperty('--pillsSafe', `${Math.ceil(h + 10)}px`);
-  };
-  window.addEventListener('resize', updatePillsSafe, {passive:true});
-  window.addEventListener('orientationchange', updatePillsSafe, {passive:true});
-  // eerste run
-  requestAnimationFrame(updatePillsSafe);
-
-  // ===============================
-  // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
-  // - robuuster: luister capture + pointer events (iOS/Safari) + touch fallback
-  // ===============================
-  const introTrackEl  = document.getElementById('introTrack');
-  if(mobileIntroEl){
-    let sy = 0, sx = 0, active = false;
-
-    const start = (x,y) => { sx = x; sy = y; active = true; };
-    const end = (x,y) => {
-      if(!active) return;
-      active = false;
-      if(!uitlegOn) return;
-      const dy = y - sy;
-      const dx = x - sx;
-      const ay = Math.abs(dy);
-      const ax = Math.abs(dx);
-      // Duidelijke swipe omlaag: verticaal dominant + voldoende afstand
-      if(ay > ax * 1.2 && dy > 85){
-        setUitleg(false);
-      }
-    };
-
-    // Pointer events (meest betrouwbaar, ook op moderne iOS)
-    const onPointerDown = (e) => {
-      if(!uitlegOn) return;
-      // alleen primaire pointer
-      if(e.isPrimary === false) return;
-      start(e.clientX, e.clientY);
-    };
-    const onPointerUp = (e) => end(e.clientX, e.clientY);
-
-    mobileIntroEl.addEventListener('pointerdown', onPointerDown, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('pointerup', onPointerUp, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('pointercancel', () => { active = false; }, {passive:true, capture:true});
-
-    // Touch fallback (oudere iOS)
-    mobileIntroEl.addEventListener('touchstart', (e) => {
-      if(!uitlegOn) return;
-      const t = e.touches && e.touches[0];
-      if(!t) return;
-      start(t.clientX, t.clientY);
-    }, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('touchend', (e) => {
-      const t = e.changedTouches && e.changedTouches[0];
-      if(!t) return;
-      end(t.clientX, t.clientY);
-    }, {passive:true, capture:true});
-
-    // Extra: als je swipe start op de track zelf, vang die ook af (bubbelt niet altijd lekker bij momentum scroll)
-    if(introTrackEl){
-      introTrackEl.addEventListener('touchstart', (e) => {
-        if(!uitlegOn) return;
-        const t = e.touches && e.touches[0];
-        if(!t) return;
-        start(t.clientX, t.clientY);
-      }, {passive:true, capture:true});
-      introTrackEl.addEventListener('touchend', (e) => {
-        const t = e.changedTouches && e.changedTouches[0];
-        if(!t) return;
-        end(t.clientX, t.clientY);
-      }, {passive:true, capture:true});
-    }
-  }
-
-  // (v3.3.7) sluiten gaat via:
-  // - Uitleg-knop opnieuw (toggle)
-  // - swipe omlaag op het uitleg-venster (mobiel)
-  // - ESC / klik buiten de kaart / swipe omlaag in lightbox
 
   (async function init(){
     const res = await fetch(withV('questions.json'));
@@ -723,145 +509,3 @@ window.closeLb = closeLb;
 
 
 window.go = go;
-
-
-
-// (v3.2) Geen extra "Uitleg/Verberg" header meer op mobiel.
-
-
-
-
-/* ===============================
-   v2.8 – Mobile uitleg-carousel vanuit JSON
-   =============================== */
-async function renderMobileIntro(){
-  const section = document.getElementById('mobileIntro');
-  const track = document.getElementById('introTrack');
-  if(!section || !track) return;
-
-  let data = null;
-  try{
-    const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
-    data = await r.json();
-  }catch(e){
-    return;
-  }
-  if(!data || !Array.isArray(data.slides)) return;
-
-  // Build cards
-  track.innerHTML = '';
-
-  const slides = data.slides.slice();
-  const realCount = slides.length;
-
-  // helper om één kaart te bouwen
-  const buildCard = (s) => {
-    const art = document.createElement('article');
-    art.className = 'introCard';
-    art.dataset.intro = s.key || '';
-
-    const wrap = document.createElement('div');
-    wrap.className = 'introImgWrap';
-
-    // Sluitknop op de hoek van het plaatje (bespaart ruimte)
-    const close = document.createElement('button');
-    close.className = 'introClose';
-    close.type = 'button';
-    close.setAttribute('aria-label', 'Sluiten');
-    close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>';
-    wrap.appendChild(close);
-
-    const img = document.createElement('img');
-    img.className = 'introImg';
-    img.src = withV(s.img || '');
-    img.alt = s.alt || s.title || '';
-    wrap.appendChild(img);
-
-    // Thema-naam in het midden van de kaart (alleen thema-kaarten, niet de voorkant)
-    if((s.key || '') !== 'cover' && (s.title || '').trim()){
-      const theme = document.createElement('div');
-      theme.className = 'introTheme';
-      theme.textContent = s.title;
-      wrap.appendChild(theme);
-    }
-
-    const text = document.createElement('div');
-    text.className = 'introText';
-
-    const b = document.createElement('div');
-    b.className = 'introTextBody';
-    b.textContent = s.body || '';
-
-    text.appendChild(b);
-
-    art.appendChild(wrap);
-    art.appendChild(text);
-    return art;
-  };
-
-  // (Infinity scroll) clones aan beide kanten zodat je "oneindig" door kan swipen
-  const CLONE_N = Math.min(2, realCount);
-  if(realCount > 1){
-    for(let i=realCount-CLONE_N; i<realCount; i++){
-      const c = buildCard(slides[i]);
-      c.dataset.clone = '1';
-      track.appendChild(c);
-    }
-  }
-
-  for(const s of slides){
-    track.appendChild(buildCard(s));
-  }
-
-  if(realCount > 1){
-    for(let i=0; i<CLONE_N; i++){
-      const c = buildCard(slides[i]);
-      c.dataset.clone = '1';
-      track.appendChild(c);
-    }
-  }
-
-  // Hint text (optional)
-  const hintEl = section.querySelector('.introHint');
-  if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
-
-  // Infinity scroll: na layout (widths bekend) scroll naar eerste echte item
-  if(realCount > 1){
-    requestAnimationFrame(() => {
-      const firstReal = track.querySelectorAll('.introCard')[CLONE_N];
-      if(!firstReal) return;
-      const gap = 14; // gelijk aan CSS
-      const step = firstReal.getBoundingClientRect().width + gap;
-      let jumping = false;
-
-      // Startpositie: op eerste echte kaart
-      track.scrollLeft = step * CLONE_N;
-
-      const onScroll = () => {
-        if(jumping) return;
-        const max = step * (realCount + CLONE_N);
-        const min = step * (CLONE_N - 1);
-        const x = track.scrollLeft;
-
-        // Te ver naar links -> spring naar dezelfde positie achteraan
-        if(x <= min){
-          jumping = true;
-          track.scrollLeft = x + step * realCount;
-          requestAnimationFrame(() => { jumping = false; });
-        }
-        // Te ver naar rechts -> spring naar dezelfde positie vooraan
-        else if(x >= max){
-          jumping = true;
-          track.scrollLeft = x - step * realCount;
-          requestAnimationFrame(() => { jumping = false; });
-        }
-      };
-
-      track.addEventListener('scroll', onScroll, { passive:true });
-    });
-  }
-}
-
-// Fire & forget after DOM is ready
-document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
-

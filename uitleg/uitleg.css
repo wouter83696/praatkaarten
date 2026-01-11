@@ -200,35 +200,3 @@ body.show-hint .navHintMini{ opacity:.72; }
 /* (geen landscape uitzondering) */
 
 
-
-
-/* v2.5 – rechte onderkant SVG + naadloze aansluiting tekst */
-.uitleg-kaart {
-  border-radius: 24px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.kaart-beeld {
-  overflow: hidden;
-  border-radius: 24px 24px 0 0;
-}
-
-.kaart-beeld img {
-  display: block;
-  width: 100%;
-  height: auto;
-
-  border-radius: 0 !important;
-}
-
-.kaart-tekst {
-  background: #fff;
-  padding: 16px 20px 18px;
-}
-
-
-/* v2.6 – uitleg SVG onderkant recht */
-.kaart-beeld img{
-  border-radius: 0 !important;
-}
