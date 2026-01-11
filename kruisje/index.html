@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.8</title>
+<title>Praatkaarten v3.2.3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -476,8 +476,7 @@ text-wrap: pretty;
 .chev,
 .close{
   position:absolute;
-  /* Zorg dat het kruisje altijd zichtbaar is op desktop */
-  background:rgba(255,255,255,.78);
+  background:transparent;
   border:0;
   width:44px;
   height:44px;
@@ -486,14 +485,11 @@ text-wrap: pretty;
   color:var(--uiInk);
   cursor:pointer;
 
-  border-radius:999px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.12);
-  opacity:1;
+  opacity:0;
 }
 
-/* Pijlen mogen subtiel blijven, kruisje blijft altijd aan */
-.chev{ opacity:.85; }
-.lb.show-ui .chev{ opacity:1; }
+.lb.show-ui .chev,
+.lb.show-ui .close{opacity:1;}
 
 .chev.left{left:10px;top:50%;transform:translateY(-50%);}
 .chev.right{right:10px;top:50%;transform:translateY(-50%);}
@@ -863,118 +859,39 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   MOBIELE UITLEG-CAROUSEL (v3.3)
-   - staat ONDERAAN als bottom-sheet
-   - menubalk (controlsBar) staat erboven wanneer uitleg open is
-   - kaart + tekst in één oogopslag
+   MOBIELE UITLEG-CAROUSEL (v3.0)
+   - opent/sluit via knop "Uitleg" in de onderste balk
+   - tekst staat los onder de kaart (clean)
    =============================== */
 
-@media (max-width: 720px){
-  /* compacter: minder lege ruimte onder tekst */
-  body{ --introSheetH: min(46vh, 440px); }
-}
-
-.mobileIntro{
-  /* altijd aanwezig, maar standaard buiten beeld */
-  height: var(--introSheetH, 0px);
-  position:fixed;
-  left:0; right:0; bottom:0;
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-  z-index:2500;
-
-  /* zelfde sfeer als lightbox: geblurde kaart-achtergrond + witte glaze */
-  background: transparent;
-
-  border-radius: 18px 18px 0 0;
-  /* Shadow rondom + nette clipping van blur naar afgeronde hoeken (met name iOS) */
-  box-shadow:
-    0 -18px 55px rgba(0,0,0,.14),
-    0 10px 35px rgba(0,0,0,.10);
-  border: 1px solid rgba(11,18,32,.08);
-  overflow: hidden;
-  background-clip: padding-box;
-  isolation: isolate;
-
-  transform: translateY(103%);
-  transition: transform .28s ease;
-  display:block;
-}
-
-/* Geblurde achtergrond (zelfde SVG als grid/lightbox) */
-.mobileIntro::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background-image: var(--lb-bg-url);
-  background-size: cover;
-  background-position: center;
-  transform: scale(1.08);
-  filter: blur(18px);
-  /* Minder drukke achtergrond: nog wel diepte, maar tekst blijft leesbaar */
-  opacity: .16;
-  pointer-events:none;
-  z-index:0;
-}
-.mobileIntro::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  /* Witte glaze iets sterker zodat de blur niet 'doorlekt' */
-  background: rgba(255,255,255,.55);
-  pointer-events:none;
-  z-index:1;
-}
-
-/* Zorg dat de inhoud boven de pseudo-lagen ligt */
-.mobileIntro > *{ position:relative; z-index:2; }
+/* standaard verborgen; we tonen 'm pas als de gebruiker op Uitleg tikt */
+.mobileIntro{display:none; margin:12px auto 0; width:min(940px, 100%); padding:0 14px;}
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
-  body.show-intro .mobileIntro{ transform: translateY(0); }
-  /* Menubalk erboven zodra uitleg open is */
-  body.show-intro .controlsBar{
-    bottom: var(--introSheetH);
-  }
+  body.show-intro .mobileIntro{display:block;}
 }
 
-/* Desktop/tablet: carousel niet gebruiken */
-@media (min-width: 721px){
-  .mobileIntro{ display:none; }
+.introHead{display:flex; align-items:center; justify-content:space-between; margin:0 6px 10px;}
+.introTitle{font-weight:500; color:rgba(60,70,80,.75); font-size:14px; letter-spacing:.2px;}
+.introToggle{border:0; background:rgba(255,255,255,.55); backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color:rgba(60,70,80,.75); padding:8px 12px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.08);
+  font:500 13px/1 "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-.introTrack{
-  display:flex;
-  gap:14px;
-  overflow-x:auto;
-  padding:6px 4px 0;
-  height: 100%;
-  scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch;
+.introTrack{display:flex; gap:14px; overflow-x:auto; padding:16px 14px 12px;
+  scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
 }
 .introTrack::-webkit-scrollbar{display:none;}
-
-.introCard{
-  flex:0 0 auto;
-  width:min(86vw, 420px);
-  scroll-snap-align:center;
-  background:transparent;
-  box-shadow:none;
-  overflow:visible;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+.introCard{flex:0 0 auto; width:min(86vw, 420px); scroll-snap-align:center;
+  background:transparent; box-shadow:none; overflow:visible;
+  display:flex; flex-direction:column; gap:10px;
 }
-
-/* Kaartdeel */
-.introImgWrap{
-  aspect-ratio:241/156;
-  background:transparent;
-  overflow:hidden;
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  position:relative;
-  max-height: 40vh;
+.introImgWrap{aspect-ratio:241/156; background:#fff; overflow:hidden;
+  border-radius:24px; box-shadow:var(--shadow);
 }
+.introImgWrap{ position:relative; }
 .introTheme{
   position:absolute;
   inset:0;
@@ -988,12 +905,11 @@ body.hm-open{overflow:hidden}
   color: var(--textBlue);
   pointer-events:none;
 }
-.introImg{width:100%; height:100%; object-fit:cover; display:block;}
-
-/* Tekstdeel (clean) */
+.introImg{width:100%; height:100%; object-fit:contain; display:block;}
 .introText{
+  /* Tekst = pure pagina (geen extra kader, geen eigen achtergrond) */
   background:transparent;
-  padding:0 2px 0;
+  padding:2px 2px 0;
   border-radius:0;
   box-shadow:none;
 }
@@ -1006,110 +922,34 @@ body.hm-open{overflow:hidden}
   overflow-wrap:anywhere;
   white-space:normal;
 }
-
-.introHint{
-  display:none; /* swipe-tekst onderaan uit (voor nu) */
-}
-
-/* ===============================
-   ICON PILLS (i.p.v. menubalk)
-   - standaard onderin uitlijnen
-   - knoppen blijven altijd onderaan
-   =============================== */
-
-.controlsBar{ display:none !important; }
-
-.pillsDock{
-  position:fixed;
-  left:0; right:0; bottom:0;
-  z-index:3000;
-  padding:12px 12px calc(12px + env(safe-area-inset-bottom));
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  pointer-events:none;
-}
-
-/* Mobiel: pills blijven ook bij uitleg open onderaan (geen bewegende knoppen) */
-
-/* Desktop: pills altijd onder, geen close button */
-@media (hover:hover) and (pointer:fine){
-  .pillsDock{ justify-content:flex-start; }
-  .pillsRight{ display:none; }
-}
-
-.pillsLeft,
-.pillsRight{display:flex; gap:10px; pointer-events:auto;}
-
-.pill{
-  appearance:none;
-  border:0;
-  width:42px;
-  height:42px;
-  border-radius:999px;
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-
-  background:rgba(255,255,255,.86);
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  box-shadow: inset 0 0 0 1px rgba(11,18,32,.10), 0 10px 30px rgba(0,0,0,.10);
-  color: var(--uiInk);
-  transition: background .18s ease, box-shadow .18s ease, transform .05s ease, opacity .18s ease;
-}
-.pill:hover{ background: rgba(243,245,238,.88); }
-.pill:active{ transform: translateY(1px); }
-.pill:focus-visible{ outline: 2px solid rgba(48,96,136,.35); outline-offset: 2px; }
-
-.pill svg{ width:20px; height:20px; display:block; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95; }
-
-.pill.is-on{
-  background: rgba(48,96,136,.12);
-  box-shadow: inset 0 0 0 1px rgba(48,96,136,.22), 0 10px 30px rgba(0,0,0,.10);
-  color: rgba(11,18,32,.58);
-}
-
-/* Pills blijven altijd zichtbaar (ook als uitleg open is) */
-
-/* Telefoon landscape: verberg de pills (zelfde gedrag als oude menubalk) */
-@media (hover: none) and (pointer: coarse) and (orientation: landscape){
-  .pillsDock{ display:none !important; }
-}
+.introHint{margin:4px 6px 0; color:rgba(60,70,80,.55); font-size:12px;}
 
 </style>
 </head>
 <body>
 
-<!-- 3 losse pills (icon-only) i.p.v. menubalk -->
-<div class="pillsDock" aria-label="Bediening">
-  <div class="pillsLeft">
-    <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 7h6l10 10h1"/><path d="M16 21h5v-5"/><path d="M4 17h6l2-2"/><path d="M21 8l-2 2"/></svg>
-    </button>
-    <button class="pill" id="uitlegBtn" type="button" aria-label="Info" aria-pressed="false">
-      <!-- info-icoon (i) i.p.v. vraagteken -->
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 16v-4" />
-        <path d="M12 8h.01" />
-      </svg>
-    </button>
+<div class="controlsBar">
+  <div class="inner">
+    <div class="chipGroup left" aria-label="Bediening">
+      <button class="chip" id="shuffleBtn" type="button" aria-pressed="false">Hussel</button>
+      <button class="chip" id="uitlegBtn" type="button" aria-pressed="false">Uitleg</button>
+    </div>
+
+    <div class="rightCluster">
+      <div class="navHintMini is-hidden" id="navHint" aria-hidden="true">← → swipe · tap to close</div>
+    </div>
   </div>
-
-  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
 </div>
-
-
-
-<div class="grid" id="grid"></div>
 
 <section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
   <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
     <!-- wordt gevuld vanuit intro-data.json -->
   </div>
+
+  <div class="introHint" aria-hidden="true">← → swipe</div>
 </section>
 
+<div class="grid" id="grid"></div>
 
 <div class="lb" id="lb" aria-hidden="true">
   <div class="lbBg" aria-hidden="true"></div>
@@ -1133,7 +973,7 @@ body.hm-open{overflow:hidden}
 
 
 
-<script src="script.js?v=3.3.8"></script>
+<script src="script.js?v=3.2.2"></script>
 
 
 
