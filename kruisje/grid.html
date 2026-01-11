@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.39</title>
+<title>Praatkaarten v3.3.30</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -295,88 +295,6 @@ button,
   box-shadow:none !important;
 }
 
-/* overlay close (outside swipe layer) */
-.overlayClose{
-  position: fixed;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(0,0,0,.10);
-  border-radius: 999px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.10);
-  z-index: 99999;
-  opacity: 0;
-  pointer-events: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.lb.open .overlayClose{
-  opacity: 1;
-  pointer-events: auto;
-}
-.overlayClose svg{ width:22px; height:22px; }
-.overlayClose svg path{
-  fill:none; stroke: rgba(125,125,125,.92);
-  stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;
-}
-
-
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.39 */
-#closeHitbox{
-  position: fixed;
-  width: 64px;
-  height: 64px;
-  z-index: 100000;
-  opacity: 0;
-  pointer-events: none;
-}
-.lb.open #closeHitbox{ pointer-events: auto; }
-
-#debugHud{
-  position: fixed;
-  left: 8px;
-  bottom: 8px;
-  z-index: 100001;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(0,0,0,.65);
-  color: #fff;
-  font: 12px/1.25 -apple-system, system-ui, Segoe UI, Roboto, sans-serif;
-  max-width: calc(100vw - 16px);
-  white-space: pre-wrap;
-  display: none;
-}
-.debug-on #debugHud{ display: block; }
-/* CLOSE NUCLEAR v3.3.39
-   Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
-.lb{ transform:none !important; }
-.panel{ transform:none !important; }
-#close.overlayClose{
-  position: fixed !important;
-  top: calc(env(safe-area-inset-top, 0px) + 10px) !important;
-  right: 10px !important;
-  left: auto !important;
-  z-index: 1000000 !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-#closeHitbox{
-  position: fixed !important;
-  top: calc(env(safe-area-inset-top, 0px) + 2px) !important;
-  right: 2px !important;
-  left: auto !important;
-  width: 84px !important;
-  height: 84px !important;
-  z-index: 1000001 !important;
-  opacity: 0 !important;
-  pointer-events: auto !important;
-}
-.lb:not(.open) #close,
-.lb:not(.open) #closeHitbox{
-  pointer-events: none !important;
-  opacity: 0 !important;
-}
 </style>
 </head>
 <body>
@@ -432,16 +350,12 @@ button,
 </div>
 
 <div class="lb" id="lb" aria-hidden="true">
-    <button class="close overlayClose" id="close" type="button" aria-label="Sluiten" onclick="try{closeLb()}catch(e){}">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
-    </svg>
-  </button>
-  <div id="closeHitbox" aria-hidden="true" onclick="try{closeLb()}catch(e){}"></div>
-<div class="panel" role="dialog" aria-modal="true">
+  <div class="panel" role="dialog" aria-modal="true">
     <button class="chev left" id="prev" aria-label="Vorige">‹</button>
     <button class="chev right" id="next" aria-label="Volgende">›</button>
-<img id="lbImg" alt="">
+
+    <button class="close" id="close" type="button" aria-label="Sluiten">×</button>
+    <img id="lbImg" alt="">
   </div>
 </div>
 
@@ -489,8 +403,7 @@ button,
     currentIndex = ((index % list.length) + list.length) % list.length;
     lbImg.src = list[currentIndex].getAttribute('data-src');
     lb.classList.add('open');
-    positionOverlayClose();
-document.body.classList.add('lb-open');
+    document.body.classList.add('lb-open');
     document.body.style.overflow = 'hidden';
     showUI();
   }
@@ -521,19 +434,7 @@ document.body.classList.add('lb-open');
   });
 
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
-
-  // CLOSE HANDLER v3.3.39 (altijd werken, los van swipe/gestures)
-  function onClosePress(e){
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    closeLb();
-  }
-  closeBtn.addEventListener('pointerdown', onClosePress, {capture:true});
-  closeBtn.addEventListener('click', onClosePress, {capture:true});
-  // CLOSE FIX v3.3.39
-  closeBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); closeLb(); }, {capture:true});
-closeLb(); });
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
 
   function shuffle(nodes){
     for(let i=nodes.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [nodes[i],nodes[j]]=[nodes[j],nodes[i]]; }
@@ -606,107 +507,7 @@ closeLb(); });
   lb.addEventListener('mousemove', showUI);
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
-
-  // POSITION OVERLAY CLOSE v3.3.39
-  const overlayClose = document.getElementById('close');
-  function positionOverlayClose(){
-    const panel = document.querySelector('.panel');
-    if(!overlayClose || !panel) return;
-    const r = panel.getBoundingClientRect();
-    overlayClose.style.top = Math.round(r.top + 8) + 'px';
-    overlayClose.style.left = Math.round(r.right - 8 - 44) + 'px';
-  }
-  window.addEventListener('resize', positionOverlayClose, {passive:true});
-  window.addEventListener('scroll', positionOverlayClose, {passive:true});
-
-  // DOCUMENT CLOSE FALLBACK v3.3.39
-  document.addEventListener('pointerdown', (e) => {
-    const t = e.target && (e.target.closest ? e.target.closest('#close') : null);
-    if (t && lb.classList.contains('open')) onClosePress(e);
-  }, true);
-
-
-// KEIHARDE CLOSE FIX v3.3.39
-(function(){
-  const lb = document.getElementById('lb');
-  const closeBtn = document.getElementById('close');
-  const closeHitbox = document.getElementById('closeHitbox');
-  const hud = document.getElementById('debugHud');
-  if(!lb || !closeBtn || !closeHitbox) return;
-
-  function setHud(t){ if(hud) hud.textContent = t; }
-  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
-
-  function positionCloseHitbox(){
-    const r = closeBtn.getBoundingClientRect();
-    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
-    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
-  }
-
-  window.addEventListener('resize', positionCloseHitbox, {passive:true});
-  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
-
-  let taps = 0, tmr = null;
-  document.addEventListener('click', (e)=>{
-    if(!lb.classList.contains('open')) return;
-    if(e.target && e.target.closest && e.target.closest('#close,#closeHitbox')) return;
-    taps++;
-    clearTimeout(tmr);
-    tmr = setTimeout(()=>{ taps=0; }, 500);
-    if(taps>=3){
-      document.documentElement.classList.toggle('debug-on');
-      taps=0;
-    }
-  }, true);
-
-  function forceClose(e){
-    e.preventDefault();
-    e.stopPropagation();
-    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    if(typeof closeLb === 'function') closeLb();
-  }
-
-  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
-  closeHitbox.addEventListener('click', forceClose, {capture:true});
-
-  const obs = new MutationObserver(()=>{
-    if(lb.classList.contains('open')) positionCloseHitbox();
-  });
-  obs.observe(lb, {attributes:true, attributeFilter:['class']});
-
-  document.addEventListener('pointerdown', (e)=>{
-    if(!lb.classList.contains('open') || !isDebug()) return;
-    const el = e.target;
-    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
-    setHud(
-      'pointerdown\n' +
-      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
-      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
-    );
-  }, true);
-})();
-
-
-/* CLOSE NUCLEAR JS v3.3.39 */
-(function(){
-  const lb = document.getElementById('lb');
-  const closeBtn = document.getElementById('close');
-  const hit = document.getElementById('closeHitbox');
-  function nukeClose(e){
-    e.preventDefault(); e.stopPropagation();
-    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    try{ closeLb(); }catch(_){}
-  }
-  [closeBtn, hit].forEach(el=>{
-    if(!el) return;
-    el.addEventListener('touchstart', nukeClose, {capture:true, passive:false});
-    el.addEventListener('pointerdown', nukeClose, {capture:true});
-    el.addEventListener('click', nukeClose, {capture:true});
-  });
-})();
 </script>
 
-
-<div id="debugHud" aria-hidden="true"></div>
 </body>
 </html>

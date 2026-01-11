@@ -267,50 +267,17 @@ html,body{
   .controlsBar{ display:none !important; }
 }
 
-/*
-  BELANGRIJK (mobiel): verberg alleen de swipe-pijlen,
-  maar laat het sluitkruisje wél klikbaar.
-  In eerdere builds werd alles in de overlay uitgezet (display:none/pointer-events:none),
-  waardoor het kruisje op telefoon "dood" werd.
-*/
 @media (pointer: coarse){
-  .lb .chev{ 
+  .lb .chev,
+  .lb .close,
+  .lb button,
+  .lb [role="button"],
+  .lightbox button,
+  .lightbox [role="button"]{
     display:none !important;
     opacity:0 !important;
     pointer-events:none !important;
   }
-  /* Close moet altijd kunnen */
-  .lb #close,
-  .lb .overlayClose{
-    display:flex !important;
-    opacity:1 !important;
-    pointer-events:auto !important;
-  }
-}
-
-/* Overlay close staat boven alles en blijft altijd klikbaar */
-.lb .overlayClose{
-  position: fixed;
-  z-index: 1002;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  touch-action: manipulation;
-  pointer-events: auto;
-}
-
-/* Extra (onzichtbare) hitbox om mobiel te sluiten, zonder dat je precies hoeft te mikken */
-#closeHitbox{
-  position: fixed;
-  z-index: 1001;
-  width: 76px;
-  height: 76px;
-  background: transparent;
-  border-radius: 999px;
-  pointer-events: auto;
 }
 
 /* ===============================
