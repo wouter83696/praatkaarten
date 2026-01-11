@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.10';
+const VERSION = '3.3.23';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -107,24 +107,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
-  const introCloseBtn = document.getElementById('introClose');
   // (v3.3.7) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
-  const pillsDockEl = document.querySelector('.pillsDock');
-
-  function updatePillsForIntro(){
-    if(!pillsDockEl) return;
-    if(!(uitlegOn && isMobile() && mobileIntroEl)){
-      pillsDockEl.style.transform = 'translateY(0px)';
-      return;
-    }
-    const sheetRect = mobileIntroEl.getBoundingClientRect();
-    const baseTop = parseFloat(getComputedStyle(pillsDockEl).top) || 0;
-    const pillsH = pillsDockEl.getBoundingClientRect().height || 42;
-    const desiredTop = Math.max(8, sheetRect.top - 12 - pillsH);
-    const dy = desiredTop - baseTop;
-    pillsDockEl.style.transform = `translateY(${Math.round(dy)}px)`;
-  }
 
   let shuffleOn = false;
   let uitlegOn  = false;
@@ -583,13 +567,6 @@ document.addEventListener('keydown', (e) => {
 
     if(isMobile()){
       document.body.classList.toggle('show-intro', uitlegOn);
-
-      // na class-toggle even wachten op layout/transition
-      requestAnimationFrame(() => {
-        updatePillsForIntro();
-        setTimeout(updatePillsForIntro, 60);
-      });
-
       return;
     }
 
@@ -628,23 +605,31 @@ document.addEventListener('keydown', (e) => {
     uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
   }
 
-  // Sluitknop rechtsboven ín het uitlegvenster (mobiel)
-  if(introCloseBtn){
-    introCloseBtn.addEventListener('click', (e) => {
+  // Mobiel: sluit-knop in de hoek van het plaatje (wordt per kaart gerenderd)
+  // Gebruik event delegation zodat clones ook werken.
+  if(mobileIntroEl){
+    mobileIntroEl.addEventListener('click', (e) => {
+      const btn = e.target && e.target.closest && e.target.closest('.introClose');
+      if(!btn) return;
       e.stopPropagation();
       setUitleg(false);
     });
   }
 
-  // Houd positie van de zwevende pills correct bij resize/rotatie
-  window.addEventListener('resize', () => {
-    if(uitlegOn && isMobile()){
-      requestAnimationFrame(() => {
-        updatePillsForIntro();
-        setTimeout(updatePillsForIntro, 60);
-      });
-    }
-  });
+  // Houd altijd genoeg "safe space" boven de fixed pills (links-onder),
+  // zodat tekst nooit onder de pills valt. Dynamisch (iOS safe-area + grootte).
+  const updatePillsSafe = () => {
+    const dock = document.querySelector('.pillsDock');
+    if(!dock) return;
+    const rect = dock.getBoundingClientRect();
+    const h = Math.max(0, rect.height);
+    // +6px ademruimte (compacter op mobiel)
+    document.documentElement.style.setProperty('--pillsSafe', `${Math.ceil(h + 6)}px`);
+  };
+  window.addEventListener('resize', updatePillsSafe, {passive:true});
+  window.addEventListener('orientationchange', updatePillsSafe, {passive:true});
+  // eerste run
+  requestAnimationFrame(updatePillsSafe);
 
   // ===============================
   // v3.3.8 – Swipe omlaag om uitleg (bottom-sheet) te sluiten (mobiel)
@@ -652,21 +637,77 @@ document.addEventListener('keydown', (e) => {
   // ===============================
   const introTrackEl  = document.getElementById('introTrack');
   if(mobileIntroEl){
+    // Interactie-eis:
+    // - Tijdens drag: uitlegkaart blijft volledig zichtbaar en beweegt mee (met weerstand)
+    // - Geen fade tijdens drag
+    // - Release: onder drempel => veer terug, boven drempel => sluit
     let sy = 0, sx = 0, active = false;
+    let dragging = false;
+    let lastDy = 0;
+    const THRESH = 110;
 
-    const start = (x,y) => { sx = x; sy = y; active = true; };
-    const end = (x,y) => {
-      if(!active) return;
-      active = false;
-      if(!uitlegOn) return;
+    const resistance = (dy) => {
+      // zachte weerstand: eerste stuk 1:1, daarna afvlakkend
+      const d = Math.max(0, dy);
+      return d * 0.85;
+    };
+
+    const start = (x,y) => {
+      sx = x; sy = y; active = true; dragging = false; lastDy = 0;
+      // tijdens drag geen CSS transition, zodat het 'plakt' aan je vinger
+      mobileIntroEl.style.transition = 'none';
+      mobileIntroEl.style.willChange = 'transform';
+    };
+
+    const move = (x,y) => {
+      if(!active || !uitlegOn) return;
       const dy = y - sy;
       const dx = x - sx;
       const ay = Math.abs(dy);
       const ax = Math.abs(dx);
-      // Duidelijke swipe omlaag: verticaal dominant + voldoende afstand
-      if(ay > ax * 1.2 && dy > 85){
-        setUitleg(false);
+
+      // alleen omlaag (geen omhoog trekken)
+      if(dy <= 0) return;
+
+      // verticaal moet dominant zijn, anders is het een horizontale swipe in de carousel
+      if(ay <= ax * 1.15) return;
+
+      dragging = true;
+      lastDy = dy;
+      const t = resistance(dy);
+      mobileIntroEl.style.transform = `translateY(${t}px)`;
+    };
+
+    const end = () => {
+      if(!active) return;
+      active = false;
+      if(!uitlegOn){
+        mobileIntroEl.style.transition = '';
+        mobileIntroEl.style.transform = '';
+        mobileIntroEl.style.willChange = '';
+        return;
       }
+
+      // release animatie
+      mobileIntroEl.style.transition = 'transform .28s cubic-bezier(.2,.9,.2,1)';
+
+      if(dragging && lastDy > THRESH){
+        // laat CSS weer de leiding nemen
+        mobileIntroEl.style.transform = '';
+        mobileIntroEl.style.willChange = '';
+        setUitleg(false);
+        return;
+      }
+
+      // veer terug
+      mobileIntroEl.style.transform = 'translateY(0px)';
+      const cleanup = () => {
+        mobileIntroEl.style.transition = '';
+        mobileIntroEl.style.transform = '';
+        mobileIntroEl.style.willChange = '';
+        mobileIntroEl.removeEventListener('transitionend', cleanup);
+      };
+      mobileIntroEl.addEventListener('transitionend', cleanup);
     };
 
     // Pointer events (meest betrouwbaar, ook op moderne iOS)
@@ -676,11 +717,13 @@ document.addEventListener('keydown', (e) => {
       if(e.isPrimary === false) return;
       start(e.clientX, e.clientY);
     };
-    const onPointerUp = (e) => end(e.clientX, e.clientY);
+    const onPointerMove = (e) => move(e.clientX, e.clientY);
+    const onPointerUp = () => end();
 
     mobileIntroEl.addEventListener('pointerdown', onPointerDown, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('pointermove', onPointerMove, {passive:true, capture:true});
     mobileIntroEl.addEventListener('pointerup', onPointerUp, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('pointercancel', () => { active = false; }, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('pointercancel', () => { active = false; end(); }, {passive:true, capture:true});
 
     // Touch fallback (oudere iOS)
     mobileIntroEl.addEventListener('touchstart', (e) => {
@@ -689,10 +732,13 @@ document.addEventListener('keydown', (e) => {
       if(!t) return;
       start(t.clientX, t.clientY);
     }, {passive:true, capture:true});
-    mobileIntroEl.addEventListener('touchend', (e) => {
-      const t = e.changedTouches && e.changedTouches[0];
+    mobileIntroEl.addEventListener('touchmove', (e) => {
+      const t = e.touches && e.touches[0];
       if(!t) return;
-      end(t.clientX, t.clientY);
+      move(t.clientX, t.clientY);
+    }, {passive:true, capture:true});
+    mobileIntroEl.addEventListener('touchend', (e) => {
+      end();
     }, {passive:true, capture:true});
 
     // Extra: als je swipe start op de track zelf, vang die ook af (bubbelt niet altijd lekker bij momentum scroll)
@@ -704,9 +750,7 @@ document.addEventListener('keydown', (e) => {
         start(t.clientX, t.clientY);
       }, {passive:true, capture:true});
       introTrackEl.addEventListener('touchend', (e) => {
-        const t = e.changedTouches && e.changedTouches[0];
-        if(!t) return;
-        end(t.clientX, t.clientY);
+        end();
       }, {passive:true, capture:true});
     }
   }
@@ -754,57 +798,6 @@ async function renderMobileIntro(){
   const track = document.getElementById('introTrack');
   if(!section || !track) return;
 
-  // Sluitkruisje in de hoek van het kaartje (mobiel uitleg).
-  // We herpositioneren de bestaande knop (#introClose) zodat hij boven de
-  // rechterbovenhoek van de zichtbare slide hangt.
-  const introCloseBtn = document.getElementById('introClose');
-  let closeRaf = 0;
-  const updateIntroClosePos = () => {
-    if(!introCloseBtn) return;
-    if(!document.body.classList.contains('show-intro')) return;
-
-    const cards = track.querySelectorAll('.introCard .introImgWrap');
-    if(!cards || !cards.length) return;
-
-    const cx = window.innerWidth / 2;
-    let best = null;
-    let bestDist = Infinity;
-    for(const el of cards){
-      const r = el.getBoundingClientRect();
-      // Skip offscreen kaarten
-      if(r.right < 0 || r.left > window.innerWidth) continue;
-      const mid = (r.left + r.right) / 2;
-      const d = Math.abs(mid - cx);
-      if(d < bestDist){ bestDist = d; best = r; }
-    }
-    if(!best) return;
-
-    const pad = 8;
-    const btn = introCloseBtn.getBoundingClientRect();
-    const w = btn.width || 44;
-    const h = btn.height || 44;
-
-    const top = Math.max(pad, best.top + pad);
-    const left = Math.min(window.innerWidth - w - pad, best.right - w - pad);
-    introCloseBtn.style.top = `${Math.round(top)}px`;
-    introCloseBtn.style.left = `${Math.round(left)}px`;
-  };
-  const scheduleIntroClosePos = () => {
-    if(!introCloseBtn) return;
-    if(closeRaf) return;
-    closeRaf = requestAnimationFrame(() => {
-      closeRaf = 0;
-      updateIntroClosePos();
-    });
-  };
-
-  // Houd de positie bij tijdens swipen/scrollen en bij resize.
-  if(introCloseBtn){
-    track.addEventListener('scroll', scheduleIntroClosePos, { passive:true });
-    window.addEventListener('resize', scheduleIntroClosePos, { passive:true });
-    window.addEventListener('orientationchange', scheduleIntroClosePos, { passive:true });
-  }
-
   let data = null;
   try{
     const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
@@ -814,16 +807,28 @@ async function renderMobileIntro(){
   }
   if(!data || !Array.isArray(data.slides)) return;
 
-  const slides = data.slides.slice();
-  if(!slides.length) return;
+  // Build cards
+  track.innerHTML = '';
 
-  const makeCard = (s) => {
+  const slides = data.slides.slice();
+  const realCount = slides.length;
+
+  // helper om één kaart te bouwen
+  const buildCard = (s) => {
     const art = document.createElement('article');
     art.className = 'introCard';
     art.dataset.intro = s.key || '';
 
     const wrap = document.createElement('div');
     wrap.className = 'introImgWrap';
+
+    // Sluitknop op de hoek van het plaatje (bespaart ruimte)
+    const close = document.createElement('button');
+    close.className = 'introClose';
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Sluiten');
+    close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>';
+    wrap.appendChild(close);
 
     const img = document.createElement('img');
     img.className = 'introImg';
@@ -845,6 +850,7 @@ async function renderMobileIntro(){
     const b = document.createElement('div');
     b.className = 'introTextBody';
     b.textContent = s.body || '';
+
     text.appendChild(b);
 
     art.appendChild(wrap);
@@ -852,50 +858,67 @@ async function renderMobileIntro(){
     return art;
   };
 
-  // Infinity-scroll: render 3x dezelfde set en start in het midden.
-  // Bij "te ver" links/rechts springen we onzichtbaar terug naar het midden.
-  track.innerHTML = '';
-  for(let rep=0; rep<3; rep++){
-    for(const s of slides){
-      track.appendChild(makeCard(s));
+  // (Infinity scroll) clones aan beide kanten zodat je "oneindig" door kan swipen
+  const CLONE_N = Math.min(2, realCount);
+  if(realCount > 1){
+    for(let i=realCount-CLONE_N; i<realCount; i++){
+      const c = buildCard(slides[i]);
+      c.dataset.clone = '1';
+      track.appendChild(c);
     }
   }
 
-  const positionToMiddle = () => {
-    const oneSet = track.scrollWidth / 3;
-    if(!isFinite(oneSet) || oneSet <= 0) return;
-    track.scrollLeft = oneSet; // begin van de middelste set
-  };
+  for(const s of slides){
+    track.appendChild(buildCard(s));
+  }
 
-  // Wacht 1 tick zodat layout/afmetingen er zijn
-  requestAnimationFrame(() => {
-    positionToMiddle();
-    setTimeout(positionToMiddle, 40);
-    // Plaats het kruisje direct goed op de eerste zichtbare kaart
-    scheduleIntroClosePos();
-    setTimeout(scheduleIntroClosePos, 80);
-  });
-
-  let lock = false;
-  track.addEventListener('scroll', () => {
-    if(lock) return;
-    const oneSet = track.scrollWidth / 3;
-    if(!isFinite(oneSet) || oneSet <= 0) return;
-    // thresholds rond de set-grenzen
-    if(track.scrollLeft < oneSet * 0.35){
-      lock = true;
-      track.scrollLeft += oneSet;
-      requestAnimationFrame(() => { lock = false; });
-    }else if(track.scrollLeft > oneSet * 1.65){
-      lock = true;
-      track.scrollLeft -= oneSet;
-      requestAnimationFrame(() => { lock = false; });
+  if(realCount > 1){
+    for(let i=0; i<CLONE_N; i++){
+      const c = buildCard(slides[i]);
+      c.dataset.clone = '1';
+      track.appendChild(c);
     }
-  }, {passive:true});
+  }
 
   // Hint text (optional)
   const hintEl = section.querySelector('.introHint');
   if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
+
+  // Infinity scroll: na layout (widths bekend) scroll naar eerste echte item
+  if(realCount > 1){
+    requestAnimationFrame(() => {
+      const firstReal = track.querySelectorAll('.introCard')[CLONE_N];
+      if(!firstReal) return;
+      const gap = 14; // gelijk aan CSS
+      const step = firstReal.getBoundingClientRect().width + gap;
+      let jumping = false;
+
+      // Startpositie: op eerste echte kaart
+      track.scrollLeft = step * CLONE_N;
+
+      const onScroll = () => {
+        if(jumping) return;
+        const max = step * (realCount + CLONE_N);
+        const min = step * (CLONE_N - 1);
+        const x = track.scrollLeft;
+
+        // Te ver naar links -> spring naar dezelfde positie achteraan
+        if(x <= min){
+          jumping = true;
+          track.scrollLeft = x + step * realCount;
+          requestAnimationFrame(() => { jumping = false; });
+        }
+        // Te ver naar rechts -> spring naar dezelfde positie vooraan
+        else if(x >= max){
+          jumping = true;
+          track.scrollLeft = x - step * realCount;
+          requestAnimationFrame(() => { jumping = false; });
+        }
+      };
+
+      track.addEventListener('scroll', onScroll, { passive:true });
+    });
+  }
 }
 
 // Fire & forget after DOM is ready
