@@ -593,22 +593,11 @@ button.pill:active{
    - body.show-intro => zichtbaar
    =============================== */
 .mobileIntro{
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(var(--vh, 1vh) * 100);
-  /* sheet neemt niet per se full height; de content bepaalt, maar container vult viewport voor swipe area */
-  display: block;
-  pointer-events: none; /* pas aan in show-intro */
-  z-index: 2000;
-  transform: translateY(100%);
-  transition: transform 220ms ease;
+  background: transparent;
 }
 
 body.show-intro .mobileIntro{
-  transform: translateY(0%);
-  pointer-events: auto;
+  background: transparent;
 }
 
 /* de track zelf als sheet */
@@ -709,4 +698,12 @@ body.show-intro .mobileIntro{
   color: rgba(0,0,0,.65);
   display: grid;
   place-items: center;
+}
+
+.grid{
+  position: relative;
+  z-index: 1;
+}
+.lbBg, .mobileIntro{
+  z-index: 10;
 }
