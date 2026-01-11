@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.41';
+const VERSION = '3.3.49';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -639,36 +639,9 @@ document.addEventListener('keydown', (e) => {
     document.body.classList.toggle('uitleg-open', uitlegOn);
 
     if(isMobile()){
-      // Bottom-sheet open/close animatie (met overshoot) + snelle opacity
-      if(uitlegOn){
-        if(mobileIntroEl) mobileIntroEl.classList.remove('is-closing');
-        // toggle (ipv add) zodat animatie opnieuw triggert als je snel wisselt
-        document.body.classList.add('show-intro');
-      }else{
-        if(!mobileIntroEl){
-          document.body.classList.remove('show-intro');
-          return;
-        }
-        // Laat de sheet eerst animeren, verwijder daarna pas de show-intro class
-        mobileIntroEl.classList.add('is-closing');
-
-        const finish = () => {
-          mobileIntroEl.classList.remove('is-closing');
-          document.body.classList.remove('show-intro');
-        };
-
-        const onEnd = (e) => {
-          if(e && e.animationName && e.animationName !== 'introOut') return;
-          finish();
-        };
-
-        mobileIntroEl.addEventListener('animationend', onEnd, { once:true });
-
-        // Fallback (als animationend niet vuurt op sommige mobiele browsers)
-        setTimeout(() => {
-          if(mobileIntroEl.classList.contains('is-closing')) finish();
-        }, 340);
-      }
+      // Mobiel: bottom-sheet (uitleg carousel)
+      if(uitlegOn) openIntroSheet();
+      else closeIntroSheet();
       return;
     }
 
@@ -732,6 +705,219 @@ document.addEventListener('keydown', (e) => {
   window.addEventListener('orientationchange', updatePillsSafe, {passive:true});
   // eerste run
   requestAnimationFrame(updatePillsSafe);
+
+  // ===============================
+  // v3.3.49 – Mobile bottom-sheet gedrag (uitleg)
+  // Eisen:
+  // - Tijdens drag: sheet volgt vinger (geen opacity/fade/mee-bewegen UI)
+  // - Animaties alleen bij loslaten
+  // - Horizontaal swipen: licht (native scroll), Verticaal omlaag: zwaar met weerstand
+  // - Drempel: onder = veer terug, boven = sluit onherroepelijk
+  // - ✕ alleen zichtbaar als sheet volledig open & stabiel; verdwijnt bij drag-start
+  // ===============================
+
+  const introSheet = document.getElementById('mobileIntro');
+  let sheetAnim = null;
+
+  function setSheetStable(stable){
+    if(!introSheet) return;
+    introSheet.classList.toggle('is-stable', !!stable);
+  }
+
+  function animateSheet(toY, {duration=160, overshoot=false} = {}){
+    if(!introSheet) return;
+    try{ sheetAnim?.cancel?.(); }catch(_e){}
+    introSheet.style.transition = 'none';
+
+    const from = getCurrentSheetY();
+    const frames = overshoot
+      ? [
+          { transform: `translateY(${from}px)` },
+          { transform: `translateY(${Math.min(-8, toY)}px)` },
+          { transform: `translateY(${toY}px)` },
+        ]
+      : [
+          { transform: `translateY(${from}px)` },
+          { transform: `translateY(${toY}px)` },
+        ];
+
+    sheetAnim = introSheet.animate(frames, {
+      duration,
+      easing: 'cubic-bezier(.2,.9,.2,1)',
+      fill: 'forwards'
+    });
+    sheetAnim.onfinish = () => {
+      introSheet.style.transform = `translateY(${toY}px)`;
+      sheetAnim = null;
+    };
+  }
+
+  function getCurrentSheetY(){
+    if(!introSheet) return 0;
+    const t = getComputedStyle(introSheet).transform;
+    if(!t || t === 'none') return 0;
+    // matrix(a,b,c,d,tx,ty)
+    const m = t.match(/matrix\([^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*([^)]+)\)/);
+    if(m) return parseFloat(m[1]) || 0;
+    // matrix3d(..., ty)
+    const m3 = t.match(/matrix3d\((?:[^,]+,){13}\s*([^,]+)\s*\)/);
+    if(m3) return parseFloat(m3[1]) || 0;
+    return 0;
+  }
+
+  function openIntroSheet(){
+    if(!introSheet) return;
+    document.body.classList.add('show-intro');
+    // Start net onder beeld
+    introSheet.style.transform = 'translateY(103%)';
+    setSheetStable(false);
+    // Open in 120–180ms met mini-overshoot
+    requestAnimationFrame(() => {
+      animateSheet(0, {duration:160, overshoot:true});
+      // Markeer als stabiel na de animatie
+      setTimeout(() => setSheetStable(true), 170);
+    });
+  }
+
+  function closeIntroSheet(){
+    if(!introSheet) return;
+    setSheetStable(false);
+    // Sluiten iets sneller dan openen
+    animateSheet(introSheet.getBoundingClientRect().height + 24, {duration:140, overshoot:false});
+    // Na close: class weg (zodat layout/aria consistent is)
+    setTimeout(() => {
+      document.body.classList.remove('show-intro');
+      introSheet.style.transform = 'translateY(103%)';
+    }, 145);
+  }
+
+  // --- Drag gedrag ---
+  (function setupIntroSheetDrag(){
+    if(!introSheet) return;
+    let down = false;
+    let armed = false;
+    let decided = false;
+    let vertical = false;
+    let sx=0, sy=0;
+    let currentY = 0;
+    let threshold = 160;
+    let lockedClose = false;
+
+    const DEAD = 14; // 10–15px: bijna geen beweging
+
+    function computeThreshold(){
+      const h = Math.max(1, introSheet.getBoundingClientRect().height);
+      // ~35% van sheet, met sane caps
+      threshold = Math.max(120, Math.min(220, h * 0.35));
+    }
+
+    function setY(y){
+      currentY = Math.max(0, y);
+      introSheet.style.transform = `translateY(${currentY}px)`;
+    }
+
+    function resistance(d){
+      // zwaar gevoel: eerst deadzone, daarna voelbaar meegeven
+      const x = Math.max(0, d - DEAD);
+      let y = x * 0.55;
+      if(x > 220) y = 220 * 0.55 + (x - 220) * 0.25;
+      return y;
+    }
+
+    introSheet.addEventListener('pointerdown', (e) => {
+      if(!document.body.classList.contains('show-intro')) return;
+      // Start niet op horizontale track: laat native scroll daar winnen
+      if(e.target && e.target.closest && e.target.closest('#introTrack')){
+        return;
+      }
+      // Ook niet op buttons (zoals ✕)
+      if(e.target && e.target.closest && e.target.closest('button')){
+        return;
+      }
+
+      down = true;
+      armed = true;
+      decided = false;
+      vertical = false;
+      lockedClose = false;
+      sx = e.clientX;
+      sy = e.clientY;
+      currentY = 0;
+      computeThreshold();
+      setSheetStable(false); // ✕ verdwijnt zodra drag start
+      introSheet.style.transition = 'none';
+      try{ introSheet.setPointerCapture?.(e.pointerId); }catch(_e){}
+    }, {passive:true});
+
+    introSheet.addEventListener('pointermove', (e) => {
+      if(!down || !armed) return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+
+      if(!decided){
+        if(ax < 8 && ay < 8) return;
+        decided = true;
+        vertical = (ay > ax);
+        if(!vertical){
+          // Horizontaal: laat alles los (native scroll blijft licht)
+          armed = false;
+          down = false;
+          setSheetStable(true);
+          return;
+        }
+      }
+
+      // Alleen omlaag trekken
+      if(dy <= 0){
+        if(!lockedClose) setY(0);
+        return;
+      }
+
+      // Prevent background scroll tijdens verticale drag
+      try{ e.preventDefault(); }catch(_e){}
+
+      let y = resistance(dy);
+
+      // Drempel: boven = onherroepelijk (niet meer terug)
+      if(y >= threshold){
+        lockedClose = true;
+        const over = y - threshold;
+        y = threshold + over * 1.1; // lichte versnelling / snap-gevoel
+      }
+      if(lockedClose) y = Math.max(threshold, y);
+
+      setY(y);
+    }, {passive:false});
+
+    function release(){
+      if(!down) return;
+      down = false;
+      if(!decided){
+        // Geen drag: sheet blijft open
+        setSheetStable(true);
+        return;
+      }
+      if(!vertical){
+        setSheetStable(true);
+        return;
+      }
+
+      if(lockedClose || currentY >= threshold){
+        // Onherroepelijk sluiten
+        setSheetStable(false);
+        closeIntroSheet();
+        return;
+      }
+      // Altijd terugveren onder drempel
+      animateSheet(0, {duration:150, overshoot:true});
+      setTimeout(() => setSheetStable(true), 155);
+    }
+
+    introSheet.addEventListener('pointerup', release, {passive:true});
+    introSheet.addEventListener('pointercancel', release, {passive:true});
+  })();
 
   // Swipe-down verwijderd voor stabiliteit (v3.3.42)
 
@@ -1020,35 +1206,8 @@ document.addEventListener('pointerdown', (e) => {
 })();
 
 
-/* v3.3.42 – Swipe alleen op carousel, niet op overlay */
-(function(){
-  const track = document.getElementById('introTrack');
-  if(!track) return;
-
-  let sx = 0, sy = 0, active = false;
-
-  track.addEventListener('pointerdown', e => {
-    active = true;
-    sx = e.clientX;
-    sy = e.clientY;
-  }, {passive:true});
-
-  track.addEventListener('pointermove', e => {
-    if(!active) return;
-    const dx = e.clientX - sx;
-    const dy = Math.abs(e.clientY - sy);
-
-    // Alleen horizontaal swipen
-    if(Math.abs(dx) > 40 && dy < 30){
-      if(dx > 0) go(-1);
-      else go(1);
-      active = false;
-    }
-  }, {passive:true});
-
-  track.addEventListener('pointerup', () => active = false, {passive:true});
-  track.addEventListener('pointercancel', () => active = false, {passive:true});
-})();
+/* v3.3.49 – Horizontaal swipen in de uitleg gebeurt native via scroll-snap.
+   Geen JS-gestures nodig (houdt het licht, vloeiend en conflictvrij). */
 
 
 /* v3.3.42 – Harde swipe reset */
