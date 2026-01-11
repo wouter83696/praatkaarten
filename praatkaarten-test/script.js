@@ -1078,3 +1078,80 @@ document.addEventListener('pointerdown', (e) => {
     }
   }, true);
 })();
+
+
+// SAFE CLOSE OVERRIDE v3.3.41
+(function(){
+  const lb = document.getElementById('lb');
+  const toast = document.getElementById('toast');
+  const closeBtn = document.getElementById('close');
+  const hit = document.getElementById('closeHitbox');
+
+  function showToast(msg){
+    if(!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>toast.classList.remove('show'), 1200);
+  }
+
+  function hardClose(){
+    if(!lb) return;
+    // remove open + any swipe/drag classes
+    lb.classList.remove('open','dragging','closing','is-dragging','is-swiping');
+    lb.style.transform = '';
+    // hide any text panel if present
+    const lbText = document.getElementById('lbText');
+    if(lbText) lbText.hidden = true;
+    // restore body scroll
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    // try to stop any active pointer capture
+    try{ if(document.activeElement) document.activeElement.blur(); }catch(_){}
+  }
+
+  function safeClose(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+    try{
+      if(typeof closeLb === 'function'){
+        closeLb();
+        // if still open (due to error or early return), hard close
+        setTimeout(()=>{ if(lb && lb.classList.contains('open')) hardClose(); }, 0);
+      } else {
+        hardClose();
+      }
+    }catch(err){
+      console.error('closeLb error', err);
+      showToast('close error → hard close');
+      hardClose();
+    }
+  }
+
+  // bind aggressively
+  [closeBtn, hit].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('touchstart', safeClose, {capture:true, passive:false});
+    el.addEventListener('pointerdown', safeClose, {capture:true});
+    el.addEventListener('click', safeClose, {capture:true});
+  });
+
+  // Also allow tapping backdrop to close (keihard)
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb || !lb.classList.contains('open')) return;
+    const insidePanel = e.target && e.target.closest && e.target.closest('.panel');
+    const isClose = e.target && e.target.closest && e.target.closest('#close,#closeHitbox');
+    if(!insidePanel && !isClose){
+      safeClose(e);
+    }
+  }, true);
+
+  // expose for inline onclick
+  window.__safeClose = safeClose;
+})();
