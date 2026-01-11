@@ -126,6 +126,19 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbHelpTitle = document.getElementById('lbHelpTitle');
   const lbHelpDesc = document.getElementById('lbHelpDesc');
 
+  // POSITION OVERLAY CLOSE v3.3.34
+  const overlayClose = document.getElementById('close');
+  function positionOverlayClose(){
+    if(!overlayClose || !lbCard) return;
+    const r = lbCard.getBoundingClientRect();
+    const top = Math.round(r.top + 8);
+    const left = Math.round(r.right - 8 - 44);
+    overlayClose.style.top = top + 'px';
+    overlayClose.style.left = left + 'px';
+  }
+  window.addEventListener('resize', positionOverlayClose, {passive:true});
+  window.addEventListener('scroll', positionOverlayClose, {passive:true});
+
   // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
   if(lbHelpTitle){
     lbHelpTitle.textContent = "";
@@ -166,6 +179,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
   let uiTimer = null;
   function showUI(){
+    try{ positionOverlayClose(); }catch(_e){}
+
     lb.classList.add('show-ui');
     clearTimeout(uiTimer);
     const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
@@ -284,7 +299,8 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
 
     lb.setAttribute('aria-hidden','false');
     lb.classList.add('open');
-    document.body.classList.add('lb-open');
+    try{ positionOverlayClose(); }catch(_e){}
+document.body.classList.add('lb-open');
 
     // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
     document.documentElement.style.overflow = 'hidden';
@@ -508,6 +524,20 @@ lb.addEventListener('pointerup', (e) => {
     e.stopPropagation();
   });
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLb(); });
+
+  // CLOSE FIX v3.3.34: force pointerdown so gestures can't swallow close
+  closeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLb();
+  }, {capture:true});
+
+  // CLOSE FIX v3.3.30: op mobiel kan 'click' soms niet afvuren door gesture/capture; forceer pointerdown
+  closeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLb();
+  }, {capture:true});
   prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
   nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
 
@@ -924,3 +954,158 @@ async function renderMobileIntro(){
 // Fire & forget after DOM is ready
 document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
+
+
+
+// SAFETY: close button delegation (v3.3.28)
+document.addEventListener('click', (e) => {
+  const closeEl = e.target && (e.target.closest ? e.target.closest('.close') : null);
+  const lb = document.getElementById('lb');
+  if (!lb) return;
+  if (lb.classList.contains('open') && closeEl) {
+    e.preventDefault();
+    e.stopPropagation();
+    try { closeLb(); } catch(_) {}
+  }
+}, true);
+
+// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #close of .close
+document.addEventListener('pointerdown', (e) => {
+  const lb = document.getElementById('lb');
+  if (!lb || !lb.classList.contains('open')) return;
+  const closeEl = e.target && (e.target.closest ? e.target.closest('#close, .close') : null);
+  if (!closeEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try { closeLb(); } catch(_) {}
+}, true);
+
+
+// KEIHARDE CLOSE FIX v3.3.38
+(function(){
+  const lb = document.getElementById('lb');
+  const closeBtn = document.getElementById('close');
+  const closeHitbox = document.getElementById('closeHitbox');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !closeBtn || !closeHitbox) return;
+
+  function setHud(t){ if(hud) hud.textContent = t; }
+  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
+
+  function positionCloseHitbox(){
+    const r = closeBtn.getBoundingClientRect();
+    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
+    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
+  }
+
+  window.addEventListener('resize', positionCloseHitbox, {passive:true});
+  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
+
+  let taps = 0, tmr = null;
+  document.addEventListener('click', (e)=>{
+    if(!lb.classList.contains('open')) return;
+    if(e.target && e.target.closest && e.target.closest('#close,#closeHitbox')) return;
+    taps++;
+    clearTimeout(tmr);
+    tmr = setTimeout(()=>{ taps=0; }, 500);
+    if(taps>=3){
+      document.documentElement.classList.toggle('debug-on');
+      taps=0;
+    }
+  }, true);
+
+  function forceClose(e){
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if(typeof closeLb === 'function') closeLb();
+  }
+
+  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
+  closeHitbox.addEventListener('click', forceClose, {capture:true});
+
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) positionCloseHitbox();
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !isDebug()) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
+    );
+  }, true);
+})();
+
+
+
+// DEBUG ALWAYS-ON + LONGPRESS TOGGLE v3.3.39
+(function(){
+  const lb = document.getElementById('lb');
+  const hud = document.getElementById('debugHud');
+  if(!lb || !hud) return;
+
+  function setHud(t){ hud.textContent = t; }
+
+  // Always show basic state when open
+  const obs = new MutationObserver(()=>{
+    if(lb.classList.contains('open')) setHud('lb=open (debug on)');
+    else setHud('lb=closed');
+  });
+  obs.observe(lb, {attributes:true, attributeFilter:['class']});
+
+  // Long press anywhere (600ms) toggles extra verbose mode
+  let pressT=null;
+  let verbose=false;
+
+  function startPress(e){
+    if(!lb.classList.contains('open')) return;
+    clearTimeout(pressT);
+    pressT = setTimeout(()=>{
+      verbose = !verbose;
+      document.documentElement.classList.toggle('debug-verbose', verbose);
+      setHud('lb=open\nverbose=' + (verbose?'on':'off') + '\n(long-press toggled)');
+    }, 600);
+  }
+  function endPress(){ clearTimeout(pressT); }
+
+  document.addEventListener('pointerdown', startPress, true);
+  document.addEventListener('pointerup', endPress, true);
+  document.addEventListener('pointercancel', endPress, true);
+
+  // Show pointerdown targets when verbose
+  document.addEventListener('pointerdown', (e)=>{
+    if(!lb.classList.contains('open') || !verbose) return;
+    const el = e.target;
+    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
+    setHud(
+      'pointerdown\n' +
+      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
+      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + '\n' +
+      'verbose=on'
+    );
+  }, true);
+})();
+
+
+
+// PANIC CLOSE HANDLER v3.3.41 (uitleg carousel)
+(function(){
+  const lb = document.getElementById('lb');
+  const panic = document.getElementById('closePanic');
+  if(!lb || !panic) return;
+
+  function panicClose(e){
+    if(!lb.classList.contains('open')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    try{ closeLb(); }catch(_){}
+  }
+  panic.addEventListener('pointerdown', panicClose, {capture:true});
+  panic.addEventListener('click', panicClose, {capture:true});
+})();
