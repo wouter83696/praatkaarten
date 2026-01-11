@@ -862,7 +862,8 @@ document.addEventListener('keydown', (e) => {
       sy = e.clientY;
       currentY = 0;
       computeThreshold();
-      setSheetStable(false); // ✕ verdwijnt zodra drag start
+      // ✕ NIET verbergen bij pointerdown (anders verdwijnt hij ook bij zijdelings scrollen).
+      // We verbergen ✕ pas zodra we zeker weten dat dit een verticale drag is.
       introSheet.style.transition = 'none';
       try{ dragEl.setPointerCapture?.(e.pointerId); }catch(_e){}
     }, {passive:true, capture:true});
@@ -885,7 +886,8 @@ document.addEventListener('keydown', (e) => {
           setSheetStable(true);
           return;
         }
-        // Verticaal: nu pas echt claimen
+        // Verticaal: nu pas echt claimen — ✕ verdwijnt zodra de verticale drag start
+        setSheetStable(false);
         disableHorizontalScroll();
       }
 
@@ -958,7 +960,8 @@ document.addEventListener('keydown', (e) => {
       sy = touch.clientY;
       currentY = 0;
       computeThreshold();
-      setSheetStable(false);
+      // ✕ NIET verbergen bij touchstart (anders verdwijnt hij ook bij zijdelings scrollen).
+      // We verbergen ✕ pas zodra we zeker weten dat dit een verticale drag is.
       introSheet.style.transition = 'none';
     }, {passive:true, capture:true});
 
@@ -982,6 +985,8 @@ document.addEventListener('keydown', (e) => {
           setSheetStable(true);
           return;
         }
+        // Verticaal: claimen — ✕ verbergen
+        setSheetStable(false);
         disableHorizontalScroll();
       }
 
