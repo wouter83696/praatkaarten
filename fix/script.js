@@ -1,250 +1,56 @@
-// Zorg dat "viewport units" op mobiel/rotatie altijd kloppen (iOS/Safari quirks)
-function setVh(){
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-setVh();
+// Praatkaarten – Mobile-only rebuild
+// Version: 3.4.1 (rebuild start)
+
+const VERSION = '3.4.1';
 
 // ===============================
-// Path-resolver (werkt in ELKE directory op GitHub Pages)
-// - probeert eerst huidige directory
-// - daarna repo-root (bijv. /praatkaarten/)
-// - daarna (optioneel) parent directories
+// Pad-resolutie: werkt in elke directory op GitHub Pages
 // ===============================
 function getRepoRoot(){
-  const parts = location.pathname.split('/').filter(Boolean);
-  // GitHub Pages project site: eerste segment is repo-name
-  // /<repo>/... -> repo root = /<repo>/
-  if(parts.length>=1) return `/${parts[0]}/`;
-  return '/';
-}
-function currentDirUrl(){
-  return new URL('./', location.href);
-}
-function resolveResourceUrl(rel){
-  const relClean = rel.replace(/^\//,''); // nooit absolute slash
-  const tries = [];
-  const cur = currentDirUrl();
-  tries.push(new URL(relClean, cur));
-
-  // probeer parent directories (max 3 niveaus) voor het geval je nested test-mappen hebt
-  let parent = cur;
-  for(let i=0;i<3;i++){
-    parent = new URL('../', parent);
-    tries.push(new URL(relClean, parent));
-  }
-
-  // repo root als laatste (meest stabiel)
-  const repoRoot = new URL(getRepoRoot(), location.origin);
-  tries.push(new URL(relClean, repoRoot));
-
-  // ook repoRoot + "praatkaarten-main/" fallback (voor oudere structuren)
-  tries.push(new URL(`praatkaarten-main/${relClean}`, repoRoot));
-
-  return tries;
-}
-async function fetchJsonFallback(rel){
-  const urls = resolveResourceUrl(rel);
-  let lastErr = null;
-  for(const u of urls){
-    try{
-      const r = await fetch(u.toString(), { cache: 'no-store' });
-      if(r.ok) return await r.json();
-      lastErr = new Error(`HTTP ${r.status} for ${u}`);
-    }catch(e){
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error(`Kon ${rel} niet laden`);
-}
-async function fetchTextFallback(rel){
-  const urls = resolveResourceUrl(rel);
-  let lastErr = null;
-  for(const u of urls){
-    try{
-      const r = await fetch(u.toString(), { cache: 'no-store' });
-      if(r.ok) return await r.text();
-      lastErr = new Error(`HTTP ${r.status} for ${u}`);
-    }catch(e){
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error(`Kon ${rel} niet laden`);
-}
-window.addEventListener('resize', setVh);
-window.addEventListener('orientationchange', setVh);
-if (window.visualViewport){
-  window.visualViewport.addEventListener('resize', setVh);
+  const p = location.pathname;
+  // als we op /praatkaarten/... zitten, pak /praatkaarten/
+  const m = p.match(/^(\/[^\/]+\/)/);
+  return (m && m[1]) ? m[1] : '/';
 }
 
-// Versie + cache-buster (handig op GitHub Pages)
-// Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.53';
-const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
+const withV = (u) => (u.includes('?') ? `${u}&v=${VERSION}` : `${u}?v=${VERSION}`);
 
-const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
+async function fetchJsonSmart(relPath){
+  // 1) lokaal relatief
+  try {
+    const r1 = await fetch(withV(relPath), {cache:'no-store'});
+    if(r1.ok) return await r1.json();
+  } catch(_e){}
 
-  // State
-  let data = [];
-  let filtered = [];      // huidige (eventueel gehusselde) kaartset
-  let helpFiltered = [];  // uitlegkaartjes
-  let currentIndex = -1;
+  // 2) repo root (GitHub Pages subpath)
+  try {
+    const root = getRepoRoot();
+    const url = root + relPath.replace(/^\//,'');
+    const r2 = await fetch(withV(url), {cache:'no-store'});
+    if(r2.ok) return await r2.json();
+  } catch(_e){}
 
+  throw new Error(`Kan JSON niet laden: ${relPath}`);
+}
 
-  const grid = document.getElementById('grid');
-  const lb = document.getElementById('lb');
-  const lbImg = document.getElementById('lbImg');
-  const lbText = document.getElementById('lbText');
-  const lbCard = document.getElementById('lbCard');
-  const themeTag = document.getElementById('themeTag');
-  // (v3.3.7) swipe-hint is bewust verwijderd
-  const navHint = null;
+// ===============================
+// Grid (mobile)
+// ===============================
+const grid = document.getElementById('grid');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const uitlegBtn = document.getElementById('uitlegBtn');
 
-  const closeBtn = document.getElementById('lbClose');
-  const prevBtn = document.getElementById('prev');
-  const nextBtn = document.getElementById('next');
+let items = [];
 
-  // Onderbalk: chips (v3.2)
-  const shuffleBtn = document.getElementById('shuffleBtn');
-  const uitlegBtn  = document.getElementById('uitlegBtn');
-  // (v3.3.7) geen extra sluitknoppen in de pills
-  const mobileIntroEl = document.getElementById('mobileIntro');
-
-  let shuffleOn = false;
-  let uitlegOn  = false;
-
-  function setChip(btn, on){
-    if(!btn) return;
-    btn.classList.toggle('is-on', !!on);
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+function shuffleInPlace(arr){
+  for(let i=arr.length-1;i>0;i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+  return arr;
+}
 
-  function isMobile(){
-    return !!(window.matchMedia && window.matchMedia('(max-width: 720px)').matches);
-  }
-  const lbHelpText = document.getElementById('lbHelpText');
-  const lbHelpTitle = document.getElementById('lbHelpTitle');
-  const lbHelpDesc = document.getElementById('lbHelpDesc');
-
-  // POSITION OVERLAY CLOSE (mobiel/desktop)
-  // Zorg dat het kruisje (én de hitbox) altijd bovenop de kaart ligt.
-  // Close knop (opnieuw geplaatst)
-  const overlayClose = document.getElementById('lbClose');
-  const overlayCloseHitbox = document.getElementById('lbCloseHitbox');
-  function positionOverlayClose(){
-    // In deze build staat het kruisje "vast" (position: fixed) rechtsboven in de viewport.
-    // Dus we hoeven niets te positioneren via JS. (Dit voorkomt gezeik met transforms/gesture layers.)
-    return;
-  }
-  window.addEventListener('resize', positionOverlayClose, {passive:true});
-  window.addEventListener('scroll', positionOverlayClose, {passive:true});
-
-  // In de uitleg willen we GEEN extra kop boven de tekst (alleen de beschrijving).
-  if(lbHelpTitle){
-    lbHelpTitle.textContent = "";
-    lbHelpTitle.style.display = "none";
-  }
-
-  
-
-  let mode = 'cards'; // 'cards' of 'help'
-  let helpData = {};
-
-  function firstSentence(txt){
-    const t = String(txt || "").trim().replace(/\s+/g,' ');
-    const m = t.match(/^[\s\S]*?[.!?]/);
-    return m ? m[0].trim() : t;
-  }
-  // Uitleg-modus: voorkant + 6 thema-kaarten (alles in dezelfde lightbox).
-  // Let op: sommige data-bestanden gebruiken nog "verdiepen" i.p.v. "verhelderen"; we ondersteunen beide.
-  const helpItems = [
-    { theme:'',            key:'cover',       bg:withV('voorkant.svg') },
-    { theme:'Verkennen',   key:'verkennen',   bg:withV('cards/verkennen.svg') },
-    { theme:'Duiden',      key:'duiden',      bg:withV('cards/duiden.svg') },
-    { theme:'Verbinden',   key:'verbinden',   bg:withV('cards/verbinden.svg') },
-    { theme:'Verhelderen', key:'verhelderen', bg:withV('cards/verhelderen.svg') },
-    { theme:'Vertragen',   key:'vertragen',   bg:withV('cards/vertragen.svg') },
-    { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
-  ];
-
-  // (v3.3.7) swipe-hint verwijderd: geen timers/tekst meer
-  let hintTimer = null;
-
-// UI chrome (pijlen + sluiten)
-  // - Touch: iets langer zichtbaar
-  // - Desktop: ook auto-hide, maar alleen na inactiviteit (muis bewegen laat het weer zien)
-  const HAS_HOVER = window.matchMedia && window.matchMedia('(hover: hover)').matches;
-  const HIDE_MS_DESKTOP = 600;
-  const HIDE_MS_TOUCH   = 900;
-
-  let uiTimer = null;
-  function showUI(){
-    try{ positionOverlayClose(); }catch(_e){}
-
-    lb.classList.add('show-ui');
-    clearTimeout(uiTimer);
-    const ms = HAS_HOVER ? HIDE_MS_DESKTOP : HIDE_MS_TOUCH;
-    uiTimer = setTimeout(() => lb.classList.remove('show-ui'), ms);
-  }
-
-  function buildData(questions){
-    const out = [];
-    for (const theme of THEMES){
-      const qs = questions[theme] || [];
-      for (let i=0; i<qs.length; i++){
-        out.push({
-          theme,
-          num: i+1,
-          q: qs[i],
-          bg: withV(`cards/${theme}.svg`),
-          id: `${theme}-${String(i+1).padStart(2,'0')}`
-        });
-      }
-    }
-    return out;
-  }
-  
-  // ===============================
-  // v3.3.47 – Init grid (portable)
-  // - gebruikt embedded JSON (#questions-json) voor file://
-  // - fallback: fetch ./questions.json voor hosting
-  // - bouwt originele kaartjes (SVG achtergrond + tekst) zoals vóórheen
-  // ===============================
-  function readEmbeddedQuestions(){
-    const el = document.getElementById('questions-json');
-    if(!el) return null;
-    try{ return JSON.parse(el.textContent); }catch(_e){ return null; }
-  }
-
-  async function loadQuestions(){
-    const embedded = readEmbeddedQuestions();
-    if(embedded) return embedded;
-    // fallback via fetch (werkt op GitHub Pages / server)
-    try{
-      const r = await fetch('./questions.json', {cache:'no-store'});
-      if(r.ok) return await r.json();
-    }catch(_e){}
-    return null;
-  }
-
-  (async function initGrid(){
-    try{
-      const q = await loadQuestions();
-      if(!q){
-        // laat debug tekst i.p.v. leeg
-        if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Kon vragen niet laden.</div>';
-        return;
-      }
-      data = buildData(q);
-      // start zonder shuffle
-      render(data.slice());
-    }catch(e){
-      console.error(e);
-      if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Fout bij laden.</div>';
-    }
-  })();
-
-  function render(items){
+function render(items){
     // Bewaar de huidige (zichtbare) kaartset voor navigatie
     filtered = items;
     grid.innerHTML = "";
@@ -286,449 +92,12 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     grid.appendChild(frag);
   }
 
-  function setLightboxBackground(url){
-    // Geblurde achtergrond = dezelfde SVG als huidige kaart
-    // (werkt ook als de img zelf nog laadt)
-    try{
-      lb.style.setProperty('--lb-bg-url', `url("${url}")`);
-    }catch(_e){}
-  }
-
-  function openLb(item){
-    // item: {bg, q} voor kaarten, of {bg, theme, key} voor help
-    // FIX: gebruik de bg van het item (niet het <img>-element zelf), anders breekt klikken.
-    const bg = (item && item.bg) ? String(item.bg).trim() : "";
-    const bgResolved = (!bg)
-      ? ""
-      : (/^https?:\/\//i.test(bg) ? bg : resolveResourceUrl(bg)[0].toString());
-
-    lbImg.src = bgResolved;
-    if(bgResolved) setLightboxBackground(bgResolved);
-
-    if(mode === 'help'){
-      lb.classList.add('help');
-
-      // UITLEG: toon uitlegtekst onder de kaart (titel onder kaart is via CSS verborgen)
-      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','false');
-      // geen kop in uitleg
-      // Support: sommige data-bestanden gebruiken nog 'verdiepen'
-      const key = item.key === 'verhelderen' && helpData && (typeof helpData.verhelderen !== 'string') && (typeof helpData.verdiepen === 'string')
-        ? 'verdiepen'
-        : item.key;
-
-      const raw = (helpData && key && typeof helpData[key] === 'string') ? helpData[key].trim() : "";
-      // Geen geforceerde enters: laat de browser het netjes afbreken.
-      const desc = firstSentence(raw.replace(/\s*\n\s*/g, ' '));
-      if(lbHelpDesc) lbHelpDesc.textContent = desc;
-      // In help-mode: thema-naam in het midden (net als op mobiel), behalve op de voorkant.
-      const isCover = (item && item.key === 'cover');
-      const t = (!isCover && item && typeof item.theme === 'string') ? item.theme.trim() : '';
-      lbText.textContent = t;
-      lb.classList.toggle('help-title', !!t);
-      lb.classList.remove('no-overlay');
-    }
-
-    else{
-      lb.classList.remove('help');
-      if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-      // geen kop in uitleg
-      if(lbHelpDesc) lbHelpDesc.textContent = "";
-
-      lbText.textContent = item.q || "";
-    }
-
-    lb.setAttribute('aria-hidden','false');
-    lb.classList.add('open');
-    try{ positionOverlayClose(); }catch(_e){}
-document.body.classList.add('lb-open');
-
-    // voorkom scrollen achter de lightbox (iOS/Safari vriendelijk)
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-
-    showUI();
-    // (v3.3.7) geen swipe-hint
-
-    // Oneindig doorlopen: pijlen nooit uitschakelen
-    if(prevBtn) prevBtn.disabled = false;
-    if(nextBtn) nextBtn.disabled = false;
-  }
-
-  function closeLb(){
-    // Sluiten = terug naar normale kaartmodus
-    if(mode === 'help'){
-      mode = 'cards';
-      helpFiltered = [];
-    }
-    lb.classList.remove('help','no-overlay','help-title','open','show-ui');
-    lbImg.src = "";
-    lbText.textContent = "";
-    if(lbHelpText) lbHelpText.setAttribute('aria-hidden','true');
-    // geen kop in uitleg
-    if(lbHelpDesc) lbHelpDesc.textContent = "";
-    currentIndex = -1;
-    lb.setAttribute('aria-hidden','true');
-    document.body.classList.remove('lb-open');
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-    // (v3.3.7) geen swipe-hint
-
-    // Sync: als je de uitleg-lightbox op desktop sluit, zet de chip uit
-    try{
-      if(typeof isMobile === 'function' && !isMobile() && typeof uitlegOn !== 'undefined' && uitlegOn){
-        uitlegOn = false;
-        setChip(uitlegBtn, false);
-      }
-    }catch(_e){}
-  }
-
-  // Swipe / drag overal (ook op de grijze achtergrond):
-  // - links/rechts: vorige/volgende
-  // - omlaag: sluiten
-  // - tap (touch): sluiten
-  let startX = 0, startY = 0, startT = 0;
-  let pointerDown = false;
-  lb.classList.remove('is-swiping');
-  let gestureArmed = false;
-  let lastPointerType = 'mouse';
-
-  // Voorkom dat de 'synthetic click' na een touch-tap doorvalt naar de grid
-  // (klassieker: je sluit de lightbox, maar de klik opent direct weer een kaart).
-  let suppressClickUntil = 0;
-
-  function closeFromTap(e){
-    suppressClickUntil = performance.now() + 450;
-    try{ e?.preventDefault?.(); }catch(_e){}
-    try{ e?.stopPropagation?.(); }catch(_e){}
-    closeLb();
-  }
-
-  // Fallback: tap/click op de achtergrond (blur) sluit ook (handig als iOS pointer-events raar doet)
-  const lbBg = lb.querySelector('.lbBg');
-  if(lbBg){
-    lbBg.addEventListener('click', (e) => {
-      if(!lb.classList.contains('open')) return;
-      // voorkom dubbele click na touch
-      if(performance.now() < suppressClickUntil) return;
-      closeFromTap(e);
-    });
-    lbBg.addEventListener('touchend', (e) => {
-      if(!lb.classList.contains('open')) return;
-      closeFromTap(e);
-    }, {passive:false});
-  }
-
-
-
-  lb.addEventListener('pointerdown', (e) => {
-    if(!lb.classList.contains('open')) return;
-    lastPointerType = e.pointerType || 'mouse';
-    // Als je start op een UI-knop (pijlen/sluiten), dan willen we géén swipe-gesture starten.
-    // Als je start in het uitleg-tekstvak: laat verticale scroll met rust (geen swipe-gesture).
-    // Anders kan een "klik" per ongeluk als swipe omlaag geïnterpreteerd worden en sluit het venster.
-    if (e.target.closest && e.target.closest('button')) {
-      gestureArmed = false;
-      showUI();
-      return;
-    }
-    if (e.target.closest && (e.target.closest('.lbHelpText') || e.target.closest('.lbHelpDesc'))){
-      gestureArmed = false;
-      return;
-    }
-    pointerDown = true;
-    gestureArmed = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    startT = performance.now();
-    // Op touch willen we native verticaal scrollen (zeker bij lange kaarten).
-    // Pointer-capture kan dat soms "stroef" maken, dus alleen gebruiken bij mouse/pen.
-    if(lastPointerType !== 'touch'){
-      lb.setPointerCapture?.(e.pointerId);
-    }
-    showUI();
-  });
-
-  
-lb.addEventListener('pointermove', (e) => {
-  if(!pointerDown) return;
-  if(!gestureArmed) return;
-
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-  const ax = Math.abs(dx);
-  const ay = Math.abs(dy);
-
-  // Alleen "swipe"-modus als het echt horizontaal is.
-  // Dit voorkomt dat verticaal scrollen soms als swipe/tap wordt gezien.
-  if(ax > ay && ax > 12){
-    lb.classList.add('is-swiping');
-  }
-}, {passive:true});
-
-lb.addEventListener('pointerup', (e) => {
-    if(!pointerDown) return;
-    pointerDown = false;
-    lb.classList.remove('is-swiping');
-    if(!gestureArmed) return;
-    gestureArmed = false;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    const dt = performance.now() - startT;
-    const ax = Math.abs(dx);
-    const ay = Math.abs(dy);
-
-    const fast = dt < 420;
-    const thrX = fast ? 40 : 60;
-    const thrY = fast ? 50 : 80;
-
-    if(ay > ax && dy > thrY){
-      closeLb();
-      return;
-    }
-    if(ax > ay && ax > thrX){
-      if(dx < 0) go(1); else go(-1);
-      showUI();
-      return;
-    }
-
-    // ✅ Tap-to-close op touch: ook als je op de kaart zelf tapt
-    // (geen swipe, geen drag)
-    if(lastPointerType !== 'mouse' && ax < 10 && ay < 10){
-      closeFromTap(e);
-      return;
-    }
-  });
-
-  function activeItems(){
-    return (mode === 'help') ? helpFiltered : filtered;
-  }
-
-  function openAt(index){
-    const items = activeItems();
-    currentIndex = index;
-    openLb(items[currentIndex]);
-  }
-
-  function go(delta){
-
-    if (currentIndex < 0) return;
-    const items = activeItems();
-    const total = items.length;
-    let next = currentIndex + delta;
-    if (next < 0) next = total - 1;
-    if (next >= total) next = 0;
-    openAt(next);
-  }
-
-
-  // Touch fallback (iOS/Safari): als Pointer Events niet (goed) werken, toch tap-to-close.
-  let tStartX = 0, tStartY = 0;
-  lb.addEventListener('touchstart', (e) => {
-    if(!lb.classList.contains('open')) return;
-    if (e.target.closest && e.target.closest('button')) return;
-    const t = e.touches && e.touches[0];
-    if(!t) return;
-    tStartX = t.clientX;
-    tStartY = t.clientY;
-  }, {passive:true});
-
-  lb.addEventListener('touchend', (e) => {
-    if(!lb.classList.contains('open')) return;
-    if (e.target.closest && e.target.closest('button')) return;
-    const t = e.changedTouches && e.changedTouches[0];
-    if(!t) return;
-    const ax = Math.abs(t.clientX - tStartX);
-    const ay = Math.abs(t.clientY - tStartY);
-    // Alleen echte tap, geen swipe/drag
-    if(ax < 10 && ay < 10){
-      closeFromTap(e);
-    }
-  }, {passive:true});
-
-  function shuffle(arr){
-    for(let i=arr.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-    return arr;
-  }
-
-  // events (iconen op de kaart)
-  // Belangrijk: desktop = klik op kaart doet niets (alleen UI tonen),
-  // touch = tap op kaart sluit (tap-to-close).
-  lbCard.addEventListener('click', (e) => {
-    if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
-      closeFromTap(e);
-      return;
-    }
-    e.stopPropagation();
-  });
-  // Sluiten moet altijd werken (ook op mobiel waar 'click' soms niet afvuurt)
-  closeBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeLb(); });
-  closeBtn.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    closeLb();
-  }, {capture:true});
-
-  // Extra (onzichtbare) hitbox naast/om het kruisje voor makkelijke bediening op telefoon
-  if(overlayCloseHitbox){
-    overlayCloseHitbox.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); closeLb(); });
-    overlayCloseHitbox.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closeLb();
-    }, {capture:true});
-  }
-  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); go(-1); showUI(); });
-  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); go(1); showUI(); });
-
-  lb.addEventListener('mousemove', showUI);
-  lb.addEventListener('touchstart', showUI, {passive:true});
-  lb.addEventListener('click', (e) => {
-    // Klik buiten de kaart (op de blur/achtergrond) = sluiten
-    if(!lbCard.contains(e.target)) {
-      if ((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || lastPointerType !== 'mouse') {
-        closeFromTap(e);
-      } else {
-        closeLb();
-      }
-      return;
-    }
-
-    // Touch: klik op kaart wordt al door lbCard afgehandeld (tap-to-close)
-    // Desktop: alleen UI tonen
-    showUI();
-  });
-
-  // Onderdruk 'click-through' direct na een touch-tap-close.
-  // Dit voorkomt dat er meteen weer een kaart opent op de plek waar je tikt.
-  document.addEventListener('click', (e) => {
-    // Alleen onderdrukken als de click buiten overlays/controls valt.
-    // Anders kan bijvoorbeeld de close-knop soms "dood" aanvoelen op mobiel.
-    if (
-      performance.now() < suppressClickUntil &&
-      !lb.contains(e.target) &&
-      !(mobileIntroEl && mobileIntroEl.contains(e.target)) &&
-      !(e.target && e.target.closest && e.target.closest('.pillsDock'))
-    ) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  }, true);
-document.addEventListener('keydown', (e) => {
-    if(!lb.classList.contains('open')) return;
-    if(e.key === 'Escape') closeLb();
-    if(e.key === 'ArrowLeft') go(-1);
-    if(e.key === 'ArrowRight') go(1);
-  });
-
-  // ===============================
-  // v3.2 – Chips onderbalk
-  // (Let op: shuffleOn/uitlegOn, setChip() en isMobile() worden al bovenin gedeclareerd.)
-  // - Hussel: aan = 1x shuffle, uit = originele volgorde
-  // - Uitleg: mobiel = carousel boven grid, desktop = help-lightbox
-  // ===============================
-
-  function setUitleg(on){
-    uitlegOn = !!on;
-    setChip(uitlegBtn, uitlegOn);
-
-    // Pills verplaatsen: onder ↔ boven
-    document.body.classList.toggle('uitleg-open', uitlegOn);
-
-    if(isMobile()){
-      // Mobiel: bottom-sheet (uitleg carousel)
-      if(uitlegOn) openIntroSheet();
-      else closeIntroSheet();
-      return;
-    }
-
-    // Desktop: help-lightbox aan/uit
-    if(uitlegOn){
-      // (v3.3.7) geen swipe-hint
-      mode = 'help';
-      helpFiltered = helpItems.slice();
-      openAt(0);
-    }else{
-      if(mode === 'help') closeLb();
-      mode = 'cards';
-    }
-  }
-
-  function setShuffle(on){
-    shuffleOn = !!on;
-    setChip(shuffleBtn, shuffleOn);
-
-    mode = 'cards';
-    filtered = shuffleOn ? shuffle(data.slice()) : data.slice();
-    render(filtered);
-    closeLb();
-  }
-
-  // Start: beide uit
-  setChip(shuffleBtn, false);
-  setChip(uitlegBtn, false);
-  document.body.classList.remove('show-intro');
-  document.body.classList.remove('uitleg-open');
-
-  if(shuffleBtn){
-    shuffleBtn.addEventListener('click', () => setShuffle(!shuffleOn));
-  }
-  if(uitlegBtn){
-    uitlegBtn.addEventListener('click', () => setUitleg(!uitlegOn));
-  }
-
-  // Mobiel: sluit-knop in de hoek van het plaatje (wordt per kaart gerenderd)
-  // Gebruik event delegation zodat clones ook werken.
-  if(mobileIntroEl){
-    mobileIntroEl.addEventListener('click', (e) => {
-      const btn = e.target && e.target.closest && e.target.closest('.introClose');
-      if(!btn) return;
-      e.stopPropagation();
-      setUitleg(false);
-    });
-  }
-
-  // Houd altijd genoeg "safe space" boven de fixed pills (links-onder),
-  // zodat tekst nooit onder de pills valt. Dynamisch (iOS safe-area + grootte).
-  const updatePillsSafe = () => {
-    const dock = document.querySelector('.pillsDock');
-    if(!dock) return;
-    const rect = dock.getBoundingClientRect();
-    const h = Math.max(0, rect.height);
-    // +6px ademruimte (compacter op mobiel)
-    document.documentElement.style.setProperty('--pillsSafe', `${Math.ceil(h + 6)}px`);
-  };
-  window.addEventListener('resize', updatePillsSafe, {passive:true});
-  window.addEventListener('orientationchange', updatePillsSafe, {passive:true});
-  // eerste run
-  requestAnimationFrame(updatePillsSafe);
-
-  // ===============================
-  // v3.3.50 – Mobile bottom-sheet gedrag (uitleg)
-  // Eisen:
-  // - Tijdens drag: sheet volgt vinger (geen opacity/fade/mee-bewegen UI)
-  // - Animaties alleen bij loslaten
-  // - Horizontaal swipen: licht (native scroll), Verticaal omlaag: zwaar met weerstand
-  // - Drempel: onder = veer terug, boven = sluit onherroepelijk
-  // - ✕ alleen zichtbaar als sheet volledig open & stabiel; verdwijnt bij drag-start
-  // ===============================
-
-  
-/* ===============================
-   v3.3.60 – CLEAN Mobile uitleg-sheet (bottom-sheet)
-   Doel:
-   - Tijdens drag alleen transform (sheet volgt vinger)
-   - Verticale drag met deadzone + weerstand
-   - Drempel: onder = terugveren, boven = locked + onherroepelijk sluiten
-   - Sluiten/openen altijd zichtbaar geanimeerd (geen 'poef weg')
-   - Sheet blokkeert NOOIT het grid als hij dicht is
-   =============================== */
-
+// ===============================
+// Clean Mobile uitleg-sheet (bottom-sheet + drag)
+// ===============================
 const introSheet = document.getElementById('mobileIntro');
 const introTrack = document.getElementById('introTrack');
-const closeBtn   = document.getElementById('closeIntro'); // kan null zijn
+const introCloseBtn = document.getElementById('introClose');
 
 let sheetOpen = false;
 let dragging = false;
@@ -739,17 +108,16 @@ let threshold = 140;
 let lockedClose = false;
 let restoreOx = '';
 
-const DEADZONE = 14;        // 10–15px
-const V_RATIO  = 1.15;      // verticale intent wint bij lichte drift
-const RESIST   = 0.55;      // zwaarder gevoel
-const OPEN_MS  = 165;       // 120–180ms
-const CLOSE_MS = 150;       // iets sneller
+const DEADZONE = 14;
+const V_RATIO  = 1.15;
+const RESIST   = 0.55;
+const OPEN_MS  = 165;
+const CLOSE_MS = 150;
 const EASE     = 'cubic-bezier(.2,.9,.2,1)';
 
 function computeThreshold(){
   const vh = window.innerHeight || 700;
   const sh = introSheet ? Math.max(1, introSheet.getBoundingClientRect().height) : vh;
-  // mix: minimaal 120px, of ~22% vh, of 25% sheet-hoogte
   threshold = Math.max(120, Math.round(vh * 0.22), Math.round(sh * 0.25));
 }
 
@@ -762,26 +130,24 @@ function getSheetY(){
   if(!introSheet) return 0;
   const t = getComputedStyle(introSheet).transform;
   if(!t || t === 'none') return 0;
-  const m = t.match(/matrix\\([^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\\s*([^)]+)\\)/);
+  const m = t.match(/matrix\([^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*([^)]+)\)/);
   if(m) return parseFloat(m[1]) || 0;
   return 0;
 }
 
 function setCrossVisible(on){
-  if(!closeBtn) return;
-  closeBtn.style.transition = 'opacity 150ms ease-out';
-  closeBtn.style.opacity = on ? '1' : '0';
-  closeBtn.style.pointerEvents = on ? 'auto' : 'none';
+  if(!introCloseBtn) return;
+  introCloseBtn.style.transition = 'opacity 150ms ease-out';
+  introCloseBtn.style.opacity = on ? '1' : '0';
+  introCloseBtn.style.pointerEvents = on ? 'auto' : 'none';
 }
 
 function setStableOpenState(){
-  // stabiel open: kruis zichtbaar
   setCrossVisible(true);
   document.body.classList.remove('intro-dragging');
 }
 
 function setDraggingState(){
-  // tijdens drag: kruis weg
   setCrossVisible(false);
   document.body.classList.add('intro-dragging');
 }
@@ -792,7 +158,6 @@ function openIntroSheet(){
   computeThreshold();
 
   document.body.classList.add('show-intro');
-  // sheet mag nu input krijgen
   introSheet.classList.add('is-open');
 
   setCrossVisible(false);
@@ -801,7 +166,6 @@ function openIntroSheet(){
   introSheet.style.transition = 'none';
   setSheetY(offY);
 
-  // mini overshoot: eerst net iets boven 0, dan 0
   requestAnimationFrame(() => {
     introSheet.style.transition = `transform ${OPEN_MS}ms ${EASE}`;
     setSheetY(-8);
@@ -826,29 +190,22 @@ function closeIntroSheet(){
   introSheet.style.transition = `transform ${CLOSE_MS}ms ${EASE}`;
   setSheetY(offY);
 
-  // pas NA animatie: show-intro weg + input uit
   setTimeout(() => {
     document.body.classList.remove('show-intro');
     introSheet.classList.remove('is-open');
-    // blijf in px, geen %-jump
     introSheet.style.transition = 'none';
     setSheetY(offY);
   }, CLOSE_MS + 25);
 }
 
-// Exporteer hooks voor bestaande knoppen (als die code elders setUitleg gebruikt)
-window.openIntroSheet = openIntroSheet;
-window.closeIntroSheet = closeIntroSheet;
-
-// close knop (zekerheid)
-if(closeBtn){
-  closeBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    closeIntroSheet();
-  }, {passive:true});
+function toggleIntro(){
+  if(sheetOpen) closeIntroSheet();
+  else openIntroSheet();
 }
 
-// ---- DRAG ----
+if(uitlegBtn) uitlegBtn.addEventListener('click', (e) => { e.preventDefault(); toggleIntro(); }, {passive:true});
+if(introCloseBtn) introCloseBtn.addEventListener('click', (e) => { e.preventDefault(); closeIntroSheet(); }, {passive:true});
+
 function lockTrackScroll(){
   if(!introTrack) return;
   restoreOx = introTrack.style.overflowX || '';
@@ -862,7 +219,6 @@ function unlockTrackScroll(){
 
 function onStart(ev){
   if(!sheetOpen || !introSheet) return;
-
   const p = ev.touches ? ev.touches[0] : ev;
   dragging = true;
   decidedDir = null;
@@ -871,13 +227,10 @@ function onStart(ev){
   startX = p.clientX;
   startY = p.clientY;
   computeThreshold();
-
-  // nog geen UI veranderen; pas na verticale beslissing
 }
 
 function onMove(ev){
   if(!dragging || !sheetOpen || !introSheet) return;
-
   const p = ev.touches ? ev.touches[0] : ev;
   const dx = p.clientX - startX;
   const dy = p.clientY - startY;
@@ -885,40 +238,32 @@ function onMove(ev){
   const ax = Math.abs(dx);
   const ay = Math.abs(dy);
 
-  // deadzone + richtingbeslissing
   if(!decidedDir){
     if(ax < DEADZONE && ay < DEADZONE) return;
-
     if(ay > ax * V_RATIO && dy > 0){
       decidedDir = 'v';
       setDraggingState();
       lockTrackScroll();
     }else if(ax > ay * V_RATIO){
       decidedDir = 'h';
-      // horizontaal: laat native scroll
       return;
     }else{
-      return; // nog ambigu
+      return;
     }
   }
 
   if(decidedDir !== 'v') return;
 
-  // claim: voorkom page-scroll (touchmove moet passive:false zijn)
   ev.preventDefault();
 
-  // weerstand na deadzone
   let y = Math.max(0, dy - DEADZONE);
   y = y * RESIST;
 
-  // locked threshold gedrag
-  if(!lockedClose && y > threshold){
-    lockedClose = true;
-  }
+  if(!lockedClose && y > threshold) lockedClose = true;
   if(lockedClose){
     const over = y - threshold;
-    y = threshold + over * 1.15; // lichte versnelling / snap-gevoel
-    y = Math.max(threshold, y);  // niet meer terug te trekken
+    y = threshold + over * 1.15;
+    y = Math.max(threshold, y);
   }
 
   currentY = y;
@@ -931,7 +276,6 @@ function onEnd(){
   dragging = false;
 
   if(decidedDir !== 'v'){
-    // horizontaal of niets: sheet blijft open
     setStableOpenState();
     return;
   }
@@ -944,13 +288,11 @@ function onEnd(){
     return;
   }
 
-  // snapback
   introSheet.style.transition = `transform 150ms ${EASE}`;
   setSheetY(0);
   setTimeout(() => setStableOpenState(), 170);
 }
 
-// Pointer events + touch fallback (iOS)
 if(introSheet){
   introSheet.addEventListener('pointerdown', onStart, {capture:true, passive:true});
   window.addEventListener('pointermove', onMove, {capture:true, passive:false});
@@ -961,308 +303,108 @@ if(introSheet){
   window.addEventListener('touchend', onEnd, {capture:true, passive:true});
   window.addEventListener('touchcancel', onEnd, {capture:true, passive:true});
 }
-
 window.addEventListener('resize', computeThreshold);
 
-/* =============================== */
-// Swipe-down verwijderd voor stabiliteit (v3.3.42)
+// ===============================
+// Data load
+// ===============================
+(async function init(){
+  try {
+    const q = await fetchJsonSmart('questions.json');
+    // questions.json verwacht: { themes: [..], questions: {theme:[]} } of vergelijkbaar.
+    // We nemen een defensieve benadering: als het een array is -> direct items.
+    let built = [];
+    if(Array.isArray(q)) {
+      built = q;
+    } else {
+      // probeer bestaande structuur te volgen
+      const themes = q.themes || q.kopjes || q.categories || [];
+      const qmap = q.questions || q.vragen || q.items || {};
+      const order = themes.length ? themes : Object.keys(qmap);
+      order.forEach((themeKey) => {
+        const qs = qmap[themeKey] || [];
+        qs.forEach((text, i) => {
+          built.push({
+            theme: themeKey,
+            num: i+1,
+            q: text,
+            bg: withV(`cards/${themeKey}.svg`)
+          });
+        });
+      });
+    }
+    items = built;
+    render(items);
+  } catch(e) {
+    console.error(e);
+  }
+})();
 
-// (v3.2) Geen extra "Uitleg/Verberg" header meer op mobiel.
+// ===============================
+/*
 
 
-
-
-
-/* ===============================
-   v2.8 – Mobile uitleg-carousel vanuit JSON
-   =============================== */
+// ===============================
+// Intro carousel vullen (uitleg kaarten)
+// ===============================
 async function renderMobileIntro(){
-  const section = document.getElementById('mobileIntro');
   const track = document.getElementById('introTrack');
-  if(!section || !track) return;
+  if(!track) return;
 
-  let data = null;
-  try{
-    const r = await fetch(withV('intro-data.json'), { cache:'no-store' });
-    data = await r.json();
-  }catch(e){
+  let data;
+  try {
+    // voorkeur: uitleg-data.json, anders intro-data.json
+    try { data = await fetchJsonSmart('uitleg-data.json'); }
+    catch(_e){ data = await fetchJsonSmart('intro-data.json'); }
+  } catch(e){
+    console.error('Kon uitlegdata niet laden', e);
     return;
   }
-  if(!data || !Array.isArray(data.slides)) return;
 
-  // Build cards
+  // verwacht: { slides: [ {title, desc, img}, ... ] } of array
+  const slides = Array.isArray(data) ? data : (data.slides || data.items || []);
+
   track.innerHTML = '';
+  const frag = document.createDocumentFragment();
 
-  const slides = data.slides.slice();
-  const realCount = slides.length;
-
-  // helper om één kaart te bouwen
-  const buildCard = (s) => {
-    const art = document.createElement('article');
-    art.className = 'introCard';
-    art.dataset.intro = s.key || '';
-
-    const wrap = document.createElement('div');
-    wrap.className = 'introImgWrap';
-
-    // Sluitknop op de hoek van het plaatje (bespaart ruimte)
-    const close = document.createElement('button');
-    close.className = 'introClose';
-    close.type = 'button';
-    close.setAttribute('aria-label', 'Sluiten');
-    close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>';
-    wrap.appendChild(close);
+  slides.forEach((s) => {
+    const card = document.createElement('div');
+    card.className = 'introCard';
 
     const img = document.createElement('img');
     img.className = 'introImg';
-    img.src = withV(s.img || '');
-    img.alt = s.alt || s.title || '';
-    wrap.appendChild(img);
+    img.alt = '';
+    img.draggable = false;
+    img.src = withV(s.img || s.src || s.image || '');
 
-    // Thema-naam in het midden van de kaart (alleen thema-kaarten, niet de voorkant)
-    if((s.key || '') !== 'cover' && (s.title || '').trim()){
-      const theme = document.createElement('div');
-      theme.className = 'introTheme';
-      theme.textContent = s.title;
-      wrap.appendChild(theme);
-    }
+    const t = document.createElement('div');
+    t.className = 'introTitle';
+    t.textContent = s.title || s.kop || s.heading || '';
 
-    const text = document.createElement('div');
-    text.className = 'introText';
+    const d = document.createElement('div');
+    d.className = 'introDesc';
+    d.textContent = s.desc || s.tekst || s.text || '';
 
-    const b = document.createElement('div');
-    b.className = 'introTextBody';
-    b.textContent = s.body || '';
-
-    text.appendChild(b);
-
-    art.appendChild(wrap);
-    art.appendChild(text);
-    return art;
-  };
-
-  // (Infinity scroll) clones aan beide kanten zodat je "oneindig" door kan swipen
-  const CLONE_N = Math.min(2, realCount);
-  if(realCount > 1){
-    for(let i=realCount-CLONE_N; i<realCount; i++){
-      const c = buildCard(slides[i]);
-      c.dataset.clone = '1';
-      track.appendChild(c);
-    }
-  }
-
-  for(const s of slides){
-    track.appendChild(buildCard(s));
-  }
-
-  if(realCount > 1){
-    for(let i=0; i<CLONE_N; i++){
-      const c = buildCard(slides[i]);
-      c.dataset.clone = '1';
-      track.appendChild(c);
-    }
-  }
-
-  // Hint text (optional)
-  const hintEl = section.querySelector('.introHint');
-  if(hintEl && typeof data.hint === 'string') hintEl.textContent = data.hint;
-
-  // Infinity scroll: na layout (widths bekend) scroll naar eerste echte item
-  if(realCount > 1){
-    requestAnimationFrame(() => {
-      const firstReal = track.querySelectorAll('.introCard')[CLONE_N];
-      if(!firstReal) return;
-      const gap = 14; // gelijk aan CSS
-      const step = firstReal.getBoundingClientRect().width + gap;
-      let jumping = false;
-
-      // Startpositie: op eerste echte kaart
-      track.scrollLeft = step * CLONE_N;
-
-      const onScroll = () => {
-        if(jumping) return;
-        const max = step * (realCount + CLONE_N);
-        const min = step * (CLONE_N - 1);
-        const x = track.scrollLeft;
-
-        // Te ver naar links -> spring naar dezelfde positie achteraan
-        if(x <= min){
-          jumping = true;
-          track.scrollLeft = x + step * realCount;
-          requestAnimationFrame(() => { jumping = false; });
-        }
-        // Te ver naar rechts -> spring naar dezelfde positie vooraan
-        else if(x >= max){
-          jumping = true;
-          track.scrollLeft = x - step * realCount;
-          requestAnimationFrame(() => { jumping = false; });
-        }
-      };
-
-      track.addEventListener('scroll', onScroll, { passive:true });
-    });
-  }
-}
-
-// Fire & forget after DOM is ready
-document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
-
-
-
-
-// SAFETY: close button delegation (v3.3.28)
-document.addEventListener('click', (e) => {
-  const closeEl = e.target && (e.target.closest ? e.target.closest('.lbClose, .close') : null);
-  const lb = document.getElementById('lb');
-  if (!lb) return;
-  if (lb.classList.contains('open') && closeEl) {
-    e.preventDefault();
-    e.stopPropagation();
-    try { closeLb(); } catch(_) {}
-  }
-}, true);
-
-// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #lbClose of .lbClose
-document.addEventListener('pointerdown', (e) => {
-  const lb = document.getElementById('lb');
-  if (!lb || !lb.classList.contains('open')) return;
-  const closeEl = e.target && (e.target.closest ? e.target.closest('#lbClose, .lbClose, .close') : null);
-  if (!closeEl) return;
-  e.preventDefault();
-  e.stopPropagation();
-  try { closeLb(); } catch(_) {}
-}, true);
-
-
-// KEIHARDE CLOSE FIX v3.3.38
-(function(){
-  const lb = document.getElementById('lb');
-  const closeBtn = document.getElementById('lbClose');
-  const closeHitbox = document.getElementById('lbCloseHitbox');
-  const hud = document.getElementById('debugHud');
-  if(!lb || !closeBtn || !closeHitbox) return;
-
-  function setHud(t){ if(hud) hud.textContent = t; }
-  function isDebug(){ return document.documentElement.classList.contains('debug-on'); }
-
-  function positionCloseHitbox(){
-    const r = closeBtn.getBoundingClientRect();
-    closeHitbox.style.top = Math.round(r.top - 10) + 'px';
-    closeHitbox.style.left = Math.round(r.left - 10) + 'px';
-  }
-
-  window.addEventListener('resize', positionCloseHitbox, {passive:true});
-  window.addEventListener('scroll', positionCloseHitbox, {passive:true});
-
-  let taps = 0, tmr = null;
-  document.addEventListener('click', (e)=>{
-    if(!lb.classList.contains('open')) return;
-    if(e.target && e.target.closest && e.target.closest('#lbClose,#lbCloseHitbox')) return;
-    taps++;
-    clearTimeout(tmr);
-    tmr = setTimeout(()=>{ taps=0; }, 500);
-    if(taps>=3){
-      document.documentElement.classList.toggle('debug-on');
-      taps=0;
-    }
-  }, true);
-
-  function forceClose(e){
-    e.preventDefault();
-    e.stopPropagation();
-    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    if(typeof closeLb === 'function') closeLb();
-  }
-
-  closeHitbox.addEventListener('pointerdown', forceClose, {capture:true});
-  closeHitbox.addEventListener('click', forceClose, {capture:true});
-
-  const obs = new MutationObserver(()=>{
-    if(lb.classList.contains('open')) positionCloseHitbox();
-  });
-  obs.observe(lb, {attributes:true, attributeFilter:['class']});
-
-  document.addEventListener('pointerdown', (e)=>{
-    if(!lb.classList.contains('open') || !isDebug()) return;
-    const el = e.target;
-    const cls = el && el.className ? (typeof el.className === 'string' ? el.className : '[svg]') : '';
-    setHud(
-      'pointerdown\n' +
-      'target: ' + (el ? el.tagName.toLowerCase() : '?') + (el && el.id ? '#'+el.id : '') + (cls ? '.'+String(cls).trim().replace(/\s+/g,'.') : '') + '\n' +
-      'x,y: ' + Math.round(e.clientX) + ',' + Math.round(e.clientY)
-    );
-  }, true);
-})();
-
-
-/* ------------------------------------------------------------
-   CLOSE (opnieuw opgebouwd)
-   - Eén centrale binding voor #lbClose en #lbCloseHitbox
-   - Backdrop tap sluit ook (buiten .panel)
------------------------------------------------------------- */
-(function(){
-  const lb = document.getElementById('lb');
-  const closeBtn = document.getElementById('lbClose');
-  const hit = document.getElementById('lbCloseHitbox');
-  if(!lb) return;
-
-  function hardClose(){
-    lb.classList.remove('open','dragging','closing','is-dragging','is-swiping');
-    lb.style.transform = '';
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-    document.body.style.touchAction = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-  }
-
-  function safeClose(e){
-    if(e){
-      e.preventDefault();
-      e.stopPropagation();
-      if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    }
-    try{
-      if(typeof closeLb === 'function'){
-        closeLb();
-        // Als closeLb door iets vroegtijdig stopt, val dan terug.
-        setTimeout(()=>{ if(lb.classList.contains('open')) hardClose(); }, 0);
-      } else {
-        hardClose();
-      }
-    }catch(_){
-      hardClose();
-    }
-  }
-
-  [closeBtn, hit].forEach(el=>{
-    if(!el) return;
-    el.addEventListener('touchstart', safeClose, {capture:true, passive:false});
-    el.addEventListener('pointerdown', safeClose, {capture:true});
-    el.addEventListener('click', safeClose, {capture:true});
+    card.appendChild(img);
+    card.appendChild(t);
+    card.appendChild(d);
+    frag.appendChild(card);
   });
 
-  // Backdrop klik/tap sluit (maar niet binnen de kaart/panel)
-  document.addEventListener('pointerdown', (e)=>{
-    if(!lb.classList.contains('open')) return;
-    const insidePanel = e.target && e.target.closest && e.target.closest('.panel');
-    const isClose = e.target && e.target.closest && e.target.closest('#lbClose,#lbCloseHitbox');
-    if(!insidePanel && !isClose) safeClose(e);
-  }, true);
-})();
+  track.appendChild(frag);
 
-
-/* v3.3.50 – Horizontaal swipen in de uitleg gebeurt native via scroll-snap.
-   Geen JS-gestures nodig (houdt het licht, vloeiend en conflictvrij). */
-
-
-/* v3.3.42 – Harde swipe reset */
-function resetSwipe(){
-  document.body.style.touchAction = '';
+  // cross-fade (optioneel): fade ✕ tijdens horizontaal scrollen
+  let fadeTimer = null;
+  track.addEventListener('scroll', () => {
+    setCrossVisible(false);
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(() => {
+      if(sheetOpen && !document.body.classList.contains('intro-dragging')) setCrossVisible(true);
+    }, 120);
+  }, {passive:true});
 }
 
-const _origClose = window.closeLb;
-window.closeLb = function(){
-  resetSwipe();
-  if(_origClose) _origClose();
-};
+document.addEventListener('DOMContentLoaded', () => {
+  renderMobileIntro();
+});
+
