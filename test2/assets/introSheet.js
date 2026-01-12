@@ -1,4 +1,4 @@
-// introSheet.js – uitleg bottom-sheet (v3.6.1)
+// introSheet.js – uitleg bottom-sheet (v3.6.4)
 import { VERSION, loadUitlegSlides } from "./data.js";
 
 function $(id) { return document.getElementById(id); }
@@ -22,8 +22,8 @@ export async function renderUitleg() {
     img.alt = "";
     img.draggable = false;
     img.loading = "lazy";
-    img.src = s.img || s.src || s.image ? (s.img||s.src||s.image) : "";
-    if (img.src) img.src = img.src.includes("?") ? img.src : img.src + `?v=${VERSION}`;
+    const raw = (s.img || s.src || s.image || "");
+    img.src = raw ? (raw.includes("?") ? raw : raw + `?v=${VERSION}`) : "";
 
     const t = document.createElement("div");
     t.className = "introTitle";
@@ -46,26 +46,66 @@ export function setupIntroSheet() {
   const sheet = $("mobileIntro");
   const openBtn = $("uitlegBtn");
   const closeBtn = $("introClose");
+
   if (!sheet) return { open: () => {}, close: () => {} };
 
+  const OPEN_MS = 165;
+  const CLOSE_MS = 150;
+  const EASE = "cubic-bezier(.2,.9,.2,1)";
   const offY = () => Math.round(window.innerHeight * 1.03);
 
+  let isOpen = false;
+  let animating = false;
+
+  function setOffscreen() {
+    sheet.style.transition = "none";
+    sheet.style.transform = `translateY(${offY()}px)`;
+  }
+
+  // initial closed state
+  setOffscreen();
+
   function open() {
+    if (animating || isOpen) return;
+    animating = true;
+    isOpen = true;
+
     document.body.classList.add("show-intro");
-    sheet.style.transition = `transform 165ms cubic-bezier(.2,.9,.2,1)`;
-    sheet.style.transform = `translateY(0px)`;
+
+    sheet.style.transition = "none";
+    sheet.style.transform = `translateY(${offY()}px)`;
+    sheet.getBoundingClientRect(); // force reflow (Safari)
+
+    requestAnimationFrame(() => {
+      sheet.style.transition = `transform ${OPEN_MS}ms ${EASE}`;
+      sheet.style.transform = "translateY(-8px)";
+      requestAnimationFrame(() => {
+        sheet.style.transform = "translateY(0px)";
+      });
+
+      window.setTimeout(() => {
+        animating = false;
+      }, OPEN_MS + 30);
+    });
   }
 
   function close() {
-    sheet.style.transition = `transform 150ms cubic-bezier(.2,.9,.2,1)`;
-    sheet.style.transform = `translateY(${offY()}px)`;
-    window.setTimeout(() => {
-      document.body.classList.remove("show-intro");
-    }, 170);
-  }
+    if (animating || !isOpen) return;
+    animating = true;
+    isOpen = false;
 
-  // init closed position
-  sheet.style.transform = `translateY(${offY()}px)`;
+    sheet.style.transition = `transform ${CLOSE_MS}ms ${EASE}`;
+    sheet.style.transform = `translateY(${offY()}px)`;
+
+    const done = () => {
+      document.body.classList.remove("show-intro");
+      setOffscreen();
+      animating = false;
+    };
+
+    sheet.addEventListener("transitionend", done, { once: true });
+    window.setTimeout(done, CLOSE_MS + 60);
+  }
 
   openBtn?.addEventListener("click", (e) => { e.preventDefault(); open(); }, { passive: false });
   closeBtn?.addEventListener("click", (e) => { e.preventDefault(); close(); }, { passive: false });

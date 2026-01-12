@@ -1,5 +1,5 @@
-// data.js – load JSON data (v3.6.1)
-export const VERSION = "3.6.1";
+// data.js – load JSON data (v3.6.2)
+export const VERSION = "3.6.4";
 
 const withV = (u) => u + (u.includes("?") ? "&" : "?") + "v=" + encodeURIComponent(VERSION);
 

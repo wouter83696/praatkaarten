@@ -1,4 +1,4 @@
-// app.js – bootstrap (v3.6.1)
+// app.js – bootstrap (v3.6.2)
 import { loadQuestions } from "./data.js";
 import { setVersionBadge, renderGrid, setupLightbox } from "./grid.js";
 import { renderUitleg, setupIntroSheet } from "./introSheet.js";
