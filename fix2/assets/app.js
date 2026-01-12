@@ -1,6 +1,6 @@
-// app.js – bootstrap (v3.6.2)
+// app.js – bootstrap (v3.6.3)
 import { loadQuestions } from "./data.js";
-import { setVersionBadge, renderGrid, setupLightbox } from "./grid.js";
+import { setVersionBadge, renderGrid } from "./grid.js";
 import { renderUitleg, setupIntroSheet } from "./introSheet.js";
 
 function shuffleInPlace(arr) {
@@ -14,27 +14,23 @@ function shuffleInPlace(arr) {
 document.addEventListener("DOMContentLoaded", async () => {
   setVersionBadge();
 
-  const lb = setupLightbox();
-  const sheet = setupIntroSheet();
+  // Uitleg-sheet (werkt los van grid)
+  setupIntroSheet();
   await renderUitleg();
 
   let items = await loadQuestions();
 
-  const openCard = (it) => {
-    lb?.open({
-      img: it.img,
-      theme: it.theme,
-      index: it.index,
-      text: it.text
-    });
-  };
-
-  renderGrid(items, openCard);
+  // Voor nu: GEEN click/open gedrag op grid-kaarten
+  renderGrid(items);
 
   const shuffleBtn = document.getElementById("shuffleBtn");
-  shuffleBtn?.addEventListener("click", (e) => {
-    e.preventDefault();
-    items = shuffleInPlace(items.slice());
-    renderGrid(items, openCard);
-  }, { passive: true });
+  shuffleBtn?.addEventListener(
+    "click",
+    (e) => {
+      e.preventDefault();
+      items = shuffleInPlace(items.slice());
+      renderGrid(items);
+    },
+    { passive: true }
+  );
 });

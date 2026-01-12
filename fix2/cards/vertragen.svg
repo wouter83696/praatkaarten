@@ -1,1 +1,24 @@
-<svg xmlns='http://www.w3.org/2000/svg' width='850' height='550' viewBox='0 0 850 550'><rect width='850' height='550' fill='#E7DDF4'/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Laag_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 240.94 155.91">
+  <!-- Generator: Adobe Illustrator 30.1.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 136)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #f8f9f9;
+      }
+
+      .st1 {
+        fill: #cfe8e5;
+        isolation: isolate;
+        opacity: .45;
+      }
+
+      .st2 {
+        fill: #a8d8d6;
+      }
+    </style>
+  </defs>
+  <rect class="st0" y="0" width="240.94" height="155.91" rx="8.5" ry="8.5"/>
+  <path class="st1" d="M-40.78,127.56c56.69,22.68,113.39,22.68,170.08,0,39.69-17.01,73.7-17.01,113.39,0v28.35H-40.78v-28.35Z"/>
+  <circle class="st2" cx="124.44" cy="-59.3" r="107.72"/>
+</svg>
