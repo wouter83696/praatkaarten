@@ -598,11 +598,6 @@ button.pill:active{
   will-change: transform;
 }
 
-/* FIX: sheet mag het grid niet blokkeren als hij dicht is */
-.mobileIntro{ pointer-events: none; }
-body.show-intro .mobileIntro{ pointer-events: auto; }
-
-
 body.show-intro{
   overflow: hidden;
   overscroll-behavior: contain;
