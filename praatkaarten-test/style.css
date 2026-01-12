@@ -741,3 +741,75 @@ body.show-intro .mobileIntro{
 :root { --phone-max: 520px; }
 body { display:flex; justify-content:center; }
 #app, .app, main { width:100%; max-width:var(--phone-max); margin:0 auto; }
+
+
+/* v3.6.2 CLEAN MODULAR */
+#mobileIntro { pointer-events: none; }
+body.show-intro #mobileIntro { pointer-events: auto; }
+
+
+/* Card overlay labels (restored) */
+.cardShell {
+  position: relative;
+}
+
+.cardLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+  font-weight: 600;
+}
+
+.cardTheme {
+  background: rgba(255,255,255,0.85);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+.cardIndex {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+
+/* v3.6.2 FIXES */
+.versionBadge{
+  position: fixed;
+  top: 8px;
+  left: 10px;
+  z-index: 9999;
+  font-size: 12px;
+  opacity: .55;
+  pointer-events: none;
+}
+
+/* Zorg dat de uitleg-sheet daadwerkelijk als overlay werkt */
+.mobileIntro{
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  transform: translateY(103vh); /* start offscreen */
+}
+
+/* Buttons in overlays */
+.introClose{
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  right: 10px;
+  z-index: 6100;
+  opacity: 0;
+  pointer-events: none;
+}
+body.show-intro .introClose{
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 150ms ease-out;
+}
