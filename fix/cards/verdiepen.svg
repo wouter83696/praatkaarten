@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Laag_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 240.94 155.91">
+  <!-- Generator: Adobe Illustrator 30.1.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 136)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #f8f9f9;
+      }
+
+      .st1 {
+        fill: #2f5fa8;
+        opacity: .95;
+      }
+
+      .st1, .st2 {
+        isolation: isolate;
+      }
+
+      .st2 {
+        fill: #4d6faf;
+        opacity: .9;
+      }
+    </style>
+  </defs>
+  <rect class="st0" width="240.94" height="155.91" rx="8.5" ry="8.5"/>
+  <path class="st1" d="M265.42-18.29c-25.43-23-73.31-17.58-92.95,10.53-14.59,22.36.15,51.73,34.54,53.02,28.75,1.92,55.17-16.6,61.31-38l-2.89-25.54h0Z"/>
+  <path class="st2" d="M102.86,191.46c-39.69,17.01-79.37,5.67-85.04-22.68s28.35-51.02,68.03-45.35c28.35,2.83,39.69,28.35,17.01,68.03h0Z"/>
+</svg>
