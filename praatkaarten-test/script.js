@@ -717,6 +717,25 @@ document.addEventListener('keydown', (e) => {
 
   const introSheet = document.getElementById('mobileIntro');
 
+  function forceCloseIntroSheet(immediate=true){
+    if(!introSheet) return;
+    document.body.classList.remove('show-intro');
+    setSheetStable(false);
+    introSheet.classList.remove('x-scrolling','is-stable');
+    // Zorg dat de sheet echt buiten beeld staat en niets blokkeert
+    if(immediate){
+      introSheet.style.transition = 'none';
+      introSheet.style.transform = 'translateY(103%)';
+    }else{
+      introSheet.style.transform = 'translateY(103%)';
+    }
+  }
+
+  // SAFETY: start altijd met gesloten sheet (grid moet altijd zichtbaar zijn)
+  window.addEventListener('DOMContentLoaded', () => {
+    forceCloseIntroSheet(true);
+  });
+
   // ✕ gedrag tijdens horizontaal bladeren:
   // - bij horizontaal scrollen (links/rechts) mag het kruisje even wegfaden
   // - bij verticale drag blijft hij sowieso verborgen (dat regelen we via .is-stable)
@@ -801,8 +820,7 @@ document.addEventListener('keydown', (e) => {
     animateSheet(introSheet.getBoundingClientRect().height + 24, {duration:140, overshoot:false});
     // Na close: class weg (zodat layout/aria consistent is)
     setTimeout(() => {
-      document.body.classList.remove('show-intro');
-      introSheet.style.transform = 'translateY(103%)';
+      forceCloseIntroSheet(true);
     }, 145);
   }
 
