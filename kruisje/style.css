@@ -731,10 +731,3 @@ body.show-intro .mobileIntro{
 .lbBg, .mobileIntro{
   z-index: 10;
 }
-
-/* v3.3.60 CLEAN sheet guards */
-
-#mobileIntro{pointer-events:none;}
-body.show-intro #mobileIntro{pointer-events:auto;}
-
-body.intro-dragging #mobileIntro{transition:none !important;}
