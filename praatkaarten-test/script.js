@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.50';
+const VERSION = '3.3.53';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -243,7 +243,6 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Fout bij laden.</div>';
     }
   })();
-
 
   function render(items){
     // Bewaar de huidige (zichtbare) kaartset voor navigatie
@@ -717,6 +716,22 @@ document.addEventListener('keydown', (e) => {
   // ===============================
 
   const introSheet = document.getElementById('mobileIntro');
+
+  // ✕ gedrag tijdens horizontaal bladeren:
+  // - bij horizontaal scrollen (links/rechts) mag het kruisje even wegfaden
+  // - bij verticale drag blijft hij sowieso verborgen (dat regelen we via .is-stable)
+  // - zodra het scrollen stopt komt hij weer netjes terug (fade)
+  (function setupIntroCloseFadeOnXScroll(){
+    const introTrack = document.getElementById('introTrack');
+    if(!introSheet || !introTrack) return;
+    let t = null;
+    introTrack.addEventListener('scroll', () => {
+      if(!document.body.classList.contains('show-intro')) return;
+      introSheet.classList.add('x-scrolling');
+      clearTimeout(t);
+      t = setTimeout(() => introSheet.classList.remove('x-scrolling'), 220);
+    }, {passive:true});
+  })();
   let sheetAnim = null;
 
   function setSheetStable(stable){
@@ -794,6 +809,13 @@ document.addEventListener('keydown', (e) => {
   // --- Drag gedrag ---
   (function setupIntroSheetDrag(){
     if(!introSheet) return;
+    const introTrack = document.getElementById('introTrack');
+    // Swipes starten vaak op de kaarten/track zelf.
+    // Als we de gesture direct aan de track hangen kan (met touch-action/scroll-snap)
+    // de browser de verticale beweging overnemen (dan krijg je 'scroll' i.p.v. sheet-drag).
+    // Daarom luisteren we op de SHEET (capture), zodat we altijd de beweging zien.
+    // Horizontaal bladeren blijft native via de track; verticaal (omlaag) claimen we pas na beslissing.
+    const dragEl = introSheet;
     let down = false;
     let armed = false;
     let decided = false;
@@ -824,7 +846,23 @@ document.addEventListener('keydown', (e) => {
       return y;
     }
 
-    introSheet.addEventListener('pointerdown', (e) => {
+    function disableHorizontalScroll(){
+      if(!introTrack) return;
+      // tijdens verticale drag tijdelijk blokkeren zodat iOS/Android niet 'pakt' op horizontaal scrollen
+      introTrack.dataset._ox = introTrack.style.overflowX || '';
+      introTrack.style.overflowX = 'hidden';
+      introTrack.dataset._ta = introTrack.style.touchAction || '';
+      introTrack.style.touchAction = 'none';
+    }
+    function restoreHorizontalScroll(){
+      if(!introTrack) return;
+      if('_ox' in introTrack.dataset) introTrack.style.overflowX = introTrack.dataset._ox;
+      if('_ta' in introTrack.dataset) introTrack.style.touchAction = introTrack.dataset._ta;
+      delete introTrack.dataset._ox;
+      delete introTrack.dataset._ta;
+    }
+
+    dragEl.addEventListener('pointerdown', (e) => {
       if(!document.body.classList.contains('show-intro')) return;
       // Start mag óók op de horizontale track (kaarten).
       // We beslissen pas bij de eerste beweging: horizontaal = bladeren, verticaal (omlaag) = sheet drag.
@@ -842,12 +880,13 @@ document.addEventListener('keydown', (e) => {
       sy = e.clientY;
       currentY = 0;
       computeThreshold();
-      setSheetStable(false); // ✕ verdwijnt zodra drag start
+      // ✕ NIET verbergen bij pointerdown (anders verdwijnt hij ook bij zijdelings scrollen).
+      // We verbergen ✕ pas zodra we zeker weten dat dit een verticale drag is.
       introSheet.style.transition = 'none';
-      try{ introSheet.setPointerCapture?.(e.pointerId); }catch(_e){}
-    }, {passive:true});
+      try{ dragEl.setPointerCapture?.(e.pointerId); }catch(_e){}
+    }, {passive:true, capture:true});
 
-    introSheet.addEventListener('pointermove', (e) => {
+    dragEl.addEventListener('pointermove', (e) => {
       if(!down || !armed) return;
       const dx = e.clientX - sx;
       const dy = e.clientY - sy;
@@ -855,9 +894,20 @@ document.addEventListener('keydown', (e) => {
       const ay = Math.abs(dy);
 
       if(!decided){
-        if(ax < 8 && ay < 8) return;
-        decided = true;
-        vertical = (ay > ax);
+        // Richtingbeslissing met duidelijke voorkeur:
+        // - Eerst een kleine deadzone
+        // - Daarna pas kiezen op basis van ratio (voorkomt dat mini-horizontale drift je verticale drag blokkeert)
+        if(ax < 12 && ay < 12) return;
+        if(ay > ax * 1.2){
+          decided = true;
+          vertical = true;
+        }else if(ax > ay * 1.2){
+          decided = true;
+          vertical = false;
+        }else{
+          // nog ambigu: wacht op iets duidelijkere richting
+          return;
+        }
         if(!vertical){
           // Horizontaal: laat alles los (native scroll blijft licht)
           armed = false;
@@ -865,11 +915,19 @@ document.addEventListener('keydown', (e) => {
           setSheetStable(true);
           return;
         }
+        // Verticaal: nu pas echt claimen — ✕ verdwijnt zodra de verticale drag start
+        setSheetStable(false);
+        disableHorizontalScroll();
       }
 
       // Alleen omlaag trekken
       if(dy <= 0){
-        if(!lockedClose) setY(0);
+        // Als we al over de drempel zijn: niet meer terug te trekken.
+        if(lockedClose){
+          setY(Math.max(threshold, currentY));
+        }else{
+          setY(0);
+        }
         return;
       }
 
@@ -887,11 +945,12 @@ document.addEventListener('keydown', (e) => {
       if(lockedClose) y = Math.max(threshold, y);
 
       setY(y);
-    }, {passive:false});
+    }, {passive:false, capture:true});
 
     function release(){
       if(!down) return;
       down = false;
+      restoreHorizontalScroll();
       if(!decided){
         // Geen drag: sheet blijft open
         setSheetStable(true);
@@ -913,8 +972,100 @@ document.addEventListener('keydown', (e) => {
       setTimeout(() => setSheetStable(true), 155);
     }
 
-    introSheet.addEventListener('pointerup', release, {passive:true});
-    introSheet.addEventListener('pointercancel', release, {passive:true});
+    dragEl.addEventListener('pointerup', release, {passive:true});
+    dragEl.addEventListener('pointercancel', release, {passive:true});
+
+    // --- Touch fallback (iOS/Safari): pointer-events + touch-action geven soms geen betrouwbare verticale drag.
+    // We gebruiken dezelfde logica, maar dan met touchstart/move/end.
+    let tActive = false;
+    dragEl.addEventListener('touchstart', (e) => {
+      if(!document.body.classList.contains('show-intro')) return;
+      const touch = e.touches && e.touches[0];
+      if(!touch) return;
+      if(e.target && e.target.closest && e.target.closest('button')) return;
+
+      tActive = true;
+      down = true;
+      armed = true;
+      decided = false;
+      vertical = false;
+      lockedClose = false;
+      sx = touch.clientX;
+      sy = touch.clientY;
+      currentY = 0;
+      computeThreshold();
+      // ✕ NIET verbergen bij touchstart (anders verdwijnt hij ook bij zijdelings scrollen).
+      // We verbergen ✕ pas zodra we zeker weten dat dit een verticale drag is.
+      introSheet.style.transition = 'none';
+    }, {passive:true, capture:true});
+
+    dragEl.addEventListener('touchmove', (e) => {
+      if(!tActive || !down || !armed) return;
+      const touch = e.touches && e.touches[0];
+      if(!touch) return;
+      const dx = touch.clientX - sx;
+      const dy = touch.clientY - sy;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+
+      if(!decided){
+        // Richtingbeslissing met duidelijke voorkeur:
+        // - Eerst een kleine deadzone
+        // - Daarna pas kiezen op basis van ratio (voorkomt dat mini-horizontale drift je verticale drag blokkeert)
+        if(ax < 12 && ay < 12) return;
+        if(ay > ax * 1.2){
+          decided = true;
+          vertical = true;
+        }else if(ax > ay * 1.2){
+          decided = true;
+          vertical = false;
+        }else{
+          // nog ambigu: wacht op iets duidelijkere richting
+          return;
+        }
+        if(!vertical){
+          // horizontaal: laat native scroll
+          armed = false;
+          down = false;
+          setSheetStable(true);
+          return;
+        }
+        // Verticaal: claimen — ✕ verbergen
+        setSheetStable(false);
+        disableHorizontalScroll();
+      }
+
+      if(!vertical) return;
+            if(dy <= 0){
+        // Als we al over de drempel zijn: niet meer terug te trekken.
+        if(lockedClose){
+          setY(Math.max(threshold, currentY));
+        }else{
+          setY(0);
+        }
+        return;
+      }
+
+      // Cruciaal: stop page scroll tijdens verticale drag
+      e.preventDefault();
+
+      let y = resistance(dy);
+      if(y >= threshold){
+        lockedClose = true;
+        const over = y - threshold;
+        y = threshold + over * 1.1;
+      }
+      if(lockedClose) y = Math.max(threshold, y);
+      setY(y);
+    }, {passive:false, capture:true});
+
+    function touchRelease(){
+      if(!tActive) return;
+      tActive = false;
+      release();
+    }
+    dragEl.addEventListener('touchend', touchRelease, {passive:true, capture:true});
+    dragEl.addEventListener('touchcancel', touchRelease, {passive:true, capture:true});
   })();
 
   // Swipe-down verwijderd voor stabiliteit (v3.3.42)
