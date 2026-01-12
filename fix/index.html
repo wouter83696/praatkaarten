@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.56</title>
+<title>Praatkaarten v3.3.58</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -917,7 +917,7 @@ body.hm-open{overflow:hidden}
   isolation: isolate;
 
   transform: translateY(103%);
-  /* v3.3.56: animatie via JS (WAAPI) + drag volgt vinger */
+  /* v3.3.50: animatie via JS (WAAPI) + drag volgt vinger */
   transition: none;
   display:block;
 }
@@ -955,7 +955,7 @@ body.hm-open{overflow:hidden}
 
   color: rgba(11,18,32,.55);
 
-  /* v3.3.56: ✕ alleen zichtbaar als sheet volledig open & stabiel is */
+  /* v3.3.50: ✕ alleen zichtbaar als sheet volledig open & stabiel is */
   opacity: 0;
   pointer-events: none;
   transition: opacity 150ms ease;
@@ -1140,7 +1140,7 @@ body.hm-open{overflow:hidden}
 
 
 /* ===============================
-   UI PATCH v3.3.56
+   UI PATCH v3.3.48
    - Harder (Google Maps-like) icons for Shuffle/Info
    - Force Close button to be visible + clickable on mobile when overlay is open
    =============================== */
@@ -1202,7 +1202,7 @@ button.pill:active,
 
 
 /* ===============================
-   PATCH v3.3.56
+   PATCH v3.3.48
    - Uitleg witvlak sluit aan tot onderkant (minder witruimte)
    - Close button altijd tappable
    - Shuffle icon harder (zoals voorbeeld)
@@ -1272,7 +1272,7 @@ button.pill:active,
 
 
 /* ===============================
-   FIX v3.3.56
+   FIX v3.3.48
    - Less whitespace: white panel reaches bottom on mobile
    - Close button works: remove pointer-events:none on lbCard + layer close above image
    =============================== */
@@ -1371,12 +1371,12 @@ button.pill:active,
 }
 .lb.open #close.overlayClose{ display:grid !important; }
 
-/* Icon style v3.3.56 */
+/* Icon style v3.3.48 */
 .iconShuffle path,
 .iconInfo rect{
   fill: rgba(120,120,120,.9);
 }
-/* ICONS LOOK v3.3.56 (zoals voorbeeld) */
+/* ICONS LOOK v3.3.48 (zoals voorbeeld) */
 .pill{
   background: rgba(255,255,255,.92) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
@@ -1400,7 +1400,7 @@ button.pill:active,
 .iconInfo path:last-child{ stroke-width: 4.2 !important; }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.56 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.48 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -1426,7 +1426,7 @@ button.pill:active,
   display: none;
 }
 .debug-on #debugHud{ display: block; }
-/* CLOSE NUCLEAR v3.3.56
+/* CLOSE NUCLEAR v3.3.48
    Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
 .lb{ transform:none !important; }
 .panel{ transform:none !important; }
@@ -1455,7 +1455,7 @@ button.pill:active,
   pointer-events: none !important;
   opacity: 0 !important;
 }
-/* Debug visibility v3.3.56 */
+/* Debug visibility v3.3.48 */
 #versionBadge{
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 8px);
@@ -1573,7 +1573,7 @@ button.pill:active,
 
 <div id="debugHud" aria-hidden="true"></div>
 
-<div id="versionBadge" aria-hidden="true">v3.3.56</div>
+<div id="versionBadge" aria-hidden="true">v3.3.58</div>
 <div id="toast" aria-hidden="true"></div>
 
 <script id="questions-json" type="application/json">
@@ -1685,8 +1685,6 @@ button.pill:active,
 </script>
 
 
-
-<script id="questionsData" type="application/json">{ "verkennen": [ "Wat zien we op dit moment gebeuren in onze samenwerking?", "Wat valt ons op in onze manier van samenwerken?", "Herkennen we patronen in onze manier van samenwerken?", "Waar zijn we aan gewend geraakt?", "Wat krijgt nu minder aandacht?", "Blijven er dingen onbesproken?" ], "duiden": [ "Wat proberen we als team goed te doen?", "Wat nemen we wel of niet als vanzelfsprekend aan?", "Wanneer helpt afstemming ons, en wanneer belemmert het ons?", "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?", "Welke patronen blijven we terugzien in onze samenwerking?", "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?" ], "verbinden": [ "Waar worden we enthousiast van?", "Wanneer voel jij je echt onderdeel van het team?", "Mogen er verschillen bestaan in ons team?", "Hoe kunnen we elkaar uitdagen en andere kanten belichten?", "Wat helpt ons om onszelf te laten zien in de samenwerking?", "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?" ], "vertragen": [ "Wanneer nemen we in onze samenwerking eigenlijk de tijd?", "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?", "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?", "Welke patronen worden zichtbaar wanneer de druk toeneemt?", "Welke rol nemen we automatisch aan in momenten van spanning?", "Wanneer merken we dat vertragen helpend zou zijn?" ], "bewegen": [ "Wat doen we met ideeën die ontstaan?", "Wanneer komt er beweging in het team?", "Wat helpt ons om van praten naar doen te gaan?", "Welke ideeën blijven liggen, en waarom?", "Wat houdt ons tegen om in actie te komen?", "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?" ] }</script>
 <script src="./script.js"></script>
 </body>
 
