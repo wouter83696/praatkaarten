@@ -741,3 +741,8 @@ body.show-intro .mobileIntro{
 :root { --phone-max: 520px; }
 body { display:flex; justify-content:center; }
 #app, .app, main { width:100%; max-width:var(--phone-max); margin:0 auto; }
+
+
+/* v3.6.1 CLEAN MODULAR */
+#mobileIntro { pointer-events: none; }
+body.show-intro #mobileIntro { pointer-events: auto; }
