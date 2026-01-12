@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.53';
+const VERSION = '3.3.56';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -97,7 +97,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   const lbText = document.getElementById('lbText');
   const lbCard = document.getElementById('lbCard');
   const themeTag = document.getElementById('themeTag');
-  // (v3.3.7) swipe-hint is bewust verwijderd
+  // (v3.3.56) swipe-hint is bewust verwijderd
   const navHint = null;
 
   const closeBtn = document.getElementById('lbClose');
@@ -107,7 +107,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   // Onderbalk: chips (v3.2)
   const shuffleBtn = document.getElementById('shuffleBtn');
   const uitlegBtn  = document.getElementById('uitlegBtn');
-  // (v3.3.7) geen extra sluitknoppen in de pills
+  // (v3.3.56) geen extra sluitknoppen in de pills
   const mobileIntroEl = document.getElementById('mobileIntro');
 
   let shuffleOn = false;
@@ -167,7 +167,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
     { theme:'Bewegen',     key:'bewegen',     bg:withV('cards/bewegen.svg') }
   ];
 
-  // (v3.3.7) swipe-hint verwijderd: geen timers/tekst meer
+  // (v3.3.56) swipe-hint verwijderd: geen timers/tekst meer
   let hintTimer = null;
 
 // UI chrome (pijlen + sluiten)
@@ -205,7 +205,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
   }
   
   // ===============================
-  // v3.3.47 – Init grid (portable)
+  // v3.3.56 – Init grid (portable)
   // - gebruikt embedded JSON (#questions-json) voor file://
   // - fallback: fetch ./questions.json voor hosting
   // - bouwt originele kaartjes (SVG achtergrond + tekst) zoals vóórheen
@@ -224,6 +224,13 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       const r = await fetch('./questions.json', {cache:'no-store'});
       if(r.ok) return await r.json();
     }catch(_e){}
+      // Fallback voor file:// of situaties waarin fetch geblokkeerd is
+  try{
+    const el = document.getElementById('questionsData');
+    if(el && el.textContent){
+      return JSON.parse(el.textContent);
+    }
+  }catch(_e){}
     return null;
   }
 
@@ -347,7 +354,7 @@ document.body.classList.add('lb-open');
     document.body.style.overflow = 'hidden';
 
     showUI();
-    // (v3.3.7) geen swipe-hint
+    // (v3.3.56) geen swipe-hint
 
     // Oneindig doorlopen: pijlen nooit uitschakelen
     if(prevBtn) prevBtn.disabled = false;
@@ -371,7 +378,7 @@ document.body.classList.add('lb-open');
     document.body.classList.remove('lb-open');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    // (v3.3.7) geen swipe-hint
+    // (v3.3.56) geen swipe-hint
 
     // Sync: als je de uitleg-lightbox op desktop sluit, zet de chip uit
     try{
@@ -646,7 +653,7 @@ document.addEventListener('keydown', (e) => {
 
     // Desktop: help-lightbox aan/uit
     if(uitlegOn){
-      // (v3.3.7) geen swipe-hint
+      // (v3.3.56) geen swipe-hint
       mode = 'help';
       helpFiltered = helpItems.slice();
       openAt(0);
@@ -706,7 +713,7 @@ document.addEventListener('keydown', (e) => {
   requestAnimationFrame(updatePillsSafe);
 
   // ===============================
-  // v3.3.50 – Mobile bottom-sheet gedrag (uitleg)
+  // v3.3.56 – Mobile bottom-sheet gedrag (uitleg)
   // Eisen:
   // - Tijdens drag: sheet volgt vinger (geen opacity/fade/mee-bewegen UI)
   // - Animaties alleen bij loslaten
@@ -716,25 +723,6 @@ document.addEventListener('keydown', (e) => {
   // ===============================
 
   const introSheet = document.getElementById('mobileIntro');
-
-  function forceCloseIntroSheet(immediate=true){
-    if(!introSheet) return;
-    document.body.classList.remove('show-intro');
-    setSheetStable(false);
-    introSheet.classList.remove('x-scrolling','is-stable');
-    // Zorg dat de sheet echt buiten beeld staat en niets blokkeert
-    if(immediate){
-      introSheet.style.transition = 'none';
-      introSheet.style.transform = 'translateY(103%)';
-    }else{
-      introSheet.style.transform = 'translateY(103%)';
-    }
-  }
-
-  // SAFETY: start altijd met gesloten sheet (grid moet altijd zichtbaar zijn)
-  window.addEventListener('DOMContentLoaded', () => {
-    forceCloseIntroSheet(true);
-  });
 
   // ✕ gedrag tijdens horizontaal bladeren:
   // - bij horizontaal scrollen (links/rechts) mag het kruisje even wegfaden
@@ -820,9 +808,30 @@ document.addEventListener('keydown', (e) => {
     animateSheet(introSheet.getBoundingClientRect().height + 24, {duration:140, overshoot:false});
     // Na close: class weg (zodat layout/aria consistent is)
     setTimeout(() => {
-      forceCloseIntroSheet(true);
+      document.body.classList.remove('show-intro');
+      introSheet.style.transform = 'translateY(103%)';
     }, 145);
   }
+
+  function forceCloseIntroSheet(immediate=true){
+    if(!introSheet) return;
+    document.body.classList.remove('show-intro');
+    setSheetStable(false);
+    introSheet.classList.remove('x-scrolling','is-stable');
+    // Zorg dat de sheet echt buiten beeld staat en niets blokkeert
+    if(immediate){
+      introSheet.style.transition = 'none';
+      introSheet.style.transform = 'translateY(103%)';
+    }else{
+      introSheet.style.transform = 'translateY(103%)';
+    }
+  }
+
+  // SAFETY: start altijd met gesloten sheet (grid moet altijd zichtbaar zijn)
+  window.addEventListener('DOMContentLoaded', () => {
+    try{ forceCloseIntroSheet(true); }catch(_e){}
+  });
+
 
   // --- Drag gedrag ---
   (function setupIntroSheetDrag(){
@@ -1086,7 +1095,7 @@ document.addEventListener('keydown', (e) => {
     dragEl.addEventListener('touchcancel', touchRelease, {passive:true, capture:true});
   })();
 
-  // Swipe-down verwijderd voor stabiliteit (v3.3.42)
+  // Swipe-down verwijderd voor stabiliteit (v3.3.56)
 
 // (v3.2) Geen extra "Uitleg/Verberg" header meer op mobiel.
 
@@ -1231,7 +1240,7 @@ document.addEventListener('DOMContentLoaded', () => { renderMobileIntro(); });
 
 
 
-// SAFETY: close button delegation (v3.3.28)
+// SAFETY: close button delegation (v3.3.56)
 document.addEventListener('click', (e) => {
   const closeEl = e.target && (e.target.closest ? e.target.closest('.lbClose, .close') : null);
   const lb = document.getElementById('lb');
@@ -1243,7 +1252,7 @@ document.addEventListener('click', (e) => {
   }
 }, true);
 
-// CLOSE DELEGATION v3.3.32: als de overlay open is, sluit altijd bij tap op #lbClose of .lbClose
+// CLOSE DELEGATION v3.3.56: als de overlay open is, sluit altijd bij tap op #lbClose of .lbClose
 document.addEventListener('pointerdown', (e) => {
   const lb = document.getElementById('lb');
   if (!lb || !lb.classList.contains('open')) return;
@@ -1255,7 +1264,7 @@ document.addEventListener('pointerdown', (e) => {
 }, true);
 
 
-// KEIHARDE CLOSE FIX v3.3.38
+// KEIHARDE CLOSE FIX v3.3.56
 (function(){
   const lb = document.getElementById('lb');
   const closeBtn = document.getElementById('lbClose');
@@ -1373,11 +1382,11 @@ document.addEventListener('pointerdown', (e) => {
 })();
 
 
-/* v3.3.50 – Horizontaal swipen in de uitleg gebeurt native via scroll-snap.
+/* v3.3.56 – Horizontaal swipen in de uitleg gebeurt native via scroll-snap.
    Geen JS-gestures nodig (houdt het licht, vloeiend en conflictvrij). */
 
 
-/* v3.3.42 – Harde swipe reset */
+/* v3.3.56 – Harde swipe reset */
 function resetSwipe(){
   document.body.style.touchAction = '';
 }

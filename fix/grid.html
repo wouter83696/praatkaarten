@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.54</title>
+<title>Praatkaarten v3.3.56</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap");
 
@@ -322,7 +322,7 @@ button,
 }
 
 
-/* KEIHARDE CLOSE FIX + DEBUG v3.3.39 */
+/* KEIHARDE CLOSE FIX + DEBUG v3.3.56 */
 #closeHitbox{
   position: fixed;
   width: 64px;
@@ -348,7 +348,7 @@ button,
   display: none;
 }
 .debug-on #debugHud{ display: block; }
-/* CLOSE NUCLEAR v3.3.39
+/* CLOSE NUCLEAR v3.3.56
    Zet close altijd fixed rechtsboven (viewport), los van transforms/gestures */
 .lb{ transform:none !important; }
 .panel{ transform:none !important; }
@@ -522,7 +522,7 @@ document.body.classList.add('lb-open');
 
   lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
 
-  // CLOSE HANDLER v3.3.39 (altijd werken, los van swipe/gestures)
+  // CLOSE HANDLER v3.3.56 (altijd werken, los van swipe/gestures)
   function onClosePress(e){
     e.preventDefault();
     e.stopPropagation();
@@ -531,7 +531,7 @@ document.body.classList.add('lb-open');
   }
   closeBtn.addEventListener('pointerdown', onClosePress, {capture:true});
   closeBtn.addEventListener('click', onClosePress, {capture:true});
-  // CLOSE FIX v3.3.39
+  // CLOSE FIX v3.3.56
   closeBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); closeLb(); }, {capture:true});
 closeLb(); });
 
@@ -607,7 +607,7 @@ closeLb(); });
   lb.addEventListener('pointermove', () => { if(!canHover) showUI(); });
 
 
-  // POSITION OVERLAY CLOSE v3.3.39
+  // POSITION OVERLAY CLOSE v3.3.56
   const overlayClose = document.getElementById('close');
   function positionOverlayClose(){
     const panel = document.querySelector('.panel');
@@ -619,14 +619,14 @@ closeLb(); });
   window.addEventListener('resize', positionOverlayClose, {passive:true});
   window.addEventListener('scroll', positionOverlayClose, {passive:true});
 
-  // DOCUMENT CLOSE FALLBACK v3.3.39
+  // DOCUMENT CLOSE FALLBACK v3.3.56
   document.addEventListener('pointerdown', (e) => {
     const t = e.target && (e.target.closest ? e.target.closest('#close') : null);
     if (t && lb.classList.contains('open')) onClosePress(e);
   }, true);
 
 
-// KEIHARDE CLOSE FIX v3.3.39
+// KEIHARDE CLOSE FIX v3.3.56
 (function(){
   const lb = document.getElementById('lb');
   const closeBtn = document.getElementById('close');
@@ -687,7 +687,7 @@ closeLb(); });
 })();
 
 
-/* CLOSE NUCLEAR JS v3.3.39 */
+/* CLOSE NUCLEAR JS v3.3.56 */
 (function(){
   const lb = document.getElementById('lb');
   const closeBtn = document.getElementById('close');
