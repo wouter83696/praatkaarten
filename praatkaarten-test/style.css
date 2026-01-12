@@ -736,3 +736,8 @@ body.show-intro .mobileIntro{
 .lbBg, .mobileIntro{
   z-index: 10;
 }
+
+/* MOBILE-ONLY CONTAINER (v3.6.0) */
+:root { --phone-max: 520px; }
+body { display:flex; justify-content:center; }
+#app, .app, main { width:100%; max-width:var(--phone-max); margin:0 auto; }
