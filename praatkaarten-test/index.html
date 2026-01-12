@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praatkaarten v3.3.55</title>
+<title>Praatkaarten v3.3.48</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -966,12 +966,6 @@ body.hm-open{overflow:hidden}
   opacity: 1;
   pointer-events: auto;
 }
-
-/* Tijdens horizontaal scrollen (links/rechts) fades de ✕ even weg */
-.mobileIntro.x-scrolling .introClose{
-  opacity: 0;
-  pointer-events: none;
-}
 .introClose svg{ width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .introClose:active{ transform: translateY(1px); }
 .introClose:focus-visible{ outline:2px solid rgba(48,96,136,.35); outline-offset:2px; }
@@ -984,8 +978,6 @@ body.hm-open{overflow:hidden}
 
 /* alleen relevant op mobiel */
 @media (max-width: 720px){
-  /* Tijdens open sheet: achtergrond niet scrollen (anders 'pakt' swipe-down niet betrouwbaar) */
-  body.show-intro{ overflow:hidden; overscroll-behavior: contain; }
   body.show-intro .mobileIntro{ transform: translateY(0); }
   /* Pills blijven altijd links-onder in beeld; geen opschuiven boven de uitleg */
 }
@@ -1573,7 +1565,7 @@ button.pill:active,
 
 <div id="debugHud" aria-hidden="true"></div>
 
-<div id="versionBadge" aria-hidden="true">v3.3.55</div>
+<div id="versionBadge" aria-hidden="true">v3.3.48</div>
 <div id="toast" aria-hidden="true"></div>
 
 <script id="questions-json" type="application/json">

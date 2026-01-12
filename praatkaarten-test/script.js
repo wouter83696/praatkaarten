@@ -79,7 +79,7 @@ if (window.visualViewport){
 
 // Versie + cache-buster (handig op GitHub Pages)
 // Versie (ook gebruikt als cache-buster op GitHub Pages)
-const VERSION = '3.3.53';
+const VERSION = '3.3.50';
 const withV = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(VERSION);
 
 const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewegen"];
@@ -243,6 +243,7 @@ const THEMES = ["verkennen","duiden","verbinden","verdiepen","vertragen","bewege
       if(grid) grid.innerHTML = '<div style="padding:24px;font-family:system-ui;">Fout bij laden.</div>';
     }
   })();
+
 
   function render(items){
     // Bewaar de huidige (zichtbare) kaartset voor navigatie
@@ -716,22 +717,6 @@ document.addEventListener('keydown', (e) => {
   // ===============================
 
   const introSheet = document.getElementById('mobileIntro');
-
-  // ✕ gedrag tijdens horizontaal bladeren:
-  // - bij horizontaal scrollen (links/rechts) mag het kruisje even wegfaden
-  // - bij verticale drag blijft hij sowieso verborgen (dat regelen we via .is-stable)
-  // - zodra het scrollen stopt komt hij weer netjes terug (fade)
-  (function setupIntroCloseFadeOnXScroll(){
-    const introTrack = document.getElementById('introTrack');
-    if(!introSheet || !introTrack) return;
-    let t = null;
-    introTrack.addEventListener('scroll', () => {
-      if(!document.body.classList.contains('show-intro')) return;
-      introSheet.classList.add('x-scrolling');
-      clearTimeout(t);
-      t = setTimeout(() => introSheet.classList.remove('x-scrolling'), 220);
-    }, {passive:true});
-  })();
   let sheetAnim = null;
 
   function setSheetStable(stable){
@@ -809,13 +794,6 @@ document.addEventListener('keydown', (e) => {
   // --- Drag gedrag ---
   (function setupIntroSheetDrag(){
     if(!introSheet) return;
-    const introTrack = document.getElementById('introTrack');
-    // Swipes starten vaak op de kaarten/track zelf.
-    // Als we de gesture direct aan de track hangen kan (met touch-action/scroll-snap)
-    // de browser de verticale beweging overnemen (dan krijg je 'scroll' i.p.v. sheet-drag).
-    // Daarom luisteren we op de SHEET (capture), zodat we altijd de beweging zien.
-    // Horizontaal bladeren blijft native via de track; verticaal (omlaag) claimen we pas na beslissing.
-    const dragEl = introSheet;
     let down = false;
     let armed = false;
     let decided = false;
@@ -826,93 +804,6 @@ document.addEventListener('keydown', (e) => {
     let lockedClose = false;
 
     const DEAD = 14; // 10–15px: bijna geen beweging
-
-    function startFrom(x, y, rawEvt){
-      down = true;
-      armed = true;
-      decided = false;
-      vertical = false;
-      lockedClose = false;
-      sx = x; sy = y;
-      currentY = getCurrentSheetY();
-      introSheet.style.transition = 'none';
-      // ✕ verdwijnt pas bij verticale drag (beslissing), niet bij start
-      // Maar tijdens een drag (vertical) zetten we 'stable' uit.
-      try{ dragEl.setPointerCapture?.(rawEvt.pointerId); }catch(_e){}
-    }
-
-    function moveFrom(x, y, rawEvt){
-      if(!down || !armed) return;
-      const dx = x - sx;
-      const dy = y - sy;
-      const ax = Math.abs(dx);
-      const ay = Math.abs(dy);
-
-      if(!decided){
-        if(ax < 12 && ay < 12) return;
-        // Verticale intent wint bij lichte drift; horizontaal laten we native.
-        if(ay > ax * 1.15 && dy > 0){
-          decided = true;
-          vertical = true;
-          setSheetStable(false); // verberg ✕ (en fixeer UI)
-          disableHorizontalScroll();
-        }else if(ax > ay * 1.15){
-          decided = true;
-          vertical = false;
-          setSheetStable(true);
-          return;
-        }else{
-          // nog twijfel: niets doen
-          return;
-        }
-      }
-
-      if(!vertical) return;
-
-      // Nu claimen we: geen page-scroll
-      rawEvt && rawEvt.preventDefault && rawEvt.preventDefault();
-
-      // Deadzone + weerstand
-      let yDrag = Math.max(0, dy);
-      if(yDrag <= DEAD){
-        setY(0);
-        return;
-      }
-      yDrag = DEAD + (yDrag - DEAD) * 0.55;
-
-      // Drempel
-      if(yDrag >= threshold){
-        lockedClose = true;
-        const over = yDrag - threshold;
-        yDrag = threshold + over * 1.12; // lichte versnelling / snap
-      }
-      if(lockedClose) yDrag = Math.max(threshold, yDrag);
-
-      setY(yDrag);
-    }
-
-    function endFrom(){
-      if(!down) return;
-      down = false;
-      restoreHorizontalScroll();
-
-      if(!decided || !vertical){
-        setSheetStable(true);
-        return;
-      }
-
-      const yNow = getCurrentSheetY();
-      if(lockedClose || yNow >= threshold){
-        setSheetStable(false);
-        closeIntroSheet();
-      }else{
-        setSheetStable(false);
-        // Snap back
-        introSheet.style.transition = 'transform 180ms cubic-bezier(.2,.9,.2,1)';
-        introSheet.style.transform = 'translateY(0px)';
-        setTimeout(()=>setSheetStable(true), 190);
-      }
-    }
 
     function computeThreshold(){
       const h = Math.max(1, introSheet.getBoundingClientRect().height);
@@ -933,40 +824,74 @@ document.addEventListener('keydown', (e) => {
       return y;
     }
 
-    function disableHorizontalScroll(){
-      if(!introTrack) return;
-      // tijdens verticale drag tijdelijk blokkeren zodat iOS/Android niet 'pakt' op horizontaal scrollen
-      introTrack.dataset._ox = introTrack.style.overflowX || '';
-      introTrack.style.overflowX = 'hidden';
-      introTrack.dataset._ta = introTrack.style.touchAction || '';
-      introTrack.style.touchAction = 'none';
-    }
-    function restoreHorizontalScroll(){
-      if(!introTrack) return;
-      if('_ox' in introTrack.dataset) introTrack.style.overflowX = introTrack.dataset._ox;
-      if('_ta' in introTrack.dataset) introTrack.style.touchAction = introTrack.dataset._ta;
-      delete introTrack.dataset._ox;
-      delete introTrack.dataset._ta;
-    }
-
-    dragEl.addEventListener('pointerdown', (e) => {
+    introSheet.addEventListener('pointerdown', (e) => {
       if(!document.body.classList.contains('show-intro')) return;
-      if(e.target && e.target.closest && e.target.closest('button')) return;
-      startFrom(e.clientX, e.clientY, e);
-    }, {passive:true, capture:true});
+      // Start mag óók op de horizontale track (kaarten).
+      // We beslissen pas bij de eerste beweging: horizontaal = bladeren, verticaal (omlaag) = sheet drag.
+      // Ook niet op buttons (zoals ✕)
+      if(e.target && e.target.closest && e.target.closest('button')){
+        return;
+      }
 
+      down = true;
+      armed = true;
+      decided = false;
+      vertical = false;
+      lockedClose = false;
+      sx = e.clientX;
+      sy = e.clientY;
+      currentY = 0;
+      computeThreshold();
+      setSheetStable(false); // ✕ verdwijnt zodra drag start
+      introSheet.style.transition = 'none';
+      try{ introSheet.setPointerCapture?.(e.pointerId); }catch(_e){}
+    }, {passive:true});
 
+    introSheet.addEventListener('pointermove', (e) => {
+      if(!down || !armed) return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
 
-    dragEl.addEventListener('pointermove', (e) => {
-      moveFrom(e.clientX, e.clientY, e);
-    }, {passive:false, capture:true});
+      if(!decided){
+        if(ax < 8 && ay < 8) return;
+        decided = true;
+        vertical = (ay > ax);
+        if(!vertical){
+          // Horizontaal: laat alles los (native scroll blijft licht)
+          armed = false;
+          down = false;
+          setSheetStable(true);
+          return;
+        }
+      }
 
+      // Alleen omlaag trekken
+      if(dy <= 0){
+        if(!lockedClose) setY(0);
+        return;
+      }
 
+      // Prevent background scroll tijdens verticale drag
+      try{ e.preventDefault(); }catch(_e){}
+
+      let y = resistance(dy);
+
+      // Drempel: boven = onherroepelijk (niet meer terug)
+      if(y >= threshold){
+        lockedClose = true;
+        const over = y - threshold;
+        y = threshold + over * 1.1; // lichte versnelling / snap-gevoel
+      }
+      if(lockedClose) y = Math.max(threshold, y);
+
+      setY(y);
+    }, {passive:false});
 
     function release(){
       if(!down) return;
       down = false;
-      restoreHorizontalScroll();
       if(!decided){
         // Geen drag: sheet blijft open
         setSheetStable(true);
@@ -988,39 +913,9 @@ document.addEventListener('keydown', (e) => {
       setTimeout(() => setSheetStable(true), 155);
     }
 
-        dragEl.addEventListener('pointerup', (e)=>{ endFrom(); }, {passive:true, capture:true});
-
-        dragEl.addEventListener('touchmove', (e) => {
-      if(!tActive) return;
-      const t = e.touches && e.touches[0];
-      if(!t) return;
-      moveFrom(t.clientX, t.clientY, e);
-    }, {passive:false, capture:true});
-
-    function touchRelease(){
-      if(!tActive) return;
-      tActive = false;
-      release();
-    }
-        dragEl.addEventListener('touchend', (e)=>{ tActive=false; endFrom(); }, {passive:true, capture:true});
-        dragEl.addEventListener('touchcancel', (e)=>{ tActive=false; endFrom(); }, {passive:true, capture:true});
-  })(
-    // Gestures vanuit de uitleg-iframe doorgeven (iOS/Safari: iframe slokt touch events op).
-    window.addEventListener('message', (ev) => {
-      try{
-        if(!ev || !ev.data || ev.data.type !== 'PK_INTRO_GESTURE') return;
-        if(ev.data.origin !== window.location.origin) return;
-        if(!document.body.classList.contains('show-intro')) return;
-        const phase = ev.data.phase;
-        const x = ev.data.x || 0;
-        const y = ev.data.y || 0;
-        if(phase === 'start') startFrom(x, y, {pointerId:0});
-        else if(phase === 'move') moveFrom(x, y, {preventDefault: ()=>{}});
-        else if(phase === 'end') endFrom();
-      }catch(_e){}
-    }, {capture:true});
-
-);
+    introSheet.addEventListener('pointerup', release, {passive:true});
+    introSheet.addEventListener('pointercancel', release, {passive:true});
+  })();
 
   // Swipe-down verwijderd voor stabiliteit (v3.3.42)
 
