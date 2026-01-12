@@ -1,7 +1,7 @@
 // Praatkaarten – Mobile-only rebuild
-// Version: 3.4.1 (rebuild start)
+// Version: 3.4.2 (rebuild start)
 
-const VERSION = '3.4.1';
+const VERSION = '3.4.2';
 
 // ===============================
 // Pad-resolutie: werkt in elke directory op GitHub Pages
@@ -316,22 +316,39 @@ window.addEventListener('resize', computeThreshold);
     let built = [];
     if(Array.isArray(q)) {
       built = q;
-    } else {
-      // probeer bestaande structuur te volgen
-      const themes = q.themes || q.kopjes || q.categories || [];
-      const qmap = q.questions || q.vragen || q.items || {};
-      const order = themes.length ? themes : Object.keys(qmap);
-      order.forEach((themeKey) => {
-        const qs = qmap[themeKey] || [];
-        qs.forEach((text, i) => {
-          built.push({
-            theme: themeKey,
-            num: i+1,
-            q: text,
-            bg: withV(`cards/${themeKey}.svg`)
+    } else if (q && typeof q === 'object') {
+      // Veelgebruikte format in jouw project: { verkennen:[...], duiden:[...], ... }
+      const keys = Object.keys(q);
+      const looksLikeMap = keys.length && keys.every(k => Array.isArray(q[k]));
+      if(looksLikeMap){
+        keys.forEach((themeKey) => {
+          const qs = q[themeKey] || [];
+          qs.forEach((text, i) => {
+            built.push({
+              theme: themeKey,
+              num: i+1,
+              q: text,
+              bg: withV(`cards/${themeKey}.svg`)
+            });
           });
         });
-      });
+      } else {
+        // Alternatieve formats
+        const themes = q.themes || q.kopjes || q.categories || [];
+        const qmap = q.questions || q.vragen || q.items || {};
+        const order = themes.length ? themes : Object.keys(qmap);
+        order.forEach((themeKey) => {
+          const qs = qmap[themeKey] || [];
+          qs.forEach((text, i) => {
+            built.push({
+              theme: themeKey,
+              num: i+1,
+              q: text,
+              bg: withV(`cards/${themeKey}.svg`)
+            });
+          });
+        });
+      }
     }
     items = built;
     render(items);
