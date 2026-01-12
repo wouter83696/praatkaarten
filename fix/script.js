@@ -1,7 +1,7 @@
 // Praatkaarten – Mobile-only rebuild
-// Version: 3.4.2 (rebuild start)
+// Version: 3.4.3 (rebuild start)
 
-const VERSION = '3.4.2';
+const VERSION = '3.4.3';
 
 // ===============================
 // Pad-resolutie: werkt in elke directory op GitHub Pages
