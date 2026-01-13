@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praatkaarten v3.6.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+<!-- 3 losse pills (icon-only) i.p.v. menubalk -->
+<div class="pillsDock" aria-label="Bediening">
+  <div class="pillsLeft">
+    <button class="pill" id="shuffleBtn" type="button" aria-label="Hussel" aria-pressed="false">
+      <!-- strakkere shuffle (nettere lijnen/hoeken) -->
+                              
+<svg viewBox="0 0 24 24" aria-hidden="true" class="iconShuffle">
+  <path d="M16 3h3v3"/>
+  <path d="M5 7h6c1.1 0 2.1.5 2.8 1.4l1.2 1.6"/>
+  <path d="M5 17h6c1.1 0 2.1-.5 2.8-1.4l1.2-1.6"/>
+  <path d="M19 3l-4 4"/>
+  <path d="M16 21h3v-3"/>
+  <path d="M19 21l-4-4"/>
+</svg>
+
+    </button>
+    <button class="pill" id="uitlegBtn" type="button" aria-label="Info" aria-pressed="false">
+      <!-- info-icoon (i) i.p.v. vraagteken -->
+            
+<svg viewBox="0 0 24 24" aria-hidden="true" class="iconInfo">
+  <path d="M12 10v7"/>
+  <path d="M12 7h.01"/>
+</svg>
+
+    </button>
+  </div>
+
+  <!-- (bewust geen extra sluitknop en geen swipe-hint) -->
+</div>
+
+
+
+<div class="grid" id="grid"></div>
+
+<section class="mobileIntro" id="mobileIntro" aria-label="Uitleg">
+  <button id="introClose" class="introClose" aria-label="Sluiten" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 6L6 18"/>
+      <path d="M6 6l12 12"/>
+    </svg>
+  </button>
+  <div class="introTrack" id="introTrack" tabindex="0" aria-label="Swipe door de uitlegkaarten">
+    <!-- wordt gevuld vanuit intro-data.json -->
+  </div>
+</section>
+
+
+<div class="lb" id="lb" aria-hidden="true">
+  <div class="lbBg" aria-hidden="true"></div>
+  <!-- Close (helemaal opnieuw opgebouwd, los van oude selectors) -->
+  <button class="lbClose" id="lbClose" type="button" aria-label="Sluiten">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M18 6L6 18"/>
+      <path d="M6 6l12 12"/>
+    </svg>
+  </button>
+  <!-- grotere onzichtbare hitbox voor mobiel -->
+  <div id="lbCloseHitbox" aria-hidden="true"></div>
+
+  <div class="panel" role="dialog" aria-modal="true">
+    <div class="lbCard" id="lbCard">
+<button class="chev left" id="prev" aria-label="Vorige"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="chev right" id="next" aria-label="Volgende"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+<img id="lbImg" alt="">
+      <div class="lbText" id="lbText"></div>
+    </div>
+
+    <!-- UITLEG (tekst onder de kaart, zodat de kaart dezelfde ratio houdt als het grid) -->
+    <div class="lbHelpText" id="lbHelpText" aria-hidden="true">
+      <div class="lbHelpTitle" id="lbHelpTitle"></div>
+      <div class="lbHelpDesc" id="lbHelpDesc"></div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+<div id="debugHud" aria-hidden="true"></div>
+
+<div id="versionBadge" aria-hidden="true">v3.6.0</div>
+<div id="toast" aria-hidden="true"></div>
+
+<script id="questions-json" type="application/json">
+{
+  "verkennen": [
+    "Wat zien we op dit moment gebeuren in onze samenwerking?",
+    "Wat valt ons op in onze manier van samenwerken?",
+    "Herkennen we patronen in onze manier van samenwerken?",
+    "Waar zijn we aan gewend geraakt?",
+    "Wat krijgt nu minder aandacht?",
+    "Blijven er dingen onbesproken?"
+  ],
+  "duiden": [
+    "Wat proberen we als team goed te doen?",
+    "Wat nemen we wel of niet als vanzelfsprekend aan?",
+    "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+    "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?",
+    "Welke patronen blijven we terugzien in onze samenwerking?",
+    "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?"
+  ],
+  "verbinden": [
+    "Waar worden we enthousiast van?",
+    "Wanneer voel jij je echt onderdeel van het team?",
+    "Mogen er verschillen bestaan in ons team?",
+    "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
+    "Wat helpt ons om onszelf te laten zien in de samenwerking?",
+    "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?"
+  ],
+  "vertragen": [
+    "Wanneer nemen we in onze samenwerking eigenlijk de tijd?",
+    "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?",
+    "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
+    "Welke patronen worden zichtbaar wanneer de druk toeneemt?",
+    "Welke rol nemen we automatisch aan in momenten van spanning?",
+    "Wanneer merken we dat vertragen helpend zou zijn?"
+  ],
+  "bewegen": [
+    "Wat doen we met ideeën die ontstaan?",
+    "Wanneer komt er beweging in het team?",
+    "Wat helpt ons om van praten naar doen te gaan?",
+    "Welke ideeën blijven liggen, en waarom?",
+    "Wat houdt ons tegen om in actie te komen?",
+    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
+  ]
+}
+</script>
+<script id="intro-json" type="application/json">
+{
+  "slides": [
+    {
+      "key": "cover",
+      "title": "Samen onderzoeken",
+      "body": "Deze kaarten proberen je uit te nodigen om samen te kijken naar wat er speelt, zichtbaar wordt en onbesproken blijft in de samenwerking.",
+      "img": "voorkant.svg",
+      "alt": "Samen onderzoeken – Gesprekskaarten voor teams"
+    },
+    {
+      "key": "verkennen",
+      "title": "Verkennen",
+      "body": "Bij verkennen staan we stil bij wat we waarnemen in de samenwerking.",
+      "img": "cards/verkennen.svg",
+      "alt": "Verkennen"
+    },
+    {
+      "key": "duiden",
+      "title": "Duiden",
+      "body": "Bij duiden staan we stil bij de betekenis die we geven aan wat er gebeurt in de samenwerking.",
+      "img": "cards/duiden.svg",
+      "alt": "Duiden"
+    },
+    {
+      "key": "verbinden",
+      "title": "Verbinden",
+      "body": "Bij verbinden staan we stil bij hoe we ons tot elkaar verhouden in de samenwerking.",
+      "img": "cards/verbinden.svg",
+      "alt": "Verbinden"
+    },
+    {
+      "key": "verhelderen",
+      "title": "Verhelderen",
+      "body": "Bij verhelderen staan we stil bij wat onduidelijk is in de samenwerking.",
+      "img": "cards/verhelderen.svg",
+      "alt": "Verhelderen"
+    },
+    {
+      "key": "verdiepen",
+      "title": "Verdiepen",
+      "body": "Bij verdiepen staan we stil bij wat onder de oppervlakte meespeelt in de samenwerking.",
+      "img": "cards/verdiepen.svg",
+      "alt": "Verdiepen"
+    },
+    {
+      "key": "vertragen",
+      "title": "Vertragen",
+      "body": "Bij vertragen staan we stil bij het tempo en nemen we bewust de tijd om rust en overzicht te creëren in de samenwerking.",
+      "img": "cards/vertragen.svg",
+      "alt": "Vertragen"
+    },
+    {
+      "key": "bewegen",
+      "title": "Bewegen",
+      "body": "Bij bewegen staan we stil bij wat een volgende stap kan zijn in de samenwerking.",
+      "img": "cards/bewegen.svg",
+      "alt": "Bewegen"
+    }
+  ],
+  "hint": "← → swipe"
+}
+</script>
+
+
+<script src="./script.js"></script>
+<!--
+  We laden bewust géén tweede (module) app-script meer.
+  assets/app.js + assets/grid.js zorgden voor dubbele listeners (en een bug),
+  waardoor het grid soms verdween zodra je gestures toevoegde.
+  Deze build gebruikt daarom alleen script.js.
+-->
+</body>
+
+</html>
