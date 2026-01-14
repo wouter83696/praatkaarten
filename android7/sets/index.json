@@ -1,0 +1,9 @@
+{
+  "default": "samenwerken",
+  "available": [
+    {
+      "id": "samenwerken",
+      "title": "samenwerken"
+    }
+  ]
+}
