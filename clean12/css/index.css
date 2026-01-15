@@ -1,0 +1,30 @@
+/* Praatkaartjes – index.css (alleen index pagina) */
+
+.page{
+  min-height: 100vh;
+}
+
+.grid{
+  display:grid;
+  gap: var(--gap);
+  padding: 18px 28px 120px;
+  max-width: 1600px;
+  margin: 0 auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 720px){
+  .grid{ grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 980px){
+  .grid{ grid-template-columns: repeat(4, 1fr); }
+}
+@media (min-width: 1240px){
+  .grid{ grid-template-columns: repeat(6, 1fr); }
+}
+
+/* Hover lift (desktop) */
+@media (hover:hover){
+  .card{ transition: transform .14s ease; cursor: zoom-in; }
+  .card:hover{ transform: translateY(-2px); }
+}

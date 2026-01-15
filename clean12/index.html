@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praatkaarten v3.7.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/cards.css?v=3.7.1.72">
+<link rel="stylesheet" href="css/index.css?v=3.7.1.72">
+<link rel="stylesheet" href="css/menu.css?v=3.7.1.72">
+</head>
+<body>
+<script id="questions-json" type="application/json">
+{
+  "verkennen": [
+    "Wat zien we op dit moment gebeuren in onze samenwerking?",
+    "Wat valt ons op in onze manier van samenwerken?",
+    "Herkennen we patronen in onze manier van samenwerken?",
+    "Waar zijn we aan gewend geraakt?",
+    "Wat krijgt nu minder aandacht?",
+    "Blijven er dingen onbesproken?"
+  ],
+  "duiden": [
+    "Wat proberen we als team goed te doen?",
+    "Wat nemen we wel of niet als vanzelfsprekend aan?",
+    "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+    "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?",
+    "Welke patronen blijven we terugzien in onze samenwerking?",
+    "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?"
+  ],
+  "verbinden": [
+    "Waar worden we enthousiast van?",
+    "Wanneer voel jij je echt onderdeel van het team?",
+    "Mogen er verschillen bestaan in ons team?",
+    "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
+    "Wat helpt ons om onszelf te laten zien in de samenwerking?",
+    "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?"
+  ],
+  "verhelderen": [
+    "Wat is voor ons op dit moment nog onduidelijk in de samenwerking?",
+    "Welke aannames doen we (bewust of onbewust) over elkaar of de situatie?",
+    "Welke informatie missen we om goed te kunnen samenwerken?",
+    "Wat bedoelen we precies als we woorden gebruiken als ‘afstemming’, ‘ruimte’ of ‘tempo’?",
+    "Welke verwachtingen spreken we niet uit, maar sturen wel ons gedrag?",
+    "Wat zou helpen om de afspraak of werkwijze helder en concreet te maken?"
+  ],
+  "vertragen": [
+    "Wanneer nemen we in onze samenwerking eigenlijk de tijd?",
+    "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?",
+    "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
+    "Welke patronen worden zichtbaar wanneer de druk toeneemt?",
+    "Welke rol nemen we automatisch aan in momenten van spanning?",
+    "Wanneer merken we dat vertragen helpend zou zijn?"
+  ],
+  "bewegen": [
+    "Wat doen we met ideeën die ontstaan?",
+    "Wanneer komt er beweging in het team?",
+    "Wat helpt ons om van praten naar doen te gaan?",
+    "Welke ideeën blijven liggen, en waarom?",
+    "Wat houdt ons tegen om in actie te komen?",
+    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
+  ]
+}
+</script>
+
+
+<header class="topBar" aria-label="Bovenbalk">
+  <button id="themePill" class="themePill" type="button" aria-haspopup="dialog" aria-expanded="false">
+    <span class="setCoverWrap" aria-hidden="true">
+      <img id="setCoverIcon" class="setCoverIcon" src="sets/samenwerken/cards/voorkant.svg" alt="">
+    </span>
+    <span id="themePillText" class="srOnly">samenwerken</span>
+  </button>
+
+  <div class="topTools" aria-label="Acties">
+    <button id="shuffleBtn" class="toolBtn gmFab" type="button" aria-label="Shuffle"><svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <path d="M16 3h5v5"></path>
+  <path d="M4 7h6c1.8 0 3.2.7 4.3 2l.7.8"></path>
+  <path d="M21 3l-6 6"></path>
+  <path d="M16 21h5v-5"></path>
+  <path d="M4 17h6c1.8 0 3.2-.7 4.3-2l.7-.8"></path>
+  <path d="M21 21l-6-6"></path>
+</svg></button>
+    <button id="uitlegBtn" class="toolBtn gmFab" type="button" aria-label="Uitleg"><svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <circle cx="12" cy="12" r="9"></circle>
+  <path d="M12 10.5v6"></path>
+  <path d="M12 7.5h.01"></path>
+</svg></button>
+  </div>
+</header>
+
+<div id="themeMenuOverlay" class="menuOverlay" hidden></div>
+<section id="themeMenu" class="themeMenu" role="dialog" aria-label="Menu" hidden>
+  <div class="menuCard">
+    <div class="menuHeader">Thema's</div>
+    <div id="menuList" class="menuList">
+      <!-- Wordt dynamisch gevuld -->
+    </div>
+<div class="menuFooter">
+      <button id="naarOverzicht" class="menuLink" type="button">Naar overzicht →</button>
+    </div>
+  </div>
+</section>
+
+<main class="page">
+  <div id="grid" class="grid" aria-label="Kaarten"></div>
+</main>
+
+<script src="js/core/config.js?v=3.7.1.72" defer></script>
+<script src="js/core/state.js?v=3.7.1.72" defer></script>
+<script src="js/core/query.js?v=3.7.1.72" defer></script>
+<script src="js/core/net.js?v=3.7.1.72" defer></script>
+<script src="js/components/cardRenderer.js?v=3.7.1.72" defer></script>
+<script src="js/components/bottomSheet.js?v=3.7.1.72" defer></script>
+<script src="js/pages/index.js?v=3.7.1.72" defer></script>
+</body>
+</html>

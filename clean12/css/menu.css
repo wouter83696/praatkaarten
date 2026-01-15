@@ -1,0 +1,172 @@
+/* Praatkaartjes – menu.css (alleen index menu/topbar) */
+
+/* Top bar */
+.topBar{
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: var(--z-topbar);
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  pointer-events: none; /* alleen knoppen klikken */
+}
+.topBar > *{ pointer-events: auto; }
+
+/* Context-anker: set cover */
+.themePill{
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: none;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+  Belangrijk: de cover-SVG's hebben soms 'lucht' in de viewBox.
+  We zoomen daarom de IMG iets in, maar clippen dit in een wrapper,
+  zodat het rondje zelf NIET groter wordt (zoals het nu fout ging).
+*/
+.setCoverWrap{
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  display: block;
+  border: 0;
+  background: transparent;
+}
+
+.setCoverIcon{
+  width: 100%;
+  height: 100%;
+  display:block;
+  object-fit: cover;
+  object-position: 0% 0%;
+  border: 0;
+
+  /* Crop: focus op het 'logo' linksboven in voorkant.svg */
+  transform: scale(2.65);
+  transform-origin: 18% 18%;
+}
+
+/* Rechter acties */
+.topTools{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+}
+
+.toolBtn{
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: none;
+  display:inline-grid;
+  place-items:center;
+  cursor:pointer;
+  color: rgba(11,18,32,.55);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toolBtn:active{ background: rgba(255,255,255,0.9); }
+
+.gmIcon{
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Menu overlay */
+.menuOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.0);
+  z-index: var(--z-overlay);
+}
+
+/* Menu kaart */
+.themeMenu{
+  position: fixed;
+  top: 74px;
+  left: 16px;
+  z-index: var(--z-menu);
+  width: min(320px, calc(100vw - 40px));
+}
+
+.menuCard{
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: none; /* geen schaduw */
+  overflow: hidden;
+}
+
+.menuHeader{
+  padding: 12px 16px 8px;
+  font-weight: 500;
+  color: rgba(11,18,32,.45);
+  font-size: 14px;
+}
+
+.menuList{ display: grid; }
+
+.menuItem{
+  text-align:left;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  color: rgba(11,18,32,.72);
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  line-height: 1.2;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menuItem:active{ background: rgba(0,0,0,0.03); }
+
+.miLabel{ flex: 1 1 auto; }
+.miThumbRight{ flex: 0 0 auto; display:flex; align-items:center; }
+
+.menuFooter{
+  border-top: 1px solid rgba(0,0,0,0.06);
+  padding: 8px 10px;
+}
+
+.menuLink{
+  display:block;
+  width:100%;
+  text-align:left;
+  padding: 12px 14px;
+  border:0;
+  background: transparent;
+  font-size: 20px;
+  font-weight: 400;
+  color: rgba(11,18,32,.72);
+  opacity: .8;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menuLink:active{ background: rgba(0,0,0,0.03); }
