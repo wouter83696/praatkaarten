@@ -1,0 +1,30 @@
+{
+  "default": "samenwerken",
+  "sets": [
+    {
+      "id": "samenwerken",
+      "title": "Samen onderzoeken"
+    }
+  ],
+  "available": [
+    {
+      "id": "samenwerken",
+      "title": "samenwerken"
+    }
+  ],
+  "uiDefaults": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "carousel",
+      "gridLimit": 6
+    }
+  }
+}
