@@ -178,10 +178,14 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
   box-shadow: none !important;
 }
 
-/* Extra zekerheid: geen witte plaat binnen de flip-lagen */
-.cardsSlideCard .pkFlipInner,
-.cardsSlideCard .pkFace{
+/* Flip-lagen: behoud kaartvlak (niet transparant), maar geen extra rand/schaduw */
+.cardsSlideCard .pkFlipInner{
   background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.cardsSlideCard .pkFace{
+  background: var(--pk-set-card, #FAFAF8) !important;
   border: 0 !important;
   box-shadow: none !important;
 }
