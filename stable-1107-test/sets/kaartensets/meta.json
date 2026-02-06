@@ -1,0 +1,9 @@
+{
+  "name": "Kaartensets",
+  "title": "Kaartensets",
+  "cover": "voorkant.svg",
+  "themes": [],
+  "ui": {
+    "themeCss": "theme.css"
+  }
+}
