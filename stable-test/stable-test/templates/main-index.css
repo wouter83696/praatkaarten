@@ -1,0 +1,15 @@
+/* Template: main index (sets overview)
+   Adjust these to change the main index background bands.
+*/
+:root{
+  /* Neutral baseline (no sand/peach bands) */
+  --setsHeaderBg: #ffffff;
+  --setsHeroBg: transparent;
+  --setsGridBg: transparent;
+
+  /* Card opacity reset */
+  --setsHeroCardBg: #ffffff;
+  --setsGridCardBg: #ffffff;
+  --setsHeroCardImgOpacity: 1;
+  --setsGridCardImgOpacity: 1;
+}
