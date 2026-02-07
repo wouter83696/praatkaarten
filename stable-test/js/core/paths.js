@@ -23,7 +23,7 @@
   PK.PATHS = PATHS;
   w.PATHS = PATHS;
 
-  PK.VERSION = PK.VERSION || '4.0.4';
+  PK.VERSION = PK.VERSION || '4.0.3';
   PK.withV = function(url){
     return url + (url.indexOf('?')===-1 ? '?' : '&') + 'v=' + encodeURIComponent(PK.VERSION);
   };

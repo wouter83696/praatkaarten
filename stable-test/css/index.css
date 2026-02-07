@@ -195,30 +195,6 @@ body[data-page="kaarten"] .cardsSlideCard .pkFace{
   background: transparent !important;
 }
 
-/* Kaartenpagina: subtiele transparantie via aparte achtergrondlaag
-   (tekst/iconen blijven volledig dekkend) */
-body[data-page="kaarten"] .pkFace{
-  position: absolute;
-  overflow: hidden;
-}
-body[data-page="kaarten"] .pkFace::before{
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.18);
-  z-index: 1;
-  pointer-events: none;
-}
-body[data-page="kaarten"] .pkFace img,
-body[data-page="kaarten"] .pkFace .pkBackBg{
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-body[data-page="kaarten"] .cardsSlideQ{
-  z-index: 2;
-}
-
 /* Let op: sheet visibility wordt door JS geregeld via [hidden]. */
 
 /* ===== Extra diepte via 1 zachte, meekleurende achtergrond-blob ===== */

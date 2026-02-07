@@ -180,9 +180,8 @@ html[data-contrast="dark"] .cardInner{
 /* Mini kaart (menu thumbnail) gebruikt dezelfde .cardInner-achtige look */
 .menuThumbCard{
   /* mini-kaartjes in menu moeten voelen als verkleinde index-kaart */
-  width: 64px;
-  aspect-ratio: 85 / 55;
-  height: auto;
+  width: 46px;
+  height: 30px;
   /* Zelfde *vormgevoel* als index-kaartjes:
      op 32px hoog maakt radius 16 het mini-kaartje te rond.
      Schaal de radius mee zodat hij visueel overeenkomt met de grote kaart. */
