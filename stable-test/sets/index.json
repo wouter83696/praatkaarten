@@ -26,5 +26,21 @@
       "layout": "carousel",
       "gridLimit": 6
     }
+  },
+  "indexPage": {
+    "background": {
+      "palette": ["#F2C9A5"],
+      "blobCount": 4,
+      "blobAlphaFixed": 0.18,
+      "blobWash": 0.35,
+      "blobIrregularity": 0.45,
+      "blobPointsMin": 7,
+      "blobPointsMax": 11,
+      "sizeScale": 1.5,
+      "sizeLimit": 1.8,
+      "blobSpread": "grid",
+      "blobSpreadMargin": 0.18,
+      "baseWash": false
+    }
   }
 }
