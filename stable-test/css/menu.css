@@ -941,6 +941,11 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   overflow: hidden;
 }
 
+/* Dark mode: uitleg-kaarten niet transparant */
+html[data-contrast="dark"] .infoSlideCard{
+  background: var(--pk-set-card, #FAFAF8);
+}
+
 /* Thema-naam in het midden op de uitleg-kaart (niet op de cover) */
 .infoSlideMidTitle{
   position: absolute;
@@ -1044,6 +1049,14 @@ html[data-contrast="dark"] .infoSlideText{
   border-radius: 12px;
   overflow: hidden;
   background: transparent;
+}
+
+/* Dark mode: menu-kaartjes niet transparant */
+html[data-contrast="dark"] .menuItemThumb,
+html[data-contrast="dark"] .menu-thumb,
+html[data-contrast="dark"] .menuThumb,
+html[data-contrast="dark"] .menu-item-thumb {
+  background: var(--pk-set-card, #FAFAF8);
 }
 
 .menuItemThumb img,

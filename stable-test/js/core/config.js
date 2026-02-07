@@ -37,4 +37,6 @@
   PK.withV = function(url){
     return url + (url.indexOf('?')===-1 ? '?' : '&') + 'v=' + encodeURIComponent(PK.VERSION);
   };
+  // Cache-bust sets index (belangrijk voor main index)
+  try{ PK.PATHS.setsIndex = PK.withV(PK.PATHS.setsIndex); }catch(_eSet){}
 })(window);

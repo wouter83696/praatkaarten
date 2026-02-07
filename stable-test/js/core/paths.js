@@ -28,6 +28,9 @@
     return url + (url.indexOf('?')===-1 ? '?' : '&') + 'v=' + encodeURIComponent(PK.VERSION);
   };
 
+  // Cache-bust index.json zodat wijzigingen direct zichtbaar zijn
+  try{ PATHS.setsIndex = PK.withV(PATHS.setsIndex); }catch(_eSet){}
+
   PK.pathForSet = function(setId, rel){
     var s = String(setId||'').replace(/^\s+|\s+$/g,'') || 'samenwerken';
     var r = String(rel||'').replace(/^\//,'');
