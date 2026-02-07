@@ -13,8 +13,8 @@
   --menuIcon: rgba(11,18,32,0.52);
   --menuLine: rgba(0,0,0,0.06);
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 0.78;
-  --menuSheetAlpha: 0.54;
+  --menuSurfaceAlpha: 1;
+  --menuSheetAlpha: 1;
   --menuBtnAlpha: 0.88;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
@@ -761,16 +761,17 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   opacity: 1;
 }
 
-/* Kaarten-index: geen witte kaart-achtergrond tijdens flip */
+/* Kaarten-index: geen extra rand/schaduw, maar kaartvlak blijft opaak */
 .cardsSlideCard .pkFlipInner{
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
 }
 .cardsSlideCard .pkFace{
-  background: transparent !important;
+  background: var(--pk-set-card, #FAFAF8) !important;
   border: 0 !important;
   box-shadow: none !important;
+  opacity: 1 !important;
 }
 
 /* Zorg dat de kaart-achtergrond full-bleed is (geen dikke witte 'rand' door SVG-lucht) */
