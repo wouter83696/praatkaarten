@@ -1,0 +1,6 @@
+/* Template: cards index (kaarten)
+   Adjust this background for the cards page.
+*/
+:root{
+  --cardsPageBg: #ffffff;
+}

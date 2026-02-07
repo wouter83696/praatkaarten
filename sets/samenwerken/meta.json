@@ -1,0 +1,59 @@
+{
+  "id": "samenwerken",
+  "title": "Samen onderzoeken",
+  "cover": "voorkant.svg",
+  "viewerTemplate": "classic",
+  "cssVars": {
+    "--pk-set-accent": "#F3D7A3",
+    "--pk-set-bg": "#FFFFFF",
+    "--pk-set-card": "rgba(255,255,255,1)"
+  },
+  "backMode": "mirror",
+  "ui": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "hero-grid"
+    },
+    "themeCss": "theme.css"
+  },
+  "themes": [
+    {
+      "key": "verkennen",
+      "label": "Verkennen",
+      "card": "verkennen.svg"
+    },
+    {
+      "key": "duiden",
+      "label": "Duiden",
+      "card": "duiden.svg"
+    },
+    {
+      "key": "verbinden",
+      "label": "Verbinden",
+      "card": "verbinden.svg"
+    },
+    {
+      "key": "verhelderen",
+      "label": "Verhelderen",
+      "card": "verhelderen.svg"
+    },
+    {
+      "key": "vertragen",
+      "label": "Vertragen",
+      "card": "vertragen.svg"
+    },
+    {
+      "key": "bewegen",
+      "label": "Bewegen",
+      "card": "bewegen.svg"
+    }
+  ]
+}
