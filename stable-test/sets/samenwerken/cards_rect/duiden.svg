@@ -10,7 +10,7 @@
       }
 
       .st1 {
-        fill: none;
+        fill: #f8f9f9;
       }
 
       .st2 {

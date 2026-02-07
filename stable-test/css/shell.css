@@ -1,3 +1,8 @@
 /* Praatkaartjes – gedeelde shell styles */
-@import "./menu.css?v=4.0.6";
-@import "./cards.css?v=4.0.4";
+<<<<<<< ours
+@import "./menu.css?v=4.0.5";
+@import "./cards.css?v=4.0.5";
+=======
+@import "./menu.css?v=4.0.4";
+@import "./cards.css?v=4.0.2";
+>>>>>>> theirs

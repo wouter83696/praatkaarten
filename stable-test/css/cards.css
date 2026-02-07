@@ -180,13 +180,19 @@ html[data-contrast="dark"] .cardInner{
 /* Mini kaart (menu thumbnail) gebruikt dezelfde .cardInner-achtige look */
 .menuThumbCard{
   /* mini-kaartjes in menu moeten voelen als verkleinde index-kaart */
-  width: 46px;
-  height: 30px;
+  width: 64px;
+  aspect-ratio: 85 / 55;
+  height: auto;
   /* Zelfde *vormgevoel* als index-kaartjes:
      op 32px hoog maakt radius 16 het mini-kaartje te rond.
      Schaal de radius mee zodat hij visueel overeenkomt met de grote kaart. */
+<<<<<<< ours
   /* Zelfde radius als de index-kaart (grid) */
   border-radius: 12px;
+=======
+  /* Nog iets hoekiger zodat hij exact voelt als de index-kaart */
+  border-radius: 6px;
+>>>>>>> theirs
   overflow:hidden;
   /* Zelfde kaartvlak als index-kaarten */
   background: var(--pk-set-card, #FAFAF8);
