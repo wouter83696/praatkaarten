@@ -185,8 +185,8 @@ html[data-contrast="dark"] .cardInner{
   /* Zelfde *vormgevoel* als index-kaartjes:
      op 32px hoog maakt radius 16 het mini-kaartje te rond.
      Schaal de radius mee zodat hij visueel overeenkomt met de grote kaart. */
-  /* Zelfde radius als de index-kaart */
-  border-radius: var(--radius);
+  /* Zelfde radius als de index-kaart (grid) */
+  border-radius: 12px;
   overflow:hidden;
   /* Zelfde kaartvlak als index-kaarten */
   background: var(--pk-set-card, #FAFAF8);
@@ -228,7 +228,7 @@ html[data-contrast="dark"] .cardInner{
 .indexBg::after,
 .whiteWash,
 .white-wash{
-  opacity: 0.45 !important;
+  opacity: 0 !important;
 }
 
 /* Kaarten: volledig opaak, warm off-white, zonder rand/schaduw */

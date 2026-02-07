@@ -2,14 +2,14 @@
    Adjust these to change the main index background bands.
 */
 :root{
-  /* Neutral baseline (no sand/peach bands) */
-  --setsHeaderBg: #ffffff;
-  --setsHeroBg: transparent;
-  --setsGridBg: transparent;
+  /* Main index: 3 vaste achtergrondvlakken */
+  --setsHeaderBg: #FBF9F4;
+  --setsHeroBg: #F7F3EB;
+  --setsGridBg: #F4EBDD;
 
-  /* Card opacity reset */
-  --setsHeroCardBg: #ffffff;
-  --setsGridCardBg: #ffffff;
-  --setsHeroCardImgOpacity: 1;
-  --setsGridCardImgOpacity: 1;
+  /* Kaarten semi-transparant via image opacity */
+  --setsHeroCardBg: rgba(255,255,255,0.65);
+  --setsGridCardBg: rgba(255,255,255,0.45);
+  --setsHeroCardImgOpacity: 0.65;
+  --setsGridCardImgOpacity: 0.45;
 }

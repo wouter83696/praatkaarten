@@ -190,6 +190,11 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
   box-shadow: none !important;
 }
 
+/* Kaartenpagina: geen extra wit kaartvlak achter de SVG */
+body[data-page="kaarten"] .cardsSlideCard .pkFace{
+  background: transparent !important;
+}
+
 /* Let op: sheet visibility wordt door JS geregeld via [hidden]. */
 
 /* ===== Extra diepte via 1 zachte, meekleurende achtergrond-blob ===== */

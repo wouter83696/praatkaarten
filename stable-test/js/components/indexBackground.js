@@ -686,8 +686,8 @@
         if(pal.length) flatColors = pal;
       }
       if(flatColors.length<3){
-        // fallback (Parnassia-ish cool neutrals)
-        flatColors = ['#306088','#aac37b','#f2994a','#c1d5a1'];
+        // fallback: zachte perzik-zand (geen blauw/groen)
+        flatColors = ['#F2C9A5','#F6D4B4','#F7E2C8'];
       }
       if(flatColors.length>6) flatColors = flatColors.slice(0,6);
 

@@ -591,7 +591,7 @@
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
     var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : undefined;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : undefined;
-    var shapeEnabled = bg && bg.shapeEnabled === false ? false : undefined;
+    var shapeEnabled = (bg && typeof bg.shapeEnabled === 'boolean') ? bg.shapeEnabled : false;
     var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
     var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;

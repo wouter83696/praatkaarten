@@ -33,10 +33,9 @@
 
   // paden
   var BASE = '..';
-  var setsDir = (PK.PATHS && PK.PATHS.setsDir) ? PK.PATHS.setsDir : (BASE + '/');
-  function cardPathRect(file){ return setsDir + '/' + encSet + '/cards_rect/' + file; }
-  function cardPathSquare(file){ return setsDir + '/' + encSet + '/cards/' + file; }
-  var uitlegPath = setsDir + '/' + encSet + '/uitleg.json';
+  function cardPathRect(file){ return BASE + '/sets/' + encSet + '/cards_rect/' + file; }
+  function cardPathSquare(file){ return BASE + '/sets/' + encSet + '/cards/' + file; }
+  var uitlegPath = BASE + '/sets/' + encSet + '/uitleg.json';
 
   // slides (wordt opgebouwd uit meta.json zodat elke set werkt)
   var slides = [];
@@ -102,8 +101,7 @@
       w.parent.postMessage({ type:'pk_close_help' }, '*');
       return;
     }
-    var cardsPage = (PK && PK.PATHS && PK.PATHS.cardsPage) ? PK.PATHS.cardsPage : '../kaarten.html';
-    w.location.href = cardsPage + '?set=' + encodeURIComponent(setName);
+    w.location.href = '../kaarten.html?set=' + encodeURIComponent(setName);
   }
 
   function buildSlidesFromMeta(meta){
@@ -125,7 +123,7 @@
   }
 
   function loadMeta(){
-    return PK.getJson(PK.withV(setsDir + '/' + encSet + '/meta.json'));
+    return PK.getJson(PK.withV(BASE + '/sets/' + encSet + '/meta.json'));
   }
 
   // data laden (mag falen)
