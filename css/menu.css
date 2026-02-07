@@ -980,6 +980,8 @@ html[data-contrast="dark"] .infoSlideCard{
   object-position: center;
   /* container rondt al af; geen dubbele rand */
   border-radius: 0;
+  /* Zorg dat transparante SVG-gebieden toch een vast kaartvlak tonen */
+  background: var(--pk-set-card, #FAFAF8);
 }
 .infoSlideText{
   /* Tekstvlak sluit strak aan op de kaart: boven recht, onder afgerond */
@@ -1076,6 +1078,8 @@ html[data-contrast="dark"] .menu-item-thumb {
   height: 100%;
   display: block;
   object-fit: cover;
+  /* Zorg dat transparante SVG-gebieden niet de achtergrond tonen */
+  background: var(--pk-set-card, #FAFAF8);
 }
 /* If thumbnails are set as background-image on a div */
 .menuItemThumb,
