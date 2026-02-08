@@ -19,6 +19,11 @@
   /* Focus ring */
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
+
+  /* Menu thumbnails: match index cards (size + radius + crop) */
+  --menuThumbSize: 56px;
+  --menuThumbRadius: 12px;
+  --menuThumbImgPos: top center;
 }
 
 html[data-contrast="dark"]{

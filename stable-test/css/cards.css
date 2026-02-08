@@ -180,11 +180,11 @@ html[data-contrast="dark"] .cardInner{
 /* Mini kaart (menu thumbnail) gebruikt dezelfde .cardInner-achtige look */
 .menuThumbCard{
   /* mini-kaartjes in menu moeten voelen als verkleinde index-kaart */
-  width: 56px;
+  width: var(--menuThumbSize, 56px);
   aspect-ratio: 85 / 55;
   height: auto;
   /* Zelfde radius als de index-kaart (grid) */
-  border-radius: var(--setsGridRadius, var(--radius, 12px));
+  border-radius: var(--menuThumbRadius, 12px);
   overflow:hidden;
   /* Zelfde kaartvlak als index-kaarten */
   background: var(--menuThumbBg, var(--pk-set-card, #FAFAF8));
@@ -199,7 +199,7 @@ html[data-contrast="dark"] .cardInner{
   height:100%;
   display:block;
   object-fit: cover;
-  object-position: var(--cardImgPos, center);
+  object-position: var(--menuThumbImgPos, var(--cardImgPos, center));
   border:0;
   background: var(--pk-set-card, #FAFAF8);
   transform: none;
