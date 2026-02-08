@@ -24,6 +24,7 @@
   --menuThumbSize: 56px;
   --menuThumbRadius: 12px;
   --menuThumbImgPos: top center;
+  --menuThumbBg: var(--pk-set-card, #FAFAF8);
 }
 
 html[data-contrast="dark"]{
