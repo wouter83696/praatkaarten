@@ -7,9 +7,9 @@
   --setsHeroBg: #F7F3EB;
   --setsGridBg: #F4EBDD;
 
-  /* Kaarten semi-transparant via image opacity */
-  --setsHeroCardBg: rgba(255,255,255,0.65);
-  --setsGridCardBg: rgba(255,255,255,0.45);
-  --setsHeroCardImgOpacity: 0.65;
-  --setsGridCardImgOpacity: 0.45;
+  /* Kaarten standaard opaak */
+  --setsHeroCardBg: #FAFAF8;
+  --setsGridCardBg: #FAFAF8;
+  --setsHeroCardImgOpacity: 1;
+  --setsGridCardImgOpacity: 1;
 }

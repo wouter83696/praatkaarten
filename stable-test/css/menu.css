@@ -736,7 +736,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   display: block;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  background: #FAFAF8;
+  background: var(--pk-set-card, #FAFAF8);
 }
 
 .pkFace.pkFront{

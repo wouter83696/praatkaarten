@@ -4,9 +4,9 @@
 :root{
   /* Menu + sheet surfaces */
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 0.78;
-  --menuSheetAlpha: 0.54;
-  --menuBtnAlpha: 0.88;
+  --menuSurfaceAlpha: 1;
+  --menuSheetAlpha: 1;
+  --menuBtnAlpha: 1;
 
   /* Menu text */
   --menuHeaderText: rgba(11,18,32,0.68);

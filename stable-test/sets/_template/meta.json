@@ -6,6 +6,6 @@
   "cssVars": {
     "--pk-set-accent": "#F3D7A3",
     "--pk-set-bg": "#FBF9F4",
-    "--pk-set-card": "rgba(255,255,255,0.74)"
+    "--pk-set-card": "rgba(255,255,255,1)"
   }
 }

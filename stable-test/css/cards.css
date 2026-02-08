@@ -180,21 +180,14 @@ html[data-contrast="dark"] .cardInner{
 /* Mini kaart (menu thumbnail) gebruikt dezelfde .cardInner-achtige look */
 .menuThumbCard{
   /* mini-kaartjes in menu moeten voelen als verkleinde index-kaart */
-  width: 46px;
-  height: 30px;
-  /* Zelfde *vormgevoel* als index-kaartjes:
-     op 32px hoog maakt radius 16 het mini-kaartje te rond.
-     Schaal de radius mee zodat hij visueel overeenkomt met de grote kaart. */
-<<<<<<< ours
+  width: 64px;
+  aspect-ratio: 85 / 55;
+  height: auto;
   /* Zelfde radius als de index-kaart (grid) */
-  border-radius: 12px;
-=======
-  /* Nog iets hoekiger zodat hij exact voelt als de index-kaart */
-  border-radius: 6px;
->>>>>>> theirs
+  border-radius: var(--setsGridRadius, var(--radius, 12px));
   overflow:hidden;
   /* Zelfde kaartvlak als index-kaarten */
-  background: var(--pk-set-card, #FAFAF8);
+  background: var(--menuThumbBg, var(--pk-set-card, #FAFAF8));
   /* Geen extra rand; voorkomt 'dubbele' dikke rand */
   border: 0;
   box-shadow: none;
@@ -206,7 +199,7 @@ html[data-contrast="dark"] .cardInner{
   height:100%;
   display:block;
   object-fit: cover;
-  object-position:center;
+  object-position: var(--cardImgPos, center);
   border:0;
   background: var(--pk-set-card, #FAFAF8);
   transform: none;
@@ -236,13 +229,8 @@ html[data-contrast="dark"] .cardInner{
   opacity: 0 !important;
 }
 
-/* Kaarten: volledig opaak, warm off-white, zonder rand/schaduw */
-/* Zorg dat ‘grote kaart’ en ‘index kaart’ exact hetzelfde vlak-profiel delen */
-.cardInner{
-  background: #FAFAF8 !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
+/* Kaarten: gebruik de centrale variabele voor het kaartvlak.
+   Geen hardcoded kleur hier, zodat per-set thema’s kunnen werken. */
 /* Kaarten-index flip: geen witte plaat achter de kaart */
 .pkFlipInner{
   background: transparent !important;

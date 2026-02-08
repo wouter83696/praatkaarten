@@ -33,6 +33,8 @@ body.setsIndex{
   color: rgba(11,18,32,0.82);
   /* Laat cover/themakaart bovenaan beginnen (override global card centering) */
   --cardImgPos: top center;
+  /* Menu thumbnails moeten exact matchen met grid-kaarten */
+  --menuThumbBg: var(--setsGridCardBg, #FAFAF8);
   --menuSurface: 255, 255, 255;
   --menuSurfaceAlpha: 1;
   --menuSheetAlpha: 1;
