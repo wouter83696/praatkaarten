@@ -209,8 +209,8 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
   background: rgba(var(--menuSurface), var(--menuSurfaceAlpha));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   /* heel subtiele schaduw zodat het minder 'losstaand' voelt */
   box-shadow: 0 8px 28px rgba(22, 28, 56, 0.06);
   overflow: hidden;
@@ -419,8 +419,8 @@ html[data-contrast="dark"] .menuCard{
   border: 0;
   background: rgb(var(--darkBaseRgb, 24, 18, 60)) !important;
   background-image: none !important;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: none;
 }
 
@@ -1029,7 +1029,7 @@ html[data-contrast="dark"] .infoSlideText{
 .menu-item-thumb {
   width: 56px;
   aspect-ratio: 85 / 55;
-  border-radius: var(--setsGridRadius, var(--radius, 12px));
+  border-radius: var(--setsGridRadius, 12px);
   overflow: hidden;
   background: transparent;
 }
