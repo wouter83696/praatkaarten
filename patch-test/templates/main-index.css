@@ -1,0 +1,8 @@
+/* Template: main index (sets overview)
+   Adjust these to change the main index background bands.
+*/
+:root{
+  --setsHeaderBg: #FAFAF8;
+  --setsHeroBg: transparent;
+  --setsGridBg: transparent;
+}

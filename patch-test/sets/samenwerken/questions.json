@@ -1,0 +1,234 @@
+{
+  "_uitleg": {
+    "voorkant": "Tekst die op de voorkant van de kaart staat.",
+    "achterkant": "Tekst die op de achterkant van de kaart staat. Laat leeg voor een lege achterkant."
+  },
+  "verkennen": [
+    {
+      "voorkant": "Wat zien we op dit moment gebeuren in onze samenwerking?",
+      "achterkant": "",
+      "q": "Wat zien we op dit moment gebeuren in onze samenwerking?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat valt ons op in onze manier van samenwerken?",
+      "achterkant": "",
+      "q": "Wat valt ons op in onze manier van samenwerken?",
+      "back": ""
+    },
+    {
+      "voorkant": "Herkennen we patronen in onze manier van samenwerken?",
+      "achterkant": "",
+      "q": "Herkennen we patronen in onze manier van samenwerken?",
+      "back": ""
+    },
+    {
+      "voorkant": "Waar zijn we aan gewend geraakt?",
+      "achterkant": "",
+      "q": "Waar zijn we aan gewend geraakt?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat krijgt nu minder aandacht?",
+      "achterkant": "",
+      "q": "Wat krijgt nu minder aandacht?",
+      "back": ""
+    },
+    {
+      "voorkant": "Blijven er dingen onbesproken?",
+      "achterkant": "",
+      "q": "Blijven er dingen onbesproken?",
+      "back": ""
+    }
+  ],
+  "duiden": [
+    {
+      "voorkant": "Wat proberen we als team goed te doen?",
+      "achterkant": "",
+      "q": "Wat proberen we als team goed te doen?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat nemen we wel of niet als vanzelfsprekend aan?",
+      "achterkant": "",
+      "q": "Wat nemen we wel of niet als vanzelfsprekend aan?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+      "achterkant": "",
+      "q": "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?",
+      "achterkant": "",
+      "q": "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?",
+      "back": ""
+    },
+    {
+      "voorkant": "Welke patronen blijven we terugzien in onze samenwerking?",
+      "achterkant": "",
+      "q": "Welke patronen blijven we terugzien in onze samenwerking?",
+      "back": ""
+    },
+    {
+      "voorkant": "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?",
+      "achterkant": "",
+      "q": "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?",
+      "back": ""
+    }
+  ],
+  "verbinden": [
+    {
+      "voorkant": "Waar worden we enthousiast van?",
+      "achterkant": "",
+      "q": "Waar worden we enthousiast van?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wanneer voel jij je echt onderdeel van het team?",
+      "achterkant": "",
+      "q": "Wanneer voel jij je echt onderdeel van het team?",
+      "back": ""
+    },
+    {
+      "voorkant": "Mogen er verschillen bestaan in ons team?",
+      "achterkant": "",
+      "q": "Mogen er verschillen bestaan in ons team?",
+      "back": ""
+    },
+    {
+      "voorkant": "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
+      "achterkant": "",
+      "q": "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat helpt ons om onszelf te laten zien in de samenwerking?",
+      "achterkant": "",
+      "q": "Wat helpt ons om onszelf te laten zien in de samenwerking?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?",
+      "achterkant": "",
+      "q": "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?",
+      "back": ""
+    }
+  ],
+  "verhelderen": [
+    {
+      "voorkant": "Wanneer weten we als team: dit is een besluit?",
+      "achterkant": "",
+      "q": "Wanneer weten we als team: dit is een besluit?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat helpt om rollen en verantwoordelijkheden helder te maken?",
+      "achterkant": "",
+      "q": "Wat helpt om rollen en verantwoordelijkheden helder te maken?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+      "achterkant": "",
+      "q": "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat blijft nu onduidelijk, terwijl het wel aandacht vraagt?",
+      "achterkant": "",
+      "q": "Wat blijft nu onduidelijk, terwijl het wel aandacht vraagt?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wanneer helpt het om regie expliciet te koppelen aan een rol of taak?",
+      "achterkant": "",
+      "q": "Wanneer helpt het om regie expliciet te koppelen aan een rol of taak?",
+      "back": ""
+    },
+    {
+      "voorkant": "Welke onduidelijkheid houdt ons nu tegen om verder te gaan?",
+      "achterkant": "",
+      "q": "Welke onduidelijkheid houdt ons nu tegen om verder te gaan?",
+      "back": ""
+    }
+  ],
+  "vertragen": [
+    {
+      "voorkant": "Wanneer nemen we in onze samenwerking eigenlijk de tijd?",
+      "achterkant": "",
+      "q": "Wanneer nemen we in onze samenwerking eigenlijk de tijd?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?",
+      "achterkant": "",
+      "q": "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
+      "achterkant": "",
+      "q": "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
+      "back": ""
+    },
+    {
+      "voorkant": "Welke patronen worden zichtbaar wanneer de druk toeneemt?",
+      "achterkant": "",
+      "q": "Welke patronen worden zichtbaar wanneer de druk toeneemt?",
+      "back": ""
+    },
+    {
+      "voorkant": "Welke rol nemen we automatisch aan in momenten van spanning?",
+      "achterkant": "",
+      "q": "Welke rol nemen we automatisch aan in momenten van spanning?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wanneer merken we dat vertragen helpend zou zijn?",
+      "achterkant": "",
+      "q": "Wanneer merken we dat vertragen helpend zou zijn?",
+      "back": ""
+    }
+  ],
+  "bewegen": [
+    {
+      "voorkant": "Wat doen we met ideeën die ontstaan?",
+      "achterkant": "",
+      "q": "Wat doen we met ideeën die ontstaan?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wanneer komt er beweging in het team?",
+      "achterkant": "",
+      "q": "Wanneer komt er beweging in het team?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat helpt ons om van praten naar doen te gaan?",
+      "achterkant": "",
+      "q": "Wat helpt ons om van praten naar doen te gaan?",
+      "back": ""
+    },
+    {
+      "voorkant": "Welke ideeën blijven liggen, en waarom?",
+      "achterkant": "",
+      "q": "Welke ideeën blijven liggen, en waarom?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat houdt ons tegen om in actie te komen?",
+      "achterkant": "",
+      "q": "Wat houdt ons tegen om in actie te komen?",
+      "back": ""
+    },
+    {
+      "voorkant": "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?",
+      "achterkant": "",
+      "q": "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?",
+      "back": ""
+    }
+  ]
+}
