@@ -1027,9 +1027,9 @@ html[data-contrast="dark"] .infoSlideText{
 .menu-thumb,
 .menuThumb,
 .menu-item-thumb {
-  width: 64px;
+  width: 56px;
   aspect-ratio: 85 / 55;
-  border-radius: 12px;
+  border-radius: var(--setsGridRadius, var(--radius, 12px));
   overflow: hidden;
   background: transparent;
 }

@@ -236,9 +236,7 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   border-radius: var(--setsGridRadius);
   background: var(--setsGridCardBg, #FAFAF8) !important;
   border: 0 !important;
-  box-shadow:
-    0 6px 14px rgba(0,0,0,0.012),
-    0 1px 0 rgba(255,255,255,0.75) !important;
+  box-shadow: none !important;
 }
 /* Grid card image translucency */
 .setGridCard .cardInner > img{

@@ -4,8 +4,9 @@
 :root{
   /* Main index: 3 vaste achtergrondvlakken */
   --setsHeaderBg: #FBF9F4;
-  --setsHeroBg: #F7F3EB;
-  --setsGridBg: #F4EBDD;
+  /* bands meer transparant zodat de achtergrond duidelijker doorkomt */
+  --setsHeroBg: rgba(247, 243, 235, 0.55);
+  --setsGridBg: rgba(244, 235, 221, 0.45);
 
   /* Kaarten standaard opaak */
   --setsHeroCardBg: #FAFAF8;
