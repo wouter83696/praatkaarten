@@ -6,8 +6,8 @@
   --setsHeaderBg: #FBF9F4;
   /* bands meer transparant zodat de achtergrond duidelijker doorkomt */
   /* Iets donkerder basis + transparant voor meer diepte */
-  --setsHeroBg: rgba(242, 227, 208, 0.68);
-  --setsGridBg: rgba(234, 219, 198, 0.60);
+  --setsHeroBg: rgba(239, 222, 201, 0.78);
+  --setsGridBg: rgba(233, 215, 190, 0.70);
 
   /* Kaarten standaard opaak */
   --setsHeroCardBg: #FAFAF8;

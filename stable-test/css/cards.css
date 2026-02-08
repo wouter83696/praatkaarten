@@ -200,6 +200,8 @@ html[data-contrast="dark"] .cardInner{
   display:block;
   object-fit: cover;
   object-position: var(--menuThumbImgPos, var(--cardImgPos, center));
+  opacity: 1;
+  filter: none;
   border:0;
   background: var(--pk-set-card, #FAFAF8);
   transform: none;
