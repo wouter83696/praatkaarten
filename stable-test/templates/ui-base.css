@@ -22,7 +22,8 @@
 
   /* Menu thumbnails: match index cards (size + radius + crop) */
   --menuThumbSize: 56px;
-  --menuThumbRadius: 12px;
+  /* iets minder rond dan grid-kaarten (kleiner formaat) */
+  --menuThumbRadius: calc(var(--setsGridRadius, 12px) * 0.66);
   --menuThumbImgPos: top center;
   --menuThumbBg: var(--pk-set-card, #FAFAF8);
 }
