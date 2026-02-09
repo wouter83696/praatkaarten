@@ -21,9 +21,9 @@
   --focusRingDark: rgba(127,207,201,0.55);
 
   /* Menu thumbnails: match index cards (size + radius + crop) */
-  --menuThumbSize: 56px;
-  /* iets minder rond dan grid-kaarten (kleiner formaat) */
-  --menuThumbRadius: calc(var(--setsGridRadius, 12px) * 0.66);
+  --menuThumbSize: 52px;
+  /* proportioneel t.o.v. mini-formaat (minder rond) */
+  --menuThumbRadius: calc(var(--menuThumbSize, 56px) * 0.08);
   --menuThumbImgPos: top center;
   --menuThumbBg: var(--pk-set-card, #FAFAF8);
 }

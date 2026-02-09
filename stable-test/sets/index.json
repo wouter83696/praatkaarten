@@ -31,16 +31,16 @@
     "background": {
       "palette": ["#E6CDB3"],
       "darkPalette": ["#E6CDB3"],
-      "blobCount": 5,
-      "blobAlphaFixed": 0.30,
-      "blobWash": 0.24,
+      "blobCount": 4,
+      "blobAlphaFixed": 0.32,
+      "blobWash": 0.18,
       "blobIrregularity": 0.45,
       "blobPointsMin": 7,
       "blobPointsMax": 11,
-      "sizeScale": 2.0,
-      "sizeLimit": 1.8,
+      "sizeScale": 2.2,
+      "sizeLimit": 2.3,
       "blobSpread": "grid",
-      "blobSpreadMargin": 0.18,
+      "blobSpreadMargin": 0.16,
       "baseWash": false,
       "shapeEnabled": false
     }

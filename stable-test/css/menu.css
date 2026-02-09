@@ -1031,7 +1031,7 @@ html[data-contrast="dark"] .infoSlideText{
   aspect-ratio: 85 / 55;
   border-radius: var(--menuThumbRadius, 12px);
   overflow: hidden;
-  background: transparent;
+  background: var(--menuThumbBg, transparent);
 }
 
 .menuItemThumb img,
@@ -1046,6 +1046,7 @@ html[data-contrast="dark"] .infoSlideText{
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: var(--menuThumbImgPos, center);
 }
 /* If thumbnails are set as background-image on a div */
 .menuItemThumb,
