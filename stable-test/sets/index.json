@@ -29,8 +29,8 @@
   },
   "indexPage": {
     "background": {
-      "palette": ["#F2C9A5"],
-      "darkPalette": ["#F2C9A5"],
+      "palette": ["#E6CDB3"],
+      "darkPalette": ["#E6CDB3"],
       "blobCount": 5,
       "blobAlphaFixed": 0.30,
       "blobWash": 0.24,

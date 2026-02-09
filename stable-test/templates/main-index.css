@@ -2,11 +2,24 @@
    Adjust these to change the main index background bands.
 */
 :root{
-  /* Main index: 3 vaste achtergrondvlakken */
-  /* Terug naar master‑kleurfamilie (16:39) met diepte via transparante lagen */
-  --setsHeaderBg: #F6E9D9;
-  --setsHeroBg: rgba(250, 242, 232, 0.78);
-  --setsGridBg: rgba(249, 240, 229, 0.68);
+  /* Main index: vaste kleurfamilie + instelbare transparantie */
+  --pk-blob: #E6CDB3; /* blob / anker */
+  --pk-header: #F0DDC7; /* header */
+  --pk-mid: #F5E9DA; /* midden */
+  --pk-grid: #FBF5EE; /* grid / einde */
+
+  /* RGB-varianten voor transparante lagen */
+  --pk-mid-rgb: 245, 233, 218;
+  --pk-grid-rgb: 251, 245, 238;
+
+  /* Transparantie makkelijk instelbaar */
+  --heroBandAlpha: 0.78;
+  --gridBandAlpha: 0.68;
+
+  /* toegepast */
+  --setsHeaderBg: var(--pk-header);
+  --setsHeroBg: rgba(var(--pk-mid-rgb), var(--heroBandAlpha));
+  --setsGridBg: rgba(var(--pk-grid-rgb), var(--gridBandAlpha));
 
   /* Kaarten standaard opaak */
   --setsHeroCardBg: #FAFAF8;
