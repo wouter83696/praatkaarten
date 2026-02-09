@@ -2,31 +2,36 @@
    Adjust these to change the main index background bands.
 */
 :root{
-  /* Main index: donkerder basis + lichte transparante lagen */
-  --pk-base: #F4EBDD;   /* basis/anker (donkerder) */
-  --pk-header: #FBF9F4; /* top (solid) */
+  /* Main index: vaste zones, geen gradients/overlays */
+  --pk-base: #F4EBDD;   /* basis/anker */
+  --pk-header: #F4EBDD; /* top (meest verzadigd/warm) */
   --pk-mid: #F7F3EB;    /* carrousel */
-  --pk-grid: #F4EBDD;   /* grid */
+  --pk-grid: #FBF9F4;   /* grid (lichtst) */
 
   /* RGB-varianten voor transparante lagen */
+  --pk-header-rgb: 244, 235, 221;
   --pk-mid-rgb: 247, 243, 235;
-  --pk-grid-rgb: 244, 235, 221;
+  --pk-grid-rgb: 251, 249, 244;
 
-  /* transparantie van banden */
-  --heroBandAlpha: 0.90;
-  --gridBandAlpha: 0.95;
+  /* super subtiele lagen */
+  --headerBandAlpha: 0.06;
+  --heroBandAlpha: 0.05;
+  --gridBandAlpha: 0.04;
 
-  /* toegepast */
+  /* toegepast (ultra-transparant) */
   --setsBaseBg: var(--pk-base);
-  --setsHeaderBg: var(--pk-header);
+  --setsHeaderBg: rgba(var(--pk-header-rgb), var(--headerBandAlpha));
   --setsHeroBg: rgba(var(--pk-mid-rgb), var(--heroBandAlpha));
   --setsGridBg: rgba(var(--pk-grid-rgb), var(--gridBandAlpha));
 
-  /* Kaarten: transparante achtergrondlaag, tekst/beeld blijft dekkend */
-  --heroCardAlpha: 0.88;
-  --gridCardAlpha: 0.82;
-  --setsHeroCardBg: rgba(255,255,255,var(--heroCardAlpha));
-  --setsGridCardBg: rgba(255,255,255,var(--gridCardAlpha));
+  /* uiterst subtiele uniforme wash (4–6%) */
+  --setsWashAlpha: 0.05;
+
+  /* Kaarten: volledig dekkend */
+  --heroCardAlpha: 1;
+  --gridCardAlpha: 1;
+  --setsHeroCardBg: #FAFAF8;
+  --setsGridCardBg: #FAFAF8;
   --setsHeroCardImgOpacity: 1;
   --setsGridCardImgOpacity: 1;
 }
