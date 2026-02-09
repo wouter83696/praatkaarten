@@ -2,17 +2,25 @@
    Adjust these to change the main index background bands.
 */
 :root{
-  /* Main index: vaste zones (helder, warm) */
-  --pk-base: #F4EBDD;   /* basis/anker */
-  --pk-header: #FBF9F4; /* top */
+  /* Main index: donkerder basis + lichte transparante lagen */
+  --pk-base: #F4EBDD;   /* basis/anker (donkerder) */
+  --pk-header: #FBF9F4; /* top (solid) */
   --pk-mid: #F7F3EB;    /* carrousel */
   --pk-grid: #F4EBDD;   /* grid */
 
-  /* toegepast (opaque zones, minder flets) */
+  /* RGB-varianten voor transparante lagen */
+  --pk-mid-rgb: 247, 243, 235;
+  --pk-grid-rgb: 244, 235, 221;
+
+  /* transparantie van banden */
+  --heroBandAlpha: 0.90;
+  --gridBandAlpha: 0.95;
+
+  /* toegepast */
   --setsBaseBg: var(--pk-base);
   --setsHeaderBg: var(--pk-header);
-  --setsHeroBg: var(--pk-mid);
-  --setsGridBg: var(--pk-grid);
+  --setsHeroBg: rgba(var(--pk-mid-rgb), var(--heroBandAlpha));
+  --setsGridBg: rgba(var(--pk-grid-rgb), var(--gridBandAlpha));
 
   /* Kaarten: transparante achtergrondlaag, tekst/beeld blijft dekkend */
   --heroCardAlpha: 0.88;
