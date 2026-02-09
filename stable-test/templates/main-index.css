@@ -15,9 +15,9 @@
 
   /* Transparantie makkelijk instelbaar */
   /* Donkere basis + lichtere overlays (maakt blobs zichtbaarder) */
-  --headerBandAlpha: 0.55;
-  --heroBandAlpha: 0.45;
-  --gridBandAlpha: 0.35;
+  --headerBandAlpha: 0.68;
+  --heroBandAlpha: 0.58;
+  --gridBandAlpha: 0.48;
 
   /* toegepast */
   --setsBaseBg: var(--pk-base);
@@ -26,8 +26,8 @@
   --setsGridBg: rgba(var(--pk-grid-rgb), var(--gridBandAlpha));
 
   /* Kaarten: transparante achtergrondlaag, tekst/beeld blijft dekkend */
-  --heroCardAlpha: 0.84;
-  --gridCardAlpha: 0.74;
+  --heroCardAlpha: 0.86;
+  --gridCardAlpha: 0.78;
   --setsHeroCardBg: rgba(255,255,255,var(--heroCardAlpha));
   --setsGridCardBg: rgba(255,255,255,var(--gridCardAlpha));
   --setsHeroCardImgOpacity: 1;
