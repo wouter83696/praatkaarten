@@ -61,6 +61,19 @@ body.setsIndex::before{
   pointer-events: none;
 }
 
+/* Subtiele uniforme wash (geen kleurmenging) */
+body.setsIndex::after{
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255, var(--setsWashAlpha, 0));
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Extreem subtiele uniforme laag voor samenhang (geen kleurmenging) */
+body.setsIndex::after{ display: none; }
+
 /* Achtergrond blobs (statisch) */
 .indexBg{
   position: fixed;
