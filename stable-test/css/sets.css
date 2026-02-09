@@ -180,6 +180,8 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
   width: 100%;
   border-radius: var(--setsHeroRadius);
   background: var(--setsHeroCardBg, #FAFAF8) !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 /* Hero card image translucency */
 .setsHeroCard .cardInner > img{
