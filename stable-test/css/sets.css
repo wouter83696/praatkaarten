@@ -42,6 +42,12 @@ body.setsIndex{
   --menuBtnAlpha: 1;
 }
 
+/* Geen schaduw/border op index-kaarten (hero + grid) */
+body.setsIndex .cardInner{
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
 /* Header band (boven menu) als lichte transparante laag */
 body.setsIndex::before{
   content: "";
