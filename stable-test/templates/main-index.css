@@ -2,28 +2,17 @@
    Adjust these to change the main index background bands.
 */
 :root{
-  /* Main index: basis donkerder, lagen eroverheen via alpha */
-  --pk-base: #E6CDB3;   /* blob / anker */
-  --pk-header: #F0DDC7; /* header */
-  --pk-mid: #F5E9DA;    /* midden */
-  --pk-grid: #FBF5EE;   /* grid / einde */
+  /* Main index: vaste zones (helder, warm) */
+  --pk-base: #F4EBDD;   /* basis/anker */
+  --pk-header: #FBF9F4; /* top */
+  --pk-mid: #F7F3EB;    /* carrousel */
+  --pk-grid: #F4EBDD;   /* grid */
 
-  /* RGB-varianten voor transparante lagen */
-  --pk-header-rgb: 240, 221, 199;
-  --pk-mid-rgb: 245, 233, 218;
-  --pk-grid-rgb: 251, 245, 238;
-
-  /* Transparantie makkelijk instelbaar */
-  /* Donkere basis + lichtere overlays (maakt blobs zichtbaarder) */
-  --headerBandAlpha: 0.75;
-  --heroBandAlpha: 0.66;
-  --gridBandAlpha: 0.60;
-
-  /* toegepast */
+  /* toegepast (opaque zones, minder flets) */
   --setsBaseBg: var(--pk-base);
-  --setsHeaderBg: rgba(var(--pk-header-rgb), var(--headerBandAlpha));
-  --setsHeroBg: rgba(var(--pk-mid-rgb), var(--heroBandAlpha));
-  --setsGridBg: rgba(var(--pk-grid-rgb), var(--gridBandAlpha));
+  --setsHeaderBg: var(--pk-header);
+  --setsHeroBg: var(--pk-mid);
+  --setsGridBg: var(--pk-grid);
 
   /* Kaarten: transparante achtergrondlaag, tekst/beeld blijft dekkend */
   --heroCardAlpha: 0.88;
