@@ -2,27 +2,19 @@
    Adjust these to change the main index background bands.
 */
 :root{
-  /* Main index: vaste zones + super subtiele overlays */
-  --pk-base: #F4EBDD;   /* basis/anker */
-  --pk-header: #FBF9F4; /* top */
-  --pk-mid: #F7F3EB;    /* carrousel */
-  --pk-grid: #F4EBDD;   /* grid */
+  /* Main index: vaste zones (geen transparante zone-overlays). */
+  --pk-header: #FBF9F4; /* top zone */
+  --pk-mid: #F7F3EB;    /* carrousel zone */
+  --pk-grid: #F4EBDD;   /* grid zone */
 
-  /* RGB-varianten voor transparante lagen */
-  --pk-header-rgb: 251, 249, 244;
-  --pk-mid-rgb: 247, 243, 235;
-  --pk-grid-rgb: 244, 235, 221;
+  --setsBaseBg: var(--pk-grid);
+  --setsHeaderBg: var(--pk-header);
+  --setsHeroBg: var(--pk-mid);
+  --setsGridBg: var(--pk-grid);
 
-  /* super subtiele lagen */
-  --headerBandAlpha: 0.05;
-  --heroBandAlpha: 0.05;
-  --gridBandAlpha: 0.05;
-
-  /* toegepast (basis blijft zichtbaar, zones zijn subtiele overlay) */
-  --setsBaseBg: var(--pk-base);
-  --setsHeaderBg: rgba(var(--pk-header-rgb), var(--headerBandAlpha));
-  --setsHeroBg: rgba(var(--pk-mid-rgb), var(--heroBandAlpha));
-  --setsGridBg: rgba(var(--pk-grid-rgb), var(--gridBandAlpha));
+  /* Aparte dieptelaag boven achtergrond, onder kaarten (geen wit/grijs). */
+  --setsDepthOverlayRgb: 244, 235, 221;
+  --setsDepthOverlayAlpha: 0.08;
 
   /* geen extra uniforme wash */
   --setsWashAlpha: 0;
