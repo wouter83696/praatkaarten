@@ -731,15 +731,15 @@
       isDark = (doc && doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_e){ isDark = false; }
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
-    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 4;
-    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.06;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.1;
+    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 7;
+    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.05;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 0.85;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : 1.25;
     var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : 0.9;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
-    var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : 0.2;
-    var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : 8;
-    var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : 10;
+    var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : undefined;
+    var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : undefined;
+    var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : undefined;
     var baseWash = bg && bg.baseWash === false ? false : false;
     var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
@@ -747,9 +747,9 @@
     var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.18;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : 0.28;
     var shapeEnabled = bg && typeof bg.shapeEnabled === 'boolean' ? bg.shapeEnabled : false;
-    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : 'grid';
-    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.3;
-    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 2.6;
+    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
+    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
+    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : (isDark ? undefined : 0.145);
     var customLightBlobs = (bg && Array.isArray(bg.customLightBlobs) && bg.customLightBlobs.length)
       ? bg.customLightBlobs
