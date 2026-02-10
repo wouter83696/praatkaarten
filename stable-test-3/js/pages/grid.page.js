@@ -38,12 +38,12 @@
   }
 
   var GRID_TINTS = [
-    // zelfde "mooie tinten" als de hero
-    '214,238,233',
-    '242,230,210',
-    '232,226,243',
-    '221,236,244',
-    '245,232,238'
+    // User palette voor indexkaarten (kaart 6 herhaalt kaart 1 voor balans)
+    '240,222,200', // #F0DEC8 warm zand (anker)
+    '235,210,198', // #EBD2C6 peach
+    '226,210,235', // #E2D2EB warm lila
+    '244,230,214', // #F4E6D6 creme
+    '230,216,204'  // #E6D8CC warm grijs-beige
   ];
 
   function trim(s){
