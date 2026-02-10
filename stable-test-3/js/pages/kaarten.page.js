@@ -50,6 +50,39 @@
   var sheetAPI = null;
   var infoAPI = null;
   var UI_DEFAULTS = {};
+  var INDEX_PAGE_BG = null;
+  var doc = w.document;
+
+  function resolveBuildVersion(){
+    var v = '';
+    try{ v = String(w.PK_ASSET_V || ''); }catch(_eV){}
+    if(v) return v;
+    try{
+      var scripts = doc.getElementsByTagName('script');
+      for(var i=0;i<scripts.length;i++){
+        var src = scripts[i] && scripts[i].getAttribute ? String(scripts[i].getAttribute('src') || '') : '';
+        if(src.indexOf('js/main.js') === -1) continue;
+        var m = src.match(/[?&]v=([^&]+)/);
+        if(m && m[1]) return decodeURIComponent(m[1]);
+      }
+    }catch(_eS){}
+    return '';
+  }
+
+  function renderBuildStamp(){
+    if(!doc || !doc.body) return;
+    if(!doc.body.getAttribute || doc.body.getAttribute('data-page') !== 'kaarten') return;
+    var el = doc.getElementById('pkBuildStamp');
+    if(!el){
+      el = doc.createElement('div');
+      el.id = 'pkBuildStamp';
+      el.className = 'pkBuildStamp';
+      el.setAttribute('aria-hidden', 'true');
+      doc.body.appendChild(el);
+    }
+    var v = resolveBuildVersion();
+    el.textContent = v ? ('build ' + v) : 'build ?';
+  }
 
   function trackSetVisit(setId){
     var id = String(setId || '').replace(/^\s+|\s+$/g,'');
@@ -72,6 +105,8 @@
         cfg = PK.UI_ACTIVE.index.background;
       }else if(UI_DEFAULTS && UI_DEFAULTS.index && UI_DEFAULTS.index.background){
         cfg = UI_DEFAULTS.index.background;
+      }else if(INDEX_PAGE_BG){
+        cfg = INDEX_PAGE_BG;
       }
     }catch(_e){}
     return cfg || null;
@@ -106,7 +141,11 @@
       if(typeof bg.blobSpreadMargin === 'number') opts.blobSpreadMargin = bg.blobSpreadMargin;
       if(typeof bg.sizeLimit === 'number') opts.sizeLimit = bg.sizeLimit;
       if(typeof bg.blobAlphaFixed === 'number') opts.blobAlphaFixed = bg.blobAlphaFixed;
+      if(typeof bg.shapeEnabled === 'boolean') opts.shapeEnabled = bg.shapeEnabled;
     }
+    // Kaartenindex: standaard géén SVG-shape-laag uit kaartbestanden
+    // (die kan grote vlakken/letters veroorzaken bij bepaalde SVG's).
+    if(typeof opts.shapeEnabled !== 'boolean') opts.shapeEnabled = false;
     bgApi.render(opts);
   }
 
@@ -229,6 +268,7 @@ function closeMenu(){
     var fromUrl = (PK.getQueryParam('set') || PK.getQueryParam('s') || '').replace(/\s+$/,'').replace(/^\s+/,'');
     return PK.loadJson(PK.PATHS.setsIndex).then(function(idx){
       UI_DEFAULTS = (idx && idx.uiDefaults) ? idx.uiDefaults : {};
+      INDEX_PAGE_BG = (idx && idx.indexPage && idx.indexPage.background) ? idx.indexPage.background : null;
       try{ PK.UI_DEFAULTS = UI_DEFAULTS; }catch(_eU){}
       try{ renderIndexBackground(); }catch(_eBg1){}
       var sets = Array.isArray(idx.sets) ? idx.sets : [];
@@ -1894,6 +1934,7 @@ function openInfo(){
   }
   // Init: content laden. Sheet is standaard volledig dicht en opent alleen via info-knop.
   if(infoSheet){
+    renderBuildStamp();
     // start altijd volledig dicht; alleen openen via info-knop
     infoSheet.hidden = true;
     loadAndRender();
