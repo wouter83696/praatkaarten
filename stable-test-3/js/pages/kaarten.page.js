@@ -1233,8 +1233,8 @@ function openInfo(){
 
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       var baseTint = isDark
-        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.05)"
-        : "rgba(255, 255, 255, 0.04)";
+        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)"
+        : "rgba(255, 255, 255, 0.94)";
       text.style.background = baseTint;
       inner.appendChild(card);
       inner.appendChild(text);
@@ -1250,8 +1250,8 @@ function openInfo(){
   function retintInfoSlideTexts(){
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     var base = isDark
-      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.05)'
-      : 'rgba(255, 255, 255, 0.04)';
+      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)'
+      : 'rgba(255, 255, 255, 0.94)';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];

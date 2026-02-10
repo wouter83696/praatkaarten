@@ -629,14 +629,7 @@
       ctx.restore();
     }
 
-    // Light: ultrazachte vignette om randen te kalmeren (geen grijze waas).
-    if(!isDark){
-      var vg = ctx.createRadialGradient(info.w*0.55, info.h*0.45, 0, info.w*0.55, info.h*0.45, Math.max(info.w,info.h)*0.75);
-      vg.addColorStop(0, 'rgba(255,255,255,0)');
-      vg.addColorStop(1, 'rgba(255,255,255,0.010)');
-      ctx.fillStyle = vg;
-      ctx.fillRect(0,0,info.w,info.h);
-    }
+    // Geen extra top-layer wash: basisachtergrond moet echt achter de blobs blijven.
 
     // geef info terug zodat we dimensies kunnen onthouden
     return info;

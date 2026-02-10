@@ -56,8 +56,8 @@
       isDark = !!(w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_eDark){}
     uitlegTextEl.style.background = isDark
-      ? 'rgba(23, 22, 50, 0.05)'
-      : 'rgba(255, 255, 255, 0.04)';
+      ? 'rgba(23, 22, 50, 0.78)'
+      : 'rgba(255, 255, 255, 0.94)';
   }
 
   function render(){
