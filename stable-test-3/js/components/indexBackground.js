@@ -630,7 +630,8 @@
     }
 
     // Light: ultrazachte vignette om randen te kalmeren (geen grijze waas).
-    if(!isDark){
+    // Als baseWash uit staat, slaan we ook de vignette over.
+    if(!isDark && !skipWash){
       var vg = ctx.createRadialGradient(info.w*0.55, info.h*0.45, 0, info.w*0.55, info.h*0.45, Math.max(info.w,info.h)*0.75);
       vg.addColorStop(0, 'rgba(255,255,255,0)');
       vg.addColorStop(1, 'rgba(255,255,255,0.010)');
@@ -686,8 +687,8 @@
         if(pal.length) flatColors = pal;
       }
       if(flatColors.length<3){
-        // fallback (Parnassia-ish cool neutrals)
-        flatColors = ['#306088','#aac37b','#f2994a','#c1d5a1'];
+        // fallback: zachte perzik-zand (geen blauw/groen)
+        flatColors = ['#F2C9A5','#F6D4B4','#F7E2C8'];
       }
       if(flatColors.length>6) flatColors = flatColors.slice(0,6);
 

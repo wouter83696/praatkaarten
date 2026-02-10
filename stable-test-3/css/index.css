@@ -10,7 +10,7 @@
    We zetten daarom de echte document-achtergrond vast.
    Light: vrijwel wit. Dark: vaste indigo nachtbasis. */
 html, body{
-  background: var(--bg-base-color, var(--cardsPageBg, #FAFAF8));
+  background: var(--pk-set-bg, var(--cardsPageBg, #FAFAF8));
   height: 100%;
   min-height: 100dvh;
 }
@@ -61,6 +61,11 @@ html[data-contrast="dark"] body{
   display: block;
   background: rgb(var(--activeTintRgb, 255, 255, 255));
   transition: background-color 420ms ease;
+}
+
+/* Light mode: verwijder de volledige waas */
+html[data-contrast="light"] .indexTint{
+  background: transparent !important;
 }
 
 /* Donkere modus: blobs iets sterker. */
@@ -166,15 +171,26 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
 /* ===== Revision: kaarten opaak, achtergrond hiërarchie strak ===== */
 /* (Tint zit achter blobs; blobs zijn minder dominant; kaarten blijven leidend.) */
 
-/* Kaarten: volledig opaak, warm off-white, ultralichte papierschaduw */
+/* Kaarten: geen extra rechthoek/achtervlak achter de kaart */
 .cardsSlideCard{
-  background: #FAFAF8 !important;
-  /* Zelfde ‘papier’-rand als de index-kaarten (niet te dik / niet te aanwezig) */
-  border: 1px solid rgba(0,0,0,0.015) !important;
-  box-shadow:
-    0 6px 14px rgba(0,0,0,0.012),
-    0 1px 0 rgba(255,255,255,0.75) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
+
+/* Flip-lagen: behoud kaartvlak (niet transparant), maar geen extra rand/schaduw */
+.cardsSlideCard .pkFlipInner{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.cardsSlideCard .pkFace{
+  background: var(--pk-set-card, #FAFAF8) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Kaartenpagina: kaarten standaard opaak (geen transparantie) */
 
 /* Let op: sheet visibility wordt door JS geregeld via [hidden]. */
 
@@ -195,6 +211,11 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
   background: radial-gradient(circle at 35% 35%, rgba(var(--activeHueRgb, 120, 160, 190), 0.030) 0%, rgba(var(--activeHueRgb, 120, 160, 190), 0) 64%);
   filter: blur(140px) saturate(0.95);
   transition: background 420ms ease;
+}
+
+/* Light mode: geen extra waas/soft blob */
+html[data-contrast="light"] .indexSoftBlob{
+  background: transparent !important;
 }
 
 html[data-contrast="dark"] .indexSoftBlob{
