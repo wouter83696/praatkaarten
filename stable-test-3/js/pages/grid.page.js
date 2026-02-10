@@ -731,9 +731,13 @@
       isDark = (doc && doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_e){ isDark = false; }
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
-    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 7;
-    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.05;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 0.85;
+    // Main index default: 5-6 grote blobs met zichtbare intensiteitsverschillen.
+    // (Alleen fallback; per set kan dit nog steeds via index.json overschreven worden.)
+    var blobCount = bg && typeof bg.blobCount === 'number'
+      ? bg.blobCount
+      : (((w.innerWidth || 0) < 900) ? 5 : 6);
+    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.12;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 1.34;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : 1.25;
     var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : 0.9;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
@@ -744,13 +748,14 @@
     var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
-    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.18;
+    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.26;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : 0.28;
     var shapeEnabled = bg && typeof bg.shapeEnabled === 'boolean' ? bg.shapeEnabled : false;
     var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
     var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
-    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
-    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : (isDark ? undefined : 0.145);
+    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 1.9;
+    // Geen vaste light-alpha als default; daardoor ontstaan natuurlijke verschillen.
+    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : undefined;
     var customLightBlobs = (bg && Array.isArray(bg.customLightBlobs) && bg.customLightBlobs.length)
       ? bg.customLightBlobs
       : undefined;
