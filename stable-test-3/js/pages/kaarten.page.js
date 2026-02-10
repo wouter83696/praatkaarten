@@ -84,6 +84,91 @@
     el.textContent = v ? ('build ' + v) : 'build ?';
   }
 
+  function parseHexToRgbCsv(input){
+    var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
+    if(hex.length === 3){
+      hex = hex.charAt(0)+hex.charAt(0)+hex.charAt(1)+hex.charAt(1)+hex.charAt(2)+hex.charAt(2);
+    }
+    if(hex.length !== 6) return '';
+    var r = parseInt(hex.slice(0,2),16);
+    var g = parseInt(hex.slice(2,4),16);
+    var b = parseInt(hex.slice(4,6),16);
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return r + ', ' + g + ', ' + b;
+  }
+
+  function parseRgbFuncToCsv(input){
+    var m = String(input || '').match(/rgba?\(([^)]+)\)/i);
+    if(!m || !m[1]) return '';
+    var p = m[1].split(',');
+    if(p.length < 3) return '';
+    var r = Math.max(0, Math.min(255, parseFloat(String(p[0]).replace(/^\s+|\s+$/g,''))));
+    var g = Math.max(0, Math.min(255, parseFloat(String(p[1]).replace(/^\s+|\s+$/g,''))));
+    var b = Math.max(0, Math.min(255, parseFloat(String(p[2]).replace(/^\s+|\s+$/g,''))));
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return Math.round(r) + ', ' + Math.round(g) + ', ' + Math.round(b);
+  }
+
+  function colorToRgbCsv(input){
+    var raw = String(input || '').replace(/^\s+|\s+$/g,'');
+    if(!raw) return '';
+    if(raw.charAt(0) === '#') return parseHexToRgbCsv(raw);
+    if(/^rgba?\(/i.test(raw)) return parseRgbFuncToCsv(raw);
+    if(/^\d+\s*,\s*\d+\s*,\s*\d+/.test(raw)) return raw.replace(/\s+/g,'');
+    return '';
+  }
+
+  function resolveMenuBaseRgb(meta){
+    var candidates = [];
+    var cssVars = (meta && meta.cssVars && typeof meta.cssVars === 'object') ? meta.cssVars : null;
+    if(cssVars){
+      candidates.push(cssVars['--pk-set-bg']);
+      candidates.push(cssVars['pk-set-bg']);
+      candidates.push(cssVars['--bg-base-color']);
+      candidates.push(cssVars['bg-base-color']);
+      candidates.push(cssVars['--cardsPageBg']);
+      candidates.push(cssVars['cardsPageBg']);
+      candidates.push(cssVars['--pk-set-card']);
+      candidates.push(cssVars['pk-set-card']);
+    }
+    try{
+      var activeBg = PK && PK.UI_ACTIVE && PK.UI_ACTIVE.cardsIndex && PK.UI_ACTIVE.cardsIndex.background
+        ? PK.UI_ACTIVE.cardsIndex.background
+        : null;
+      if(activeBg){
+        if(typeof activeBg.baseColor === 'string') candidates.push(activeBg.baseColor);
+        if(Array.isArray(activeBg.palette) && activeBg.palette.length) candidates.push(activeBg.palette[0]);
+      }
+    }catch(_eBg){}
+    try{
+      var rs = w.getComputedStyle ? w.getComputedStyle(w.document.documentElement) : null;
+      if(rs){
+        candidates.push(rs.getPropertyValue('--pk-set-bg'));
+        candidates.push(rs.getPropertyValue('--bg-base-color'));
+        candidates.push(rs.getPropertyValue('--cardsPageBg'));
+      }
+    }catch(_eRs){}
+    candidates.push('#FAFAF8');
+    for(var i=0;i<candidates.length;i++){
+      var csv = colorToRgbCsv(candidates[i]);
+      if(csv) return csv;
+    }
+    return '250, 250, 248';
+  }
+
+  function applyMenuSurfaceTint(meta){
+    var root = w.document && w.document.documentElement;
+    if(!root || !root.style || !root.style.setProperty) return;
+    var rgb = resolveMenuBaseRgb(meta);
+    try{
+      root.style.setProperty('--menuSurface', rgb);
+      root.style.setProperty('--menuTintRgb', rgb);
+      root.style.setProperty('--menuSurfaceAlpha', '0.46');
+      root.style.setProperty('--menuSheetAlpha', '0.46');
+      root.style.setProperty('--menuBtnAlpha', '0.62');
+    }catch(_eSet){}
+  }
+
   function trackSetVisit(setId){
     var id = String(setId || '').replace(/^\s+|\s+$/g,'');
     if(!id) return;
@@ -336,6 +421,7 @@ function closeMenu(){
         PK.shell.applyCssVars(meta.cssVars);
       }
     }catch(_eVars){}
+    try{ applyMenuSurfaceTint(meta); }catch(_eMenuTint){}
 
     // Viewer template hint (voor CSS)
     try{
@@ -413,6 +499,7 @@ if(PK.createMenuItem){
     if(PK.applyUiConfig){
       try{ PK.applyUiConfig(setId, meta && meta.ui ? meta.ui : null, UI_DEFAULTS); }catch(_eUi){}
     }
+    try{ applyMenuSurfaceTint(meta); }catch(_eMenuTint2){}
     try{ renderIndexBackground(); }catch(_eBg){}
   }
 
@@ -1148,8 +1235,11 @@ function openInfo(){
       // Dit voorkomt dat het tekstvlak soms "achterblijft" bij een mode-switch.
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       if(PK.applyDominantTint){
+        var baseTint = isDark
+          ? "rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.46))"
+          : "rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.46))";
         // Iets meer zichtbaar dan eerder: subtiel maar herkenbaar meekleuren.
-        PK.applyDominantTint(text, s.srcRect, isDark ? "rgba(20,22,26,0.60)" : "rgba(255,255,255,0.82)");
+        PK.applyDominantTint(text, s.srcRect, baseTint);
       }
       inner.appendChild(card);
       inner.appendChild(text);
@@ -1166,7 +1256,9 @@ function openInfo(){
   function retintInfoSlideTexts(){
     if(!PK.applyDominantTint) return;
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
-    var base = isDark ? 'rgba(20,22,26,0.60)' : 'rgba(255,255,255,0.82)';
+    var base = isDark
+      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.46))'
+      : 'rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.46))';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];

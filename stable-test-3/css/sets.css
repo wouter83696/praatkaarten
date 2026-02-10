@@ -30,9 +30,9 @@ body.setsIndex{
   /* Laat cover/themakaart bovenaan beginnen (override global card centering) */
   --cardImgPos: top center;
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 0.58;
-  --menuSheetAlpha: 0.58;
-  --menuBtnAlpha: 0.88;
+  --menuSurfaceAlpha: 0.46;
+  --menuSheetAlpha: 0.46;
+  --menuBtnAlpha: 0.62;
 }
 
 /* Achtergrond blobs (statisch) */

@@ -13,9 +13,9 @@
   --menuIcon: rgba(11,18,32,0.52);
   --menuLine: rgba(0,0,0,0.06);
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 0.58;
-  --menuSheetAlpha: 0.58;
-  --menuBtnAlpha: 0.88;
+  --menuSurfaceAlpha: 0.46;
+  --menuSheetAlpha: 0.46;
+  --menuBtnAlpha: 0.62;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
   /* Align header action icons with menu card thumbnails */
@@ -211,8 +211,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   background: rgba(var(--menuSurface), var(--menuSheetAlpha));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  /* heel subtiele schaduw zodat het minder 'losstaand' voelt */
-  box-shadow: 0 8px 28px rgba(22, 28, 56, 0.06);
+  box-shadow: none;
   overflow: hidden;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -263,7 +262,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   /* Subtiel pill-vlak dat wegvalt in het menu */
   border: 1px solid rgba(11,18,32,0.02);
   /* Subtiel: 2.5% */
-  background: rgba(255,255,255,0.025);
+  background: rgba(var(--menuSurface), 0.24);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   box-shadow: none;
@@ -901,12 +900,12 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(0,0,0,0.035);
-  background: rgba(255,255,255,0.84);
+  background: rgba(var(--menuSurface), var(--menuSheetAlpha));
 }
 
 html[data-contrast="dark"] .infoSlideInner{
   border-color: rgba(255,255,255,0.08);
-  background: rgba(23, 22, 50, 0.58);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha));
 }
 
 
@@ -977,7 +976,7 @@ html[data-contrast="dark"] .infoSlideInner{
   border: 0;
   /* Lichte doorkijk zodat achtergrond leeft, zonder kleurvlak */
   /* Super lichte meekleur-tint (wordt via PK.applyDominantTint gezet) */
-  background: var(--pkTextBg, rgba(255,255,255,0.84));
+  background: var(--pkTextBg, rgba(var(--menuSurface), var(--menuSheetAlpha)));
   box-shadow: none;
   /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
   color: rgba(11,18,32,.68);
@@ -988,7 +987,7 @@ html[data-contrast="dark"] .infoSlideInner{
 /* Dark help text overrides */
 html[data-contrast="dark"] .infoSlideText{
   /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
-  background: rgba(23, 22, 50, 0.58);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha));
   box-shadow: none;
   color: rgba(244,246,250,0.84);
 }

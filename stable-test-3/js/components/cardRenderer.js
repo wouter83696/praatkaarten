@@ -113,7 +113,7 @@
     // Inline styles "winnen" van dark/light CSS, waardoor het tekstvak soms niet goed omschakelt.
     // We sturen nu met CSS-variabelen, zodat de mode altijd leidend blijft.
 
-    var base = defaultBg || 'rgba(255,255,255,0.82)';
+    var base = defaultBg || 'rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.46))';
     try{
       targetEl.style.setProperty('--pkTextBg', base);
     }catch(_e){
@@ -148,7 +148,16 @@
       // Subtiel meekleuren: nét zichtbaar, maar nog steeds rustig.
       // Zelfde gevoel als de index-kaarten.
       var lite = PK.lighten(dom, 0.90);
-      var rgb = 'rgba(' + lite.r + ', ' + lite.g + ', ' + lite.b + ', 0.22)';
+      var tintAlpha = 0.22;
+      try{
+        var root = w.document && w.document.documentElement;
+        var rs = root && w.getComputedStyle ? w.getComputedStyle(root) : null;
+        if(rs){
+          var n = parseFloat(String(rs.getPropertyValue('--menuSheetAlpha') || '').replace(/^\s+|\s+$/g,''));
+          if(isFinite(n)) tintAlpha = Math.max(0.18, Math.min(0.78, n));
+        }
+      }catch(_eA){}
+      var rgb = 'rgba(' + lite.r + ', ' + lite.g + ', ' + lite.b + ', ' + tintAlpha + ')';
       try{
         targetEl.style.setProperty('--pkTextBg', rgb);
       }catch(_e4){

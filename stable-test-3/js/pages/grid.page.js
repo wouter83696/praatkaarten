@@ -61,6 +61,83 @@
     return GRID_TINTS[i % GRID_TINTS.length];
   }
 
+  function parseHexToRgbCsv(input){
+    var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
+    if(hex.length === 3){
+      hex = hex.charAt(0)+hex.charAt(0)+hex.charAt(1)+hex.charAt(1)+hex.charAt(2)+hex.charAt(2);
+    }
+    if(hex.length !== 6) return '';
+    var r = parseInt(hex.slice(0,2),16);
+    var g = parseInt(hex.slice(2,4),16);
+    var b = parseInt(hex.slice(4,6),16);
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return r + ', ' + g + ', ' + b;
+  }
+
+  function parseRgbFuncToCsv(input){
+    var m = String(input || '').match(/rgba?\(([^)]+)\)/i);
+    if(!m || !m[1]) return '';
+    var p = m[1].split(',');
+    if(p.length < 3) return '';
+    var r = Math.max(0, Math.min(255, parseFloat(String(p[0]).replace(/^\s+|\s+$/g,''))));
+    var g = Math.max(0, Math.min(255, parseFloat(String(p[1]).replace(/^\s+|\s+$/g,''))));
+    var b = Math.max(0, Math.min(255, parseFloat(String(p[2]).replace(/^\s+|\s+$/g,''))));
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return Math.round(r) + ', ' + Math.round(g) + ', ' + Math.round(b);
+  }
+
+  function colorToRgbCsv(input){
+    var raw = trim(input || '');
+    if(!raw) return '';
+    if(raw.charAt(0) === '#') return parseHexToRgbCsv(raw);
+    if(/^rgba?\(/i.test(raw)) return parseRgbFuncToCsv(raw);
+    if(/^\d+\s*,\s*\d+\s*,\s*\d+/.test(raw)) return raw.replace(/\s+/g,'');
+    return '';
+  }
+
+  function resolveMenuBaseRgb(meta){
+    var candidates = [];
+    var cssVars = (meta && meta.cssVars && typeof meta.cssVars === 'object') ? meta.cssVars : null;
+    if(cssVars){
+      candidates.push(cssVars['--pk-set-bg']);
+      candidates.push(cssVars['pk-set-bg']);
+      candidates.push(cssVars['--bg-base-color']);
+      candidates.push(cssVars['bg-base-color']);
+      candidates.push(cssVars['--setsBaseBg']);
+      candidates.push(cssVars['setsBaseBg']);
+      candidates.push(cssVars['--pk-set-card']);
+      candidates.push(cssVars['pk-set-card']);
+    }
+    try{
+      var rs = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
+      if(rs){
+        candidates.push(rs.getPropertyValue('--pk-set-bg'));
+        candidates.push(rs.getPropertyValue('--bg-base-color'));
+        candidates.push(rs.getPropertyValue('--setsBaseBg'));
+        candidates.push(rs.getPropertyValue('--setsHeaderBg'));
+      }
+    }catch(_eRs){}
+    candidates.push('#FAFAF8');
+    for(var i=0;i<candidates.length;i++){
+      var csv = colorToRgbCsv(candidates[i]);
+      if(csv) return csv;
+    }
+    return '250, 250, 248';
+  }
+
+  function applyMenuSurfaceTint(meta){
+    var root = doc && doc.documentElement;
+    if(!root || !root.style || !root.style.setProperty) return;
+    var rgb = resolveMenuBaseRgb(meta);
+    try{
+      root.style.setProperty('--menuSurface', rgb);
+      root.style.setProperty('--menuTintRgb', rgb);
+      root.style.setProperty('--menuSurfaceAlpha', '0.46');
+      root.style.setProperty('--menuSheetAlpha', '0.46');
+      root.style.setProperty('--menuBtnAlpha', '0.62');
+    }catch(_eSet){}
+  }
+
   function renderDots(count){
     if(!dots) return;
     dots.innerHTML = '';
@@ -845,6 +922,7 @@
           PK.shell.applyCssVars(state.meta.cssVars);
         }
       }catch(_eVars){}
+      try{ applyMenuSurfaceTint(state.meta); }catch(_eTint){}
 
       // Viewer template hint (voor CSS)
       try{
@@ -929,6 +1007,7 @@
           PK.applyUiConfig(fb.setId, null, defaults);
         }
       }catch(_eCfg){}
+      try{ applyMenuSurfaceTint(fb.meta); }catch(_eTint2){}
       applyIndexLayout();
       ensureBackgroundBandSync();
       renderHero(fb.idx, fb.setId, fb.meta);
