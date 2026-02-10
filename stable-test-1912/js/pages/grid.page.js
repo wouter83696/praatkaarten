@@ -666,17 +666,32 @@
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.18;
     var surfaceZones = null;
+    var zoneTopColor = '#F4EBDD';
+    var zoneHeroColor = '#F7F3EB';
+    var zoneGridColor = '#FBF9F4';
+    try{
+      var zr = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
+      var zTop = zr ? trim(zr.getPropertyValue('--setsHeaderBg')) : '';
+      var zHero = zr ? trim(zr.getPropertyValue('--setsHeroBg')) : '';
+      var zGrid = zr ? trim(zr.getPropertyValue('--setsGridBg')) : '';
+      if(zTop) zoneTopColor = zTop;
+      if(zHero) zoneHeroColor = zHero;
+      if(zGrid) zoneGridColor = zGrid;
+    }catch(_eZone){}
     if(!isDark){
       var vpH = w.innerHeight || 0;
+      var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
       var topEndPx = NaN;
       var heroEndPx = NaN;
       try{
+        var heroRect = (heroSection && heroSection.getBoundingClientRect) ? heroSection.getBoundingClientRect() : null;
+        var heroTopDoc = heroRect ? (scrollTop + heroRect.top) : 0;
         var heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
         var rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
         var heroPadTop = heroStyle ? parseFloat(String(heroStyle.paddingTop || '')) : NaN;
         var heroExtra = rootStyle ? parseFloat(String(rootStyle.getPropertyValue('--setsHeroPadExtra') || '')) : NaN;
         if(isFinite(heroPadTop) && isFinite(heroExtra)){
-          topEndPx = heroPadTop - heroExtra;
+          topEndPx = heroTopDoc + heroPadTop - heroExtra;
         }
       }catch(_eTop){}
       if(!isFinite(topEndPx) || topEndPx < 0){
@@ -684,20 +699,19 @@
       }
       try{
         if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
-          heroEndPx = gridSection.getBoundingClientRect().top;
+          heroEndPx = scrollTop + gridSection.getBoundingClientRect().top;
         }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
-          heroEndPx = heroSection.getBoundingClientRect().bottom;
+          heroEndPx = scrollTop + heroSection.getBoundingClientRect().bottom;
         }
       }catch(_eHero){}
       if(!isFinite(heroEndPx)){
-        heroEndPx = vpH ? (vpH * 0.58) : (topEndPx + 320);
+        heroEndPx = topEndPx + (vpH ? (vpH * 0.44) : 320);
       }
       if(heroEndPx < topEndPx) heroEndPx = topEndPx;
-      if(vpH && heroEndPx > vpH) heroEndPx = vpH;
       surfaceZones = {
-        topColor: '#FBF9F4',
-        heroColor: '#F7F3EB',
-        gridColor: '#F4EBDD',
+        topColor: zoneTopColor,
+        heroColor: zoneHeroColor,
+        gridColor: zoneGridColor,
         topEndPx: topEndPx,
         heroEndPx: heroEndPx
       };

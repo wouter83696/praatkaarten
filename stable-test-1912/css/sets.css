@@ -1,9 +1,9 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
-  --setsBg: #F4EBDD;
-  --setsBaseBg: #FBF9F4;
-  --setsHeaderBg: #FBF9F4;
+  --setsBg: #FBF9F4;
+  --setsBaseBg: #F4EBDD;
+  --setsHeaderBg: #F4EBDD;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -15,7 +15,7 @@
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
   --setsHeroBg: #F7F3EB;
-  --setsGridBg: #F4EBDD;
+  --setsGridBg: #FBF9F4;
   --setsBandTopEnd: var(--setsTopOffset);
   --setsBandHeroEnd: 560px;
   --setsHeroCardBg: #ffffff;
@@ -31,6 +31,7 @@ html, body{
 }
 
 body.setsIndex{
+  position: relative;
   margin: 0;
   font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   color: rgba(11,18,32,0.82);
@@ -88,10 +89,13 @@ body.setsIndex::after{
 
 /* Achtergrond blobs (statisch) */
 .indexBg{
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100dvh;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   min-height: 100vh;
   z-index: 0;
   pointer-events: none;
@@ -99,10 +103,13 @@ body.setsIndex::after{
 }
 
 .indexBgSvg{
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100dvh;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   min-height: 100vh;
   z-index: 0;
   pointer-events: none;
