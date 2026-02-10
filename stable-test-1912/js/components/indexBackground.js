@@ -580,6 +580,11 @@
     }
     var alphaBoost = (opts && typeof opts.alphaBoost === 'number') ? opts.alphaBoost : 1;
     var alphaBoostDark = (opts && typeof opts.darkAlphaBoost === 'number') ? opts.darkAlphaBoost : alphaBoost;
+    var blobComposite = (opts && typeof opts.blobComposite === 'string') ? String(opts.blobComposite) : '';
+    if(blobComposite){
+      blobComposite = blobComposite.toLowerCase();
+      if(blobComposite === 'normal') blobComposite = 'source-over';
+    }
     var sizeScale = (opts && typeof opts.sizeScale === 'number') ? opts.sizeScale : 1;
     var sizeScaleDark = (opts && typeof opts.darkSizeScale === 'number') ? opts.darkSizeScale : sizeScale;
     var sizeLimit = (opts && typeof opts.sizeLimit === 'number') ? opts.sizeLimit : 1.4;
@@ -663,6 +668,9 @@
       }
 
       ctx.save();
+      if(!isDark && blobComposite){
+        try{ ctx.globalCompositeOperation = blobComposite; }catch(_eGco){}
+      }
       ctx.globalAlpha = alpha;
       ctx.fillStyle = c;
       // Geen grijze filters; in dark mode geven we een subtiele "glow" via shadow.
@@ -775,8 +783,9 @@
       var spreadMarginKey = (opts && typeof opts.blobSpreadMargin === 'number') ? String(opts.blobSpreadMargin) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
+      var compositeKey = (opts && typeof opts.blobComposite === 'string') ? String(opts.blobComposite) : '';
       // surfaceZones beïnvloeden alleen de vlakverdeling; seed/asset-cache moet stabiel blijven.
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey + '|' + compositeKey;
 
       var token = ++lastToken;
 

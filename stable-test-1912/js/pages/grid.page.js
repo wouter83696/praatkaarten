@@ -665,6 +665,7 @@
     var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.18;
+    var blobComposite = bg && typeof bg.blobComposite === 'string' ? bg.blobComposite : undefined;
     var surfaceZones = null;
     var zoneTopColor = '#F4EBDD';
     var zoneHeroColor = '#F7F3EB';
@@ -752,6 +753,7 @@
       blobSpreadMargin: blobSpreadMargin,
       sizeLimit: sizeLimit,
       blobAlphaFixed: blobAlphaFixed,
+      blobComposite: blobComposite,
       surfaceZones: surfaceZones
     });
   }
