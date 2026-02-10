@@ -494,7 +494,7 @@ html[data-contrast="dark"] .infoCard{
   /* Dark mode: vaste indigo wereld (niet meekleuren). */
   /* Uitleg-sheet: vaste indigo wereld, maar (bijna) transparant zodat achtergrond terugkomt */
   /* +5–8% transparanter */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.95);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.05);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -560,7 +560,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   border-right: 0;
   border-bottom: 0;
   /* Light mode: zelfde transparantie-gevoel als dark mode */
-  background: rgba(255,255,255, 0.96);
+  background: rgba(255,255,255, 0.04);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   overflow: hidden;
@@ -900,12 +900,12 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(0,0,0,0.035);
-  background: rgba(255,255,255, 0.96);
+  background: rgba(255,255,255, 0.04);
 }
 
 html[data-contrast="dark"] .infoSlideInner{
   border-color: rgba(255,255,255,0.08);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.95);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.05);
 }
 
 
@@ -975,7 +975,7 @@ html[data-contrast="dark"] .infoSlideInner{
   border-radius: 0;
   border: 0;
   /* Lichte doorkijk zonder dominante kaartkleur; tekst blijft stabiel leesbaar. */
-  background: var(--pkTextBg, rgba(255,255,255, 0.96));
+  background: var(--pkTextBg, rgba(255,255,255, 0.04));
   box-shadow: none;
   /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
   color: rgba(11,18,32,.68);
@@ -986,7 +986,7 @@ html[data-contrast="dark"] .infoSlideInner{
 /* Dark help text overrides */
 html[data-contrast="dark"] .infoSlideText{
   /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.95);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.05);
   box-shadow: none;
   color: rgba(244,246,250,0.84);
 }
