@@ -150,7 +150,6 @@
   function ensureBackgroundBandSync(){
     if(bgBandsBound) return;
     bgBandsBound = true;
-    w.addEventListener('scroll', scheduleBackgroundBands, { passive:true });
     w.addEventListener('resize', scheduleBackgroundBands, { passive:true });
     w.addEventListener('orientationchange', scheduleBackgroundBands, { passive:true });
     w.addEventListener('load', scheduleBackgroundBands, { passive:true });
