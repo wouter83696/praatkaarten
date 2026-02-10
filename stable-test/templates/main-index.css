@@ -15,10 +15,6 @@
   /* Aparte dieptelaag boven achtergrond, onder kaarten (geen wit/grijs). */
   --setsDepthOverlayRgb: 244, 235, 221;
   --setsDepthOverlayAlpha: 0.08;
-  --setsBlobRgbA: 242, 201, 165;
-  --setsBlobRgbB: 240, 196, 160;
-  --setsBlobOpacityA: 0.22;
-  --setsBlobOpacityB: 0.19;
 
   /* geen extra uniforme wash */
   --setsWashAlpha: 0;
