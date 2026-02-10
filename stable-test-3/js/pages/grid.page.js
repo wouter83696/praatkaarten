@@ -43,12 +43,12 @@
   // - DEEP alleen als reserve/highlight (niet standaard in grid/carrousel)
   var MAIN_INDEX_CARD_PALETTE = {
     light: [
-      '#CFE6DF', '#DDE8F6', '#E7E1F5', '#F3DCE4', '#F8E4D2',
-      '#E3E9D5', '#D6ECEA', '#F3E6D8', '#EEEFF4'
+      '#F7F4EF', '#F2F7F4', '#F4F1F8', '#FAEEF2', '#FBEFE5',
+      '#EEF3E7', '#ECF5F4', '#F8EFE8', '#F3F4F8'
     ],
     base: [
-      '#9EC7B6', '#6C9BD2', '#8F6ED5', '#E07A8A', '#E88A3D',
-      '#8FAE5D', '#4F8F8C', '#CFA77F', '#B8BCCF'
+      '#CFE6DF', '#DDE8F6', '#E7E1F5', '#F3DCE4', '#F8E4D2',
+      '#E3E9D5', '#D6ECEA', '#F3E6D8', '#EEEFF4'
     ],
     deep: [
       '#6FAE9A', '#4C7FB8', '#6A63C2', '#C9657A', '#C96A24',
