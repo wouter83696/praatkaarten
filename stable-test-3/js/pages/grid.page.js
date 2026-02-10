@@ -673,8 +673,8 @@
       var heroEndPx = NaN;
       var heroStyle = null;
       var rootStyle = null;
-      var zoneTopColor = '#F3E9D3';
-      var zoneHeroColor = '#F4E3C3';
+      var zoneTopColor = '#F6EDDB';
+      var zoneHeroColor = '#F4E6C9';
       var zoneGridColor = '#FBF9F4';
       try{
         heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
