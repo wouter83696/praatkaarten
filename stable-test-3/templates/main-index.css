@@ -2,21 +2,25 @@
    Main page zones (solid, no overlay wash).
 */
 :root{
-  --pk-main-header: #F4EBDD;
-  --pk-main-carousel: #F7F3EB;
-  --pk-main-grid: #FBF9F4;
+  --bg-base: #FBFAF7;
+  --bg-carousel: #F5EEDF;
+  --bg-card: #EDE1D0;
 
-  --setsBaseBg: var(--pk-main-header);
-  --setsHeaderBg: var(--pk-main-header);
-  --setsHeroBg: var(--pk-main-carousel);
-  --setsGridBg: var(--pk-main-grid);
+  --pk-main-header: var(--bg-base);
+  --pk-main-carousel: var(--bg-carousel);
+  --pk-main-grid: var(--bg-base);
+
+  --setsBaseBg: var(--bg-base);
+  --setsHeaderBg: var(--bg-base);
+  --setsHeroBg: var(--bg-carousel);
+  --setsGridBg: var(--bg-base);
   --setsWashAlpha: 0;
 
   /* Cards: fully opaque */
   --heroCardAlpha: 1;
   --gridCardAlpha: 1;
-  --setsHeroCardBg: #FAFAF8;
-  --setsGridCardBg: #FAFAF8;
+  --setsHeroCardBg: var(--bg-card);
+  --setsGridCardBg: var(--bg-card);
   --setsHeroCardImgOpacity: 1;
   --setsGridCardImgOpacity: 1;
 }
