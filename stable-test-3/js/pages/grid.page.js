@@ -75,13 +75,6 @@
     deep: toCsvPalette(MAIN_INDEX_CARD_PALETTE.deep)
   };
 
-  function hasIndex(list, value){
-    for(var i=0;i<(list || []).length;i++){
-      if(list[i] === value) return true;
-    }
-    return false;
-  }
-
   function palettePick(group, idx){
     var list = MAIN_INDEX_CARD_PALETTE_CSV[group] || [];
     if(!list.length) return '223,238,232';
@@ -96,42 +89,21 @@
     var start = parseInt(offset, 10) || 0;
     if(start < 0) start = 0;
 
-    // Regelset:
-    // - vooral BASE
-    // - DEEP max 1-2
-    // - LIGHT niet samen met meerdere DEEP
-    var deepTarget = 0;
-    if(total >= 8) deepTarget = 2;
-    else if(total >= 4) deepTarget = 1;
-
-    var lightTarget = (deepTarget > 1) ? 0 : (total >= 3 ? 1 : 0);
-    var deepPositions = [];
+    // Regelset (main index):
+    // - BASE als standaard
+    // - LIGHT spaarzaam
+    // - DEEP niet standaard in grid/carrousel
+    var lightTarget = (total >= 3 ? 1 : 0);
     var lightPos = -1;
-
-    if(deepTarget === 1){
-      deepPositions.push(Math.max(1, Math.min(total - 1, Math.floor(total * 0.62))));
-    }else if(deepTarget === 2){
-      var p1 = Math.max(1, Math.min(total - 1, Math.floor(total * 0.34)));
-      var p2 = Math.max(1, Math.min(total - 1, Math.floor(total * 0.76)));
-      if(p2 <= p1) p2 = Math.min(total - 1, p1 + 1);
-      deepPositions.push(p1);
-      deepPositions.push(p2);
-    }
 
     if(lightTarget === 1){
       lightPos = Math.max(1, Math.min(total - 1, Math.floor(total * 0.18)));
-      if(hasIndex(deepPositions, lightPos)) lightPos = Math.min(total - 1, lightPos + 1);
-      if(hasIndex(deepPositions, lightPos)) lightPos = -1;
     }
 
     var out = [];
-    var deepCursor = 0;
     for(var i=0;i<total;i++){
       var slot = start + i;
-      if(hasIndex(deepPositions, i)){
-        out.push(palettePick('deep', slot + deepCursor));
-        deepCursor++;
-      }else if(lightPos === i){
+      if(lightPos === i){
         out.push(palettePick('light', slot));
       }else{
         out.push(palettePick('base', slot));
@@ -306,6 +278,8 @@
     bgBandsTimer = w.setTimeout(function(){
       updateBackgroundBandsNow();
       if(lastIndexConfig) applyBackground(lastIndexConfig);
+      syncHeroCardStates();
+      syncGridCardStates();
     }, 48);
   }
 
@@ -450,6 +424,53 @@
     }
   }
 
+  function setCardState(cardEl, active){
+    if(!cardEl || !cardEl.classList) return;
+    if(active){
+      cardEl.classList.add('is-active');
+      cardEl.classList.remove('is-muted');
+    }else{
+      cardEl.classList.remove('is-active');
+      cardEl.classList.add('is-muted');
+    }
+  }
+
+  function syncHeroCardStates(){
+    if(!carousel || !carousel.querySelectorAll) return;
+    var cards = carousel.querySelectorAll('.setsHeroCard');
+    if(!cards || !cards.length) return;
+
+    var best = null;
+    var bestDist = Infinity;
+    var hostRect = carousel.getBoundingClientRect ? carousel.getBoundingClientRect() : null;
+    var centerX = hostRect ? (hostRect.left + hostRect.width / 2) : 0;
+
+    for(var i=0;i<cards.length;i++){
+      var c = cards[i];
+      if(!c || !c.getBoundingClientRect) continue;
+      var r = c.getBoundingClientRect();
+      var mid = r.left + r.width / 2;
+      var d = Math.abs(mid - centerX);
+      if(d < bestDist){
+        bestDist = d;
+        best = c;
+      }
+    }
+
+    for(var j=0;j<cards.length;j++){
+      setCardState(cards[j], !!(best && cards[j] === best));
+    }
+  }
+
+  function syncGridCardStates(){
+    if(!grid || !grid.querySelectorAll) return;
+    var cards = grid.querySelectorAll('.setGridCard');
+    if(!cards || !cards.length) return;
+    for(var i=0;i<cards.length;i++){
+      setCardState(cards[i], false);
+    }
+  }
+
   function bindDots(){
     if(!carousel || dotsBound) return;
     dotsBound = true;
@@ -467,6 +488,7 @@
         if(idx < 0) idx = nReal - 1;
         if(idx >= nReal) idx = 0;
         setActiveDot(idx);
+        syncHeroCardStates();
       });
     }, { passive:true });
   }
@@ -488,6 +510,8 @@
       }catch(_e1){}
     }
     setActiveDot(0);
+    syncHeroCardStates();
+    syncGridCardStates();
   }
 
   function enableInfiniteCarousel(container, slideClass){
@@ -592,7 +616,7 @@
     innerWrap.className = 'setsHeroSlideInner';
 
     var card = doc.createElement(args.href ? 'a' : 'div');
-    card.className = 'setsHeroCard card' + (args.placeholder ? ' is-placeholder' : '');
+    card.className = 'setsHeroCard card is-muted' + (args.placeholder ? ' is-placeholder' : '');
     if(args.href){
       card.href = args.href;
       card.setAttribute('aria-label', args.label || 'Kaartenset');
@@ -630,7 +654,7 @@
 
   function buildGridCard(args){
     var el = doc.createElement(args.href ? 'a' : 'div');
-    el.className = 'setGridCard' + (args.placeholder ? ' is-placeholder' : '');
+    el.className = 'setGridCard is-muted' + (args.placeholder ? ' is-placeholder' : '');
     if(args.href){
       el.href = args.href;
       el.setAttribute('aria-label', args.label || 'Kaart');
@@ -744,6 +768,7 @@
     enableInfiniteCarousel(carousel, 'setsHeroSlide');
     bindDots();
     resetPositions();
+    syncHeroCardStates();
   }
 
   function renderGrid(idx, activeSetId, activeMeta){
@@ -791,6 +816,7 @@
         rgb: gridTints[m]
       }));
     }
+    syncGridCardStates();
   }
 
   function applyBackground(idx){

@@ -33,6 +33,13 @@ body.setsIndex{
   --menuSurfaceAlpha: 0.82;
   --menuSheetAlpha: 0.82;
   --menuBtnAlpha: 0.86;
+  --mainCardMutedOverlayA: 0.20;
+  --mainCardMutedSaturation: 0.90;
+  --mainCardMutedBrightness: 0.97;
+  --mainCardActiveShadow: 0 10px 28px rgba(11,18,32,0.16);
+  --mainCardActiveLift: -1px;
+  --mainCardTitleColor: rgba(48,96,136,0.95);
+  --mainCardSubtitleColor: rgba(48,96,136,0.68);
 }
 
 /* Achtergrond blobs (statisch) */
@@ -160,6 +167,74 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 .setsHeroCard .cardInner{
   width: 100%;
   border-radius: var(--setsHeroRadius);
+  transition: filter 180ms var(--ui-ease), box-shadow 180ms var(--ui-ease), transform 180ms var(--ui-ease);
+}
+
+/* Main-index volume hierarchy:
+   - 1 actieve kaart (full)
+   - overige kaarten muted
+   - hover/focus = tijdelijke nadruk
+*/
+body.setsIndex .setsHeroCard .cardInner::before,
+body.setsIndex .setGridCard .cardInner::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: rgba(255,255,255,var(--mainCardMutedOverlayA));
+  opacity: 0;
+  transition: opacity 170ms var(--ui-ease);
+  pointer-events: none;
+  z-index: 2;
+}
+
+body.setsIndex .setsHeroCard.is-muted .cardInner,
+body.setsIndex .setGridCard.is-muted .cardInner{
+  filter: saturate(var(--mainCardMutedSaturation)) brightness(var(--mainCardMutedBrightness));
+}
+
+body.setsIndex .setsHeroCard.is-muted .cardInner::before,
+body.setsIndex .setGridCard.is-muted .cardInner::before{
+  opacity: 1;
+}
+
+body.setsIndex .setsHeroCard.is-active .cardInner{
+  filter: none;
+  transform: translateY(var(--mainCardActiveLift));
+  box-shadow: var(--mainCardActiveShadow);
+}
+
+body.setsIndex .setsHeroCard.is-active .cardInner::before{
+  opacity: 0;
+}
+
+body.setsIndex .setsHeroCard.is-muted:hover .cardInner,
+body.setsIndex .setsHeroCard.is-muted:focus-visible .cardInner,
+body.setsIndex .setsHeroCard.is-muted:focus-within .cardInner,
+body.setsIndex .setGridCard.is-muted:hover .cardInner,
+body.setsIndex .setGridCard.is-muted:focus-visible .cardInner,
+body.setsIndex .setGridCard.is-muted:focus-within .cardInner{
+  filter: none;
+}
+
+body.setsIndex .setsHeroCard.is-muted:hover .cardInner::before,
+body.setsIndex .setsHeroCard.is-muted:focus-visible .cardInner::before,
+body.setsIndex .setsHeroCard.is-muted:focus-within .cardInner::before,
+body.setsIndex .setGridCard.is-muted:hover .cardInner::before,
+body.setsIndex .setGridCard.is-muted:focus-visible .cardInner::before,
+body.setsIndex .setGridCard.is-muted:focus-within .cardInner::before{
+  opacity: 0;
+}
+
+body.setsIndex .setsHeroCard .q,
+body.setsIndex .setGridCard .q{
+  color: var(--mainCardTitleColor);
+  z-index: 3;
+}
+
+body.setsIndex .setsHeroCard .themeTag,
+body.setsIndex .setGridCard .themeTag{
+  color: var(--mainCardSubtitleColor);
+  z-index: 3;
 }
 
 .setsHeroCard.is-placeholder .cardInner{
@@ -224,6 +299,7 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   background: #FAFAF8 !important;
   border: 0 !important;
   box-shadow: none !important;
+  transition: filter 180ms var(--ui-ease), box-shadow 180ms var(--ui-ease), transform 180ms var(--ui-ease);
 }
 
 html[data-contrast="dark"] .setGridCard .cardInner{
@@ -264,6 +340,12 @@ html[data-contrast="dark"] body.setsIndex{
   --darkBaseRgb: 24, 18, 60;
   --setsHeroBg: rgba(24, 18, 60, 0);
   --setsGridBg: transparent;
+  --mainCardMutedOverlayA: 0.26;
+  --mainCardMutedSaturation: 0.86;
+  --mainCardMutedBrightness: 0.90;
+  --mainCardActiveShadow: 0 12px 30px rgba(2, 6, 20, 0.46);
+  --mainCardTitleColor: rgba(244,248,255,0.96);
+  --mainCardSubtitleColor: rgba(244,248,255,0.82);
 }
 
 /* Carrousel dots */
