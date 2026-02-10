@@ -1149,7 +1149,7 @@ function openInfo(){
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       if(PK.applyDominantTint){
         // Iets meer zichtbaar dan eerder: subtiel maar herkenbaar meekleuren.
-        PK.applyDominantTint(text, s.srcRect, isDark ? "rgba(20,22,26,0.60)" : "rgba(255,255,255,0.72)");
+        PK.applyDominantTint(text, s.srcRect, isDark ? "rgba(20,22,26,0.60)" : "rgba(255,255,255,0.60)");
       }
       inner.appendChild(card);
       inner.appendChild(text);
@@ -1166,7 +1166,7 @@ function openInfo(){
   function retintInfoSlideTexts(){
     if(!PK.applyDominantTint) return;
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
-    var base = isDark ? 'rgba(20,22,26,0.60)' : 'rgba(255,255,255,0.72)';
+    var base = isDark ? 'rgba(20,22,26,0.60)' : 'rgba(255,255,255,0.60)';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];

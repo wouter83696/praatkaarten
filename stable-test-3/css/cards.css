@@ -240,6 +240,12 @@ html[data-contrast="dark"] .cardInner{
   box-shadow: none !important;
 }
 
+/* Kaartenpagina: geen kaartschaduw */
+body[data-page="kaarten"] .cardInner{
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
 /* (verwijderd) dubbele landscape-regel voor .qText — zie de regel hoger in dit bestand */
 
 /* Let op: infoSheet visibility wordt door JS + [hidden] geregeld. */
