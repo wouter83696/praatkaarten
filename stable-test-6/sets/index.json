@@ -1,0 +1,48 @@
+{
+  "default": "samenwerken",
+  "sets": [
+    {
+      "id": "samenwerken",
+      "title": "Samen onderzoeken"
+    }
+  ],
+  "available": [
+    {
+      "id": "samenwerken",
+      "title": "samenwerken"
+    }
+  ],
+  "uiDefaults": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "carousel",
+      "gridLimit": 6
+    }
+  },
+  "indexPage": {
+    "background": {
+      "palette": ["#F2C9A5"],
+      "darkPalette": ["#F2C9A5"],
+      "blobCount": 5,
+      "blobAlphaFixed": 0.30,
+      "blobWash": 0.24,
+      "blobIrregularity": 0.45,
+      "blobPointsMin": 7,
+      "blobPointsMax": 11,
+      "sizeScale": 2.0,
+      "sizeLimit": 1.8,
+      "blobSpread": "grid",
+      "blobSpreadMargin": 0.18,
+      "baseWash": false,
+      "shapeEnabled": false
+    }
+  }
+}

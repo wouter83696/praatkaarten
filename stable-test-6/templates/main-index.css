@@ -1,0 +1,16 @@
+/* Template: main index (sets overview)
+   Adjust these to change the main index background bands.
+*/
+:root{
+  /* Main index: 3 vaste achtergrondvlakken */
+  /* Terug naar master‑kleurfamilie (16:39) met diepte via transparante lagen */
+  --setsHeaderBg: #F6E9D9;
+  --setsHeroBg: rgba(250, 242, 232, 0.78);
+  --setsGridBg: rgba(249, 240, 229, 0.68);
+
+  /* Kaarten standaard opaak */
+  --setsHeroCardBg: #FAFAF8;
+  --setsGridCardBg: #FAFAF8;
+  --setsHeroCardImgOpacity: 1;
+  --setsGridCardImgOpacity: 1;
+}
