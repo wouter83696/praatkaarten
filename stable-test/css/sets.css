@@ -2,10 +2,16 @@
 
 :root{
   --setsBg: #ffffff;
-  --setsBaseBg: #ffffff;
-  --setsHeaderBg: #ffffff;
+  --setsBaseBg: #F4EBDD;
+  --setsHeaderBg: #FBF9F4;
+  --setsHeroBg: #F7F3EB;
+  --setsGridBg: #F4EBDD;
   --setsDepthOverlayRgb: 247, 243, 235;
   --setsDepthOverlayAlpha: 0.08;
+  --setsBlobRgbA: 242, 201, 165;
+  --setsBlobRgbB: 240, 196, 160;
+  --setsBlobOpacityA: 0.22;
+  --setsBlobOpacityB: 0.19;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -16,8 +22,6 @@
   --setsTopOffset: calc(env(safe-area-inset-top, 0px) + var(--topBarInset) + var(--topBarPill) + var(--setsTopGap));
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
-  --setsHeroBg: transparent;
-  --setsGridBg: transparent;
   --setsHeroCardBg: #ffffff;
   --setsGridCardBg: #ffffff;
   --setsHeroCardImgOpacity: 1;
@@ -63,21 +67,10 @@ body.setsIndex::before{
   pointer-events: none;
 }
 
-/* Subtiele uniforme wash (geen kleurmenging) */
-body.setsIndex::after{
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(var(--setsDepthOverlayRgb, 247, 243, 235), var(--setsDepthOverlayAlpha, 0.08)),
-    rgba(var(--setsDepthOverlayRgb, 247, 243, 235), calc(var(--setsDepthOverlayAlpha, 0.08) - 0.02))
-  );
-  z-index: 1;
-  pointer-events: none;
-}
+/* Overlay wordt per zone opgebouwd (niet als globale waas). */
+body.setsIndex::after{ display: none; }
 
-/* Achtergrond blobs (statisch) */
+/* Canvas-achtergrond uit: vaste CSS-lagen zijn leidend op sets-index. */
 .indexBg{
   position: fixed;
   inset: 0;
@@ -86,7 +79,7 @@ body.setsIndex::after{
   min-height: 100vh;
   z-index: 0;
   pointer-events: none;
-  opacity: 1;
+  opacity: 0;
 }
 
 .indexBgSvg{
@@ -111,7 +104,8 @@ body.setsIndex .indexBgSvg{
 }
 
 body.setsIndex .indexBg{
-  opacity: 1;
+  opacity: 0;
+  display: none;
 }
 
 .setsIndexMain{
@@ -143,6 +137,7 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 /* Hero (carrousel boven) */
 .setsHero{
   position: relative;
+  isolation: isolate;
   padding: calc(var(--setsTopOffset) + var(--setsHeroPadExtra)) 0 18px;
   background: transparent;
 }
@@ -157,7 +152,41 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
   margin-left: -50vw;
   margin-right: -50vw;
   background: var(--setsHeroBg, transparent);
-  z-index: -1;
+  z-index: 0;
+}
+
+.setsHero::after{
+  content:"";
+  position: absolute;
+  top: var(--setsTopOffset);
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background:
+    radial-gradient(
+      ellipse 52% 44% at 104% 34%,
+      rgba(var(--setsBlobRgbA, 242, 201, 165), var(--setsBlobOpacityA, 0.22)) 0%,
+      rgba(var(--setsBlobRgbA, 242, 201, 165), 0) 70%
+    ),
+    radial-gradient(
+      ellipse 46% 40% at -8% 84%,
+      rgba(var(--setsBlobRgbB, 240, 196, 160), var(--setsBlobOpacityB, 0.19)) 0%,
+      rgba(var(--setsBlobRgbB, 240, 196, 160), 0) 68%
+    ),
+    linear-gradient(
+      rgba(var(--setsDepthOverlayRgb, 247, 243, 235), var(--setsDepthOverlayAlpha, 0.08)),
+      rgba(var(--setsDepthOverlayRgb, 247, 243, 235), var(--setsDepthOverlayAlpha, 0.08))
+    );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.setsHeroCarousel,
+.setsDots{
+  position: relative;
+  z-index: 2;
 }
 
 /* Hero carousel (zelfde feel als master, maar met eigen classes) */
@@ -224,6 +253,7 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 /* Grid (overzicht) */
 .setsGridSection{
   position: relative;
+  isolation: isolate;
   margin-top: 0;
   padding: 10px var(--setsPadX) 34px;
 }
@@ -247,13 +277,43 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   margin-left: -50vw;
   margin-right: -50vw;
   background: var(--setsGridBg, transparent);
-  z-index: -1;
+  z-index: 0;
+}
+
+.setsGridSection::after{
+  content:"";
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background:
+    radial-gradient(
+      ellipse 48% 40% at 10% 30%,
+      rgba(var(--setsBlobRgbA, 242, 201, 165), 0.20) 0%,
+      rgba(var(--setsBlobRgbA, 242, 201, 165), 0) 72%
+    ),
+    radial-gradient(
+      ellipse 52% 46% at 108% 74%,
+      rgba(var(--setsBlobRgbB, 240, 196, 160), 0.23) 0%,
+      rgba(var(--setsBlobRgbB, 240, 196, 160), 0) 70%
+    ),
+    linear-gradient(
+      rgba(var(--setsDepthOverlayRgb, 247, 243, 235), 0.07),
+      rgba(var(--setsDepthOverlayRgb, 247, 243, 235), 0.07)
+    );
+  z-index: 1;
+  pointer-events: none;
 }
 
 .setsGrid{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  position: relative;
+  z-index: 2;
 }
 
 @media (min-width: 720px){
