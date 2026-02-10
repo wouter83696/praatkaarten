@@ -577,7 +577,7 @@
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
     var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 3;
     var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.35;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.25;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : undefined;
     var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : undefined;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
@@ -588,13 +588,13 @@
     var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
-    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.42;
+    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.38;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : undefined;
     var shapeEnabled = bg && bg.shapeEnabled === false ? false : undefined;
     var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : 'edges';
-    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.2;
+    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.16;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 2.6;
-    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.34;
+    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.32;
 
     var baseId = (idx && idx.default) ? idx.default : ((idx && idx.sets && idx.sets[0]) ? idx.sets[0].id : 'samenwerken');
     var cardBase = (PK.pathForSet

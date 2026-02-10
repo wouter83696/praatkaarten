@@ -530,9 +530,9 @@
 
   function fillSurfaceZones(ctx, info, zones){
     if(!zones) return false;
-    var topColor = zones.topColor || '#EEF1F0';
-    var heroColor = zones.heroColor || '#EEF1F0';
-    var gridColor = zones.gridColor || '#F5F7F6';
+    var topColor = zones.topColor || '#F5F7F6';
+    var heroColor = zones.heroColor || '#EDF2F1';
+    var gridColor = zones.gridColor || '#F3F6F5';
 
     var dpr = info.dpr || 1;
     var cssH = info.cssH || (info.h / dpr);

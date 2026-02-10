@@ -647,7 +647,7 @@
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
     var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 3;
     var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.35;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.25;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : undefined;
     var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : undefined;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
@@ -658,13 +658,13 @@
     var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
-    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.42;
+    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.38;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : undefined;
     var shapeEnabled = (bg && typeof bg.shapeEnabled === 'boolean') ? bg.shapeEnabled : false;
     var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : 'edges';
-    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.2;
+    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.16;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 2.6;
-    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.34;
+    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.32;
     var surfaceZones = null;
     if(!isDark){
       var vpH = w.innerHeight || 0;
@@ -673,9 +673,9 @@
       var heroEndPx = NaN;
       var heroStyle = null;
       var rootStyle = null;
-      var zoneTopColor = '#EEF1F0';
-      var zoneHeroColor = '#EEF1F0';
-      var zoneGridColor = '#F5F7F6';
+      var zoneTopColor = '#F5F7F6';
+      var zoneHeroColor = '#EDF2F1';
+      var zoneGridColor = '#F3F6F5';
       try{
         heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
         rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
