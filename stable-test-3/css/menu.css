@@ -151,7 +151,6 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.015);
   background: rgba(var(--menuSurface), var(--menuBtnAlpha));
-  background: var(--menuBtnBg, rgba(var(--menuSurface), var(--menuBtnAlpha)));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: none;
@@ -210,9 +209,8 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
   background: rgba(var(--menuSurface), var(--menuSurfaceAlpha));
-  background: var(--menuCardBg, rgba(var(--menuSurface), var(--menuSurfaceAlpha)));
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   /* heel subtiele schaduw zodat het minder 'losstaand' voelt */
   box-shadow: 0 8px 28px rgba(22, 28, 56, 0.06);
   overflow: hidden;
@@ -421,8 +419,8 @@ html[data-contrast="dark"] .menuCard{
   border: 0;
   background: rgb(var(--darkBaseRgb, 24, 18, 60)) !important;
   background-image: none !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: none;
 }
 
@@ -565,7 +563,6 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   /* Bijna transparant zodat blobs/achtergrond weer subtiel terugkomen */
   /* iets meer transparant zodat het meer in de pagina valt */
   background: rgba(var(--menuSurface), var(--menuSheetAlpha));
-  background: var(--menuSheetBg, rgba(var(--menuSurface), var(--menuSheetAlpha)));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   overflow: hidden;
@@ -739,7 +736,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   display: block;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  background: var(--pk-set-card, #FAFAF8);
+  background: #FAFAF8;
 }
 
 .pkFace.pkFront{
@@ -1030,11 +1027,11 @@ html[data-contrast="dark"] .infoSlideText{
 .menu-thumb,
 .menuThumb,
 .menu-item-thumb {
-  width: var(--menuThumbSize, 56px);
+  width: 64px;
   aspect-ratio: 85 / 55;
-  border-radius: var(--menuThumbRadius, 12px);
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--menuThumbBg, transparent);
+  background: transparent;
 }
 
 .menuItemThumb img,
@@ -1049,7 +1046,6 @@ html[data-contrast="dark"] .infoSlideText{
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: var(--menuThumbImgPos, center);
 }
 /* If thumbnails are set as background-image on a div */
 .menuItemThumb,
