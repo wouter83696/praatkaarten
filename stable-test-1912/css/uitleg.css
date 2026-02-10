@@ -1,0 +1,197 @@
+/* Praatkaartjes – uitleg.css (alleen uitleg pagina) */
+
+:root{
+  /* Tekstvlak schuift (deels) onder de kaart, zodat de kaart "ervoor" blijft. */
+  --uitleg-overlap: 32px;
+}
+
+html, body{ height:100%; }
+
+body.uitlegPage{
+  background: transparent;
+  color: var(--ink);
+  overflow:auto;
+}
+
+.wrap{
+  padding: 18px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* In embed-mode (in de bottom sheet) mag het strakker */
+body.uitlegPage.embed .wrap{
+  padding: 16px;
+  max-width: none;
+}
+
+.uitlegPage .uitlegStack{
+  width: min(520px, 100%);
+  margin: 0 auto;
+}
+
+.uitlegPage .uitlegCardWrap{ position: relative; }
+
+.uitlegPage .uitlegCard{
+  background: transparent;
+  padding: 0;
+  border: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Uitleg gebruikt dezelfde cardInner, maar img-id heeft eigen object-fit */
+.uitlegPage #uitlegImg{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Tekstvak loopt onder de kaart door (kaart blijft zichtbaar over het tekstvak) */
+.uitlegPage .uitlegText{
+  transition: background-color .18s ease;
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-1 * var(--uitleg-overlap));
+  padding-top: calc(var(--uitleg-overlap) + 10px);
+  /*
+    Fix: background niet meer als inline rgba.
+    We laten PK.applyDominantTint alleen CSS-variabelen zetten,
+    zodat dark/light altijd consistent omschakelt.
+  */
+  background-color: var(--pkTextBg, rgba(255,255,255,0.86));
+  border-radius: var(--radius);
+  /* Bovenhoeken verdwijnen onder de kaart → geen "dubbele" ronding */
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border: 1px solid rgba(0,0,0,0.015);
+  border-top: 0;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+
+.uitlegPage .uitlegText .desc{
+  padding: 18px;
+}
+
+.uitlegPage .desc{
+  font-size: 14px;
+  line-height: 1.55;
+  /* Light mode: zelfde grijstonen als de menu-themanaam (subtieler) */
+  color: rgba(11, 18, 32, 0.45);
+  padding: 0;
+  text-align: left;
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+}
+
+/* Thema-titel op de uitleg-kaartjes: exact dezelfde blauw als index-kaarten */
+.kaartThema{
+  color: var(--textBlue);
+}
+
+/* Nachtmodus: koeler grijs, zelfde familie als menu (niet te fel) */
+html[data-contrast="dark"] .uitlegPage .desc{
+  color: rgba(232, 235, 240, 0.78);
+}
+
+/* (Onderbalk verwijderd) */
+
+
+/* Geen globale filters op achtergrond-shapes: dit veroorzaakt een 'waas' */
+.background-shape { filter: none !important; }
+
+/* Stronger background color wash driven by dominant card color */
+:root {
+  --accent-color: 120, 170, 150; /* fallback */
+}
+
+.background-wash {
+  background: rgba(var(--accent-color), 0.45);
+  filter: none !important;
+}
+
+.background-shape { opacity: 0.95; }
+
+
+/* FIX: force stable indigo background in dark mode */
+
+html[data-contrast="dark"],
+html[data-contrast="dark"] body {
+  background: #1b1840 !important; /* stable indigo */
+}
+/* prevent tinting in safe areas */
+html[data-contrast="dark"] .safe-area,
+html[data-contrast="dark"] .statusbar,
+html[data-contrast="dark"] .bottom-bar {
+  background: #1b1840 !important;
+}
+/* calm blobs slightly */
+html[data-contrast="dark"] .blob {
+  filter: saturate(0.85);
+}
+
+/* In dark mode: tekstvlak blijft "glassy" maar rustiger en zonder harde naad */
+html[data-contrast="dark"] .uitlegPage .uitlegText{
+  /*
+    Dark mode gebruikt altijd een vaste basis (geen dominante-kleur tint),
+    zodat het tekstvak 100% mee omschakelt.
+  */
+  background-color: rgba(23, 22, 50, 0.58);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.30);
+}
+
+
+
+/* --- Release fix: menu thumbnails match index cards (full-bleed, same aspect) --- */
+.menuItemThumb,
+.menu-thumb,
+.menuThumb,
+.menu-item-thumb {
+  width: var(--menuThumbSize, 56px);
+  aspect-ratio: 85 / 55;
+  border-radius: var(--menuThumbRadius, 12px);
+  overflow: hidden;
+  background: var(--menuThumbBg, transparent);
+}
+
+.menuItemThumb img,
+.menu-thumb img,
+.menuThumb img,
+.menu-item-thumb img,
+.menuItemThumb svg,
+.menu-thumb svg,
+.menuThumb svg,
+.menu-item-thumb svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: var(--menuThumbImgPos, center);
+}
+/* If thumbnails are set as background-image on a div */
+.menuItemThumb,
+.menu-thumb,
+.menuThumb,
+.menu-item-thumb {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+
+/* ---- landing tuning (v2) ---- */
+.qr{ bottom: calc(env(safe-area-inset-bottom, 0px) + 56px) !important; }
+.qr img{
+  width: 72px !important;
+  height: 72px !important;
+  image-rendering: auto;
+  filter: grayscale(100%) !important;
+  opacity: 0.38 !important; /* zachter, maar nog scanbaar */
+}
+/* ----------------------------- */
