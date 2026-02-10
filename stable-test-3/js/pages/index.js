@@ -74,7 +74,10 @@
   }
 
   function renderIndexBackground(){
-    if(!(PK.indexBackground && PK.indexBackground.render)) return;
+    var bgApi = (PK && PK.cardsBackground && PK.cardsBackground.render)
+      ? PK.cardsBackground
+      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    if(!bgApi) return;
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
     if(bg){
@@ -100,7 +103,7 @@
       if(typeof bg.sizeLimit === 'number') opts.sizeLimit = bg.sizeLimit;
       if(typeof bg.blobAlphaFixed === 'number') opts.blobAlphaFixed = bg.blobAlphaFixed;
     }
-    PK.indexBackground.render(opts);
+    bgApi.render(opts);
   }
 
 

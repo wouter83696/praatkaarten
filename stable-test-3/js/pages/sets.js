@@ -560,7 +560,10 @@
   }
 
   function applyBackground(idx){
-    if(!(PK.indexBackground && PK.indexBackground.render)) return;
+    var bgApi = (PK && PK.gridBackground && PK.gridBackground.render)
+      ? PK.gridBackground
+      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    if(!bgApi) return;
     var bg = (idx && idx.indexPage && idx.indexPage.background)
       ? idx.indexPage.background
       : ((idx && idx.uiDefaults && idx.uiDefaults.index && idx.uiDefaults.index.background)
@@ -600,7 +603,7 @@
     var cardBase = (PK.pathForSet
       ? PK.pathForSet(baseId, 'cards_rect/')
       : ((PK.PATHS && PK.PATHS.setsDir ? PK.PATHS.setsDir : '.') + '/' + encodeURIComponent(baseId) + '/cards_rect/'));
-    PK.indexBackground.render({
+    bgApi.render({
       cardBase: cardBase,
       palette: paletteUse,
       darkPalette: darkPalette,
