@@ -1,0 +1,27 @@
+/* Template: main index (sets overview)
+   Main page zones (solid, no overlay wash).
+*/
+:root{
+  --bg-base: #F3F5F6;
+  --bg-carousel: #EDF2F1;
+  --bg-grid: #F3F6F5;
+  --bg-card: #E6ECE9;
+
+  --pk-main-header: #F5F7F6;
+  --pk-main-carousel: var(--bg-carousel);
+  --pk-main-grid: var(--bg-grid);
+
+  --setsBaseBg: var(--bg-base);
+  --setsHeaderBg: var(--pk-main-header);
+  --setsHeroBg: var(--bg-carousel);
+  --setsGridBg: var(--pk-main-grid);
+  --setsWashAlpha: 0;
+
+  /* Cards: fully opaque */
+  --heroCardAlpha: 1;
+  --gridCardAlpha: 1;
+  --setsHeroCardBg: var(--bg-card);
+  --setsGridCardBg: var(--bg-card);
+  --setsHeroCardImgOpacity: 1;
+  --setsGridCardImgOpacity: 1;
+}

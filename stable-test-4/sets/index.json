@@ -1,0 +1,68 @@
+{
+  "default": "samenwerken",
+  "sets": [
+    {
+      "id": "samenwerken",
+      "title": "Samen onderzoeken"
+    }
+  ],
+  "available": [
+    {
+      "id": "samenwerken",
+      "title": "samenwerken"
+    }
+  ],
+  "uiDefaults": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "carousel",
+      "gridLimit": 6,
+      "background": {
+        "palette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+        "darkPalette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+        "blobCount": 3,
+        "blobAlphaFixed": 0.32,
+        "blobAlphaCap": 0.38,
+        "blobAlphaCapDark": 0.38,
+        "blobWash": 0,
+        "blobIrregularity": 0.22,
+        "blobPointsMin": 10,
+        "blobPointsMax": 14,
+        "sizeScale": 2.25,
+        "sizeLimit": 2.6,
+        "blobSpread": "edges",
+        "blobSpreadMargin": 0.16,
+        "baseWash": false,
+        "shapeEnabled": false
+      }
+    }
+  },
+  "indexPage": {
+    "background": {
+      "palette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+      "darkPalette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+      "blobCount": 3,
+      "blobAlphaFixed": 0.32,
+      "blobAlphaCap": 0.38,
+      "blobAlphaCapDark": 0.38,
+      "blobWash": 0,
+      "blobIrregularity": 0.22,
+      "blobPointsMin": 10,
+      "blobPointsMax": 14,
+      "sizeScale": 2.25,
+      "sizeLimit": 2.6,
+      "blobSpread": "edges",
+      "blobSpreadMargin": 0.16,
+      "baseWash": false,
+      "shapeEnabled": false
+    }
+  }
+}
