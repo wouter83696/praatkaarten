@@ -1,13 +1,13 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
-  --bg-base-color: #F2E6C9;
-  --bg-base: #FBF9F4;
+  --bg-base-color: var(--setsBaseBg);
+  --bg-base: #FBFAF6;
   --bg-carousel: #F4E3C3;
   --bg-card: #EDE1D0;
   --setsBg: var(--bg-base);
-  --setsBaseBg: #F2E6C9;
-  --setsHeaderBg: #F2E6C9;
+  --setsBaseBg: #EFE7D4;
+  --setsHeaderBg: #EFE7D4;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -19,7 +19,7 @@
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
   --setsHeroBg: var(--bg-carousel);
-  --setsGridBg: #FBF9F4;
+  --setsGridBg: #FBFAF6;
   --setsBandTopEnd: var(--setsTopOffset);
   --setsBandHeroEnd: 560px;
   --setsHeroCardBg: var(--bg-card);
@@ -29,7 +29,7 @@
 }
 
 html, body{
-  background: var(--setsBaseBg, #F2E6C9);
+  background: var(--setsBaseBg, #EFE7D4);
   height: 100%;
   min-height: 100dvh;
 }
@@ -47,7 +47,7 @@ body.setsIndex{
   --menuThumbBg: var(--setsGridCardBg, #FAFAF8);
   --menuThumbImgPos: center;
   /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #F2E6C9);
+  background: var(--setsBaseBg, #EFE7D4);
 }
 
 /* Menu-thumbnail: lichte overzoom om anti-aliasing witte randjes op SVG-randen te voorkomen */

@@ -2,11 +2,11 @@
    Main page zones (solid, no overlay wash).
 */
 :root{
-  --bg-base: #FBF9F4;
+  --bg-base: #FBFAF6;
   --bg-carousel: #F4E3C3;
   --bg-card: #EDE1D0;
 
-  --pk-main-header: #F2E6C9;
+  --pk-main-header: #EFE7D4;
   --pk-main-carousel: var(--bg-carousel);
   --pk-main-grid: var(--bg-base);
 
