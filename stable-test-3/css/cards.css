@@ -90,10 +90,8 @@ html[data-contrast="dark"] .pkFlip:focus-visible{
   /* Kaartvlak: opaak, warm off-white (geen hard wit) */
   background: var(--pk-set-card, #FAFAF8);
   border: 1px solid rgba(0,0,0,0.015);
-  /* Ultralichte 'papier' schaduw (nooit donker / geen glass) */
-  box-shadow:
-    0 6px 14px rgba(0,0,0,0.012),
-    0 1px 0 rgba(255,255,255,0.75);
+  /* Flat look: geen schaduw achter kaarten */
+  box-shadow: none;
 }
 
 html[data-contrast="dark"] .cardInner{

@@ -164,7 +164,7 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 .setsHeroCard.is-placeholder .cardInner{
   background: rgba(var(--ph-rgb, 223, 238, 232), 0.90) !important;
   border: 0;
-  box-shadow: 0 10px 22px rgba(11,18,32,0.05) !important;
+  box-shadow: none !important;
 }
 .setsHeroCard.is-placeholder .cardInner::after{
   content:"";
@@ -225,9 +225,7 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   border-radius: var(--setsGridRadius);
   background: #FAFAF8 !important;
   border: 0 !important;
-  box-shadow:
-    0 6px 14px rgba(0,0,0,0.012),
-    0 1px 0 rgba(255,255,255,0.75) !important;
+  box-shadow: none !important;
 }
 
 html[data-contrast="dark"] .setGridCard .cardInner{
@@ -238,7 +236,7 @@ html[data-contrast="dark"] .setGridCard .cardInner{
 .setGridCard.is-placeholder .cardInner{
   background: rgba(var(--ph-rgb, 223, 238, 232), 0.90) !important;
   border: 0 !important;
-  box-shadow: 0 10px 22px rgba(11,18,32,0.05) !important;
+  box-shadow: none !important;
 }
 .setGridCard.is-placeholder .cardInner::after{
   content:"";
