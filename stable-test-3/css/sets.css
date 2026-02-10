@@ -2,13 +2,13 @@
 
 :root{
   --bg-base-color: var(--setsBaseBg);
-  --bg-base: #FAFAF8;
+  --bg-base: #F7FBF9;
   --bg-carousel: #F7FBF9;
   --bg-grid: #F8FBFA;
   --bg-card: #FAFAF8;
   --setsBg: var(--bg-base);
-  --setsBaseBg: #FAFAF8;
-  --setsHeaderBg: #FAFAF8;
+  --setsBaseBg: #F7FBF9;
+  --setsHeaderBg: #F7FBF9;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -30,7 +30,7 @@
 }
 
 html, body{
-  background: var(--setsHeaderBg, #FAFAF8);
+  background: var(--setsHeaderBg, #F7FBF9);
   height: 100%;
   min-height: 100dvh;
 }
@@ -48,7 +48,7 @@ body.setsIndex{
   --menuThumbBg: var(--setsGridCardBg, #FAFAF8);
   --menuThumbImgPos: center;
   /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #F3F5F6);
+  background: var(--setsBaseBg, #F7FBF9);
 }
 
 /* Menu-thumbnail: lichte overzoom om anti-aliasing witte randjes op SVG-randen te voorkomen */
