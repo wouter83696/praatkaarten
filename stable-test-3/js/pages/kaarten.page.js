@@ -50,7 +50,7 @@
   var sheetAPI = null;
   var infoAPI = null;
   var UI_DEFAULTS = {};
-  var INDEX_PAGE_BG = null;
+  var CARDS_INDEX_PAGE_BG = null;
   var doc = w.document;
 
   function resolveBuildVersion(){
@@ -101,12 +101,13 @@
   function getIndexBackgroundConfig(){
     var cfg = null;
     try{
-      if(PK && PK.UI_ACTIVE && PK.UI_ACTIVE.index && PK.UI_ACTIVE.index.background){
-        cfg = PK.UI_ACTIVE.index.background;
-      }else if(UI_DEFAULTS && UI_DEFAULTS.index && UI_DEFAULTS.index.background){
-        cfg = UI_DEFAULTS.index.background;
-      }else if(INDEX_PAGE_BG){
-        cfg = INDEX_PAGE_BG;
+      // Hard gescheiden: kaartenindex gebruikt alleen kaartenindex-keys.
+      if(PK && PK.UI_ACTIVE && PK.UI_ACTIVE.cardsIndex && PK.UI_ACTIVE.cardsIndex.background){
+        cfg = PK.UI_ACTIVE.cardsIndex.background;
+      }else if(UI_DEFAULTS && UI_DEFAULTS.cardsIndex && UI_DEFAULTS.cardsIndex.background){
+        cfg = UI_DEFAULTS.cardsIndex.background;
+      }else if(CARDS_INDEX_PAGE_BG){
+        cfg = CARDS_INDEX_PAGE_BG;
       }
     }catch(_e){}
     return cfg || null;
@@ -268,7 +269,9 @@ function closeMenu(){
     var fromUrl = (PK.getQueryParam('set') || PK.getQueryParam('s') || '').replace(/\s+$/,'').replace(/^\s+/,'');
     return PK.loadJson(PK.PATHS.setsIndex).then(function(idx){
       UI_DEFAULTS = (idx && idx.uiDefaults) ? idx.uiDefaults : {};
-      INDEX_PAGE_BG = (idx && idx.indexPage && idx.indexPage.background) ? idx.indexPage.background : null;
+      CARDS_INDEX_PAGE_BG = (idx && idx.cardsIndexPage && idx.cardsIndexPage.background)
+        ? idx.cardsIndexPage.background
+        : null;
       try{ PK.UI_DEFAULTS = UI_DEFAULTS; }catch(_eU){}
       try{ renderIndexBackground(); }catch(_eBg1){}
       var sets = Array.isArray(idx.sets) ? idx.sets : [];
