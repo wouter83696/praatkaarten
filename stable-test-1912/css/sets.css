@@ -16,8 +16,8 @@
   --setsGridRadius: 12px;
   --setsHeroBg: #F7F3EB;
   --setsGridBg: #FBF9F4;
-  --setsBandTopEnd: var(--setsTopOffset);
-  --setsBandHeroEnd: 560px;
+  --pkZoneTopEnd: var(--setsTopOffset);
+  --pkZoneHeroEnd: 560px;
   --setsHeroCardBg: #ffffff;
   --setsGridCardBg: #ffffff;
   --setsHeroCardImgOpacity: 1;
@@ -43,8 +43,17 @@ body.setsIndex{
   --menuSurfaceAlpha: 1;
   --menuSheetAlpha: 1;
   --menuBtnAlpha: 1;
-  /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #FBF9F4);
+  /* Echte basis-achtergrond met 3 vaste kleurvlakken (geen overlay). */
+  background:
+    linear-gradient(
+      to bottom,
+      var(--setsHeaderBg, #F4EBDD) 0,
+      var(--setsHeaderBg, #F4EBDD) var(--pkZoneTopEnd, var(--setsTopOffset)),
+      var(--setsHeroBg, #F7F3EB) var(--pkZoneTopEnd, var(--setsTopOffset)),
+      var(--setsHeroBg, #F7F3EB) var(--pkZoneHeroEnd, 560px),
+      var(--setsGridBg, #FBF9F4) var(--pkZoneHeroEnd, 560px),
+      var(--setsGridBg, #FBF9F4) 100%
+    );
 }
 
 .pkBuildStamp{

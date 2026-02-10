@@ -125,7 +125,27 @@
     if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
 
     var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+    var topEnd = 0;
     var heroEnd = 0;
+    var vpH = w.innerHeight || 0;
+
+    try{
+      if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
+        var heroRect = heroSection.getBoundingClientRect();
+        var heroTopDoc = scrollTop + heroRect.top;
+        var heroStyle = w.getComputedStyle ? w.getComputedStyle(heroSection) : null;
+        var rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
+        var heroPadTop = heroStyle ? parseFloat(String(heroStyle.paddingTop || '')) : NaN;
+        var heroExtra = rootStyle ? parseFloat(String(rootStyle.getPropertyValue('--setsHeroPadExtra') || '')) : NaN;
+        if(isFinite(heroPadTop) && isFinite(heroExtra)){
+          topEnd = Math.round(heroTopDoc + heroPadTop - heroExtra);
+        }
+      }
+    }catch(_eTop){}
+
+    if(!isFinite(topEnd) || topEnd < 0){
+      topEnd = Math.round(vpH ? (vpH * 0.12) : 88);
+    }
 
     if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
       heroEnd = Math.round(scrollTop + gridSection.getBoundingClientRect().top);
@@ -135,8 +155,9 @@
       heroEnd = Math.round(scrollTop + (w.innerHeight || 0) * 0.62);
     }
 
-    if(!isFinite(heroEnd) || heroEnd < 220) heroEnd = 220;
-    doc.documentElement.style.setProperty('--setsBandHeroEnd', heroEnd + 'px');
+    if(!isFinite(heroEnd) || heroEnd < topEnd) heroEnd = topEnd;
+    doc.documentElement.style.setProperty('--pkZoneTopEnd', topEnd + 'px');
+    doc.documentElement.style.setProperty('--pkZoneHeroEnd', heroEnd + 'px');
   }
 
   function scheduleBackgroundBands(){
@@ -666,64 +687,6 @@
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.18;
     var blobComposite = bg && typeof bg.blobComposite === 'string' ? bg.blobComposite : undefined;
-    var surfaceZones = null;
-    var zoneTopColor = '#F4EBDD';
-    var zoneHeroColor = '#F7F3EB';
-    var zoneGridColor = '#FBF9F4';
-    try{
-      var zr = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
-      var zTop = zr ? trim(zr.getPropertyValue('--setsHeaderBg')) : '';
-      var zHero = zr ? trim(zr.getPropertyValue('--setsHeroBg')) : '';
-      var zGrid = zr ? trim(zr.getPropertyValue('--setsGridBg')) : '';
-      if(zTop) zoneTopColor = zTop;
-      if(zHero) zoneHeroColor = zHero;
-      if(zGrid) zoneGridColor = zGrid;
-    }catch(_eZone){}
-    if(!isDark){
-      var vpH = w.innerHeight || 0;
-      var docH = Math.max(
-        vpH,
-        (doc && doc.body && doc.body.scrollHeight) ? doc.body.scrollHeight : 0,
-        (doc && doc.documentElement && doc.documentElement.scrollHeight) ? doc.documentElement.scrollHeight : 0
-      );
-      var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
-      var topEndPx = NaN;
-      var heroEndPx = NaN;
-      try{
-        var heroRect = (heroSection && heroSection.getBoundingClientRect) ? heroSection.getBoundingClientRect() : null;
-        var heroTopDoc = heroRect ? (scrollTop + heroRect.top) : 0;
-        var heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
-        var rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
-        var heroPadTop = heroStyle ? parseFloat(String(heroStyle.paddingTop || '')) : NaN;
-        var heroExtra = rootStyle ? parseFloat(String(rootStyle.getPropertyValue('--setsHeroPadExtra') || '')) : NaN;
-        if(isFinite(heroPadTop) && isFinite(heroExtra)){
-          topEndPx = heroTopDoc + heroPadTop - heroExtra;
-        }
-      }catch(_eTop){}
-      if(!isFinite(topEndPx) || topEndPx < 0){
-        topEndPx = vpH ? (vpH * 0.12) : 88;
-      }
-      try{
-        if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
-          heroEndPx = scrollTop + gridSection.getBoundingClientRect().top;
-        }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
-          heroEndPx = scrollTop + heroSection.getBoundingClientRect().bottom;
-        }
-      }catch(_eHero){}
-      if(!isFinite(heroEndPx)){
-        heroEndPx = topEndPx + (vpH ? (vpH * 0.44) : 320);
-      }
-      if(heroEndPx < topEndPx) heroEndPx = topEndPx;
-      if(heroEndPx > docH) heroEndPx = docH;
-      surfaceZones = {
-        topColor: zoneTopColor,
-        heroColor: zoneHeroColor,
-        gridColor: zoneGridColor,
-        topEndPx: topEndPx,
-        heroEndPx: heroEndPx,
-        documentHeight: docH
-      };
-    }
 
     var baseId = (idx && idx.default) ? idx.default : ((idx && idx.sets && idx.sets[0]) ? idx.sets[0].id : 'samenwerken');
     var cardBase = (PK.pathForSet
@@ -753,8 +716,7 @@
       blobSpreadMargin: blobSpreadMargin,
       sizeLimit: sizeLimit,
       blobAlphaFixed: blobAlphaFixed,
-      blobComposite: blobComposite,
-      surfaceZones: surfaceZones
+      blobComposite: blobComposite
     });
   }
 

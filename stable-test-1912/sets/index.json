@@ -32,7 +32,7 @@
       "palette": ["#79B9AA", "#E8833A", "#E6CDB3"],
       "darkPalette": ["#79B9AA", "#E8833A", "#E6CDB3"],
       "blobCount": 4,
-      "blobAlphaFixed": 0.14,
+      "blobAlphaFixed": 0.10,
       "blobWash": 0,
       "blobIrregularity": 0.45,
       "blobPointsMin": 7,
@@ -41,7 +41,7 @@
       "sizeLimit": 2.0,
       "blobSpread": "grid",
       "blobSpreadMargin": 0.08,
-      "blobComposite": "multiply",
+      "blobComposite": "source-over",
       "baseWash": false,
       "shapeEnabled": false
     }
