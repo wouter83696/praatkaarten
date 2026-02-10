@@ -1,0 +1,1072 @@
+/* Praatkaartjes – menu.css (alleen index menu/topbar) */
+
+/* Top bar */
+:root{
+  --ui-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ui-fast: 180ms;
+  --ui-med: 240ms;
+  --ui-slow: 360ms;
+  --menuHeaderText: rgba(11,18,32,0.68);
+  --menuText: rgba(11,18,32,0.76);
+  --menuTextMuted: rgba(11,18,32,0.62);
+  --menuFooterText: rgba(11,18,32,0.48);
+  --menuIcon: rgba(11,18,32,0.52);
+  --menuLine: rgba(0,0,0,0.06);
+  --menuSurface: 255, 255, 255;
+  --menuSurfaceAlpha: 0.78;
+  --menuSheetAlpha: 0.54;
+  --menuBtnAlpha: 0.88;
+  --focusRing: rgba(127,207,201,0.45);
+  --focusRingDark: rgba(127,207,201,0.55);
+  /* Align header action icons with menu card thumbnails */
+  --menuRowPadX: 12px;
+  --menuThumbOffset: 4px;
+  --menuToolsPadX: 2px;
+  --menuRightAlign: calc(var(--menuRowPadX) + var(--menuThumbOffset));
+}
+
+html[data-contrast="dark"]{
+  --menuHeaderText: rgba(245,250,255,0.72);
+  --menuText: rgba(245,250,255,0.86);
+  --menuTextMuted: rgba(245,250,255,0.72);
+  --menuFooterText: rgba(245,250,255,0.60);
+  --menuIcon: rgba(245,250,255,0.62);
+  --menuLine: rgba(255,255,255,0.10);
+}
+.topBar{
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  right: 16px;
+  z-index: var(--z-topbar);
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  pointer-events: none; /* alleen knoppen klikken */
+}
+.topBar > *{ pointer-events: auto; }
+
+/* Dark mode: topbar als echte donkere taakbalk waar knoppen subtiel in vallen */
+/* Dark mode: géén horizontale "kader"/pill om het logo (alleen het ronde icoon) */
+html[data-contrast="dark"] .topBar{
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  right: 16px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Context-anker: set cover */
+.themePill{
+  /* iOS/Android: duidelijke tappable area */
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--menuTintRgb, var(--activeHueRgb, 127, 207, 201)), 0.18);
+  /* Rustiger glas: geen extra contrast-filter (dat geeft 'waas') */
+  background: rgba(var(--menuTintRgb, var(--activeHueRgb, 127, 207, 201)), 0.16);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  /* Subtiele halo (geen schaduw) */
+  box-shadow: 0 0 10px rgba(var(--menuTintRgb, var(--activeHueRgb, 127, 207, 201)), 0.10);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Brand pill (kaarten-index): vaste mint achtergrond + logo */
+body[data-brand-icon="1"] .themePill{
+  background: #7fcfc9;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body[data-brand-icon="1"] .setCoverWrap{
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+body[data-brand-icon="1"] .setCoverIcon{
+  transform: none;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+  object-fit: contain;
+}
+
+html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
+  background: #7fcfc9;
+  border: 0;
+}
+
+/*
+  Belangrijk: de cover-SVG's hebben soms 'lucht' in de viewBox.
+  We zoomen daarom de IMG iets in, maar clippen dit in een wrapper,
+  zodat het rondje zelf NIET groter wordt (zoals het nu fout ging).
+*/
+.setCoverWrap{
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.setCoverIcon{
+  width: 100%;
+  height: 100%;
+  display:block;
+  object-fit: cover;
+  object-position: 0% 0%;
+  border: 0;
+
+  /* Iets minder ingezoomd zodat het logo rustiger oogt */
+  transform: scale(1.55);
+  transform-origin: 18% 18%;
+}
+
+/* Rechter acties */
+.topTools{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+}
+
+.toolBtn{
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.015);
+  background: rgba(var(--menuSurface), var(--menuBtnAlpha));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: none;
+  display:inline-grid;
+  place-items:center;
+  cursor:pointer;
+  color: rgba(11,18,32,.55);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toolBtn:active{ background: rgba(255, 255, 255, 0.0); }
+
+.gmIcon{
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  /* dunner: subtieler, match met index-stijl */
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* voorkom clipping bij iconen met strokes tot aan de rand */
+  overflow: visible;
+}
+
+/* Menu overlay */
+.menuOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.0);
+  z-index: var(--z-overlay);
+}
+
+/* Menu kaart */
+.themeMenu{
+  position: fixed;
+  /* sluit visueel aan op de topbar (lichte overlap) */
+  top: calc(84px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  z-index: var(--z-menu);
+  /* iets compacter zodat het menu minder 'blok' voelt */
+  width: min(300px, calc(100vw - 40px));
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--ui-med) var(--ui-ease), transform var(--ui-med) var(--ui-ease);
+}
+
+.themeMenu:not([hidden]){
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menuCard{
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.015);
+  /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
+  /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
+  background: rgba(var(--menuSurface), var(--menuSurfaceAlpha));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  /* heel subtiele schaduw zodat het minder 'losstaand' voelt */
+  box-shadow: 0 8px 28px rgba(22, 28, 56, 0.06);
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Zachte fade onderaan menu verwijderd (master) */
+
+/* Header met setnaam + 2 subtiele icon-knoppen (info + shuffle-toggle) */
+.menuHeaderRow{
+  display:flex;
+  align-items:center;
+  justify-content: flex-start;
+  /* gelijkere top/bottom padding zodat titel en tool-pill optisch netjes uitlijnen */
+  padding: 10px calc(var(--menuRightAlign) - var(--menuToolsPadX)) 10px var(--menuRowPadX);
+  gap: 10px;
+
+  /* geen afscheidingslijn of gradient */
+  background: transparent;
+  box-shadow: none;
+  position: relative;
+}
+
+.menuHeaderRow::after{
+  content: none;
+  display: none;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 14px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.30),
+    rgba(255,255,255,0)
+  );
+  pointer-events: none;
+}
+
+.menuHeaderTools{
+  /* 1 container zoals in je screenshot (subtiele "pill" met 3 knoppen erin) */
+  display:flex;
+  align-items:center;
+  margin-left: auto;
+  /* compacter + subtieler */
+  gap: 10px;
+  margin-right: 0;
+  padding: 1px var(--menuToolsPadX);
+  border-radius: 999px;
+  /* Subtiel pill-vlak dat wegvalt in het menu */
+  border: 1px solid rgba(11,18,32,0.02);
+  /* Subtiel: 2.5% */
+  background: rgba(255,255,255,0.025);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: none;
+}
+
+/* Mini icon buttons (zonder eigen "bol" — de container is de knopgroep) */
+.menuMiniBtn{
+  width: 30px;
+  height: 30px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--menuIcon);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menuMiniBtn:active{
+  background: rgba(0,0,0,0.04);
+}
+.menuMiniBtn[aria-pressed="true"]{
+  /* Shuffle aan: geen opvallende kleur, alleen iets 'actiever' */
+  background: rgba(0,0,0,0.03);
+  color: rgba(11,18,32,.58);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03);
+}
+
+.themePill:focus-visible,
+.menuMiniBtn:focus-visible,
+.menuItem:focus-visible,
+.menuLink:focus-visible{
+  outline: 2px solid var(--focusRing);
+  outline-offset: 2px;
+}
+
+html[data-contrast="dark"] .themePill:focus-visible,
+html[data-contrast="dark"] .menuMiniBtn:focus-visible,
+html[data-contrast="dark"] .menuItem:focus-visible,
+html[data-contrast="dark"] .menuLink:focus-visible{
+  outline-color: var(--focusRingDark);
+}
+
+.menuHeader{
+  padding: 0;
+  font-weight: 500;
+  color: var(--menuHeaderText);
+  font-size: 14px;
+  /* optische uitlijning met de tool-pill (die ~34px hoog is) */
+  height: 30px;
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.menuList{
+  display: grid;
+  margin-top: -2px;
+}
+
+.menuItem{
+  text-align:left;
+  padding: 10px var(--menuRowPadX);
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  color: var(--menuText);
+  display:flex;
+  align-items:center;
+  justify-content: flex-start;
+  gap: 12px;
+  line-height: 1.2;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menuItem:active{ background: rgba(0,0,0,0.03); }
+
+.miLabel{ flex: 1 1 auto; }
+.miThumbRight{
+  flex: 0 0 auto;
+  display:flex;
+  align-items:center;
+  margin-left: auto;
+  margin-right: var(--menuThumbOffset);
+}
+
+.menuFooter{
+  border-top: 0;
+  padding: 8px 0 0;
+  position: relative;
+}
+
+.menuLink{
+  color: var(--menuTextMuted);
+  font-weight: 500;
+}
+
+.menuLink{
+  display:block;
+  width:100%;
+  text-align:left;
+  padding: 10px 12px;
+  border:0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--menuTextMuted);
+  opacity: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menuLink:active{ background: rgba(0,0,0,0.03); }
+
+.menuFooter::before{
+  content: none;
+  display: none;
+}
+
+/* Scheiding via typografie (rustiger dan een lijn) */
+.menuFooter .menuLink{
+  font-size: 13px;
+  color: var(--menuFooterText);
+  letter-spacing: 0.015em;
+}
+
+html[data-contrast="dark"] .menuItem:active,
+html[data-contrast="dark"] .menuLink:active{
+  background: rgba(255,255,255,0.06);
+}
+
+/* ===== Donkere modus (aparte wereld, rustig maar leesbaar) ===== */
+html[data-contrast="dark"] .themePill,
+html[data-contrast="dark"] .toolBtn{
+  /* Knoppen moeten in de taakbalk "vallen" (niet als losse schijven erbovenop) */
+  border: 1px solid rgba(var(--menuTintRgb, var(--activeHueRgb, 127, 207, 201)), 0.28);
+  background: rgba(var(--menuTintRgb, var(--activeHueRgb, 127, 207, 201)), 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(245,250,255,.78);
+}
+
+html[data-contrast="dark"] .menuHeaderTools{
+  border: 1px solid rgba(255,255,255,0.03);
+  background: rgb(var(--darkBaseRgb, 24, 18, 60));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: none;
+}
+
+html[data-contrast="dark"] .menuCard{
+  border: 0;
+  background: rgb(var(--darkBaseRgb, 24, 18, 60)) !important;
+  background-image: none !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: none;
+}
+
+html[data-contrast="dark"] .menuHeaderRow{
+  background: rgb(var(--darkBaseRgb, 24, 18, 60)) !important;
+  box-shadow: none;
+  border-bottom: 0;
+}
+
+html[data-contrast="dark"] .menuHeaderRow::after{
+  content: none;
+  display: none;
+}
+
+html[data-contrast="dark"] .menuList{
+  background: transparent;
+}
+
+html[data-contrast="dark"] .menuHeader{
+  color: var(--menuHeaderText);
+}
+
+html[data-contrast="dark"] .menuItem,
+html[data-contrast="dark"] .menuLink{
+  color: var(--menuText);
+}
+
+html[data-contrast="dark"] .menuFooter{
+  border-top: 0;
+}
+
+html[data-contrast="dark"] .menuFooter::before{
+  content: none;
+  display: none;
+}
+
+html[data-contrast="dark"] .menuFooter .menuLink{
+  color: var(--menuFooterText);
+}
+
+/* UI warnings (alleen zichtbaar bij uiDebug=1) */
+#uiWarnings{
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 9999;
+  max-width: 260px;
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: rgba(11,18,32,0.72);
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(11,18,32,0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 18px rgba(11,18,32,0.08);
+}
+#uiWarnings[hidden]{ display: none; }
+.uiWarnItem{ opacity: 0.9; }
+html[data-contrast="dark"] #uiWarnings{
+  color: rgba(245,250,255,0.78);
+  background: rgba(24,18,60,0.92);
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* (dark menuHeaderTools is hierboven al gestyled met menu-tint) */
+
+/* Info sheet ook in dezelfde donkere wereld (geen wit paneel) */
+html[data-contrast="dark"] .infoCard{
+  border-top: 0.5px solid rgba(255,255,255,0.10);
+  /* Dark mode: vaste indigo wereld (niet meekleuren). */
+  /* Uitleg-sheet: vaste indigo wereld, maar (bijna) transparant zodat achtergrond terugkomt */
+  /* +5–8% transparanter */
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.58);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html[data-contrast="dark"] .sheetHandle::before{
+  background: rgba(255,255,255,0.22);
+}
+
+html[data-contrast="dark"] .menuMiniBtn{
+  color: rgba(245,250,255,.62);
+}
+
+html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
+  color: rgba(245,250,255,.82);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+}
+
+
+/* ------------------------------------------------------------
+   Info sheet (Google Maps-achtig, opent van onder)
+   - Zelfde glas/doorzichtigheid als het menu (.menuCard)
+------------------------------------------------------------ */
+
+.sheetOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.0);
+  z-index: var(--z-overlay);
+}
+
+.infoSheet{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc(var(--z-menu) + 1);
+  /* Default: volledig dicht (sheet pas zichtbaar na 'info') */
+  transform: translateY(100%);
+  /* Rustiger, natuurlijker 'Google Maps' opkomen */
+  transition: transform var(--ui-slow) var(--ui-ease);
+  will-change: transform;
+  /* Dynamic sheet viewport height:
+     - compact in KAARTEN (minimale witruimte)
+     - kan doorgetrokken worden om UITLEG te onthullen */
+  --sheetMaxH: var(--sheetPageH);
+  --sheetCompactH: 420px; /* wordt door JS gemeten en gezet */
+  --sheetCurH: var(--sheetCompactH);
+  /* (deprecated) sheetLift werd gebruikt om de hele sheet op te tillen.
+     Dat kan op iOS een 'gap' aan de onderkant geven.
+     We gebruiken nu een content-shift binnen de sheet i.p.v. de sheet zelf te liften. */
+  --sheetLift: 0px;
+  --helpShift: 0px;
+}
+
+/* Open = altijd strak aan de onderrand (geen lift) */
+.infoSheet.open{ transform: translateY(0); }
+
+.infoCard{
+  border-radius: 22px 22px 0 0;
+  /* Glas-rand subtieler + dunner (hairline) */
+  border-top: 0.5px solid rgba(0,0,0,0.05);
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  /* Bijna transparant zodat blobs/achtergrond weer subtiel terugkomen */
+  /* iets meer transparant zodat het meer in de pagina valt */
+  background: rgba(var(--menuSurface), var(--menuSheetAlpha));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  /* iOS: zorg dat de sheet altijd netjes op de onderrand blijft liggen */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+  box-shadow: 0 -10px 24px rgba(11,18,32,0.06);
+}
+
+/* Hidden moet echt weg zijn (geen 'dubbele' doorzichtige sheet) */
+.menuOverlay[hidden],
+.themeMenu[hidden],
+.sheetOverlay[hidden],
+.infoSheet[hidden]{
+  display: none !important;
+}
+
+/* Twee-pagina sheet (Kaarten & Uitleg) */
+.sheetViewport{
+  width: 100%;
+  /* Viewport hoogte verandert dynamisch: compact (kaarten) -> max (uitleg) */
+  max-height: var(--sheetCurH);
+  height: var(--sheetCurH);
+  overflow: hidden;
+  /* Vloeiende overgang tussen kaarten (compact) en uitleg (max) */
+  transition: height var(--ui-med) var(--ui-ease), max-height var(--ui-med) var(--ui-ease);
+}
+
+/* Uitleg-modus: verticaal kunnen scrollen (tekst onder de kaart) */
+.infoCard[data-top="help"] .sheetViewport,
+.infoCard[data-mode="help"] .sheetViewport{
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.sheetStack{
+  width: 100%;
+  will-change: transform;
+  transform: translateY(0);
+  transition: transform var(--ui-med) var(--ui-ease);
+}
+
+.sheetPage{
+  width: 100%;
+  height: var(--sheetMaxH);
+}
+
+/* Alleen in uitleg-mode verschuiven we de inhoud een beetje,
+   zodat de kaart in de sheet optisch 'op' de kaart in de index valt.
+   De sheet zelf blijft altijd aan de onderkant vastgehaakt. */
+.infoCard[data-top="help"] .sheetPageHelp,
+.infoCard[data-mode="help"] .sheetPageHelp{
+  transform: translateY(var(--helpShift, 0px));
+}
+
+/* Alleen de uitleg-inhoud mag (subtiel) schuiven voor optische uitlijning */
+.sheetPageHelp{
+  transform: translateY(var(--helpShift, 0px));
+}
+
+/* Alleen bovenste pagina is interactief */
+.infoCard[data-top="cards"] .sheetPageHelp{ pointer-events: none; }
+.infoCard[data-top="help"]  .sheetPageCards{ pointer-events: none; }
+
+@keyframes pkHandleBounceUp{
+  0%{ transform: translateY(0) scaleX(1); opacity: 1; }
+  45%{ transform: translateY(-2px) scaleX(0.92); opacity: 0.85; }
+  100%{ transform: translateY(0) scaleX(1); opacity: 1; }
+}
+
+@keyframes pkHandleBounceDown{
+  0%{ transform: translateY(0) scaleX(1); opacity: 1; }
+  45%{ transform: translateY(2px) scaleX(0.92); opacity: 0.85; }
+  100%{ transform: translateY(0) scaleX(1); opacity: 1; }
+}
+
+.infoCard.pkOverTop .sheetHandle::before{ animation: pkHandleBounceUp 220ms ease-out; }
+.infoCard.pkOverBottom .sheetHandle::before{ animation: pkHandleBounceDown 220ms ease-out; }
+
+.sheetHandle{
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Zorg dat verticaal draggen altijd lekker pakt */
+  touch-action: none;
+}
+
+.sheetHandle::before{
+  content: "";
+  width: 36px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.18);
+}
+
+.infoFrame{
+  width: 100%;
+  height: var(--sheetPageH); /* wordt dynamisch overschreven via postMessage */
+  max-height: min(68vh, 720px);
+  border: 0;
+  display: block;
+  background: transparent;
+}
+
+
+/* Info sheet carousel */
+.infoCard{ padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); }
+
+.infoCarousel{
+  width: 100%;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  /* match index mainCarousel sizing */
+  gap: 0;
+  padding: 0 14px 18px;
+  box-sizing: border-box;
+  scroll-padding: 14px;
+}
+/* Kaarten-carrousel (zelfde mechanics als infoCarousel) */
+.cardsCarousel{
+  width: 100%;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+.cardsCarousel::-webkit-scrollbar{ display:none; }
+
+.cardsSlide{ flex: 0 0 100%; scroll-snap-align: start; padding: 0 18px 18px 18px; box-sizing: border-box; }
+.cardsSlideInner{ width: 100%; max-width: 760px; margin: 0 auto; }
+
+.cardsSlideCard{
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--cardAspect, 85 / 55);
+  border-radius: 18px;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  perspective: 1200px;
+  cursor: pointer;
+}
+
+.pkFlipInner{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition: transform 520ms ease;
+}
+
+.cardsSlideCard.is-flipped .pkFlipInner{
+  transform: rotateY(180deg);
+}
+
+.pkFace{
+  position: absolute;
+  inset: 0;
+  display: block;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--pk-set-card, #FAFAF8);
+}
+
+.pkFace.pkFront{
+  transform: rotateY(0deg) translateZ(0);
+  z-index: 2;
+}
+
+.pkFace.pkBack{
+  transform: rotateY(180deg) translateZ(0);
+  z-index: 1;
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
+  opacity: 0;
+}
+
+.cardsSlideCard.is-flipped .pkFace.pkFront{
+  opacity: 0;
+  visibility: hidden;
+}
+
+.cardsSlideCard.is-flipped .pkFace.pkBack{
+  opacity: 1;
+}
+
+/* Zorg dat de kaart-achtergrond full-bleed is (geen dikke witte 'rand' door SVG-lucht) */
+.pkFace img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.pkBackBg{
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.pkBackBg.is-mirror,
+.pkBackImg.is-mirror{
+  transform: translateZ(1px) scaleX(-1);
+  transform-origin: center;
+}
+
+.cardsSlideQ{
+  /* Kaartenpagina: alleen de kaarttekst, gecentreerd, IBM Plex + blauw */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  text-align: center;
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: rgba(48,96,136,0.95);
+  background: transparent;
+  z-index: 3;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(1px);
+}
+
+.cardsSlideQText,
+.cardsSlideBackTextInner{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
+  max-height: calc(1.35em * 6);
+}
+
+.cardsSlideCard.is-flipped .cardsSlideQ{
+  opacity: 0;
+  visibility: hidden;
+}
+
+.cardsSlideBackText{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  text-align: center;
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: rgba(48,96,136,0.95);
+  background: transparent;
+  z-index: 3;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(1px);
+}
+
+/* Tekst vast onder de kaart (zoals eerdere versie) */
+.cardsSlideCaption{
+  margin-top: 14px;
+  padding: 0 18px;
+  text-align: center;
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: rgba(48,96,136,0.95);
+  user-select: none;
+}
+
+
+/* Thema-naam in midden van kaarten-carrousel (KAARTEN-pagina) */
+.cardsSlideMidTitle{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.2px;
+  color: rgba(48,96,136,0.82);
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+  padding: 0 14px;
+  max-width: 92%;
+}
+.infoCarousel::-webkit-scrollbar{ display:none; }
+
+@media (min-width: 720px){
+  .infoCarousel .infoSlide{ flex-basis: 92%; }
+}
+
+@media (min-width: 980px){
+  .infoCarousel .infoSlide{ flex-basis: 88%; }
+}
+
+.infoSlide{
+  /* match index mainCarousel slide sizing */
+  flex: 0 0 95%;
+  scroll-snap-align: center;
+  padding: 0 10px 10px 10px;
+  box-sizing: border-box;
+}
+
+
+.infoSlideInner{
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+}
+
+
+/* responsive infoSlide sizing (match index mainCarousel) */
+@media (min-width: 720px){
+  .infoSlide{ flex-basis: 92%; }
+}
+
+@media (min-width: 980px){
+  .infoSlide{ flex-basis: 88%; }
+}
+
+/* Koppen boven uitlegkaartjes weg (titel staat al in het kaartje) */
+.infoSlideTitle{ display:none; }
+
+.infoSlideCard{
+  /* Kaart ligt bovenop één doorlopend wit tekstvlak (geen extra scheidslijn) */
+  position: relative;
+  z-index: 2;
+  /* Geen extra rand/padding: kaart + tekst vormen één blok */
+  padding: 0;
+  background: transparent;
+  border: 0;
+  /* Match index-kaart: vaste verhouding zodat hoogte altijd voorspelbaar is */
+  width: 100%;
+  aspect-ratio: 85 / 55;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+}
+
+/* Thema-naam in het midden op de uitleg-kaart (niet op de cover) */
+.infoSlideMidTitle{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-weight: 500;
+  /* Groot en duidelijk op uitleg-kaarten */
+  font-size: 26px;
+  letter-spacing: 0.2px;
+  /* Zelfde blauw als de vraag-tekst op de index-kaarten */
+  color: var(--textBlue);
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+  padding: 0 14px;
+  max-width: 92%;
+}
+.infoSlideCard img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  /* container rondt al af; geen dubbele rand */
+  border-radius: 0;
+}
+.infoSlideText{
+  /* Tekstvlak sluit strak aan op de kaart: boven recht, onder afgerond */
+  position: relative;
+  z-index: 1;
+  margin-top: -24px;
+  padding: 36px 18px 16px;
+  border-radius: 0 0 16px 16px;
+  border: 1px solid rgba(0,0,0,0.015);
+  border-top: 0;
+  /* Lichte doorkijk zodat achtergrond leeft, zonder kleurvlak */
+  /* Super lichte meekleur-tint (wordt via PK.applyDominantTint gezet) */
+  background: var(--pkTextBg, rgba(255,255,255,0.86));
+  box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+  /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
+  color: rgba(11,18,32,.68);
+  line-height: 1.55;
+  font-size: 15px;
+}
+
+/* Dark help text overrides */
+html[data-contrast="dark"] .infoSlideText{
+  /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
+  background: rgba(23, 22, 50, 0.58);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.30);
+  color: rgba(244,246,250,0.84);
+}
+
+
+/* Geen globale filters op achtergrond-shapes: dit veroorzaakt een 'waas' */
+.background-shape { filter: none !important; }
+
+/* Stronger background color wash driven by dominant card color */
+:root {
+  --accent-color: 120, 170, 150; /* fallback */
+}
+
+.background-wash {
+  background: rgba(var(--accent-color), 0.45);
+  filter: none !important;
+}
+
+.background-shape { opacity: 0.95; }
+
+
+/* FIX: force stable indigo background in dark mode */
+
+.dark, .dark html, .dark body {
+  background: #1b1840 !important; /* stable indigo */
+}
+/* prevent tinting in safe areas */
+.dark .safe-area, .dark .statusbar, .dark .bottom-bar {
+  background: #1b1840 !important;
+}
+/* calm blobs slightly */
+.dark .blob {
+  filter: saturate(0.85);
+}
+
+/* (verwijderd) dubbele dark overrides – 1 bron van waarheid hierboven */
+
+
+
+/* --- Release fix: menu thumbnails match index cards (full-bleed, same aspect) --- */
+.menuItemThumb,
+.menu-thumb,
+.menuThumb,
+.menu-item-thumb {
+  width: var(--menuThumbSize, 56px);
+  aspect-ratio: 85 / 55;
+  border-radius: var(--menuThumbRadius, 12px);
+  overflow: hidden;
+  background: var(--menuThumbBg, transparent);
+}
+
+.menuItemThumb img,
+.menu-thumb img,
+.menuThumb img,
+.menu-item-thumb img,
+.menuItemThumb svg,
+.menu-thumb svg,
+.menuThumb svg,
+.menu-item-thumb svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: var(--menuThumbImgPos, center);
+}
+/* If thumbnails are set as background-image on a div */
+.menuItemThumb,
+.menu-thumb,
+.menuThumb,
+.menu-item-thumb {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+
+/* ---- landing tuning (v2) ---- */
+.qr{ bottom: calc(env(safe-area-inset-bottom, 0px) + 56px) !important; }
+.qr img{
+  width: 72px !important;
+  height: 72px !important;
+  image-rendering: auto;
+  filter: grayscale(100%) !important;
+  opacity: 0.38 !important; /* zachter, maar nog scanbaar */
+}
+/* ----------------------------- */

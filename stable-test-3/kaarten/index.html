@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Praatkaarten v3.7.1</title>
+  <link rel="icon" href="../assets/logo-icons/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/logo-icons/favicon/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/logo-icons/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="../assets/logo-icons/favicon/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/logo-icons/app/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../assets/logo-icons/app/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="../assets/logo-icons/app/apple-touch-icon-120.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="../assets/logo-icons/app/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="../assets/logo-icons/app/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" href="../assets/logo-icons/app/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/shell.css?v=4.0.12">
+  <link rel="stylesheet" href="../css/index.css?v=3.7.1.143">
+  <link rel="stylesheet" href="../templates/ui-base.css?v=3.7.1.6">
+  <link rel="stylesheet" href="../templates/cards-index.css?v=3.7.1.2">
+
+<!-- Zet contrast-modus vroeg (SESSION), om flash te voorkomen.
+     Default is altijd LIGHT bij een nieuwe sessie. -->
+<script>
+  (function(){
+    try{
+      var m = sessionStorage.getItem('pk_contrast_session');
+      if(m === 'dark') document.documentElement.setAttribute('data-contrast','dark');
+      else document.documentElement.setAttribute('data-contrast','light');
+    }catch(_e){
+      document.documentElement.setAttribute('data-contrast','light');
+    }
+  })();
+</script>
+  
+</head>
+<body data-page="kaarten" data-brand-icon="1">
+
+<div id="appRoot">
+
+<script id="questions-json" type="application/json">
+{
+  "verkennen": [
+    "Wat zien we op dit moment gebeuren in onze samenwerking?",
+    "Wat valt ons op in onze manier van samenwerken?",
+    "Herkennen we patronen in onze manier van samenwerken?",
+    "Waar zijn we aan gewend geraakt?",
+    "Wat krijgt nu minder aandacht?",
+    "Blijven er dingen onbesproken?"
+  ],
+  "duiden": [
+    "Wat proberen we als team goed te doen?",
+    "Wat nemen we wel of niet als vanzelfsprekend aan?",
+    "Wanneer helpt afstemming ons, en wanneer belemmert het ons?",
+    "Wat maakt dat onze kwaliteiten wel of niet tot hun recht komen?",
+    "Welke patronen blijven we terugzien in onze samenwerking?",
+    "Welke factoren blijven onbenoemd, terwijl ze wel invloed hebben?"
+  ],
+  "verbinden": [
+    "Waar worden we enthousiast van?",
+    "Wanneer voel jij je echt onderdeel van het team?",
+    "Mogen er verschillen bestaan in ons team?",
+    "Hoe kunnen we elkaar uitdagen en andere kanten belichten?",
+    "Wat helpt ons om onszelf te laten zien in de samenwerking?",
+    "Wat helpt om eerlijk te zijn, zonder de verbinding te verliezen?"
+  ],
+  "verhelderen": [
+    "Wat is voor ons op dit moment nog onduidelijk in de samenwerking?",
+    "Welke aannames doen we (bewust of onbewust) over elkaar of de situatie?",
+    "Welke informatie missen we om goed te kunnen samenwerken?",
+    "Wat bedoelen we precies als we woorden gebruiken als ‘afstemming’, ‘ruimte’ of ‘tempo’?",
+    "Welke verwachtingen spreken we niet uit, maar sturen wel ons gedrag?",
+    "Wat zou helpen om de afspraak of werkwijze helder en concreet te maken?"
+  ],
+  "vertragen": [
+    "Wanneer nemen we in onze samenwerking eigenlijk de tijd?",
+    "Wat verandert er in onze samenwerking wanneer we een reactie uitstellen?",
+    "Wat gebeurt er in onze samenwerking wanneer we het tempo bewust verlagen?",
+    "Welke patronen worden zichtbaar wanneer de druk toeneemt?",
+    "Welke rol nemen we automatisch aan in momenten van spanning?",
+    "Wanneer merken we dat vertragen helpend zou zijn?"
+  ],
+  "bewegen": [
+    "Wat doen we met ideeën die ontstaan?",
+    "Wanneer komt er beweging in het team?",
+    "Wat helpt ons om van praten naar doen te gaan?",
+    "Welke ideeën blijven liggen, en waarom?",
+    "Wat houdt ons tegen om in actie te komen?",
+    "Wat laten we liggen, terwijl het eigenlijk aandacht vraagt?"
+  ]
+}
+</script>
+
+
+<header class="topBar" aria-label="Bovenbalk">
+  <button id="themePill" class="themePill" type="button" aria-haspopup="dialog" aria-expanded="false">
+    <span class="setCoverWrap" aria-hidden="true">
+        <img id="setCoverIcon" class="setCoverIcon" src="../assets/logo-icons/app/apple-touch-icon.png" alt="">
+    </span>
+    <span id="themePillText" class="srOnly">samenwerken</span>
+  </button>
+</header>
+
+<div id="themeMenuOverlay" class="menuOverlay" hidden></div>
+<section id="themeMenu" class="themeMenu" role="dialog" aria-label="Menu" hidden>
+  <div class="menuCard">
+    <div class="menuHeaderRow">
+      <div id="menuSetTitle" class="menuHeader">Samen onderzoeken</div>
+      <div class="menuHeaderTools" aria-label="Acties">
+        <!-- Contrast: 2 standen (licht/donker) – icon-only, minimaal -->
+        <button id="menuContrastToggle" class="menuMiniBtn" type="button" aria-label="Contrastmodus" aria-pressed="false">
+          <!-- half-moon/half-sun icoon, subtiel -->
+          <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 0 18"/>
+            <path d="M12 3v18"/>
+          </svg>
+        </button>
+        <button id="menuInfoBtn" class="menuMiniBtn" type="button" aria-label="Informatie">
+          <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 10v7"></path>
+            <path d="M12 7h.01"></path>
+          </svg>
+        </button>
+        <button id="menuShuffleToggle" class="menuMiniBtn" type="button" aria-label="Shuffle" aria-pressed="false">
+          <!-- shuffle: strak, één stijl, pijltjes netjes op de lijnen -->
+          <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <!-- Lucide shuffle (pijlen uitlijnen met de lijnen) -->
+            <path d="M16 3h5v5"></path>
+            <path d="M4 20l16-16"></path>
+            <path d="M4 4l8 8"></path>
+            <path d="M12 12l8 8"></path>
+            <path d="M21 16v5h-5"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="menuList" class="menuList">
+      <!-- Wordt dynamisch gevuld -->
+    </div>
+    <div class="menuFooter">
+      <button id="naarOverzicht" class="menuLink" type="button">Alle kaartensets</button>
+    </div>
+  </div>
+</section>
+
+<!-- Info sheet (subtiel aan de onderrand, Google Maps-achtig) -->
+<div id="infoOverlay" class="sheetOverlay" hidden></div>
+<section id="infoSheet" class="infoSheet" role="dialog" aria-label="Kaarten & uitleg" hidden>
+  <div class="infoCard" data-top="help">
+    <div class="sheetHandle" aria-hidden="true"></div>
+
+    <!-- Sheet: alleen UITLEG (kaart-carrousel staat nu centraal op de pagina) -->
+    <div class="sheetViewport" aria-hidden="false">
+      <div id="sheetStack" class="sheetStack">
+        <div id="sheetPageHelp" class="sheetPage sheetPageHelp">
+          <div id="infoCarousel" class="infoCarousel" aria-label="Uitleg carrousel"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="page">
+  <canvas id="indexBg" class="indexBg" aria-hidden="true"></canvas>
+  <div class="indexTint" aria-hidden="true"></div>
+  <div class="indexSoftBlob" aria-hidden="true"></div>
+  <div class="carouselStage" aria-label="Kaarten">
+    <div id="mainCarousel" class="cardsCarousel mainCarousel" aria-label="Kaarten carrousel"></div>
+  </div>
+</main>
+
+<script src="../js/main.js?v=4.0.2" defer></script>
+
+<!-- Fallback: subtiele achtergrond-tint mee laten kleuren met actieve kaart.
+     (Als de hoofd-implementatie al bestaat, doet dit niets.) -->
+<script>
+(function(){
+  'use strict';
+  const root = document.documentElement;
+  // Als er al een systeem is dat dit zet, blijven we eraf.
+  const alreadyManaged = () => root.style.getPropertyValue('--activeTintRgb')?.trim();
+
+  const THEME_RGB = {
+    verkennen: [170, 195, 123],   // groen
+    duiden: [120, 170, 150],      // teal
+    verbinden: [150, 205, 195],   // mint
+    verhelderen: [ 48,  96, 136], // blauw
+    vertragen: [120, 200, 205],   // lichtblauw
+    bewegen: [242, 153,  74]      // oranje
+  };
+
+  function guessThemeFromEl(el){
+    if(!el) return null;
+    const ds = el.dataset && (el.dataset.theme || el.dataset.set || el.dataset.id);
+    if(ds){
+      const t = String(ds).toLowerCase();
+      for(const k of Object.keys(THEME_RGB)) if(t.includes(k)) return k;
+    }
+    const img = el.querySelector ? el.querySelector('img') : null;
+    const src = img ? (img.getAttribute('src') || '') : '';
+    for(const k of Object.keys(THEME_RGB)) if(src.includes('/' + k)) return k;
+    return null;
+  }
+
+  function setTint(theme){
+    if(!theme || !THEME_RGB[theme]) return;
+    const [r,g,b] = THEME_RGB[theme];
+    root.style.setProperty('--activeTintRgb', `${r}, ${g}, ${b}`);
+    root.style.setProperty('--activeTintA', '0.07');
+  }
+
+  function nearestSlide(){
+    const car = document.getElementById('mainCarousel');
+    if(!car) return null;
+    const slides = Array.from(car.children || []).filter(n => n.nodeType === 1);
+    if(!slides.length) return null;
+    const cx = window.innerWidth / 2;
+    let best = slides[0];
+    let bestDist = Infinity;
+    for(const s of slides){
+      const r = s.getBoundingClientRect();
+      const mx = r.left + r.width/2;
+      const d = Math.abs(mx - cx);
+      if(d < bestDist){ bestDist = d; best = s; }
+    }
+    return best;
+  }
+
+  function tick(){
+    if(alreadyManaged()) return;
+    const slide = nearestSlide();
+    const theme = guessThemeFromEl(slide);
+    if(theme) setTint(theme);
+  }
+
+  window.addEventListener('scroll', tick, {passive:true});
+  window.addEventListener('resize', tick, {passive:true});
+  document.addEventListener('DOMContentLoaded', () => {
+    // kleine delay zodat carousel eerst kan renderen
+    setTimeout(tick, 60);
+    const car = document.getElementById('mainCarousel');
+    car && car.addEventListener('scroll', tick, {passive:true});
+  });
+})();
+</script>
+
+</div><!-- /#appRoot -->
+
+</body>
+</html>

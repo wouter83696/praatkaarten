@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Praatkaarten v3.7.1</title>
+  <link rel="icon" href="../assets/logo-icons/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/logo-icons/favicon/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/logo-icons/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="../assets/logo-icons/favicon/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/logo-icons/app/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../assets/logo-icons/app/android-chrome-512x512.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="../assets/logo-icons/app/apple-touch-icon-120.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="../assets/logo-icons/app/apple-touch-icon-152.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="../assets/logo-icons/app/apple-touch-icon-167.png">
+  <link rel="apple-touch-icon" href="../assets/logo-icons/app/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Zet contrast-modus vroeg (SESSION), om flash te voorkomen -->
+  <script>
+    (function(){
+      try{
+        var m = sessionStorage.getItem('pk_contrast_session');
+        if(m === 'dark') document.documentElement.setAttribute('data-contrast','dark');
+        else document.documentElement.setAttribute('data-contrast','light');
+      }catch(_e){
+        document.documentElement.setAttribute('data-contrast','light');
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../css/cards.css?v=3.7.1.118" />
+  <link rel="stylesheet" href="../css/uitleg.css?v=3.7.1.74" />
+  <link rel="stylesheet" href="override.css">
+</head>
+<body class="uitlegPage">
+  <main class="wrap">
+    <section class="viewer" aria-label="Uitleg kaarten">
+      <!-- Zelfde kaart-frame als index (cardInner) + apart tekstvak eronder -->
+      <div class="uitlegStack" aria-live="polite">
+        <div class="uitlegCardWrap">
+<div class="card uitlegCard" aria-label="Kaart">
+            <div class="cardInner uitlegCardInner">
+              <img id="uitlegImg" alt="" />
+              <div class="kaartThema" id="kaartThema" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="uitlegText" aria-label="Toelichting">
+          <div class="desc" id="desc"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/core/config.js?v=3.7.1.73" defer></script>
+  <script src="../js/core/state.js?v=3.7.1.73" defer></script>
+  <script src="../js/core/query.js?v=3.7.1.73" defer></script>
+  <script src="../js/core/net.js?v=3.7.1.73" defer></script>
+  <script src="../js/core/color.js?v=3.7.1.73" defer></script>
+  <script src="../js/components/cardRenderer.js?v=3.7.1.73" defer></script>
+  <script src="../js/components/bottomSheet.js?v=3.7.1.73" defer></script>
+  <script src="../js/pages/uitleg.js?v=3.7.1.73" defer></script>
+
+<script>
+(function(){
+  function rgbFrom(el){
+    const c = getComputedStyle(el).backgroundColor;
+    const m = c.match(/\d+/g);
+    return m ? m.slice(0,3).join(',') : null;
+  }
+  function updateAccent(){
+    const card = document.querySelector('.card.active, .card.is-active, .card');
+    if(!card) return;
+    const rgb = rgbFrom(card);
+    if(rgb){
+      document.documentElement.style.setProperty('--accent-color', rgb);
+    }
+  }
+  document.addEventListener('click', updateAccent);
+  document.addEventListener('DOMContentLoaded', updateAccent);
+})();
+</script>
+
+</body>
+</html>
