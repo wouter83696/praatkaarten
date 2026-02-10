@@ -2,11 +2,11 @@
 
 :root{
   --bg-base: #FBF9F4;
-  --bg-carousel: #F4E6C9;
+  --bg-carousel: #F4E3C3;
   --bg-card: #EDE1D0;
   --setsBg: var(--bg-base);
-  --setsBaseBg: #F6EDDB;
-  --setsHeaderBg: #F6EDDB;
+  --setsBaseBg: #F7F2E6;
+  --setsHeaderBg: #F7F2E6;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -28,7 +28,7 @@
 }
 
 html, body{
-  background: var(--setsBaseBg, #F6EDDB);
+  background: var(--setsBaseBg, #F7F2E6);
   height: 100%;
   min-height: 100dvh;
 }
@@ -44,13 +44,8 @@ body.setsIndex{
   --cardImgPos: top center;
   /* Menu thumbnails moeten exact matchen met grid-kaarten */
   --menuThumbBg: var(--setsGridCardBg, #FAFAF8);
-  --menuThumbRadius: var(--setsGridRadius);
-  --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 1;
-  --menuSheetAlpha: 1;
-  --menuBtnAlpha: 1;
   /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #F6EDDB);
+  background: var(--setsBaseBg, #F7F2E6);
 }
 
 .pkBuildStamp{
