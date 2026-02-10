@@ -10,9 +10,21 @@
    We zetten daarom de echte document-achtergrond vast.
    Light: vrijwel wit. Dark: vaste indigo nachtbasis. */
 html, body{
-  background: var(--cardsPageBg, #FAFAF8);
+  background: linear-gradient(
+    to bottom,
+    #F6E9D9 0%,
+    #F6E9D9 20%,
+    #FAF0E6 52%,
+    #FCF7F1 100%
+  );
   height: 100%;
   min-height: 100dvh;
+}
+body{
+  --menuSurface: 246, 233, 217; /* #F6E9D9 */
+  --menuSurfaceAlpha: 0.84;
+  --menuSheetAlpha: 0.6;
+  --menuBtnAlpha: 0.88;
 }
 html[data-contrast="dark"],
 html[data-contrast="dark"] body{
@@ -45,7 +57,7 @@ html[data-contrast="dark"] body{
   z-index: 1;
   pointer-events: none;
   /* Lichte modus: blobs duidelijker (minder 'waas') */
-  opacity: 0.90;
+  opacity: 0;
 }
 
 /* Subtiele kleur-tint die meeloopt met de actieve kaart */
@@ -59,12 +71,12 @@ html[data-contrast="dark"] body{
      direct gezet vanuit JS als een bijna-witte kleur.
      Geen waas / papier / overlays. */
   display: block;
-  background: rgb(var(--activeTintRgb, 255, 255, 255));
-  transition: background-color 420ms ease;
+  background: transparent;
+  transition: none;
 }
 
 /* Donkere modus: blobs iets sterker. */
-html[data-contrast="dark"] .indexBg{ opacity: 0.78; }
+html[data-contrast="dark"] .indexBg{ opacity: 0; }
 
 /* Dark mode: kleuren net iets minder 'poppend' (rustiger voor het oog) */
 html[data-contrast="dark"] .indexBgSvg{
@@ -140,6 +152,7 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
   /* SVG-blobs liggen boven de ondertoon, net als canvas */
   z-index: 1;
   pointer-events: none;
+  opacity: 0;
 }
 
 
@@ -166,17 +179,33 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
 /* ===== Revision: kaarten opaak, achtergrond hiërarchie strak ===== */
 /* (Tint zit achter blobs; blobs zijn minder dominant; kaarten blijven leidend.) */
 
-/* Kaartenindex: geen zichtbaar wit kader achter de kaart bij flip */
-.cardsSlideCard{
+/* Kaarten: volledig opaak, warm off-white, ultralichte papierschaduw */
+.pkFlipInner{
+  background: #FAFAF8 !important;
+  /* Zelfde ‘papier’-rand als de index-kaarten (niet te dik / niet te aanwezig) */
+  border: 1px solid rgba(0,0,0,0.015) !important;
+  box-shadow:
+    0 6px 14px rgba(0,0,0,0.012),
+    0 1px 0 rgba(255,255,255,0.75) !important;
+}
+
+html[data-contrast="dark"] .pkFlipInner{
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.page .pkFlipInner{
+  border: 0 !important;
+}
+
+/* Kaartenindex: geen zichtbaar wit kader achter de flip-kaart */
+.cardsSlideCard .pkFlipInner,
+.cardsSlideCard .pkFace{
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
 }
 
-.cardsSlideCard .pkFlipInner,
-.cardsSlideCard .pkFace{
-  background: transparent !important;
-}
 
 /* Let op: sheet visibility wordt door JS geregeld via [hidden]. */
 
@@ -269,8 +298,8 @@ html[data-contrast="dark"] .indexSoftBlob{
   }
 
   /* Blobs extra subtiel in landscape, zodat de kaart leidend blijft. */
-  .indexBg{ opacity: 0.40 !important; }
-  html[data-contrast="dark"] .indexBg{ opacity: 0.28 !important; }
+  .indexBg{ opacity: 0 !important; }
+  html[data-contrast="dark"] .indexBg{ opacity: 0 !important; }
 
   /* Meekleurende tint en soft-blob nog iets rustiger in landscape */
   .indexSoftBlob{
@@ -321,8 +350,13 @@ html[data-contrast="dark"] .indexSoftBlob{
   .mainCarousel .cardsSlideCard{
     width: auto;
     height: 100%;
-    aspect-ratio: 85 / 55;
+    aspect-ratio: var(--cardAspect, 85 / 55);
     border-radius: 12px;
+    overflow: visible;
+  }
+
+  .mainCarousel .cardsSlideCard .pkFlipInner{
+    border-radius: inherit;
     overflow: hidden;
   }
 
@@ -345,7 +379,7 @@ html[data-contrast="dark"] .indexSoftBlob{
 .menuThumb,
 .menu-item-thumb {
   width: 64px;
-  aspect-ratio: 85 / 55;
+  aspect-ratio: var(--cardAspect, 85 / 55);
   border-radius: 12px;
   overflow: hidden;
   background: transparent;
@@ -373,3 +407,16 @@ html[data-contrast="dark"] .indexSoftBlob{
   background-position: center;
   background-repeat: no-repeat;
 }
+
+
+
+/* ---- landing tuning (v2) ---- */
+.qr{ bottom: calc(env(safe-area-inset-bottom, 0px) + 56px) !important; }
+.qr img{
+  width: 72px !important;
+  height: 72px !important;
+  image-rendering: auto;
+  filter: grayscale(100%) !important;
+  opacity: 0.38 !important; /* zachter, maar nog scanbaar */
+}
+/* ----------------------------- */

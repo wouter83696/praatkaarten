@@ -2,8 +2,10 @@
 
 :root{
   --setsBg: #FAFAF8;
-  /* Top/carrousel/grid: 90% / 95% / 98% transparant */
-  --setsHeaderBg: rgba(236, 245, 241, 0.10);
+  /* Quick toggle (main index surface zones):
+     UIT (nu actief): transparant
+     AAN (preset): rgba(236,245,241,0.10) / rgba(236,245,241,0.05) / rgba(236,245,241,0.02) */
+  --setsHeaderBg: transparent;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -14,8 +16,8 @@
   --setsTopOffset: calc(env(safe-area-inset-top, 0px) + var(--topBarInset) + var(--topBarPill) + var(--setsTopGap));
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
-  --setsHeroBg: rgba(236, 245, 241, 0.05);
-  --setsGridBg: rgba(236, 245, 241, 0.02);
+  --setsHeroBg: transparent;
+  --setsGridBg: transparent;
 }
 
 html, body{
@@ -326,9 +328,11 @@ html[data-contrast="dark"] body.setsIndex{
 html[data-contrast="dark"] body.setsIndex{
   color: rgba(245,250,255,0.9);
   --darkBaseRgb: 24, 18, 60;
-  --setsHeaderBg: rgba(24, 18, 60, 0.10);
-  --setsHeroBg: rgba(24, 18, 60, 0.05);
-  --setsGridBg: rgba(24, 18, 60, 0.02);
+  /* Quick toggle dark preset:
+     rgba(24,18,60,0.10) / rgba(24,18,60,0.05) / rgba(24,18,60,0.02) */
+  --setsHeaderBg: transparent;
+  --setsHeroBg: transparent;
+  --setsGridBg: transparent;
 }
 
 /* Carrousel dots */
