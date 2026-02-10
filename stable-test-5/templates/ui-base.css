@@ -1,0 +1,38 @@
+/* Shared UI template: menu + sheet + global tokens
+   Edit this file to change shared UI across all pages.
+*/
+:root{
+  /* Menu + sheet surfaces */
+  --menuSurface: 255, 255, 255;
+  --menuSurfaceAlpha: 1;
+  --menuSheetAlpha: 1;
+  --menuBtnAlpha: 1;
+
+  /* Menu text */
+  --menuHeaderText: rgba(11,18,32,0.68);
+  --menuText: rgba(11,18,32,0.76);
+  --menuTextMuted: rgba(11,18,32,0.62);
+  --menuFooterText: rgba(11,18,32,0.48);
+  --menuIcon: rgba(11,18,32,0.52);
+  --menuLine: rgba(0,0,0,0.06);
+
+  /* Focus ring */
+  --focusRing: rgba(127,207,201,0.45);
+  --focusRingDark: rgba(127,207,201,0.55);
+
+  /* Menu thumbnails: match index cards (size + radius + crop) */
+  --menuThumbSize: 52px;
+  /* proportioneel t.o.v. mini-formaat (minder rond) */
+  --menuThumbRadius: calc(var(--menuThumbSize, 56px) * 0.08);
+  --menuThumbImgPos: top center;
+  --menuThumbBg: var(--pk-set-card, #FAFAF8);
+}
+
+html[data-contrast="dark"]{
+  --menuHeaderText: rgba(245,250,255,0.72);
+  --menuText: rgba(245,250,255,0.86);
+  --menuTextMuted: rgba(245,250,255,0.72);
+  --menuFooterText: rgba(245,250,255,0.60);
+  --menuIcon: rgba(245,250,255,0.62);
+  --menuLine: rgba(255,255,255,0.10);
+}
