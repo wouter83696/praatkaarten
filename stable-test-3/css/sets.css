@@ -2,7 +2,8 @@
 
 :root{
   --setsBg: #FAFAF8;
-  --setsHeaderBg: #FAFAF8;
+  /* Top/carrousel/grid: 90% / 95% / 98% transparant */
+  --setsHeaderBg: rgba(236, 245, 241, 0.10);
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -13,8 +14,8 @@
   --setsTopOffset: calc(env(safe-area-inset-top, 0px) + var(--topBarInset) + var(--topBarPill) + var(--setsTopGap));
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
-  --setsHeroBg: transparent;
-  --setsGridBg: transparent;
+  --setsHeroBg: rgba(236, 245, 241, 0.05);
+  --setsGridBg: rgba(236, 245, 241, 0.02);
 }
 
 html, body{
@@ -325,9 +326,9 @@ html[data-contrast="dark"] body.setsIndex{
 html[data-contrast="dark"] body.setsIndex{
   color: rgba(245,250,255,0.9);
   --darkBaseRgb: 24, 18, 60;
-  --setsHeaderBg: rgba(24, 18, 60, 0.34);
-  --setsHeroBg: rgba(24, 18, 60, 0);
-  --setsGridBg: rgba(24, 18, 60, 0.78);
+  --setsHeaderBg: rgba(24, 18, 60, 0.10);
+  --setsHeroBg: rgba(24, 18, 60, 0.05);
+  --setsGridBg: rgba(24, 18, 60, 0.02);
 }
 
 /* Carrousel dots */
