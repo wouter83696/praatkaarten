@@ -898,6 +898,15 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   width: 100%;
   max-width: none;
   margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.035);
+  background: rgba(255,255,255,0.84);
+}
+
+html[data-contrast="dark"] .infoSlideInner{
+  border-color: rgba(255,255,255,0.08);
+  background: rgba(23, 22, 50, 0.58);
 }
 
 
@@ -962,14 +971,13 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   /* Tekstvlak sluit strak aan op de kaart: boven recht, onder afgerond */
   position: relative;
   z-index: 1;
-  margin-top: -24px;
-  padding: 36px 18px 16px;
-  border-radius: 0 0 16px 16px;
-  border: 1px solid rgba(0,0,0,0.015);
-  border-top: 0;
+  margin-top: 0;
+  padding: 20px 18px 18px;
+  border-radius: 0;
+  border: 0;
   /* Lichte doorkijk zodat achtergrond leeft, zonder kleurvlak */
   /* Super lichte meekleur-tint (wordt via PK.applyDominantTint gezet) */
-  background: var(--pkTextBg, rgba(255,255,255,0.60));
+  background: var(--pkTextBg, rgba(255,255,255,0.84));
   box-shadow: none;
   /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
   color: rgba(11,18,32,.68);
@@ -981,7 +989,6 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 html[data-contrast="dark"] .infoSlideText{
   /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
   background: rgba(23, 22, 50, 0.58);
-  border-color: rgba(255,255,255,0.08);
   box-shadow: none;
   color: rgba(244,246,250,0.84);
 }

@@ -35,12 +35,18 @@
   }
 
   var GRID_TINTS = [
-    // User palette voor indexkaarten (kaart 6 herhaalt kaart 1 voor balans)
-    '240,222,200', // #F0DEC8 warm zand (anker)
-    '235,210,198', // #EBD2C6 peach
-    '226,210,235', // #E2D2EB warm lila
-    '244,230,214', // #F4E6D6 creme
-    '230,216,204'  // #E6D8CC warm grijs-beige
+    // PLACEHOLDER_COLORS
+    // BASE
+    '243,236,226', // #F3ECE2 SAND
+    '230,240,236', // #E6F0EC MINT_GREY
+    // WARM ACCENT (max 1)
+    '242,223,210', // #F2DFD2 PEACH
+    // REFLECTIEF (max 1)
+    '238,234,243', // #EEEAF3 LILAC_GREY
+    // KOEL ACCENT (max 1)
+    '232,238,244', // #E8EEF4 BLUE_GREY_SOFT
+    // STEUNEND (indien nodig)
+    '227,233,238'  // #E3E9EE BLUE_GREY_STONE
   ];
 
   function trim(s){
