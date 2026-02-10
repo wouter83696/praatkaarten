@@ -29,11 +29,11 @@
   },
   "indexPage": {
     "background": {
-      "palette": ["#D3A87D", "#C38E5E", "#E0BE98"],
-      "darkPalette": ["#D3A87D", "#C38E5E", "#E0BE98"],
+      "palette": ["#E6CDB3"],
+      "darkPalette": ["#E6CDB3"],
       "blobCount": 7,
       "blobAlphaFixed": 0.56,
-      "blobWash": 0,
+      "blobWash": 0.06,
       "blobIrregularity": 0.45,
       "blobPointsMin": 7,
       "blobPointsMax": 11,
