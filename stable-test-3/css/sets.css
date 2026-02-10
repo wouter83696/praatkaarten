@@ -30,9 +30,9 @@ body.setsIndex{
   /* Laat cover/themakaart bovenaan beginnen (override global card centering) */
   --cardImgPos: top center;
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 1;
-  --menuSheetAlpha: 1;
-  --menuBtnAlpha: 1;
+  --menuSurfaceAlpha: 0.58;
+  --menuSheetAlpha: 0.58;
+  --menuBtnAlpha: 0.88;
 }
 
 /* Achtergrond blobs (statisch) */
@@ -270,7 +270,7 @@ html[data-contrast="dark"] body.setsIndex{
   color: rgba(245,250,255,0.9);
   --darkBaseRgb: 24, 18, 60;
   --setsHeroBg: rgba(24, 18, 60, 0);
-  --setsGridBg: rgba(24, 18, 60, 0.78);
+  --setsGridBg: transparent;
 }
 
 /* Carrousel dots */

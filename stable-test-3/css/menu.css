@@ -13,8 +13,8 @@
   --menuIcon: rgba(11,18,32,0.52);
   --menuLine: rgba(0,0,0,0.06);
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 0.78;
-  --menuSheetAlpha: 0.54;
+  --menuSurfaceAlpha: 0.58;
+  --menuSheetAlpha: 0.58;
   --menuBtnAlpha: 0.88;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
@@ -208,7 +208,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   border: 1px solid rgba(0,0,0,0.015);
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
-  background: rgba(var(--menuSurface), var(--menuSurfaceAlpha));
+  background: rgba(var(--menuSurface), var(--menuSheetAlpha));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   /* heel subtiele schaduw zodat het minder 'losstaand' voelt */
@@ -416,16 +416,16 @@ html[data-contrast="dark"] .menuHeaderTools{
 }
 
 html[data-contrast="dark"] .menuCard{
-  border: 0;
-  background: rgb(var(--darkBaseRgb, 24, 18, 60)) !important;
+  border: 0.5px solid rgba(255,255,255,0.10);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha)) !important;
   background-image: none !important;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   box-shadow: none;
 }
 
 html[data-contrast="dark"] .menuHeaderRow{
-  background: rgb(var(--darkBaseRgb, 24, 18, 60)) !important;
+  background: transparent !important;
   box-shadow: none;
   border-bottom: 0;
 }
@@ -495,7 +495,7 @@ html[data-contrast="dark"] .infoCard{
   /* Dark mode: vaste indigo wereld (niet meekleuren). */
   /* Uitleg-sheet: vaste indigo wereld, maar (bijna) transparant zodat achtergrond terugkomt */
   /* +5–8% transparanter */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.58);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -561,7 +561,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   border-right: 0;
   border-bottom: 0;
   /* Light mode: zelfde transparantie-gevoel als dark mode */
-  background: rgba(var(--menuSurface), 0.58);
+  background: rgba(var(--menuSurface), var(--menuSheetAlpha));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   overflow: hidden;
