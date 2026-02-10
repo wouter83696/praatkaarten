@@ -2,7 +2,7 @@
    Adjust these to change the main index background bands.
 */
 :root{
-  --setsHeaderBg: #FAFAF8;
+  --setsHeaderBg: #F7FCFA;
   --setsHeroBg: transparent;
   --setsGridBg: transparent;
 }
