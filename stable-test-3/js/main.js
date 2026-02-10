@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var page = (doc.body && doc.body.getAttribute('data-page')) ? doc.body.getAttribute('data-page') : '';
-  var ASSET_V = '4.0.13';
+  var ASSET_V = '4.0.14';
   w.PK_ASSET_V = ASSET_V;
 
   function withV(src){

@@ -673,7 +673,7 @@
       var heroEndPx = NaN;
       var heroStyle = null;
       var rootStyle = null;
-      var zoneTopColor = '#F7F2E6';
+      var zoneTopColor = '#F2E6C9';
       var zoneHeroColor = '#F4E3C3';
       var zoneGridColor = '#FBF9F4';
       try{

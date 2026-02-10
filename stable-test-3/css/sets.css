@@ -1,13 +1,13 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
-  --bg-base-color: #F7F2E6;
+  --bg-base-color: #F2E6C9;
   --bg-base: #FBF9F4;
   --bg-carousel: #F4E3C3;
   --bg-card: #EDE1D0;
   --setsBg: var(--bg-base);
-  --setsBaseBg: #F7F2E6;
-  --setsHeaderBg: #F7F2E6;
+  --setsBaseBg: #F2E6C9;
+  --setsHeaderBg: #F2E6C9;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -29,7 +29,7 @@
 }
 
 html, body{
-  background: var(--setsBaseBg, #F7F2E6);
+  background: var(--setsBaseBg, #F2E6C9);
   height: 100%;
   min-height: 100dvh;
 }
@@ -45,8 +45,16 @@ body.setsIndex{
   --cardImgPos: top center;
   /* Menu thumbnails moeten exact matchen met grid-kaarten */
   --menuThumbBg: var(--setsGridCardBg, #FAFAF8);
+  --menuThumbImgPos: center;
   /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #F7F2E6);
+  background: var(--setsBaseBg, #F2E6C9);
+}
+
+/* Menu-thumbnail: lichte overzoom om anti-aliasing witte randjes op SVG-randen te voorkomen */
+body.setsIndex .menuThumbCard .bg,
+body.setsIndex .menuThumbCard img{
+  transform: scale(1.02);
+  transform-origin: center;
 }
 
 .pkBuildStamp{
