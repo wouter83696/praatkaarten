@@ -4,7 +4,7 @@
   --setsBg: #F4EBDD;
   --setsBaseBg: #F4EBDD;
   /* Semi-transparant zodat blobs zichtbaar blijven door de kleurbanden heen */
-  --setsHeaderBg: rgba(244, 235, 221, 0.62);
+  --setsHeaderBg: rgba(244, 235, 221, 0.84);
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -15,8 +15,8 @@
   --setsTopOffset: calc(env(safe-area-inset-top, 0px) + var(--topBarInset) + var(--topBarPill) + var(--setsTopGap));
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
-  --setsHeroBg: rgba(247, 243, 235, 0.56);
-  --setsGridBg: rgba(251, 249, 244, 0.60);
+  --setsHeroBg: rgba(247, 243, 235, 0.82);
+  --setsGridBg: rgba(251, 249, 244, 0.86);
   --setsHeroCardBg: #ffffff;
   --setsGridCardBg: #ffffff;
   --setsHeroCardImgOpacity: 1;
