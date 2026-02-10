@@ -37,28 +37,107 @@
     menuApi = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
   }
 
-  var GRID_TINTS = [
-    // PLACEHOLDER_COLORS
-    // BASE
-    '243,236,226', // #F3ECE2 SAND
-    '230,240,236', // #E6F0EC MINT_GREY
-    // WARM ACCENT (max 1)
-    '242,223,210', // #F2DFD2 PEACH
-    // REFLECTIEF (max 1)
-    '238,234,243', // #EEEAF3 LILAC_GREY
-    // KOEL ACCENT (max 1)
-    '232,238,244', // #E8EEF4 BLUE_GREY_SOFT
-    // STEUNEND (indien nodig)
-    '227,233,238'  // #E3E9EE BLUE_GREY_STONE
-  ];
+  // Main-index kaartpalet (referentie uit ontwerp-SVG):
+  // - Hoofdkaart altijd BASE
+  // - DEEP max 1-2 tegelijk
+  // - LIGHT nooit samen met meerdere DEEP
+  var MAIN_INDEX_CARD_PALETTE = {
+    light: [
+      '#CFE6DF', '#DDE8F6', '#E7E1F5', '#F3DCE4', '#F8E4D2',
+      '#E3E9D5', '#D6ECEA', '#F3E6D8', '#EEEFF4'
+    ],
+    base: [
+      '#9EC7B6', '#6C9BD2', '#8F6ED5', '#E07A8A', '#E88A3D',
+      '#8FAE5D', '#4F8F8C', '#CFA77F', '#B8BCCF'
+    ],
+    deep: [
+      '#6FAE9A', '#4C7FB8', '#6A63C2', '#C9657A', '#C96A24',
+      '#6F9E4E', '#2F5F63', '#8E5E3B', '#7A7F99'
+    ]
+  };
 
   function trim(s){
     return String(s || '').replace(/^\s+|\s+$/g,'');
   }
 
-  function tintAt(i){
-    if(!GRID_TINTS.length) return '223,238,232';
-    return GRID_TINTS[i % GRID_TINTS.length];
+  function toCsvPalette(hexList){
+    var out = [];
+    for(var i=0;i<(hexList || []).length;i++){
+      var csv = parseHexToRgbCsv(hexList[i]);
+      if(csv) out.push(csv);
+    }
+    return out;
+  }
+
+  var MAIN_INDEX_CARD_PALETTE_CSV = {
+    light: toCsvPalette(MAIN_INDEX_CARD_PALETTE.light),
+    base: toCsvPalette(MAIN_INDEX_CARD_PALETTE.base),
+    deep: toCsvPalette(MAIN_INDEX_CARD_PALETTE.deep)
+  };
+
+  function hasIndex(list, value){
+    for(var i=0;i<(list || []).length;i++){
+      if(list[i] === value) return true;
+    }
+    return false;
+  }
+
+  function palettePick(group, idx){
+    var list = MAIN_INDEX_CARD_PALETTE_CSV[group] || [];
+    if(!list.length) return '223,238,232';
+    var n = Math.abs(parseInt(idx, 10) || 0);
+    return list[n % list.length];
+  }
+
+  function buildMainIndexPlaceholderTints(count, offset){
+    var total = parseInt(count, 10) || 0;
+    if(total < 1) return [];
+
+    var start = parseInt(offset, 10) || 0;
+    if(start < 0) start = 0;
+
+    // Regelset:
+    // - vooral BASE
+    // - DEEP max 1-2
+    // - LIGHT niet samen met meerdere DEEP
+    var deepTarget = 0;
+    if(total >= 8) deepTarget = 2;
+    else if(total >= 4) deepTarget = 1;
+
+    var lightTarget = (deepTarget > 1) ? 0 : (total >= 3 ? 1 : 0);
+    var deepPositions = [];
+    var lightPos = -1;
+
+    if(deepTarget === 1){
+      deepPositions.push(Math.max(1, Math.min(total - 1, Math.floor(total * 0.62))));
+    }else if(deepTarget === 2){
+      var p1 = Math.max(1, Math.min(total - 1, Math.floor(total * 0.34)));
+      var p2 = Math.max(1, Math.min(total - 1, Math.floor(total * 0.76)));
+      if(p2 <= p1) p2 = Math.min(total - 1, p1 + 1);
+      deepPositions.push(p1);
+      deepPositions.push(p2);
+    }
+
+    if(lightTarget === 1){
+      lightPos = Math.max(1, Math.min(total - 1, Math.floor(total * 0.18)));
+      if(hasIndex(deepPositions, lightPos)) lightPos = Math.min(total - 1, lightPos + 1);
+      if(hasIndex(deepPositions, lightPos)) lightPos = -1;
+    }
+
+    var out = [];
+    var deepCursor = 0;
+    for(var i=0;i<total;i++){
+      var slot = start + i;
+      if(hasIndex(deepPositions, i)){
+        out.push(palettePick('deep', slot + deepCursor));
+        deepCursor++;
+      }else if(lightPos === i){
+        out.push(palettePick('light', slot));
+      }else{
+        out.push(palettePick('base', slot));
+      }
+    }
+    return out;
   }
 
   function parseHexToRgbCsv(input){
@@ -653,10 +732,11 @@
     // placeholders voor vaste 6-slides feel
     var minSlides = heroLimit;
     var phNeeded = Math.max(0, minSlides - count);
+    var heroTints = buildMainIndexPlaceholderTints(phNeeded, count);
     for(var k=0;k<phNeeded;k++){
       carousel.appendChild(buildHeroSlide({
         placeholder: true,
-        rgb: tintAt(count + k)
+        rgb: heroTints[k]
       }));
     }
 
@@ -704,10 +784,11 @@
     // Vaste minimum "grid feel" met lege kaarten (met mooie tinten)
     var minGrid = maxItems > 0 ? maxItems : 6;
     var phNeeded = Math.max(0, minGrid - count);
+    var gridTints = buildMainIndexPlaceholderTints(phNeeded, count);
     for(var m=0;m<phNeeded;m++){
       grid.appendChild(buildGridCard({
         placeholder: true,
-        rgb: tintAt(count + m)
+        rgb: gridTints[m]
       }));
     }
   }
