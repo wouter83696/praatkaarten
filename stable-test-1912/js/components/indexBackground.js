@@ -485,6 +485,42 @@
   }
 
 
+  function numOr(v, fallback){
+    var n = parseFloat(v);
+    return isFinite(n) ? n : fallback;
+  }
+
+  function fillSurfaceZones(ctx, info, zones){
+    if(!zones) return false;
+    var topColor = zones.topColor || '#FBF9F4';
+    var heroColor = zones.heroColor || '#F7F3EB';
+    var gridColor = zones.gridColor || '#F4EBDD';
+
+    var dpr = info.dpr || 1;
+    var cssH = info.cssH || (info.h / dpr);
+    var topEndCss = numOr(zones.topEndPx, cssH * 0.14);
+    var heroEndCss = numOr(zones.heroEndPx, cssH * 0.56);
+
+    if(topEndCss < 0) topEndCss = 0;
+    if(topEndCss > cssH) topEndCss = cssH;
+    if(heroEndCss < topEndCss) heroEndCss = topEndCss;
+    if(heroEndCss > cssH) heroEndCss = cssH;
+
+    var topEnd = Math.round(topEndCss * dpr);
+    var heroEnd = Math.round(heroEndCss * dpr);
+
+    ctx.fillStyle = topColor;
+    ctx.fillRect(0, 0, info.w, topEnd);
+
+    ctx.fillStyle = heroColor;
+    ctx.fillRect(0, topEnd, info.w, Math.max(0, heroEnd - topEnd));
+
+    ctx.fillStyle = gridColor;
+    ctx.fillRect(0, heroEnd, info.w, Math.max(0, info.h - heroEnd));
+
+    return true;
+  }
+
   function renderCanvas(canvas, palette, rnd, lite, opts){
     rnd = rnd || Math.random;
     var info = resizeCanvasToCSS(canvas);
@@ -504,7 +540,12 @@
     ctx.clearRect(0,0,info.w,info.h);
 
     var skipWash = !!(opts && opts.baseWash === false);
-    if(!isDark && !skipWash){
+    var zones = (!isDark && opts && opts.surfaceZones) ? opts.surfaceZones : null;
+    var usedZones = false;
+    if(zones){
+      usedZones = fillSurfaceZones(ctx, info, zones);
+    }
+    if(!usedZones && !isDark && !skipWash){
       // base wash (heel subtiel; echte achtergrond is wit via CSS)
       var bg = mixWithWhite(base, 0.995);
       ctx.fillStyle = bg;
@@ -631,7 +672,7 @@
 
     // Light: ultrazachte vignette om randen te kalmeren (geen grijze waas).
     // Als baseWash uit staat, slaan we ook de vignette over.
-    if(!isDark && !skipWash){
+    if(!isDark && !skipWash && !usedZones){
       var vg = ctx.createRadialGradient(info.w*0.55, info.h*0.45, 0, info.w*0.55, info.h*0.45, Math.max(info.w,info.h)*0.75);
       vg.addColorStop(0, 'rgba(255,255,255,0)');
       vg.addColorStop(1, 'rgba(255,255,255,0.010)');
@@ -725,7 +766,12 @@
       var spreadMarginKey = (opts && typeof opts.blobSpreadMargin === 'number') ? String(opts.blobSpreadMargin) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
+      var zoneTopKey = (opts && opts.surfaceZones && opts.surfaceZones.topColor) ? String(opts.surfaceZones.topColor) : '';
+      var zoneHeroKey = (opts && opts.surfaceZones && opts.surfaceZones.heroColor) ? String(opts.surfaceZones.heroColor) : '';
+      var zoneGridKey = (opts && opts.surfaceZones && opts.surfaceZones.gridColor) ? String(opts.surfaceZones.gridColor) : '';
+      var zoneTopEndKey = (opts && opts.surfaceZones && typeof opts.surfaceZones.topEndPx === 'number') ? String(Math.round(opts.surfaceZones.topEndPx * 100) / 100) : '';
+      var zoneHeroEndKey = (opts && opts.surfaceZones && typeof opts.surfaceZones.heroEndPx === 'number') ? String(Math.round(opts.surfaceZones.heroEndPx * 100) / 100) : '';
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey + '|' + zoneTopKey + '|' + zoneHeroKey + '|' + zoneGridKey + '|' + zoneTopEndKey + '|' + zoneHeroEndKey;
 
       var token = ++lastToken;
 

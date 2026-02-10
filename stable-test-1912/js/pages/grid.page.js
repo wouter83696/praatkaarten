@@ -143,6 +143,7 @@
     if(bgBandsTimer) w.clearTimeout(bgBandsTimer);
     bgBandsTimer = w.setTimeout(function(){
       updateBackgroundBandsNow();
+      if(lastIndexConfig) applyBackground(lastIndexConfig);
     }, 48);
   }
 
@@ -664,6 +665,39 @@
     var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.18;
+    var surfaceZones = null;
+    if(!isDark){
+      var vpH = w.innerHeight || 0;
+      var topEndPx = NaN;
+      var heroEndPx = NaN;
+      try{
+        var rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
+        var topOffsetRaw = rootStyle ? rootStyle.getPropertyValue('--setsTopOffset') : '';
+        topEndPx = parseFloat(String(topOffsetRaw || ''));
+      }catch(_eTop){}
+      if(!isFinite(topEndPx)){
+        topEndPx = vpH ? (vpH * 0.12) : 88;
+      }
+      try{
+        if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
+          heroEndPx = gridSection.getBoundingClientRect().top;
+        }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
+          heroEndPx = heroSection.getBoundingClientRect().bottom;
+        }
+      }catch(_eHero){}
+      if(!isFinite(heroEndPx)){
+        heroEndPx = vpH ? (vpH * 0.58) : (topEndPx + 320);
+      }
+      if(heroEndPx < topEndPx + 40) heroEndPx = topEndPx + 40;
+      if(vpH && heroEndPx > vpH) heroEndPx = vpH;
+      surfaceZones = {
+        topColor: '#FBF9F4',
+        heroColor: '#F7F3EB',
+        gridColor: '#F4EBDD',
+        topEndPx: topEndPx,
+        heroEndPx: heroEndPx
+      };
+    }
 
     var baseId = (idx && idx.default) ? idx.default : ((idx && idx.sets && idx.sets[0]) ? idx.sets[0].id : 'samenwerken');
     var cardBase = (PK.pathForSet
@@ -692,7 +726,8 @@
       blobSpread: blobSpread,
       blobSpreadMargin: blobSpreadMargin,
       sizeLimit: sizeLimit,
-      blobAlphaFixed: blobAlphaFixed
+      blobAlphaFixed: blobAlphaFixed,
+      surfaceZones: surfaceZones
     });
   }
 
