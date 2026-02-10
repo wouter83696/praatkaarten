@@ -766,12 +766,8 @@
       var spreadMarginKey = (opts && typeof opts.blobSpreadMargin === 'number') ? String(opts.blobSpreadMargin) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
-      var zoneTopKey = (opts && opts.surfaceZones && opts.surfaceZones.topColor) ? String(opts.surfaceZones.topColor) : '';
-      var zoneHeroKey = (opts && opts.surfaceZones && opts.surfaceZones.heroColor) ? String(opts.surfaceZones.heroColor) : '';
-      var zoneGridKey = (opts && opts.surfaceZones && opts.surfaceZones.gridColor) ? String(opts.surfaceZones.gridColor) : '';
-      var zoneTopEndKey = (opts && opts.surfaceZones && typeof opts.surfaceZones.topEndPx === 'number') ? String(Math.round(opts.surfaceZones.topEndPx * 100) / 100) : '';
-      var zoneHeroEndKey = (opts && opts.surfaceZones && typeof opts.surfaceZones.heroEndPx === 'number') ? String(Math.round(opts.surfaceZones.heroEndPx * 100) / 100) : '';
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey + '|' + zoneTopKey + '|' + zoneHeroKey + '|' + zoneGridKey + '|' + zoneTopEndKey + '|' + zoneHeroEndKey;
+      // surfaceZones beïnvloeden alleen de vlakverdeling; seed/asset-cache moet stabiel blijven.
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
 
       var token = ++lastToken;
 

@@ -150,6 +150,7 @@
   function ensureBackgroundBandSync(){
     if(bgBandsBound) return;
     bgBandsBound = true;
+    w.addEventListener('scroll', scheduleBackgroundBands, { passive:true });
     w.addEventListener('resize', scheduleBackgroundBands, { passive:true });
     w.addEventListener('orientationchange', scheduleBackgroundBands, { passive:true });
     w.addEventListener('load', scheduleBackgroundBands, { passive:true });
@@ -671,11 +672,15 @@
       var topEndPx = NaN;
       var heroEndPx = NaN;
       try{
+        var heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
         var rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
-        var topOffsetRaw = rootStyle ? rootStyle.getPropertyValue('--setsTopOffset') : '';
-        topEndPx = parseFloat(String(topOffsetRaw || ''));
+        var heroPadTop = heroStyle ? parseFloat(String(heroStyle.paddingTop || '')) : NaN;
+        var heroExtra = rootStyle ? parseFloat(String(rootStyle.getPropertyValue('--setsHeroPadExtra') || '')) : NaN;
+        if(isFinite(heroPadTop) && isFinite(heroExtra)){
+          topEndPx = heroPadTop - heroExtra;
+        }
       }catch(_eTop){}
-      if(!isFinite(topEndPx)){
+      if(!isFinite(topEndPx) || topEndPx < 0){
         topEndPx = vpH ? (vpH * 0.12) : 88;
       }
       try{
@@ -688,7 +693,7 @@
       if(!isFinite(heroEndPx)){
         heroEndPx = vpH ? (vpH * 0.58) : (topEndPx + 320);
       }
-      if(heroEndPx < topEndPx + 40) heroEndPx = topEndPx + 40;
+      if(heroEndPx < topEndPx) heroEndPx = topEndPx;
       if(vpH && heroEndPx > vpH) heroEndPx = vpH;
       surfaceZones = {
         topColor: '#FBF9F4',
@@ -842,7 +847,11 @@
       scheduleBackgroundBands();
       w.requestAnimationFrame(function(){
         updateBackgroundBandsNow();
-        w.requestAnimationFrame(updateBackgroundBandsNow);
+        if(lastIndexConfig) applyBackground(lastIndexConfig);
+        w.requestAnimationFrame(function(){
+          updateBackgroundBandsNow();
+          if(lastIndexConfig) applyBackground(lastIndexConfig);
+        });
       });
 
       // Menu klikken -> naar set
