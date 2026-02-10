@@ -3,7 +3,7 @@
 (function(w){
   'use strict';
   var PK = w.PK = w.PK || {};
-  PK.VERSION = '3.7.1.76';
+  PK.VERSION = '3.7.1.77';
 
   // Centrale paden (één bron van waarheid)
   // Bepaal basispad (werkt ook als je vanuit /uitleg/ of /kaarten/ draait)

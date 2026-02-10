@@ -24,23 +24,43 @@
     },
     "index": {
       "layout": "carousel",
-      "gridLimit": 6
+      "gridLimit": 6,
+      "background": {
+        "palette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+        "darkPalette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+        "blobCount": 3,
+        "blobAlphaFixed": 0.36,
+        "blobAlphaCap": 0.42,
+        "blobAlphaCapDark": 0.38,
+        "blobWash": 0,
+        "blobIrregularity": 0.22,
+        "blobPointsMin": 10,
+        "blobPointsMax": 14,
+        "sizeScale": 2.4,
+        "sizeLimit": 2.6,
+        "blobSpread": "edges",
+        "blobSpreadMargin": 0.18,
+        "baseWash": false,
+        "shapeEnabled": false
+      }
     }
   },
   "indexPage": {
     "background": {
-      "palette": ["#79B9AA", "#E8833A", "#E6CDB3"],
-      "darkPalette": ["#79B9AA", "#E8833A", "#E6CDB3"],
-      "blobCount": 5,
-      "blobAlphaFixed": 0.20,
+      "palette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+      "darkPalette": ["#DCE2DF", "#C7E6E5", "#DCEAF3"],
+      "blobCount": 3,
+      "blobAlphaFixed": 0.36,
+      "blobAlphaCap": 0.42,
+      "blobAlphaCapDark": 0.38,
       "blobWash": 0,
-      "blobIrregularity": 0.45,
-      "blobPointsMin": 7,
-      "blobPointsMax": 11,
-      "sizeScale": 1.1,
-      "sizeLimit": 2.0,
-      "blobSpread": "grid",
-      "blobSpreadMargin": 0.12,
+      "blobIrregularity": 0.22,
+      "blobPointsMin": 10,
+      "blobPointsMax": 14,
+      "sizeScale": 2.4,
+      "sizeLimit": 2.6,
+      "blobSpread": "edges",
+      "blobSpreadMargin": 0.18,
       "baseWash": false,
       "shapeEnabled": false
     }

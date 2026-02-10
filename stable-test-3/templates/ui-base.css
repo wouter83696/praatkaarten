@@ -3,7 +3,7 @@
 */
 :root{
   /* Page background hook (set per page; menu follows this automatically) */
-  --bg-base-color: var(--setsBaseBg, var(--pk-set-bg, var(--cardsPageBg, #ffffff)));
+  --bg-base-color: var(--setsBaseBg, var(--pk-set-bg, var(--cardsPageBg, #F5F7F6)));
 
   /* Menu + sheet surfaces */
   --menuSurfaceColor: var(--bg-base-color);

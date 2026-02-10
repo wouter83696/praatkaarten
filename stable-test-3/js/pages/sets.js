@@ -567,7 +567,7 @@
         ? idx.uiDefaults.index.background
         : null);
     var palette = bg && Array.isArray(bg.palette) ? bg.palette : [
-      '#F2C9A5','#F6D4B4'
+      '#DCE2DF','#C7E6E5','#DCEAF3'
     ];
     var darkPalette = bg && Array.isArray(bg.darkPalette) ? bg.darkPalette : null;
     var isDark = false;
@@ -577,24 +577,24 @@
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
     var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 3;
     var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.2;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.35;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : undefined;
     var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : undefined;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
-    var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : undefined;
-    var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : undefined;
-    var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : undefined;
+    var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : 0.22;
+    var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : 10;
+    var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : 14;
     var baseWash = bg && bg.baseWash === false ? false : undefined;
-    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0.18;
+    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
-    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : undefined;
+    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.42;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : undefined;
     var shapeEnabled = bg && bg.shapeEnabled === false ? false : undefined;
-    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
-    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
-    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
-    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.18;
+    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : 'edges';
+    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.2;
+    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 2.6;
+    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.34;
 
     var baseId = (idx && idx.default) ? idx.default : ((idx && idx.sets && idx.sets[0]) ? idx.sets[0].id : 'samenwerken');
     var cardBase = (PK.pathForSet

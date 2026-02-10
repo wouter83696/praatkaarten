@@ -2,12 +2,12 @@
 
 :root{
   --bg-base-color: var(--setsBaseBg);
-  --bg-base: #FCFAF7;
-  --bg-carousel: #F2E4C9;
-  --bg-card: #EDE1D0;
+  --bg-base: #F5F7F6;
+  --bg-carousel: #EEF1F0;
+  --bg-card: #E6ECE9;
   --setsBg: var(--bg-base);
-  --setsBaseBg: #FBF9F4;
-  --setsHeaderBg: #FBF9F4;
+  --setsBaseBg: #F5F7F6;
+  --setsHeaderBg: #EEF1F0;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -19,7 +19,7 @@
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
   --setsHeroBg: var(--bg-carousel);
-  --setsGridBg: #FCFAF7;
+  --setsGridBg: #F5F7F6;
   --setsBandTopEnd: var(--setsTopOffset);
   --setsBandHeroEnd: 560px;
   --setsHeroCardBg: var(--bg-card);
@@ -29,7 +29,7 @@
 }
 
 html, body{
-  background: var(--setsBaseBg, #FBF9F4);
+  background: var(--setsBaseBg, #F5F7F6);
   height: 100%;
   min-height: 100dvh;
 }
@@ -47,7 +47,7 @@ body.setsIndex{
   --menuThumbBg: var(--setsGridCardBg, #FAFAF8);
   --menuThumbImgPos: center;
   /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #FBF9F4);
+  background: var(--setsBaseBg, #F5F7F6);
 }
 
 /* Menu-thumbnail: lichte overzoom om anti-aliasing witte randjes op SVG-randen te voorkomen */
@@ -106,7 +106,7 @@ body.setsIndex::after{
   min-height: 100%;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.72;
+  opacity: 1;
 }
 
 .indexBgSvg{
@@ -131,7 +131,7 @@ body.setsIndex .indexBgSvg{
 }
 
 body.setsIndex .indexBg{
-  opacity: 0.72;
+  opacity: 1;
 }
 
 .setsIndexMain{

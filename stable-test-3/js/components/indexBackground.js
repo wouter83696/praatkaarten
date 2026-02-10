@@ -247,6 +247,44 @@
     return out;
   }
 
+  function buildEdgePositions(count, rnd, margin){
+    var out = [];
+    var push = (typeof margin === 'number') ? margin : 0.16;
+    if(push < 0) push = 0;
+    if(push > 0.45) push = 0.45;
+
+    // Asymmetrische ankers buiten de viewport: rustige "sfeerlagen" aan randen.
+    var anchors = [
+      { x: -0.22, y: 0.10 },
+      { x: 1.18,  y: 0.18 },
+      { x: -0.16, y: 0.72 },
+      { x: 1.12,  y: 0.84 },
+      { x: 0.14,  y: 1.20 },
+      { x: 0.86,  y: 1.14 },
+      { x: 0.52,  y: -0.20 }
+    ];
+
+    for(var i=anchors.length-1;i>0;i--){
+      var j = Math.floor(rnd() * (i + 1));
+      var tmp = anchors[i];
+      anchors[i] = anchors[j];
+      anchors[j] = tmp;
+    }
+
+    var lim = Math.max(1, Math.min(count, anchors.length));
+    for(var k=0;k<lim;k++){
+      var a = anchors[k];
+      var x = a.x;
+      var y = a.y;
+      if(x < 0) x -= push;
+      else if(x > 1) x += push;
+      if(y < 0) y -= push;
+      else if(y > 1) y += push;
+      out.push({ x: x, y: y });
+    }
+    return out;
+  }
+
   
   function ensureSvgLayer(canvas){
     var parent = canvas && canvas.parentNode;
@@ -492,9 +530,9 @@
 
   function fillSurfaceZones(ctx, info, zones){
     if(!zones) return false;
-    var topColor = zones.topColor || '#FBF9F4';
-    var heroColor = zones.heroColor || '#F7F3EB';
-    var gridColor = zones.gridColor || '#F4EBDD';
+    var topColor = zones.topColor || '#EEF1F0';
+    var heroColor = zones.heroColor || '#EEF1F0';
+    var gridColor = zones.gridColor || '#F5F7F6';
 
     var dpr = info.dpr || 1;
     var cssH = info.cssH || (info.h / dpr);
@@ -594,6 +632,8 @@
     var spreadPositions = null;
     if(spread === 'grid'){
       spreadPositions = buildGridPositions(blobCount, rnd, spreadMargin);
+    }else if(spread === 'edges'){
+      spreadPositions = buildEdgePositions(blobCount, rnd, spreadMargin);
     }
 
     for(var i=0;i<blobCount;i++){
@@ -647,7 +687,7 @@
         cy = (rnd()*1.10 - 0.05) * info.h;
       }
 
-      if(i===1){
+      if(i===1 && !spreadPositions){
         rr *= 1.08;
         cx = info.w * 1.02;
         cy = info.h * 0.12;
@@ -728,8 +768,8 @@
         if(pal.length) flatColors = pal;
       }
       if(flatColors.length<3){
-        // fallback: zachte perzik-zand (geen blauw/groen)
-        flatColors = ['#F2C9A5','#F6D4B4','#F7E2C8'];
+        // fallback: koele, neutrale blobs
+        flatColors = ['#DCE2DF','#C7E6E5','#DCEAF3'];
       }
       if(flatColors.length>6) flatColors = flatColors.slice(0,6);
 
