@@ -247,44 +247,6 @@
     return out;
   }
 
-  function buildEdgePositions(count, rnd, margin){
-    var out = [];
-    var push = (typeof margin === 'number') ? margin : 0.16;
-    if(push < 0) push = 0;
-    if(push > 0.45) push = 0.45;
-
-    // Asymmetrische ankers buiten de viewport: rustige "sfeerlagen" aan randen.
-    var anchors = [
-      { x: -0.22, y: 0.10 },
-      { x: 1.18,  y: 0.18 },
-      { x: -0.16, y: 0.72 },
-      { x: 1.12,  y: 0.84 },
-      { x: 0.14,  y: 1.20 },
-      { x: 0.86,  y: 1.14 },
-      { x: 0.52,  y: -0.20 }
-    ];
-
-    for(var i=anchors.length-1;i>0;i--){
-      var j = Math.floor(rnd() * (i + 1));
-      var tmp = anchors[i];
-      anchors[i] = anchors[j];
-      anchors[j] = tmp;
-    }
-
-    var lim = Math.max(1, Math.min(count, anchors.length));
-    for(var k=0;k<lim;k++){
-      var a = anchors[k];
-      var x = a.x;
-      var y = a.y;
-      if(x < 0) x -= push;
-      else if(x > 1) x += push;
-      if(y < 0) y -= push;
-      else if(y > 1) y += push;
-      out.push({ x: x, y: y });
-    }
-    return out;
-  }
-
   
   function ensureSvgLayer(canvas){
     var parent = canvas && canvas.parentNode;
@@ -523,42 +485,6 @@
   }
 
 
-  function numOr(v, fallback){
-    var n = parseFloat(v);
-    return isFinite(n) ? n : fallback;
-  }
-
-  function fillSurfaceZones(ctx, info, zones){
-    if(!zones) return false;
-    var topColor = zones.topColor || '#F5F7F6';
-    var heroColor = zones.heroColor || '#EDF2F1';
-    var gridColor = zones.gridColor || '#F3F6F5';
-
-    var dpr = info.dpr || 1;
-    var cssH = info.cssH || (info.h / dpr);
-    var topEndCss = numOr(zones.topEndPx, cssH * 0.14);
-    var heroEndCss = numOr(zones.heroEndPx, cssH * 0.56);
-
-    if(topEndCss < 0) topEndCss = 0;
-    if(topEndCss > cssH) topEndCss = cssH;
-    if(heroEndCss < topEndCss) heroEndCss = topEndCss;
-    if(heroEndCss > cssH) heroEndCss = cssH;
-
-    var topEnd = Math.round(topEndCss * dpr);
-    var heroEnd = Math.round(heroEndCss * dpr);
-
-    ctx.fillStyle = topColor;
-    ctx.fillRect(0, 0, info.w, topEnd);
-
-    ctx.fillStyle = heroColor;
-    ctx.fillRect(0, topEnd, info.w, Math.max(0, heroEnd - topEnd));
-
-    ctx.fillStyle = gridColor;
-    ctx.fillRect(0, heroEnd, info.w, Math.max(0, info.h - heroEnd));
-
-    return true;
-  }
-
   function renderCanvas(canvas, palette, rnd, lite, opts){
     rnd = rnd || Math.random;
     var info = resizeCanvasToCSS(canvas);
@@ -578,12 +504,7 @@
     ctx.clearRect(0,0,info.w,info.h);
 
     var skipWash = !!(opts && opts.baseWash === false);
-    var zones = (!isDark && opts && opts.surfaceZones) ? opts.surfaceZones : null;
-    var usedZones = false;
-    if(zones){
-      usedZones = fillSurfaceZones(ctx, info, zones);
-    }
-    if(!usedZones && !isDark && !skipWash){
+    if(!isDark && !skipWash){
       // base wash (heel subtiel; echte achtergrond is wit via CSS)
       var bg = mixWithWhite(base, 0.995);
       ctx.fillStyle = bg;
@@ -632,8 +553,6 @@
     var spreadPositions = null;
     if(spread === 'grid'){
       spreadPositions = buildGridPositions(blobCount, rnd, spreadMargin);
-    }else if(spread === 'edges'){
-      spreadPositions = buildEdgePositions(blobCount, rnd, spreadMargin);
     }
 
     for(var i=0;i<blobCount;i++){
@@ -687,7 +606,7 @@
         cy = (rnd()*1.10 - 0.05) * info.h;
       }
 
-      if(i===1 && !spreadPositions){
+      if(i===1){
         rr *= 1.08;
         cx = info.w * 1.02;
         cy = info.h * 0.12;
@@ -711,8 +630,7 @@
     }
 
     // Light: ultrazachte vignette om randen te kalmeren (geen grijze waas).
-    // Als baseWash uit staat, slaan we ook de vignette over.
-    if(!isDark && !skipWash && !usedZones){
+    if(!isDark){
       var vg = ctx.createRadialGradient(info.w*0.55, info.h*0.45, 0, info.w*0.55, info.h*0.45, Math.max(info.w,info.h)*0.75);
       vg.addColorStop(0, 'rgba(255,255,255,0)');
       vg.addColorStop(1, 'rgba(255,255,255,0.010)');
@@ -768,8 +686,8 @@
         if(pal.length) flatColors = pal;
       }
       if(flatColors.length<3){
-        // fallback: koele, neutrale blobs
-        flatColors = ['#DCE2DF','#C7E6E5','#DCEAF3'];
+        // fallback (Parnassia-ish cool neutrals)
+        flatColors = ['#306088','#aac37b','#f2994a','#c1d5a1'];
       }
       if(flatColors.length>6) flatColors = flatColors.slice(0,6);
 
@@ -806,7 +724,6 @@
       var spreadMarginKey = (opts && typeof opts.blobSpreadMargin === 'number') ? String(opts.blobSpreadMargin) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
-      // surfaceZones beïnvloeden alleen de vlakverdeling; seed/asset-cache moet stabiel blijven.
       var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
 
       var token = ++lastToken;
