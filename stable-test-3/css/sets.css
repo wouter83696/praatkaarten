@@ -1,14 +1,8 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
-  --bg-base-color: var(--setsBaseBg);
-  --bg-base: #F7FBF9;
-  --bg-carousel: #F7FBF9;
-  --bg-grid: #F8FBFA;
-  --bg-card: #FAFAF8;
-  --setsBg: var(--bg-base);
-  --setsBaseBg: #F7FBF9;
-  --setsHeaderBg: #F7FBF9;
+  --setsBg: #FAFAF8;
+  --setsHeaderBg: #FAFAF8;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -19,36 +13,26 @@
   --setsTopOffset: calc(env(safe-area-inset-top, 0px) + var(--topBarInset) + var(--topBarPill) + var(--setsTopGap));
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
-  --setsHeroBg: var(--bg-carousel);
-  --setsGridBg: var(--bg-grid);
-  --setsBandTopEnd: var(--setsTopOffset);
-  --setsBandHeroEnd: 560px;
-  --setsHeroCardBg: var(--bg-card);
-  --setsGridCardBg: var(--bg-card);
-  --setsHeroCardImgOpacity: 1;
-  --setsGridCardImgOpacity: 1;
+  --setsHeroBg: transparent;
+  --setsGridBg: transparent;
 }
 
 html, body{
-  background: var(--setsHeaderBg, #F7FBF9);
+  background: var(--setsHeaderBg, #FAFAF8);
   height: 100%;
   min-height: 100dvh;
 }
 
 body.setsIndex{
   margin: 0;
-  position: relative;
-  height: auto;
-  min-height: 100dvh;
   font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   color: rgba(11,18,32,0.82);
   /* Laat cover/themakaart bovenaan beginnen (override global card centering) */
   --cardImgPos: top center;
-  /* Menu thumbnails moeten exact matchen met grid-kaarten */
-  --menuThumbBg: var(--setsGridCardBg, #FAFAF8);
-  --menuThumbImgPos: center;
-  /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #F7FBF9);
+  --menuSurface: 255, 255, 255;
+  --menuSurfaceAlpha: 1;
+  --menuSheetAlpha: 1;
+  --menuBtnAlpha: 1;
 }
 
 /* Menu-thumbnail: lichte overzoom om anti-aliasing witte randjes op SVG-randen te voorkomen */
@@ -100,22 +84,22 @@ body.setsIndex::after{
 
 /* Achtergrond blobs (statisch) */
 .indexBg{
-  position: absolute;
+  position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100vh;
   z-index: 0;
   pointer-events: none;
   opacity: 1;
 }
 
 .indexBgSvg{
-  position: absolute;
+  position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100vh;
   z-index: 0;
   pointer-events: none;
 }
@@ -140,7 +124,7 @@ body.setsIndex .indexBg{
   margin: 0 auto;
   max-width: var(--setsMax);
   padding: 0 0 40px;
-  z-index: 2;
+  z-index: 1;
 }
 
 /* Layout templates */
@@ -169,7 +153,16 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 }
 
 .setsHero::before{
-  display: none;
+  content:"";
+  position: absolute;
+  top: var(--setsTopOffset);
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background: var(--setsHeroBg, transparent);
+  z-index: -1;
 }
 
 /* Hero carousel (zelfde feel als master, maar met eigen classes) */
@@ -253,7 +246,16 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   min-height: calc(100vh - var(--setsTopOffset));
 }
 .setsGridSection::before{
-  display: none;
+  content:"";
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background: var(--setsGridBg, transparent);
+  z-index: -1;
 }
 
 .setsGrid{
