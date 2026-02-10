@@ -1,6 +1,7 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
+  --bg-base-color: #F7F2E6;
   --bg-base: #FBF9F4;
   --bg-carousel: #F4E3C3;
   --bg-card: #EDE1D0;

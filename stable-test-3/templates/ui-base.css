@@ -2,11 +2,18 @@
    Edit this file to change shared UI across all pages.
 */
 :root{
+  /* Page background hook (set per page; menu follows this automatically) */
+  --bg-base-color: #ffffff;
+
   /* Menu + sheet surfaces */
-  --menuSurface: 247, 242, 230;
+  --menuSurfaceColor: var(--bg-base-color);
+  --menuSurface: 255, 255, 255; /* legacy fallback */
   --menuSurfaceAlpha: 0.86;
   --menuSheetAlpha: 0.74;
   --menuBtnAlpha: 0.82;
+  --menuCardBg: color-mix(in srgb, var(--menuSurfaceColor) 86%, transparent);
+  --menuSheetBg: color-mix(in srgb, var(--menuSurfaceColor) 74%, transparent);
+  --menuBtnBg: color-mix(in srgb, var(--menuSurfaceColor) 82%, transparent);
 
   /* Menu text */
   --menuHeaderText: rgba(11,18,32,0.68);

@@ -151,6 +151,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,0.015);
   background: rgba(var(--menuSurface), var(--menuBtnAlpha));
+  background: var(--menuBtnBg, rgba(var(--menuSurface), var(--menuBtnAlpha)));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: none;
@@ -209,6 +210,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
   background: rgba(var(--menuSurface), var(--menuSurfaceAlpha));
+  background: var(--menuCardBg, rgba(var(--menuSurface), var(--menuSurfaceAlpha)));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   /* heel subtiele schaduw zodat het minder 'losstaand' voelt */
@@ -563,6 +565,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   /* Bijna transparant zodat blobs/achtergrond weer subtiel terugkomen */
   /* iets meer transparant zodat het meer in de pagina valt */
   background: rgba(var(--menuSurface), var(--menuSheetAlpha));
+  background: var(--menuSheetBg, rgba(var(--menuSurface), var(--menuSheetAlpha)));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   overflow: hidden;
