@@ -207,6 +207,19 @@ html[data-contrast="dark"] .cardInner{
   transform: none;
 }
 
+/* Cover-SVG heeft op sommige devices een 1px "witrand"; zoom subtiel in om dat weg te nemen. */
+.cardInner > img[src*="voorkant.svg"],
+.card .bg[src*="voorkant.svg"],
+.menuThumbCard img[src*="voorkant.svg"],
+.menuItemThumb img[src*="voorkant.svg"],
+.menu-thumb img[src*="voorkant.svg"],
+.menuThumb img[src*="voorkant.svg"],
+.menu-item-thumb img[src*="voorkant.svg"],
+.infoSlideCard img[src*="voorkant.svg"]{
+  transform: scale(1.018);
+  transform-origin: center;
+}
+
 
 /* FORCE full-bleed in index (overrides accidental contain) */
 .cardInner > img.bg,

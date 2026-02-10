@@ -8,12 +8,12 @@
   /* Menu + sheet surfaces */
   --menuSurfaceColor: var(--bg-base-color);
   --menuSurface: 255, 255, 255; /* legacy fallback */
-  --menuSurfaceAlpha: 0.54;
-  --menuSheetAlpha: 0.54;
-  --menuBtnAlpha: 0.70;
-  --menuCardBg: color-mix(in srgb, var(--menuSurfaceColor) 54%, transparent);
-  --menuSheetBg: color-mix(in srgb, var(--menuSurfaceColor) 54%, transparent);
-  --menuBtnBg: color-mix(in srgb, var(--menuSurfaceColor) 70%, transparent);
+  --menuSurfaceAlpha: 0.60;
+  --menuSheetAlpha: 0.60;
+  --menuBtnAlpha: 0.74;
+  --menuCardBg: color-mix(in srgb, var(--menuSurfaceColor) 60%, transparent);
+  --menuSheetBg: color-mix(in srgb, var(--menuSurfaceColor) 60%, transparent);
+  --menuBtnBg: color-mix(in srgb, var(--menuSurfaceColor) 74%, transparent);
 
   /* Menu text */
   --menuHeaderText: rgba(11,18,32,0.68);

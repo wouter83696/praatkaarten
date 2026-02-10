@@ -163,9 +163,9 @@
     try{
       root.style.setProperty('--menuSurface', rgb);
       root.style.setProperty('--menuTintRgb', rgb);
-      root.style.setProperty('--menuSurfaceAlpha', '0.54');
-      root.style.setProperty('--menuSheetAlpha', '0.54');
-      root.style.setProperty('--menuBtnAlpha', '0.70');
+      root.style.setProperty('--menuSurfaceAlpha', '0.60');
+      root.style.setProperty('--menuSheetAlpha', '0.60');
+      root.style.setProperty('--menuBtnAlpha', '0.74');
     }catch(_eSet){}
   }
 
@@ -1231,16 +1231,11 @@ function openInfo(){
       text.className = 'infoSlideText';
       text.textContent = s.text;
 
-      // Meekleuren: basis verschilt per modus (light vs dark), maar we tinten altijd.
-      // Dit voorkomt dat het tekstvlak soms "achterblijft" bij een mode-switch.
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
-      if(PK.applyDominantTint){
-        var baseTint = isDark
-          ? "rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.54))"
-          : "rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.54))";
-        // Iets meer zichtbaar dan eerder: subtiel maar herkenbaar meekleuren.
-        PK.applyDominantTint(text, s.srcRect, baseTint);
-      }
+      var baseTint = isDark
+        ? "rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.60))"
+        : "rgba(255, 255, 255, var(--menuSheetAlpha, 0.60))";
+      text.style.background = baseTint;
       inner.appendChild(card);
       inner.appendChild(text);
 
@@ -1251,27 +1246,16 @@ function openInfo(){
     enableInfiniteCarousel(infoCarousel, 'infoSlide');
   }
 
-  // Re-tint bestaande uitleg-tekstvlakken (infoSlideText) op basis van huidige modus.
-  // Noodzakelijk bij light↔dark switch: de carrousel-DOM wordt niet altijd opnieuw opgebouwd.
+  // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
   function retintInfoSlideTexts(){
-    if(!PK.applyDominantTint) return;
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     var base = isDark
-      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.54))'
-      : 'rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.54))';
+      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.60))'
+      : 'rgba(255, 255, 255, var(--menuSheetAlpha, 0.60))';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];
-      // Zoek het bijbehorende kaartbeeld binnen dezelfde slide.
-      var slide = t && t.closest ? t.closest('.infoSlide') : null;
-      var img = slide && slide.querySelector ? slide.querySelector('.infoSlideCard img') : null;
-      var src = img ? (img.getAttribute('src') || img.src) : null;
-      if(src){
-        try{ PK.applyDominantTint(t, src, base); }catch(_e){}
-      }else{
-        // Fallback: zet in elk geval een consistente basis.
-        try{ t.style.background = base; }catch(_e2){}
-      }
+      try{ t.style.background = base; }catch(_e2){}
     }
   }
 

@@ -3,7 +3,7 @@
 // - 1 SVG tonen in hetzelfde frame als het grid (img in cardInner)
 // - uitlegtekst eronder tonen
 // - tik links/rechts op de kaart om te navigeren
-// - tekstvak pakt een lichte tint van de dominante kleur uit de SVG
+// - tekstvak gebruikt een vaste, rustige sheet-kleur (geen dominante kaart-tint)
 
 (function(w){
   'use strict';
@@ -50,12 +50,14 @@
   }
 
   function applyDominantTint(svgUrl){
-    if(PK.applyDominantTint){
-      PK.applyDominantTint(uitlegTextEl, svgUrl, '#F4F4F4');
-      return;
-    }
     if(!uitlegTextEl) return;
-    uitlegTextEl.style.background = '#F4F4F4';
+    var isDark = false;
+    try{
+      isDark = !!(w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
+    }catch(_eDark){}
+    uitlegTextEl.style.background = isDark
+      ? 'rgba(23, 22, 50, var(--menuSheetAlpha, 0.60))'
+      : 'rgba(255, 255, 255, var(--menuSheetAlpha, 0.60))';
   }
 
   function render(){

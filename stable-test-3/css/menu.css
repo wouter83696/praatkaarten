@@ -13,9 +13,9 @@
   --menuIcon: rgba(11,18,32,0.52);
   --menuLine: rgba(0,0,0,0.06);
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 0.54;
-  --menuSheetAlpha: 0.54;
-  --menuBtnAlpha: 0.70;
+  --menuSurfaceAlpha: 0.60;
+  --menuSheetAlpha: 0.60;
+  --menuBtnAlpha: 0.74;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
   /* Align header action icons with menu card thumbnails */
@@ -262,7 +262,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   /* Subtiel pill-vlak dat wegvalt in het menu */
   border: 1px solid rgba(11,18,32,0.02);
   /* Subtiel: 2.5% */
-  background: rgba(var(--menuSurface), 0.30);
+  background: rgba(var(--menuSurface), 0.36);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   box-shadow: none;
@@ -974,9 +974,8 @@ html[data-contrast="dark"] .infoSlideInner{
   padding: 20px 18px 18px;
   border-radius: 0;
   border: 0;
-  /* Lichte doorkijk zodat achtergrond leeft, zonder kleurvlak */
-  /* Super lichte meekleur-tint (wordt via PK.applyDominantTint gezet) */
-  background: var(--pkTextBg, rgba(var(--menuSurface), var(--menuSheetAlpha)));
+  /* Lichte doorkijk zonder dominante kaartkleur; tekst blijft stabiel leesbaar. */
+  background: var(--pkTextBg, rgba(255,255,255, var(--menuSheetAlpha, 0.60)));
   box-shadow: none;
   /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
   color: rgba(11,18,32,.68);
@@ -987,7 +986,7 @@ html[data-contrast="dark"] .infoSlideInner{
 /* Dark help text overrides */
 html[data-contrast="dark"] .infoSlideText{
   /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha));
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.60));
   box-shadow: none;
   color: rgba(244,246,250,0.84);
 }
