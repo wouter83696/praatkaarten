@@ -1,9 +1,10 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
-  --setsBg: #ffffff;
-  --setsBaseBg: #ffffff;
-  --setsHeaderBg: #ffffff;
+  --setsBg: #F4EBDD;
+  --setsBaseBg: #F4EBDD;
+  /* Semi-transparant zodat blobs zichtbaar blijven door de kleurbanden heen */
+  --setsHeaderBg: rgba(244, 235, 221, 0.62);
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -14,8 +15,8 @@
   --setsTopOffset: calc(env(safe-area-inset-top, 0px) + var(--topBarInset) + var(--topBarPill) + var(--setsTopGap));
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
-  --setsHeroBg: transparent;
-  --setsGridBg: transparent;
+  --setsHeroBg: rgba(247, 243, 235, 0.56);
+  --setsGridBg: rgba(251, 249, 244, 0.60);
   --setsHeroCardBg: #ffffff;
   --setsGridCardBg: #ffffff;
   --setsHeroCardImgOpacity: 1;
@@ -317,6 +318,7 @@ html[data-contrast="dark"] body.setsIndex{
 html[data-contrast="dark"] body.setsIndex{
   color: rgba(245,250,255,0.9);
   --darkBaseRgb: 24, 18, 60;
+  --setsHeaderBg: rgba(24, 18, 60, 0.34);
   --setsHeroBg: rgba(24, 18, 60, 0);
   --setsGridBg: rgba(24, 18, 60, 0.78);
 }
