@@ -1,12 +1,12 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
-  --bg-base: #FBFAF7;
-  --bg-carousel: #F5EEDF;
+  --bg-base: #FBF9F4;
+  --bg-carousel: #F7F3EB;
   --bg-card: #EDE1D0;
   --setsBg: var(--bg-base);
-  --setsBaseBg: var(--bg-base);
-  --setsHeaderBg: var(--bg-base);
+  --setsBaseBg: #F4EBDD;
+  --setsHeaderBg: #F4EBDD;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -18,7 +18,7 @@
   --setsHeroRadius: 18px;
   --setsGridRadius: 12px;
   --setsHeroBg: var(--bg-carousel);
-  --setsGridBg: var(--bg-base);
+  --setsGridBg: #FBF9F4;
   --setsBandTopEnd: var(--setsTopOffset);
   --setsBandHeroEnd: 560px;
   --setsHeroCardBg: var(--bg-card);
@@ -28,7 +28,7 @@
 }
 
 html, body{
-  background: var(--setsBaseBg, #FBFAF7);
+  background: var(--setsBaseBg, #F4EBDD);
   height: 100%;
   min-height: 100dvh;
 }
@@ -49,7 +49,7 @@ body.setsIndex{
   --menuSheetAlpha: 1;
   --menuBtnAlpha: 1;
   /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #FBFAF7);
+  background: var(--setsBaseBg, #F4EBDD);
 }
 
 .pkBuildStamp{
