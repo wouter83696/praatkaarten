@@ -1,34 +1,18 @@
 /* Template: main index (sets overview)
-   Adjust these to change the main index background bands.
+   Main page zones (solid, no overlay wash).
 */
 :root{
-  /* Main index: vaste zones + super subtiele overlays */
-  --pk-base: #F4EBDD;   /* basis/anker */
-  --pk-header: #FBF9F4; /* top */
-  --pk-mid: #F7F3EB;    /* carrousel */
-  --pk-grid: #F4EBDD;   /* grid */
+  --pk-main-header: #FBF9F4;
+  --pk-main-carousel: #F7F3EB;
+  --pk-main-grid: #F4EBDD;
 
-  /* RGB-varianten voor transparante lagen */
-  --pk-header-rgb: 251, 249, 244;
-  --pk-mid-rgb: 247, 243, 235;
-  --pk-grid-rgb: 244, 235, 221;
-
-  /* super subtiele lagen */
-  /* net zichtbaar maar nog subtiel */
-  --headerBandAlpha: 0.06;
-  --heroBandAlpha: 0.12;
-  --gridBandAlpha: 0.08;
-
-  /* toegepast (basis blijft zichtbaar, zones zijn subtiele overlay) */
-  --setsBaseBg: var(--pk-base);
-  --setsHeaderBg: rgba(var(--pk-header-rgb), var(--headerBandAlpha));
-  --setsHeroBg: rgba(var(--pk-mid-rgb), var(--heroBandAlpha));
-  --setsGridBg: rgba(var(--pk-grid-rgb), var(--gridBandAlpha));
-
-  /* geen extra uniforme wash */
+  --setsBaseBg: var(--pk-main-grid);
+  --setsHeaderBg: var(--pk-main-header);
+  --setsHeroBg: var(--pk-main-carousel);
+  --setsGridBg: var(--pk-main-grid);
   --setsWashAlpha: 0;
 
-  /* Kaarten: volledig dekkend */
+  /* Cards: fully opaque */
   --heroCardAlpha: 1;
   --gridCardAlpha: 1;
   --setsHeroCardBg: #FAFAF8;

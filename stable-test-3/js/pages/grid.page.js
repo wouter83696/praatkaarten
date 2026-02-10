@@ -670,15 +670,28 @@
       var vpH = w.innerHeight || 0;
       var topEndPx = NaN;
       var heroEndPx = NaN;
+      var heroStyle = null;
+      var rootStyle = null;
+      var zoneTopColor = '#FBF9F4';
+      var zoneHeroColor = '#F7F3EB';
+      var zoneGridColor = '#F4EBDD';
       try{
-        var heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
-        var rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
+        heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
+        rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
         var heroPadTop = heroStyle ? parseFloat(String(heroStyle.paddingTop || '')) : NaN;
         var heroExtra = rootStyle ? parseFloat(String(rootStyle.getPropertyValue('--setsHeroPadExtra') || '')) : NaN;
         if(isFinite(heroPadTop) && isFinite(heroExtra)){
           topEndPx = heroPadTop - heroExtra;
         }
       }catch(_eTop){}
+      if(rootStyle){
+        var cssTop = trim(rootStyle.getPropertyValue('--setsHeaderBg'));
+        var cssHero = trim(rootStyle.getPropertyValue('--setsHeroBg'));
+        var cssGrid = trim(rootStyle.getPropertyValue('--setsGridBg'));
+        if(cssTop) zoneTopColor = cssTop;
+        if(cssHero) zoneHeroColor = cssHero;
+        if(cssGrid) zoneGridColor = cssGrid;
+      }
       if(!isFinite(topEndPx) || topEndPx < 0){
         topEndPx = vpH ? (vpH * 0.12) : 88;
       }
@@ -695,9 +708,9 @@
       if(heroEndPx < topEndPx) heroEndPx = topEndPx;
       if(vpH && heroEndPx > vpH) heroEndPx = vpH;
       surfaceZones = {
-        topColor: '#FBF9F4',
-        heroColor: '#F7F3EB',
-        gridColor: '#F4EBDD',
+        topColor: zoneTopColor,
+        heroColor: zoneHeroColor,
+        gridColor: zoneGridColor,
         topEndPx: topEndPx,
         heroEndPx: heroEndPx
       };
