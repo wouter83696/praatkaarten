@@ -523,6 +523,15 @@
 
   function renderCanvas(canvas, palette, rnd, lite, opts){
     rnd = rnd || Math.random;
+    var zones = (!opts ? null : opts.surfaceZones);
+    if(zones && typeof zones.documentHeight === 'number' && zones.documentHeight > 0){
+      var targetH = Math.max(Math.round(zones.documentHeight), Math.round(w.innerHeight || 0));
+      if(targetH > 0){
+        canvas.style.height = targetH + 'px';
+      }
+    }else if(canvas && canvas.style && canvas.style.height){
+      canvas.style.height = '';
+    }
     var info = resizeCanvasToCSS(canvas);
     var ctx = canvas.getContext('2d');
     if(!ctx) return;
@@ -540,7 +549,7 @@
     ctx.clearRect(0,0,info.w,info.h);
 
     var skipWash = !!(opts && opts.baseWash === false);
-    var zones = (!isDark && opts && opts.surfaceZones) ? opts.surfaceZones : null;
+    zones = (!isDark && opts && opts.surfaceZones) ? opts.surfaceZones : null;
     var usedZones = false;
     if(zones){
       usedZones = fillSurfaceZones(ctx, info, zones);

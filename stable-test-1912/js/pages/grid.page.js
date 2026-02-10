@@ -680,6 +680,11 @@
     }catch(_eZone){}
     if(!isDark){
       var vpH = w.innerHeight || 0;
+      var docH = Math.max(
+        vpH,
+        (doc && doc.body && doc.body.scrollHeight) ? doc.body.scrollHeight : 0,
+        (doc && doc.documentElement && doc.documentElement.scrollHeight) ? doc.documentElement.scrollHeight : 0
+      );
       var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
       var topEndPx = NaN;
       var heroEndPx = NaN;
@@ -708,12 +713,14 @@
         heroEndPx = topEndPx + (vpH ? (vpH * 0.44) : 320);
       }
       if(heroEndPx < topEndPx) heroEndPx = topEndPx;
+      if(heroEndPx > docH) heroEndPx = docH;
       surfaceZones = {
         topColor: zoneTopColor,
         heroColor: zoneHeroColor,
         gridColor: zoneGridColor,
         topEndPx: topEndPx,
-        heroEndPx: heroEndPx
+        heroEndPx: heroEndPx,
+        documentHeight: docH
       };
     }
 
