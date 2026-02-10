@@ -62,7 +62,7 @@ body.uitlegPage.embed .wrap{
     We laten PK.applyDominantTint alleen CSS-variabelen zetten,
     zodat dark/light altijd consistent omschakelt.
   */
-  background-color: var(--pkTextBg, rgba(255,255,255,0.60));
+  background-color: var(--pkTextBg, rgba(255,255,255,0.82));
   border-radius: var(--radius);
   /* Bovenhoeken verdwijnen onder de kaart → geen "dubbele" ronding */
   border-top-left-radius: 0;
@@ -140,7 +140,7 @@ html[data-contrast="dark"] .uitlegPage .uitlegText{
     Dark mode gebruikt altijd een vaste basis (geen dominante-kleur tint),
     zodat het tekstvak 100% mee omschakelt.
   */
-  background-color: rgba(23, 22, 50, 0.60);
+  background-color: rgba(23, 22, 50, 0.86);
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow: none;
 }
