@@ -25,6 +25,8 @@
   var CONTRAST = 'light';
   var lastIndexConfig = null;
   var dotsBound = false;
+  var bgBandsBound = false;
+  var bgBandsTimer = 0;
 
   // Menu wiring
   var pillBtn = doc.getElementById('themePill');
@@ -85,6 +87,40 @@
     if(heroSection) heroSection.hidden = !showHero;
     if(gridSection) gridSection.hidden = !showGrid;
     return { layout: layout, showHero: showHero, showGrid: showGrid };
+  }
+
+  function updateBackgroundBandsNow(){
+    if(!doc || !doc.documentElement || !doc.body) return;
+    if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
+
+    var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+    var heroEnd = 0;
+
+    if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
+      heroEnd = Math.round(scrollTop + gridSection.getBoundingClientRect().top);
+    }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
+      heroEnd = Math.round(scrollTop + heroSection.getBoundingClientRect().bottom);
+    }else{
+      heroEnd = Math.round(scrollTop + (w.innerHeight || 0) * 0.62);
+    }
+
+    if(!isFinite(heroEnd) || heroEnd < 220) heroEnd = 220;
+    doc.documentElement.style.setProperty('--setsBandHeroEnd', heroEnd + 'px');
+  }
+
+  function scheduleBackgroundBands(){
+    if(bgBandsTimer) w.clearTimeout(bgBandsTimer);
+    bgBandsTimer = w.setTimeout(function(){
+      updateBackgroundBandsNow();
+    }, 48);
+  }
+
+  function ensureBackgroundBandSync(){
+    if(bgBandsBound) return;
+    bgBandsBound = true;
+    w.addEventListener('resize', scheduleBackgroundBands, { passive:true });
+    w.addEventListener('orientationchange', scheduleBackgroundBands, { passive:true });
+    w.addEventListener('load', scheduleBackgroundBands, { passive:true });
   }
 
   function getCardsPage(){
@@ -319,6 +355,7 @@
   w.addEventListener('pageshow', function(){
     w.setTimeout(function(){
       resetPositions();
+      scheduleBackgroundBands();
     }, 0);
   });
 
@@ -731,9 +768,15 @@
       }catch(_eDbg){}
 
       applyIndexLayout();
+      ensureBackgroundBandSync();
 
       renderHero(state.idx, state.setId, state.meta);
       renderGrid(state.idx, state.setId, state.meta);
+      scheduleBackgroundBands();
+      w.requestAnimationFrame(function(){
+        updateBackgroundBandsNow();
+        w.requestAnimationFrame(updateBackgroundBandsNow);
+      });
 
       // Menu klikken -> naar set
       if(menuList){
@@ -790,8 +833,10 @@
         }
       }catch(_eCfg){}
       applyIndexLayout();
+      ensureBackgroundBandSync();
       renderHero(fb.idx, fb.setId, fb.meta);
       renderGrid(fb.idx, fb.setId, fb.meta);
+      scheduleBackgroundBands();
       applyBackground(fb.idx);
     });
   }
