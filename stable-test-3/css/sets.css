@@ -2,11 +2,11 @@
 
 :root{
   --bg-base: #FBF9F4;
-  --bg-carousel: #F7F3EB;
+  --bg-carousel: #F4E3C3;
   --bg-card: #EDE1D0;
   --setsBg: var(--bg-base);
-  --setsBaseBg: #F4EBDD;
-  --setsHeaderBg: #F4EBDD;
+  --setsBaseBg: #F3E9D3;
+  --setsHeaderBg: #F3E9D3;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -28,7 +28,7 @@
 }
 
 html, body{
-  background: var(--setsBaseBg, #F4EBDD);
+  background: var(--setsBaseBg, #F3E9D3);
   height: 100%;
   min-height: 100dvh;
 }
@@ -49,7 +49,7 @@ body.setsIndex{
   --menuSheetAlpha: 1;
   --menuBtnAlpha: 1;
   /* Vlakke fallback; de echte 3 zones worden in indexBackground.js getekend. */
-  background: var(--setsBaseBg, #F4EBDD);
+  background: var(--setsBaseBg, #F3E9D3);
 }
 
 .pkBuildStamp{

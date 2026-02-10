@@ -3,10 +3,10 @@
 */
 :root{
   --bg-base: #FBF9F4;
-  --bg-carousel: #F7F3EB;
+  --bg-carousel: #F4E3C3;
   --bg-card: #EDE1D0;
 
-  --pk-main-header: #F4EBDD;
+  --pk-main-header: #F3E9D3;
   --pk-main-carousel: var(--bg-carousel);
   --pk-main-grid: var(--bg-base);
 
