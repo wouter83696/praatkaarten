@@ -2,5 +2,7 @@
    Adjust this background for the cards page.
 */
 :root{
+  /* Basiskleur voor kaarten-index (template-gestuurd). */
+  --bg-base-color: var(--pk-set-bg, var(--cardsPageBg, #FAFAF8));
   --cardsPageBg: #FAFAF8;
 }

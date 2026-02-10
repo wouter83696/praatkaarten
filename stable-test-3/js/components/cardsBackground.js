@@ -677,6 +677,7 @@
       }
 
       flatColors = uniq(flatColors);
+
       if(paletteOverride && paletteOverride.length){
         var pal = [];
         for(var p=0;p<paletteOverride.length;p++){
