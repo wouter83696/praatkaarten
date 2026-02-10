@@ -132,9 +132,9 @@
     try{
       root.style.setProperty('--menuSurface', rgb);
       root.style.setProperty('--menuTintRgb', rgb);
-      root.style.setProperty('--menuSurfaceAlpha', '0.46');
-      root.style.setProperty('--menuSheetAlpha', '0.46');
-      root.style.setProperty('--menuBtnAlpha', '0.62');
+      root.style.setProperty('--menuSurfaceAlpha', '0.54');
+      root.style.setProperty('--menuSheetAlpha', '0.54');
+      root.style.setProperty('--menuBtnAlpha', '0.70');
     }catch(_eSet){}
   }
 

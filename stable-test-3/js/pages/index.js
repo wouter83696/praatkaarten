@@ -126,9 +126,9 @@
     try{
       root.style.setProperty('--menuSurface', rgb);
       root.style.setProperty('--menuTintRgb', rgb);
-      root.style.setProperty('--menuSurfaceAlpha', '0.46');
-      root.style.setProperty('--menuSheetAlpha', '0.46');
-      root.style.setProperty('--menuBtnAlpha', '0.62');
+      root.style.setProperty('--menuSurfaceAlpha', '0.54');
+      root.style.setProperty('--menuSheetAlpha', '0.54');
+      root.style.setProperty('--menuBtnAlpha', '0.70');
     }catch(_eSet){}
   }
 
@@ -1122,8 +1122,8 @@ function openInfo(){
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       if(PK.applyDominantTint){
         var baseTint = isDark
-          ? "rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.46))"
-          : "rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.46))";
+          ? "rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.54))"
+          : "rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.54))";
         // Iets meer zichtbaar dan eerder: subtiel maar herkenbaar meekleuren.
         PK.applyDominantTint(text, s.srcRect, baseTint);
       }
@@ -1143,8 +1143,8 @@ function openInfo(){
     if(!PK.applyDominantTint) return;
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     var base = isDark
-      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.46))'
-      : 'rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.46))';
+      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuSheetAlpha, 0.54))'
+      : 'rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.54))';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];

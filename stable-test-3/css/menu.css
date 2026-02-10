@@ -13,9 +13,9 @@
   --menuIcon: rgba(11,18,32,0.52);
   --menuLine: rgba(0,0,0,0.06);
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 0.46;
-  --menuSheetAlpha: 0.46;
-  --menuBtnAlpha: 0.62;
+  --menuSurfaceAlpha: 0.54;
+  --menuSheetAlpha: 0.54;
+  --menuBtnAlpha: 0.70;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
   /* Align header action icons with menu card thumbnails */
@@ -262,7 +262,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   /* Subtiel pill-vlak dat wegvalt in het menu */
   border: 1px solid rgba(11,18,32,0.02);
   /* Subtiel: 2.5% */
-  background: rgba(var(--menuSurface), 0.24);
+  background: rgba(var(--menuSurface), 0.30);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   box-shadow: none;
@@ -408,7 +408,7 @@ html[data-contrast="dark"] .toolBtn{
 
 html[data-contrast="dark"] .menuHeaderTools{
   border: 1px solid rgba(255,255,255,0.03);
-  background: rgb(var(--darkBaseRgb, 24, 18, 60));
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.30);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: none;

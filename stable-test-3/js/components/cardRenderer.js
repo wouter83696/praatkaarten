@@ -113,7 +113,7 @@
     // Inline styles "winnen" van dark/light CSS, waardoor het tekstvak soms niet goed omschakelt.
     // We sturen nu met CSS-variabelen, zodat de mode altijd leidend blijft.
 
-    var base = defaultBg || 'rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.46))';
+    var base = defaultBg || 'rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha, 0.54))';
     try{
       targetEl.style.setProperty('--pkTextBg', base);
     }catch(_e){
