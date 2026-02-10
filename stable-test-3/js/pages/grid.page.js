@@ -637,7 +637,7 @@
         ? idx.uiDefaults.index.background
         : null);
     var palette = bg && Array.isArray(bg.palette) ? bg.palette : [
-      '#DCE2DF','#C7E6E5','#DCEAF3'
+      '#5fbfb8','#6ac6bf','#7fcfc9','#8ed6d0','#9fe0da','#b1e9e4'
     ];
     var darkPalette = bg && Array.isArray(bg.darkPalette) ? bg.darkPalette : null;
     var isDark = false;
@@ -645,26 +645,26 @@
       isDark = (doc && doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_e){ isDark = false; }
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
-    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 3;
-    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.25;
+    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 7;
+    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.05;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 0.85;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : undefined;
     var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : undefined;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
-    var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : 0.22;
-    var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : 10;
-    var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : 14;
+    var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : undefined;
+    var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : undefined;
+    var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : undefined;
     var baseWash = bg && bg.baseWash === false ? false : undefined;
-    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0;
+    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : undefined;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
-    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.38;
+    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : undefined;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : undefined;
-    var shapeEnabled = (bg && typeof bg.shapeEnabled === 'boolean') ? bg.shapeEnabled : false;
-    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : 'edges';
-    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.16;
-    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 2.6;
-    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.32;
+    var shapeEnabled = bg && bg.shapeEnabled === false ? false : undefined;
+    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
+    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
+    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
+    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : undefined;
     var surfaceZones = null;
     if(!isDark){
       var vpH = w.innerHeight || 0;

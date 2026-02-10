@@ -2,13 +2,13 @@
 
 :root{
   --bg-base-color: var(--setsBaseBg);
-  --bg-base: #F3F5F6;
-  --bg-carousel: #EDF2F1;
-  --bg-grid: #F3F6F5;
-  --bg-card: #E6ECE9;
+  --bg-base: #FAFAF8;
+  --bg-carousel: #F7FBF9;
+  --bg-grid: #F8FBFA;
+  --bg-card: #FAFAF8;
   --setsBg: var(--bg-base);
-  --setsBaseBg: #F3F5F6;
-  --setsHeaderBg: #F5F7F6;
+  --setsBaseBg: #FAFAF8;
+  --setsHeaderBg: #FAFAF8;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -30,7 +30,7 @@
 }
 
 html, body{
-  background: var(--setsBaseBg, #F3F5F6);
+  background: var(--setsHeaderBg, #FAFAF8);
   height: 100%;
   min-height: 100dvh;
 }
