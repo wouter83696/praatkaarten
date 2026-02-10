@@ -668,13 +668,14 @@
     var surfaceZones = null;
     if(!isDark){
       var vpH = w.innerHeight || 0;
+      var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
       var topEndPx = NaN;
       var heroEndPx = NaN;
       var heroStyle = null;
       var rootStyle = null;
-      var zoneTopColor = '#FBF9F4';
+      var zoneTopColor = '#F4EBDD';
       var zoneHeroColor = '#F7F3EB';
-      var zoneGridColor = '#F4EBDD';
+      var zoneGridColor = '#FBF9F4';
       try{
         heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
         rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
@@ -697,16 +698,15 @@
       }
       try{
         if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
-          heroEndPx = gridSection.getBoundingClientRect().top;
+          heroEndPx = scrollTop + gridSection.getBoundingClientRect().top;
         }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
-          heroEndPx = heroSection.getBoundingClientRect().bottom;
+          heroEndPx = scrollTop + heroSection.getBoundingClientRect().bottom;
         }
       }catch(_eHero){}
       if(!isFinite(heroEndPx)){
-        heroEndPx = vpH ? (vpH * 0.58) : (topEndPx + 320);
+        heroEndPx = (vpH ? (vpH * 0.58) : (topEndPx + 320)) + scrollTop;
       }
       if(heroEndPx < topEndPx) heroEndPx = topEndPx;
-      if(vpH && heroEndPx > vpH) heroEndPx = vpH;
       surfaceZones = {
         topColor: zoneTopColor,
         heroColor: zoneHeroColor,
