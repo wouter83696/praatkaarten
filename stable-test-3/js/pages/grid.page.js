@@ -38,9 +38,9 @@
   }
 
   // Main-index kaartpalet (referentie uit ontwerp-SVG):
-  // - Hoofdkaart altijd BASE
-  // - DEEP max 1-2 tegelijk
-  // - LIGHT nooit samen met meerdere DEEP
+  // - BASE is standaard op main index
+  // - LIGHT spaarzaam als zachte variatie
+  // - DEEP alleen als reserve/highlight (niet standaard in grid/carrousel)
   var MAIN_INDEX_CARD_PALETTE = {
     light: [
       '#CFE6DF', '#DDE8F6', '#E7E1F5', '#F3DCE4', '#F8E4D2',
