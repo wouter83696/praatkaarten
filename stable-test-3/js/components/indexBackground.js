@@ -247,6 +247,71 @@
     return out;
   }
 
+  function parseCustomViewBox(viewBox){
+    var out = { x:0, y:0, w:1024, h:1024 };
+    if(!viewBox) return out;
+    if(typeof viewBox === 'string'){
+      var p = viewBox.replace(/,/g,' ').trim().split(/\s+/);
+      if(p.length === 4){
+        var x = parseFloat(p[0]);
+        var y = parseFloat(p[1]);
+        var wv = parseFloat(p[2]);
+        var hv = parseFloat(p[3]);
+        if(isFinite(x) && isFinite(y) && isFinite(wv) && isFinite(hv) && wv > 0 && hv > 0){
+          out.x = x; out.y = y; out.w = wv; out.h = hv;
+          return out;
+        }
+      }
+      return out;
+    }
+    if(typeof viewBox === 'object'){
+      var ox = parseFloat(viewBox.x);
+      var oy = parseFloat(viewBox.y);
+      var ow = parseFloat(viewBox.w);
+      var oh = parseFloat(viewBox.h);
+      if(isFinite(ox) && isFinite(oy) && isFinite(ow) && isFinite(oh) && ow > 0 && oh > 0){
+        out.x = ox; out.y = oy; out.w = ow; out.h = oh;
+      }
+    }
+    return out;
+  }
+
+  function drawCustomLightBlobs(ctx, info, blobs, viewBox, opacityScale){
+    if(!ctx || !info || !blobs || !blobs.length) return false;
+    if(typeof w.Path2D !== 'function') return false;
+
+    var vb = parseCustomViewBox(viewBox);
+    var sx = info.w / vb.w;
+    var sy = info.h / vb.h;
+    opacityScale = (typeof opacityScale === 'number') ? opacityScale : 1;
+    if(opacityScale < 0.2) opacityScale = 0.2;
+    if(opacityScale > 2) opacityScale = 2;
+
+    ctx.save();
+    ctx.translate(-vb.x * sx, -vb.y * sy);
+    ctx.scale(sx, sy);
+    ctx.shadowBlur = 0;
+    if('filter' in ctx) ctx.filter = 'none';
+
+    for(var i=0;i<blobs.length;i++){
+      var b = blobs[i] || {};
+      var d = b.d ? String(b.d) : '';
+      if(!d) continue;
+      var fill = b.fill ? String(b.fill) : '#7fcfc9';
+      var alpha = (typeof b.opacity === 'number') ? b.opacity : 0.4;
+      alpha = clamp(alpha * opacityScale, 0.02, 0.95);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = fill;
+      try{
+        var p = new w.Path2D(d);
+        ctx.fill(p);
+      }catch(_ePath){}
+    }
+
+    ctx.restore();
+    return true;
+  }
+
   
   function ensureSvgLayer(canvas){
     var parent = canvas && canvas.parentNode;
@@ -518,6 +583,18 @@
       ctx.fillStyle = g;
       ctx.fillRect(0,0,info.w,info.h);
       ctx.globalAlpha = 1;
+    }
+
+    // Main index: vaste blobset (aangeleverde SVG-vormen/kleuren) in light mode.
+    if(!isDark && opts && Array.isArray(opts.customLightBlobs) && opts.customLightBlobs.length){
+      var drawn = drawCustomLightBlobs(
+        ctx,
+        info,
+        opts.customLightBlobs,
+        opts.customLightViewBox,
+        opts.customLightOpacityScale
+      );
+      if(drawn) return info;
     }
 
     // blobs

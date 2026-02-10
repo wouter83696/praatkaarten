@@ -52,6 +52,31 @@
     '227,233,238'  // #E3E9EE BLUE_GREY_STONE
   ];
 
+  // Main-index blobs (vast) op basis van aangeleverde SVG.
+  var MAIN_INDEX_MINT_VIEWBOX = '0 0 1024 1024';
+  var MAIN_INDEX_MINT_BLOBS = [
+    {
+      fill: '#ddf4f2',
+      opacity: 0.45,
+      d: 'M208.01,594.28c44.24-50.43,118.32-80.62,179.72-62.45s93.3,69.96,88.17,136.84c-5.14,66.89-54.86,130.35-110.43,152.99-55.56,22.65-113.19,13.73-141.32-28.79-28.13-42.53-43.58-133.42-16.15-198.59h.01Z'
+    },
+    {
+      fill: '#ddf4f2',
+      opacity: 0.45,
+      d: 'M637.64,126.03c60-30,140-30,190,10s60,100,30,160-100,100-160,100-110-30-120-80,10-140,60-190Z'
+    },
+    {
+      fill: '#b8e6e2',
+      opacity: 0.45,
+      d: 'M148.85,289.79c-30-70,0-150,70-180,60-25,120-10,170,15s90,15,120,45c30,30,30,80,10,120s-70,60-110,90c-50,30-110,30-160,10s-70-40-100-100h0Z'
+    },
+    {
+      fill: '#7fcfc9',
+      opacity: 0.55,
+      d: 'M423.4,584.28c-13.94-103.44,83.51-187.22,200.59-188.12,107.21-3.62,171.98,69.58,246.74,68.07,84.63,1.22,149.4,74.42,156.31,164.85,6.91,90.44-52.43,151.53-115.96,189.34-63.53,37.8-153.84,57.16-239.83,22.37s-163.47-100.43-208.5-168.18c-29.55-46.88-26.71-57.17-39.36-88.32h.01,0Z'
+    }
+  ];
+
   function trim(s){
     return String(s || '').replace(/^\s+|\s+$/g,'');
   }
@@ -751,6 +776,13 @@
     var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.3;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 2.6;
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : (isDark ? undefined : 0.145);
+    var customLightBlobs = (bg && Array.isArray(bg.customLightBlobs) && bg.customLightBlobs.length)
+      ? bg.customLightBlobs
+      : MAIN_INDEX_MINT_BLOBS;
+    var customLightViewBox = (bg && bg.customLightViewBox) ? bg.customLightViewBox : MAIN_INDEX_MINT_VIEWBOX;
+    var customLightOpacityScale = (bg && typeof bg.customLightOpacityScale === 'number')
+      ? bg.customLightOpacityScale
+      : 1;
     var surfaceZones = null;
     if(!isDark){
       var vpH = w.innerHeight || 0;
@@ -830,6 +862,9 @@
       blobSpreadMargin: blobSpreadMargin,
       sizeLimit: sizeLimit,
       blobAlphaFixed: blobAlphaFixed,
+      customLightBlobs: customLightBlobs,
+      customLightViewBox: customLightViewBox,
+      customLightOpacityScale: customLightOpacityScale,
       surfaceZones: surfaceZones
     });
   }
