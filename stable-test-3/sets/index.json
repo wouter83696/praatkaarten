@@ -29,18 +29,18 @@
   },
   "indexPage": {
     "background": {
-      "palette": ["#D6DDD5", "#E4D9CC"],
-      "darkPalette": ["#D6DDD5", "#E4D9CC"],
-      "blobCount": 4,
-      "blobAlphaFixed": 0.12,
-      "blobWash": 0.48,
+      "palette": ["#79B9AA", "#E8833A", "#E6CDB3"],
+      "darkPalette": ["#79B9AA", "#E8833A", "#E6CDB3"],
+      "blobCount": 5,
+      "blobAlphaFixed": 0.20,
+      "blobWash": 0,
       "blobIrregularity": 0.45,
       "blobPointsMin": 7,
       "blobPointsMax": 11,
-      "sizeScale": 1.9,
-      "sizeLimit": 2.4,
+      "sizeScale": 1.1,
+      "sizeLimit": 2.0,
       "blobSpread": "grid",
-      "blobSpreadMargin": 0.42,
+      "blobSpreadMargin": 0.12,
       "baseWash": false,
       "shapeEnabled": false
     }
