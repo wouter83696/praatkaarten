@@ -4,11 +4,19 @@
   var w = window;
   var doc = document;
   var page = (doc.body && doc.body.getAttribute('data-page')) ? doc.body.getAttribute('data-page') : '';
+  var ASSET_V = '4.0.4';
+  w.PK_ASSET_V = ASSET_V;
+
+  function withV(src){
+    if(!src) return src;
+    if(/[?&]v=/.test(src)) return src;
+    return src + (src.indexOf('?') === -1 ? '?' : '&') + 'v=' + encodeURIComponent(ASSET_V);
+  }
 
   function loadScript(src){
     return new Promise(function(resolve){
       var s = doc.createElement('script');
-      s.src = src;
+      s.src = withV(src);
       s.defer = true;
       s.onload = function(){ resolve({ ok: true, src: src }); };
       s.onerror = function(){

@@ -89,6 +89,37 @@
     return { layout: layout, showHero: showHero, showGrid: showGrid };
   }
 
+  function resolveBuildVersion(){
+    var v = '';
+    try{ v = String(w.PK_ASSET_V || ''); }catch(_eV){}
+    if(v) return v;
+    try{
+      var scripts = doc.getElementsByTagName('script');
+      for(var i=0;i<scripts.length;i++){
+        var src = scripts[i] && scripts[i].getAttribute ? String(scripts[i].getAttribute('src') || '') : '';
+        if(src.indexOf('js/main.js') === -1) continue;
+        var m = src.match(/[?&]v=([^&]+)/);
+        if(m && m[1]) return decodeURIComponent(m[1]);
+      }
+    }catch(_eS){}
+    return '';
+  }
+
+  function renderBuildStamp(){
+    if(!doc || !doc.body) return;
+    if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
+    var el = doc.getElementById('pkBuildStamp');
+    if(!el){
+      el = doc.createElement('div');
+      el.id = 'pkBuildStamp';
+      el.className = 'pkBuildStamp';
+      el.setAttribute('aria-hidden', 'true');
+      doc.body.appendChild(el);
+    }
+    var v = resolveBuildVersion();
+    el.textContent = v ? ('build ' + v) : 'build ?';
+  }
+
   function updateBackgroundBandsNow(){
     if(!doc || !doc.documentElement || !doc.body) return;
     if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
@@ -686,6 +717,7 @@
 
   function init(){
     resetPositions();
+    renderBuildStamp();
     if(!PK.loadJson && !PK.getJson) return;
 
     function normalizeIndex(idx){
