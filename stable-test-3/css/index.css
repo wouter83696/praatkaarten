@@ -28,7 +28,7 @@ html[data-contrast="dark"] body{
   position: fixed;
   right: 10px;
   bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  z-index: 40;
+  z-index: 20000;
   padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid rgba(11,18,32,0.10);
@@ -40,6 +40,11 @@ html[data-contrast="dark"] body{
   user-select: none;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
+}
+@media (max-width: 900px){
+  .pkBuildStamp{
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 html[data-contrast="dark"] .pkBuildStamp{
@@ -169,6 +174,17 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
   /* SVG-blobs liggen boven de ondertoon, net als canvas */
   z-index: 1;
   pointer-events: none;
+}
+
+/* Kaartenindex: geen SVG-shape overlay (voorkomt letters/grote kleurvlakken) */
+body[data-page="kaarten"] .indexBgSvg{
+  display: none !important;
+}
+
+/* Kaartenindex: alleen blobs, geen volledige viewport tint-lagen */
+body[data-page="kaarten"] .indexTint,
+body[data-page="kaarten"] .indexSoftBlob{
+  display: none !important;
 }
 
 

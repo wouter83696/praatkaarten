@@ -120,6 +120,23 @@
     if(!bgApi) return;
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
+    if(!bg){
+      // Stabiele default voor kaartenindex (geen shape-laag, rustige blobs).
+      bg = {
+        blobCount: 4,
+        blobAlphaFixed: 0.18,
+        blobWash: 0.45,
+        blobIrregularity: 0.45,
+        blobPointsMin: 7,
+        blobPointsMax: 11,
+        sizeScale: 1.5,
+        sizeLimit: 1.8,
+        blobSpread: 'grid',
+        blobSpreadMargin: 0.18,
+        baseWash: false,
+        shapeEnabled: false
+      };
+    }
     if(bg){
       if(Array.isArray(bg.palette)) opts.palette = bg.palette;
       if(Array.isArray(bg.darkPalette)) opts.darkPalette = bg.darkPalette;
