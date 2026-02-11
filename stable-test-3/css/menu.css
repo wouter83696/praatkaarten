@@ -206,6 +206,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
 .menuCard{
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.012);
+  border-top: 1px solid rgba(0,0,0,0.06);
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
   background: rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha));
@@ -260,9 +261,9 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   padding: 1px var(--menuToolsPadX);
   border-radius: 999px;
   /* Subtiel pill-vlak dat wegvalt in het menu */
-  border: 1px solid rgba(11,18,32,0.014);
+  border: 1px solid rgba(11,18,32,0.02);
   /* Light mode: wittere tool-strip voor betere leesbaarheid */
-  background: rgba(var(--menuSurface, 255, 255, 255), 0.64);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.69);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   box-shadow: none;
@@ -276,7 +277,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   padding: 0;
   border-radius: 999px;
   background: transparent;
-  color: rgba(11,18,32,0.46);
+  color: rgba(11,18,32,0.51);
   display: inline-grid;
   place-items: center;
   cursor: pointer;
@@ -284,12 +285,12 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
 }
 
 .menuMiniBtn:active{
-  background: rgba(0,0,0,0.018);
+  background: rgba(0,0,0,0.068);
 }
 .menuMiniBtn[aria-pressed="true"]{
   /* Shuffle aan: geen opvallende kleur, alleen iets 'actiever' */
-  background: rgba(0,0,0,0.02);
-  color: rgba(11,18,32,.54);
+  background: rgba(0,0,0,0.07);
+  color: rgba(11,18,32,.59);
   box-shadow: none;
 }
 
@@ -408,7 +409,7 @@ html[data-contrast="dark"] .toolBtn{
 
 html[data-contrast="dark"] .menuHeaderTools{
   border: 1px solid rgba(255,255,255,0.05);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.62);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.67);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   box-shadow: none;
@@ -503,11 +504,11 @@ html[data-contrast="dark"] .sheetHandle::before{
 }
 
 html[data-contrast="dark"] .menuMiniBtn{
-  color: rgba(245,250,255,.56);
+  color: rgba(245,250,255,.61);
 }
 
 html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
-  color: rgba(245,250,255,.72);
+  color: rgba(245,250,255,.77);
   box-shadow: none;
 }
 

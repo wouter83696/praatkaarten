@@ -224,6 +224,7 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   display: block;
   text-decoration: none;
   color: inherit;
+  --setGridCardOpacity: 0.90;
 }
 
 .setGridCard .cardInner{
@@ -232,6 +233,7 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   background: #FAFAF8 !important;
   border: 0 !important;
   box-shadow: none !important;
+  opacity: var(--setGridCardOpacity, 0.90);
 }
 
 html[data-contrast="dark"] .setGridCard .cardInner{
@@ -246,7 +248,7 @@ html[data-contrast="dark"] .setGridCard .cardInner{
       rgba(255,255,255,0.013) 0%,
       rgba(0,0,0,0.013) 100%
     ),
-    rgba(var(--ph-rgb, 223, 238, 232), 0.90) !important;
+    rgb(var(--ph-rgb, 223, 238, 232)) !important;
   border: 0 !important;
   box-shadow: none !important;
 }
