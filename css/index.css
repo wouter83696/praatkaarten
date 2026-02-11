@@ -10,7 +10,7 @@
    We zetten daarom de echte document-achtergrond vast.
    Light: vrijwel wit. Dark: vaste indigo nachtbasis. */
 html, body{
-  background: var(--pk-set-bg, var(--cardsPageBg, #FAFAF8));
+  background: var(--bg-base-color, var(--cardsPageBg, #FAFAF8));
   height: 100%;
   min-height: 100dvh;
 }
@@ -22,6 +22,35 @@ html[data-contrast="dark"] body{
 /* IP-variant: vaste nachtbasis (indigo/paarsblauw) */
 :root{
   --darkBaseRgb: 24, 18, 60; /* indigo: geen zwart/grijs */
+}
+
+.pkBuildStamp{
+  position: fixed;
+  right: 10px;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 20000;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(11,18,32,0.10);
+  background: rgba(255,255,255,0.72);
+  color: rgba(11,18,32,0.62);
+  font: 500 11px/1 "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  user-select: none;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+@media (max-width: 900px){
+  .pkBuildStamp{
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+html[data-contrast="dark"] .pkBuildStamp{
+  border-color: rgba(245,250,255,0.16);
+  background: rgba(24,18,60,0.56);
+  color: rgba(245,250,255,0.84);
 }
 
 
@@ -63,7 +92,7 @@ html[data-contrast="dark"] body{
   transition: background-color 420ms ease;
 }
 
-/* Light mode: verwijder de volledige waas */
+/* Light mode: geen volle kleurlaag over de hele pagina */
 html[data-contrast="light"] .indexTint{
   background: transparent !important;
 }
@@ -147,6 +176,17 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
   pointer-events: none;
 }
 
+/* Kaartenindex: geen SVG-shape overlay (voorkomt letters/grote kleurvlakken) */
+body[data-page="kaarten"] .indexBgSvg{
+  display: none !important;
+}
+
+/* Kaartenindex: alleen blobs, geen volledige viewport tint-lagen */
+body[data-page="kaarten"] .indexTint,
+body[data-page="kaarten"] .indexSoftBlob{
+  display: none !important;
+}
+
 
 /* --- Overrides (auto-generated) --- */
 .card + .card-text,
@@ -171,28 +211,11 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
 /* ===== Revision: kaarten opaak, achtergrond hiërarchie strak ===== */
 /* (Tint zit achter blobs; blobs zijn minder dominant; kaarten blijven leidend.) */
 
-/* Kaarten: geen extra rechthoek/achtervlak achter de kaart */
+/* Kaartenindex: geen extra witte rechthoek achter de kaart */
 .cardsSlideCard{
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
-}
-
-/* Flip-lagen: behoud kaartvlak (niet transparant), maar geen extra rand/schaduw */
-.cardsSlideCard .pkFlipInner{
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-.cardsSlideCard .pkFace{
-  background: var(--pk-set-card, #FAFAF8) !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-
-/* Kaartenpagina: geen extra wit kaartvlak achter de SVG */
-body[data-page="kaarten"] .cardsSlideCard .pkFace{
-  background: transparent !important;
 }
 
 /* Let op: sheet visibility wordt door JS geregeld via [hidden]. */
@@ -216,7 +239,7 @@ body[data-page="kaarten"] .cardsSlideCard .pkFace{
   transition: background 420ms ease;
 }
 
-/* Light mode: geen extra waas/soft blob */
+/* Light mode: geen extra waas-veld */
 html[data-contrast="light"] .indexSoftBlob{
   background: transparent !important;
 }

@@ -25,6 +25,8 @@
   var CONTRAST = 'light';
   var lastIndexConfig = null;
   var dotsBound = false;
+  var bgBandsBound = false;
+  var bgBandsTimer = 0;
 
   // Menu wiring
   var pillBtn = doc.getElementById('themePill');
@@ -35,22 +37,156 @@
     menuApi = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
   }
 
-  var GRID_TINTS = [
-    // zelfde "mooie tinten" als de hero
-    '214,238,233',
-    '242,230,210',
-    '232,226,243',
-    '221,236,244',
-    '245,232,238'
-  ];
+  // Main-index kaartpalet (referentie uit ontwerp-SVG):
+  // - BASE is standaard op main index
+  // - LIGHT spaarzaam als zachte variatie
+  // - DEEP alleen als reserve/highlight (niet standaard in grid/carrousel)
+  var MAIN_INDEX_CARD_PALETTE = {
+    light: [
+      '#F7F4EF', '#F2F7F4', '#F4F1F8', '#FAEEF2', '#FBEFE5',
+      '#EEF3E7', '#ECF5F4', '#F8EFE8', '#F3F4F8'
+    ],
+    base: [
+      '#CFE6DF', '#DDE8F6', '#E7E1F5', '#F3DCE4', '#F8E4D2',
+      '#E3E9D5', '#D6ECEA', '#F3E6D8', '#EEEFF4'
+    ],
+    deep: [
+      '#6FAE9A', '#4C7FB8', '#6A63C2', '#C9657A', '#C96A24',
+      '#6F9E4E', '#2F5F63', '#8E5E3B', '#7A7F99'
+    ]
+  };
 
   function trim(s){
     return String(s || '').replace(/^\s+|\s+$/g,'');
   }
 
-  function tintAt(i){
-    if(!GRID_TINTS.length) return '223,238,232';
-    return GRID_TINTS[i % GRID_TINTS.length];
+  function toCsvPalette(hexList){
+    var out = [];
+    for(var i=0;i<(hexList || []).length;i++){
+      var csv = parseHexToRgbCsv(hexList[i]);
+      if(csv) out.push(csv);
+    }
+    return out;
+  }
+
+  var MAIN_INDEX_CARD_PALETTE_CSV = {
+    light: toCsvPalette(MAIN_INDEX_CARD_PALETTE.light),
+    base: toCsvPalette(MAIN_INDEX_CARD_PALETTE.base),
+    deep: toCsvPalette(MAIN_INDEX_CARD_PALETTE.deep)
+  };
+
+  function palettePick(group, idx){
+    var list = MAIN_INDEX_CARD_PALETTE_CSV[group] || [];
+    if(!list.length) return '223,238,232';
+    var n = Math.abs(parseInt(idx, 10) || 0);
+    return list[n % list.length];
+  }
+
+  function buildMainIndexPlaceholderTints(count, offset){
+    var total = parseInt(count, 10) || 0;
+    if(total < 1) return [];
+
+    var start = parseInt(offset, 10) || 0;
+    if(start < 0) start = 0;
+
+    // Regelset (main index):
+    // - BASE als standaard
+    // - LIGHT spaarzaam
+    // - DEEP niet standaard in grid/carrousel
+    var lightTarget = (total >= 3 ? 1 : 0);
+    var lightPos = -1;
+
+    if(lightTarget === 1){
+      lightPos = Math.max(1, Math.min(total - 1, Math.floor(total * 0.18)));
+    }
+
+    var out = [];
+    for(var i=0;i<total;i++){
+      var slot = start + i;
+      if(lightPos === i){
+        out.push(palettePick('light', slot));
+      }else{
+        out.push(palettePick('base', slot));
+      }
+    }
+    return out;
+  }
+
+  function parseHexToRgbCsv(input){
+    var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
+    if(hex.length === 3){
+      hex = hex.charAt(0)+hex.charAt(0)+hex.charAt(1)+hex.charAt(1)+hex.charAt(2)+hex.charAt(2);
+    }
+    if(hex.length !== 6) return '';
+    var r = parseInt(hex.slice(0,2),16);
+    var g = parseInt(hex.slice(2,4),16);
+    var b = parseInt(hex.slice(4,6),16);
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return r + ', ' + g + ', ' + b;
+  }
+
+  function parseRgbFuncToCsv(input){
+    var m = String(input || '').match(/rgba?\(([^)]+)\)/i);
+    if(!m || !m[1]) return '';
+    var p = m[1].split(',');
+    if(p.length < 3) return '';
+    var r = Math.max(0, Math.min(255, parseFloat(String(p[0]).replace(/^\s+|\s+$/g,''))));
+    var g = Math.max(0, Math.min(255, parseFloat(String(p[1]).replace(/^\s+|\s+$/g,''))));
+    var b = Math.max(0, Math.min(255, parseFloat(String(p[2]).replace(/^\s+|\s+$/g,''))));
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return Math.round(r) + ', ' + Math.round(g) + ', ' + Math.round(b);
+  }
+
+  function colorToRgbCsv(input){
+    var raw = trim(input || '');
+    if(!raw) return '';
+    if(raw.charAt(0) === '#') return parseHexToRgbCsv(raw);
+    if(/^rgba?\(/i.test(raw)) return parseRgbFuncToCsv(raw);
+    if(/^\d+\s*,\s*\d+\s*,\s*\d+/.test(raw)) return raw.replace(/\s+/g,'');
+    return '';
+  }
+
+  function resolveMenuBaseRgb(meta){
+    var candidates = [];
+    var cssVars = (meta && meta.cssVars && typeof meta.cssVars === 'object') ? meta.cssVars : null;
+    if(cssVars){
+      candidates.push(cssVars['--pk-set-bg']);
+      candidates.push(cssVars['pk-set-bg']);
+      candidates.push(cssVars['--bg-base-color']);
+      candidates.push(cssVars['bg-base-color']);
+      candidates.push(cssVars['--setsBaseBg']);
+      candidates.push(cssVars['setsBaseBg']);
+      candidates.push(cssVars['--pk-set-card']);
+      candidates.push(cssVars['pk-set-card']);
+    }
+    try{
+      var rs = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
+      if(rs){
+        candidates.push(rs.getPropertyValue('--pk-set-bg'));
+        candidates.push(rs.getPropertyValue('--bg-base-color'));
+        candidates.push(rs.getPropertyValue('--setsBaseBg'));
+        candidates.push(rs.getPropertyValue('--setsHeaderBg'));
+      }
+    }catch(_eRs){}
+    candidates.push('#FAFAF8');
+    for(var i=0;i<candidates.length;i++){
+      var csv = colorToRgbCsv(candidates[i]);
+      if(csv) return csv;
+    }
+    return '250, 250, 248';
+  }
+
+  function applyMenuSurfaceTint(meta){
+    var root = doc && doc.documentElement;
+    if(!root || !root.style || !root.style.setProperty) return;
+    var rgb = resolveMenuBaseRgb(meta);
+    try{
+      root.style.setProperty('--menuSurface', rgb);
+      root.style.setProperty('--menuTintRgb', rgb);
+      root.style.setProperty('--menuSurfaceAlpha', '0.82');
+      root.style.setProperty('--menuSheetAlpha', '0.82');
+      root.style.setProperty('--menuBtnAlpha', '0.86');
+    }catch(_eSet){}
   }
 
   function renderDots(count){
@@ -85,6 +221,74 @@
     if(heroSection) heroSection.hidden = !showHero;
     if(gridSection) gridSection.hidden = !showGrid;
     return { layout: layout, showHero: showHero, showGrid: showGrid };
+  }
+
+  function resolveBuildVersion(){
+    var v = '';
+    try{ v = String(w.PK_ASSET_V || ''); }catch(_eV){}
+    if(v) return v;
+    try{
+      var scripts = doc.getElementsByTagName('script');
+      for(var i=0;i<scripts.length;i++){
+        var src = scripts[i] && scripts[i].getAttribute ? String(scripts[i].getAttribute('src') || '') : '';
+        if(src.indexOf('js/main.js') === -1) continue;
+        var m = src.match(/[?&]v=([^&]+)/);
+        if(m && m[1]) return decodeURIComponent(m[1]);
+      }
+    }catch(_eS){}
+    return '';
+  }
+
+  function renderBuildStamp(){
+    if(!doc || !doc.body) return;
+    if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
+    var el = doc.getElementById('pkBuildStamp');
+    if(!el){
+      el = doc.createElement('div');
+      el.id = 'pkBuildStamp';
+      el.className = 'pkBuildStamp';
+      el.setAttribute('aria-hidden', 'true');
+      doc.body.appendChild(el);
+    }
+    var v = resolveBuildVersion();
+    el.textContent = v ? ('build ' + v) : 'build ?';
+  }
+
+  function updateBackgroundBandsNow(){
+    if(!doc || !doc.documentElement || !doc.body) return;
+    if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
+
+    var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+    var heroEnd = 0;
+
+    if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
+      heroEnd = Math.round(scrollTop + gridSection.getBoundingClientRect().top);
+    }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
+      heroEnd = Math.round(scrollTop + heroSection.getBoundingClientRect().bottom);
+    }else{
+      heroEnd = Math.round(scrollTop + (w.innerHeight || 0) * 0.62);
+    }
+
+    if(!isFinite(heroEnd) || heroEnd < 220) heroEnd = 220;
+    doc.documentElement.style.setProperty('--setsBandHeroEnd', heroEnd + 'px');
+  }
+
+  function scheduleBackgroundBands(){
+    if(bgBandsTimer) w.clearTimeout(bgBandsTimer);
+    bgBandsTimer = w.setTimeout(function(){
+      updateBackgroundBandsNow();
+      if(lastIndexConfig) applyBackground(lastIndexConfig);
+      syncHeroCardStates();
+      syncGridCardStates();
+    }, 48);
+  }
+
+  function ensureBackgroundBandSync(){
+    if(bgBandsBound) return;
+    bgBandsBound = true;
+    w.addEventListener('resize', scheduleBackgroundBands, { passive:true });
+    w.addEventListener('orientationchange', scheduleBackgroundBands, { passive:true });
+    w.addEventListener('load', scheduleBackgroundBands, { passive:true });
   }
 
   function getCardsPage(){
@@ -220,6 +424,53 @@
     }
   }
 
+  function setCardState(cardEl, active){
+    if(!cardEl || !cardEl.classList) return;
+    if(active){
+      cardEl.classList.add('is-active');
+      cardEl.classList.remove('is-muted');
+    }else{
+      cardEl.classList.remove('is-active');
+      cardEl.classList.add('is-muted');
+    }
+  }
+
+  function syncHeroCardStates(){
+    if(!carousel || !carousel.querySelectorAll) return;
+    var cards = carousel.querySelectorAll('.setsHeroCard');
+    if(!cards || !cards.length) return;
+
+    var best = null;
+    var bestDist = Infinity;
+    var hostRect = carousel.getBoundingClientRect ? carousel.getBoundingClientRect() : null;
+    var centerX = hostRect ? (hostRect.left + hostRect.width / 2) : 0;
+
+    for(var i=0;i<cards.length;i++){
+      var c = cards[i];
+      if(!c || !c.getBoundingClientRect) continue;
+      var r = c.getBoundingClientRect();
+      var mid = r.left + r.width / 2;
+      var d = Math.abs(mid - centerX);
+      if(d < bestDist){
+        bestDist = d;
+        best = c;
+      }
+    }
+
+    for(var j=0;j<cards.length;j++){
+      setCardState(cards[j], !!(best && cards[j] === best));
+    }
+  }
+
+  function syncGridCardStates(){
+    if(!grid || !grid.querySelectorAll) return;
+    var cards = grid.querySelectorAll('.setGridCard');
+    if(!cards || !cards.length) return;
+    for(var i=0;i<cards.length;i++){
+      setCardState(cards[i], false);
+    }
+  }
+
   function bindDots(){
     if(!carousel || dotsBound) return;
     dotsBound = true;
@@ -237,6 +488,7 @@
         if(idx < 0) idx = nReal - 1;
         if(idx >= nReal) idx = 0;
         setActiveDot(idx);
+        syncHeroCardStates();
       });
     }, { passive:true });
   }
@@ -258,6 +510,8 @@
       }catch(_e1){}
     }
     setActiveDot(0);
+    syncHeroCardStates();
+    syncGridCardStates();
   }
 
   function enableInfiniteCarousel(container, slideClass){
@@ -319,6 +573,7 @@
   w.addEventListener('pageshow', function(){
     w.setTimeout(function(){
       resetPositions();
+      scheduleBackgroundBands();
     }, 0);
   });
 
@@ -361,7 +616,7 @@
     innerWrap.className = 'setsHeroSlideInner';
 
     var card = doc.createElement(args.href ? 'a' : 'div');
-    card.className = 'setsHeroCard card' + (args.placeholder ? ' is-placeholder' : '');
+    card.className = 'setsHeroCard card is-muted' + (args.placeholder ? ' is-placeholder' : '');
     if(args.href){
       card.href = args.href;
       card.setAttribute('aria-label', args.label || 'Kaartenset');
@@ -399,7 +654,7 @@
 
   function buildGridCard(args){
     var el = doc.createElement(args.href ? 'a' : 'div');
-    el.className = 'setGridCard' + (args.placeholder ? ' is-placeholder' : '');
+    el.className = 'setGridCard is-muted' + (args.placeholder ? ' is-placeholder' : '');
     if(args.href){
       el.href = args.href;
       el.setAttribute('aria-label', args.label || 'Kaart');
@@ -501,10 +756,11 @@
     // placeholders voor vaste 6-slides feel
     var minSlides = heroLimit;
     var phNeeded = Math.max(0, minSlides - count);
+    var heroTints = buildMainIndexPlaceholderTints(phNeeded, count);
     for(var k=0;k<phNeeded;k++){
       carousel.appendChild(buildHeroSlide({
         placeholder: true,
-        rgb: tintAt(count + k)
+        rgb: heroTints[k]
       }));
     }
 
@@ -512,6 +768,7 @@
     enableInfiniteCarousel(carousel, 'setsHeroSlide');
     bindDots();
     resetPositions();
+    syncHeroCardStates();
   }
 
   function renderGrid(idx, activeSetId, activeMeta){
@@ -552,23 +809,28 @@
     // Vaste minimum "grid feel" met lege kaarten (met mooie tinten)
     var minGrid = maxItems > 0 ? maxItems : 6;
     var phNeeded = Math.max(0, minGrid - count);
+    var gridTints = buildMainIndexPlaceholderTints(phNeeded, count);
     for(var m=0;m<phNeeded;m++){
       grid.appendChild(buildGridCard({
         placeholder: true,
-        rgb: tintAt(count + m)
+        rgb: gridTints[m]
       }));
     }
+    syncGridCardStates();
   }
 
   function applyBackground(idx){
-    if(!(PK.indexBackground && PK.indexBackground.render)) return;
+    var bgApi = (PK && PK.gridBackground && PK.gridBackground.render)
+      ? PK.gridBackground
+      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    if(!bgApi) return;
     var bg = (idx && idx.indexPage && idx.indexPage.background)
       ? idx.indexPage.background
       : ((idx && idx.uiDefaults && idx.uiDefaults.index && idx.uiDefaults.index.background)
         ? idx.uiDefaults.index.background
         : null);
     var palette = bg && Array.isArray(bg.palette) ? bg.palette : [
-      '#F2C9A5','#F6D4B4'
+      '#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'
     ];
     var darkPalette = bg && Array.isArray(bg.darkPalette) ? bg.darkPalette : null;
     var isDark = false;
@@ -576,32 +838,94 @@
       isDark = (doc && doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_e){ isDark = false; }
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
-    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 3;
-    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.2;
-    var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : undefined;
-    var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : undefined;
+    // Main index default: 5-6 grote blobs met zichtbare intensiteitsverschillen.
+    // (Alleen fallback; per set kan dit nog steeds via index.json overschreven worden.)
+    var blobCount = bg && typeof bg.blobCount === 'number'
+      ? bg.blobCount
+      : (((w.innerWidth || 0) < 900) ? 5 : 6);
+    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.12;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 1.34;
+    var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : 1.25;
+    var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : 0.9;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
     var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : undefined;
     var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : undefined;
     var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : undefined;
-    var baseWash = bg && bg.baseWash === false ? false : undefined;
-    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0.18;
+    var baseWash = bg && bg.baseWash === false ? false : false;
+    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
-    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : undefined;
-    var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : undefined;
-    var shapeEnabled = (bg && typeof bg.shapeEnabled === 'boolean') ? bg.shapeEnabled : false;
+    var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.26;
+    var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : 0.28;
+    var shapeEnabled = bg && typeof bg.shapeEnabled === 'boolean' ? bg.shapeEnabled : false;
     var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
     var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
-    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
-    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.18;
+    var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 1.9;
+    // Geen vaste light-alpha als default; daardoor ontstaan natuurlijke verschillen.
+    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : undefined;
+    var customLightBlobs = (bg && Array.isArray(bg.customLightBlobs) && bg.customLightBlobs.length)
+      ? bg.customLightBlobs
+      : undefined;
+    var customLightViewBox = (bg && bg.customLightViewBox) ? bg.customLightViewBox : undefined;
+    var customLightOpacityScale = (bg && typeof bg.customLightOpacityScale === 'number')
+      ? bg.customLightOpacityScale
+      : 1;
+    var surfaceZones = null;
+    if(!isDark){
+      var vpH = w.innerHeight || 0;
+      var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+      var topEndPx = NaN;
+      var heroEndPx = NaN;
+      var heroStyle = null;
+      var rootStyle = null;
+      var zoneTopColor = '#F5F7F6';
+      var zoneHeroColor = '#EDF2F1';
+      var zoneGridColor = '#F3F6F5';
+      try{
+        heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
+        rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
+        var heroPadTop = heroStyle ? parseFloat(String(heroStyle.paddingTop || '')) : NaN;
+        var heroExtra = rootStyle ? parseFloat(String(rootStyle.getPropertyValue('--setsHeroPadExtra') || '')) : NaN;
+        if(isFinite(heroPadTop) && isFinite(heroExtra)){
+          topEndPx = heroPadTop - heroExtra;
+        }
+      }catch(_eTop){}
+      if(rootStyle){
+        var cssTop = trim(rootStyle.getPropertyValue('--setsHeaderBg'));
+        var cssHero = trim(rootStyle.getPropertyValue('--setsHeroBg'));
+        var cssGrid = trim(rootStyle.getPropertyValue('--setsGridBg'));
+        if(cssTop) zoneTopColor = cssTop;
+        if(cssHero) zoneHeroColor = cssHero;
+        if(cssGrid) zoneGridColor = cssGrid;
+      }
+      if(!isFinite(topEndPx) || topEndPx < 0){
+        topEndPx = vpH ? (vpH * 0.12) : 88;
+      }
+      try{
+        if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
+          heroEndPx = scrollTop + gridSection.getBoundingClientRect().top;
+        }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
+          heroEndPx = scrollTop + heroSection.getBoundingClientRect().bottom;
+        }
+      }catch(_eHero){}
+      if(!isFinite(heroEndPx)){
+        heroEndPx = (vpH ? (vpH * 0.58) : (topEndPx + 320)) + scrollTop;
+      }
+      if(heroEndPx < topEndPx) heroEndPx = topEndPx;
+      surfaceZones = {
+        topColor: zoneTopColor,
+        heroColor: zoneHeroColor,
+        gridColor: zoneGridColor,
+        topEndPx: topEndPx,
+        heroEndPx: heroEndPx
+      };
+    }
 
     var baseId = (idx && idx.default) ? idx.default : ((idx && idx.sets && idx.sets[0]) ? idx.sets[0].id : 'samenwerken');
     var cardBase = (PK.pathForSet
       ? PK.pathForSet(baseId, 'cards_rect/')
       : ((PK.PATHS && PK.PATHS.setsDir ? PK.PATHS.setsDir : '.') + '/' + encodeURIComponent(baseId) + '/cards_rect/'));
-    PK.indexBackground.render({
+    bgApi.render({
       cardBase: cardBase,
       palette: paletteUse,
       darkPalette: darkPalette,
@@ -624,7 +948,11 @@
       blobSpread: blobSpread,
       blobSpreadMargin: blobSpreadMargin,
       sizeLimit: sizeLimit,
-      blobAlphaFixed: blobAlphaFixed
+      blobAlphaFixed: blobAlphaFixed,
+      customLightBlobs: customLightBlobs,
+      customLightViewBox: customLightViewBox,
+      customLightOpacityScale: customLightOpacityScale,
+      surfaceZones: surfaceZones
     });
   }
 
@@ -715,6 +1043,7 @@
           PK.shell.applyCssVars(state.meta.cssVars);
         }
       }catch(_eVars){}
+      try{ applyMenuSurfaceTint(state.meta); }catch(_eTint){}
 
       // Viewer template hint (voor CSS)
       try{
@@ -731,9 +1060,19 @@
       }catch(_eDbg){}
 
       applyIndexLayout();
+      ensureBackgroundBandSync();
 
       renderHero(state.idx, state.setId, state.meta);
       renderGrid(state.idx, state.setId, state.meta);
+      scheduleBackgroundBands();
+      w.requestAnimationFrame(function(){
+        updateBackgroundBandsNow();
+        if(lastIndexConfig) applyBackground(lastIndexConfig);
+        w.requestAnimationFrame(function(){
+          updateBackgroundBandsNow();
+          if(lastIndexConfig) applyBackground(lastIndexConfig);
+        });
+      });
 
       // Menu klikken -> naar set
       if(menuList){
@@ -789,9 +1128,12 @@
           PK.applyUiConfig(fb.setId, null, defaults);
         }
       }catch(_eCfg){}
+      try{ applyMenuSurfaceTint(fb.meta); }catch(_eTint2){}
       applyIndexLayout();
+      ensureBackgroundBandSync();
       renderHero(fb.idx, fb.setId, fb.meta);
       renderGrid(fb.idx, fb.setId, fb.meta);
+      scheduleBackgroundBands();
       applyBackground(fb.idx);
     });
   }

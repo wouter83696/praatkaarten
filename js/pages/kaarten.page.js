@@ -50,6 +50,124 @@
   var sheetAPI = null;
   var infoAPI = null;
   var UI_DEFAULTS = {};
+  var CARDS_INDEX_PAGE_BG = null;
+  var doc = w.document;
+
+  function resolveBuildVersion(){
+    var v = '';
+    try{ v = String(w.PK_ASSET_V || ''); }catch(_eV){}
+    if(v) return v;
+    try{
+      var scripts = doc.getElementsByTagName('script');
+      for(var i=0;i<scripts.length;i++){
+        var src = scripts[i] && scripts[i].getAttribute ? String(scripts[i].getAttribute('src') || '') : '';
+        if(src.indexOf('js/main.js') === -1) continue;
+        var m = src.match(/[?&]v=([^&]+)/);
+        if(m && m[1]) return decodeURIComponent(m[1]);
+      }
+    }catch(_eS){}
+    return '';
+  }
+
+  function renderBuildStamp(){
+    if(!doc || !doc.body) return;
+    if(!doc.body.getAttribute || doc.body.getAttribute('data-page') !== 'kaarten') return;
+    var el = doc.getElementById('pkBuildStamp');
+    if(!el){
+      el = doc.createElement('div');
+      el.id = 'pkBuildStamp';
+      el.className = 'pkBuildStamp';
+      el.setAttribute('aria-hidden', 'true');
+      doc.body.appendChild(el);
+    }
+    var v = resolveBuildVersion();
+    el.textContent = v ? ('build ' + v) : 'build ?';
+  }
+
+  function parseHexToRgbCsv(input){
+    var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
+    if(hex.length === 3){
+      hex = hex.charAt(0)+hex.charAt(0)+hex.charAt(1)+hex.charAt(1)+hex.charAt(2)+hex.charAt(2);
+    }
+    if(hex.length !== 6) return '';
+    var r = parseInt(hex.slice(0,2),16);
+    var g = parseInt(hex.slice(2,4),16);
+    var b = parseInt(hex.slice(4,6),16);
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return r + ', ' + g + ', ' + b;
+  }
+
+  function parseRgbFuncToCsv(input){
+    var m = String(input || '').match(/rgba?\(([^)]+)\)/i);
+    if(!m || !m[1]) return '';
+    var p = m[1].split(',');
+    if(p.length < 3) return '';
+    var r = Math.max(0, Math.min(255, parseFloat(String(p[0]).replace(/^\s+|\s+$/g,''))));
+    var g = Math.max(0, Math.min(255, parseFloat(String(p[1]).replace(/^\s+|\s+$/g,''))));
+    var b = Math.max(0, Math.min(255, parseFloat(String(p[2]).replace(/^\s+|\s+$/g,''))));
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return Math.round(r) + ', ' + Math.round(g) + ', ' + Math.round(b);
+  }
+
+  function colorToRgbCsv(input){
+    var raw = String(input || '').replace(/^\s+|\s+$/g,'');
+    if(!raw) return '';
+    if(raw.charAt(0) === '#') return parseHexToRgbCsv(raw);
+    if(/^rgba?\(/i.test(raw)) return parseRgbFuncToCsv(raw);
+    if(/^\d+\s*,\s*\d+\s*,\s*\d+/.test(raw)) return raw.replace(/\s+/g,'');
+    return '';
+  }
+
+  function resolveMenuBaseRgb(meta){
+    var candidates = [];
+    var cssVars = (meta && meta.cssVars && typeof meta.cssVars === 'object') ? meta.cssVars : null;
+    if(cssVars){
+      candidates.push(cssVars['--pk-set-bg']);
+      candidates.push(cssVars['pk-set-bg']);
+      candidates.push(cssVars['--bg-base-color']);
+      candidates.push(cssVars['bg-base-color']);
+      candidates.push(cssVars['--cardsPageBg']);
+      candidates.push(cssVars['cardsPageBg']);
+      candidates.push(cssVars['--pk-set-card']);
+      candidates.push(cssVars['pk-set-card']);
+    }
+    try{
+      var activeBg = PK && PK.UI_ACTIVE && PK.UI_ACTIVE.cardsIndex && PK.UI_ACTIVE.cardsIndex.background
+        ? PK.UI_ACTIVE.cardsIndex.background
+        : null;
+      if(activeBg){
+        if(typeof activeBg.baseColor === 'string') candidates.push(activeBg.baseColor);
+        if(Array.isArray(activeBg.palette) && activeBg.palette.length) candidates.push(activeBg.palette[0]);
+      }
+    }catch(_eBg){}
+    try{
+      var rs = w.getComputedStyle ? w.getComputedStyle(w.document.documentElement) : null;
+      if(rs){
+        candidates.push(rs.getPropertyValue('--pk-set-bg'));
+        candidates.push(rs.getPropertyValue('--bg-base-color'));
+        candidates.push(rs.getPropertyValue('--cardsPageBg'));
+      }
+    }catch(_eRs){}
+    candidates.push('#FAFAF8');
+    for(var i=0;i<candidates.length;i++){
+      var csv = colorToRgbCsv(candidates[i]);
+      if(csv) return csv;
+    }
+    return '250, 250, 248';
+  }
+
+  function applyMenuSurfaceTint(meta){
+    var root = w.document && w.document.documentElement;
+    if(!root || !root.style || !root.style.setProperty) return;
+    var rgb = resolveMenuBaseRgb(meta);
+    try{
+      root.style.setProperty('--menuSurface', rgb);
+      root.style.setProperty('--menuTintRgb', rgb);
+      root.style.setProperty('--menuSurfaceAlpha', '0.82');
+      root.style.setProperty('--menuSheetAlpha', '0.82');
+      root.style.setProperty('--menuBtnAlpha', '0.86');
+    }catch(_eSet){}
+  }
 
   function trackSetVisit(setId){
     var id = String(setId || '').replace(/^\s+|\s+$/g,'');
@@ -68,19 +186,42 @@
   function getIndexBackgroundConfig(){
     var cfg = null;
     try{
-      if(PK && PK.UI_ACTIVE && PK.UI_ACTIVE.index && PK.UI_ACTIVE.index.background){
-        cfg = PK.UI_ACTIVE.index.background;
-      }else if(UI_DEFAULTS && UI_DEFAULTS.index && UI_DEFAULTS.index.background){
-        cfg = UI_DEFAULTS.index.background;
+      // Hard gescheiden: kaartenindex gebruikt alleen kaartenindex-keys.
+      if(PK && PK.UI_ACTIVE && PK.UI_ACTIVE.cardsIndex && PK.UI_ACTIVE.cardsIndex.background){
+        cfg = PK.UI_ACTIVE.cardsIndex.background;
+      }else if(UI_DEFAULTS && UI_DEFAULTS.cardsIndex && UI_DEFAULTS.cardsIndex.background){
+        cfg = UI_DEFAULTS.cardsIndex.background;
+      }else if(CARDS_INDEX_PAGE_BG){
+        cfg = CARDS_INDEX_PAGE_BG;
       }
     }catch(_e){}
     return cfg || null;
   }
 
   function renderIndexBackground(){
-    if(!(PK.indexBackground && PK.indexBackground.render)) return;
+    var bgApi = (PK && PK.cardsBackground && PK.cardsBackground.render)
+      ? PK.cardsBackground
+      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    if(!bgApi) return;
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
+    if(!bg){
+      // Stabiele default voor kaartenindex (geen shape-laag, rustige blobs).
+      bg = {
+        blobCount: 4,
+        blobAlphaFixed: 0.18,
+        blobWash: 0.45,
+        blobIrregularity: 0.45,
+        blobPointsMin: 7,
+        blobPointsMax: 11,
+        sizeScale: 1.5,
+        sizeLimit: 1.8,
+        blobSpread: 'grid',
+        blobSpreadMargin: 0.18,
+        baseWash: false,
+        shapeEnabled: false
+      };
+    }
     if(bg){
       if(Array.isArray(bg.palette)) opts.palette = bg.palette;
       if(Array.isArray(bg.darkPalette)) opts.darkPalette = bg.darkPalette;
@@ -103,8 +244,12 @@
       if(typeof bg.blobSpreadMargin === 'number') opts.blobSpreadMargin = bg.blobSpreadMargin;
       if(typeof bg.sizeLimit === 'number') opts.sizeLimit = bg.sizeLimit;
       if(typeof bg.blobAlphaFixed === 'number') opts.blobAlphaFixed = bg.blobAlphaFixed;
+      if(typeof bg.shapeEnabled === 'boolean') opts.shapeEnabled = bg.shapeEnabled;
     }
-    PK.indexBackground.render(opts);
+    // Kaartenindex: standaard géén SVG-shape-laag uit kaartbestanden
+    // (die kan grote vlakken/letters veroorzaken bij bepaalde SVG's).
+    if(typeof opts.shapeEnabled !== 'boolean') opts.shapeEnabled = false;
+    bgApi.render(opts);
   }
 
 
@@ -226,6 +371,9 @@ function closeMenu(){
     var fromUrl = (PK.getQueryParam('set') || PK.getQueryParam('s') || '').replace(/\s+$/,'').replace(/^\s+/,'');
     return PK.loadJson(PK.PATHS.setsIndex).then(function(idx){
       UI_DEFAULTS = (idx && idx.uiDefaults) ? idx.uiDefaults : {};
+      CARDS_INDEX_PAGE_BG = (idx && idx.cardsIndexPage && idx.cardsIndexPage.background)
+        ? idx.cardsIndexPage.background
+        : null;
       try{ PK.UI_DEFAULTS = UI_DEFAULTS; }catch(_eU){}
       try{ renderIndexBackground(); }catch(_eBg1){}
       var sets = Array.isArray(idx.sets) ? idx.sets : [];
@@ -273,6 +421,7 @@ function closeMenu(){
         PK.shell.applyCssVars(meta.cssVars);
       }
     }catch(_eVars){}
+    try{ applyMenuSurfaceTint(meta); }catch(_eMenuTint){}
 
     // Viewer template hint (voor CSS)
     try{
@@ -350,6 +499,7 @@ if(PK.createMenuItem){
     if(PK.applyUiConfig){
       try{ PK.applyUiConfig(setId, meta && meta.ui ? meta.ui : null, UI_DEFAULTS); }catch(_eUi){}
     }
+    try{ applyMenuSurfaceTint(meta); }catch(_eMenuTint2){}
     try{ renderIndexBackground(); }catch(_eBg){}
   }
 
@@ -1081,13 +1231,11 @@ function openInfo(){
       text.className = 'infoSlideText';
       text.textContent = s.text;
 
-      // Meekleuren: basis verschilt per modus (light vs dark), maar we tinten altijd.
-      // Dit voorkomt dat het tekstvlak soms "achterblijft" bij een mode-switch.
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
-      if(PK.applyDominantTint){
-        // Iets meer zichtbaar dan eerder: subtiel maar herkenbaar meekleuren.
-        PK.applyDominantTint(text, s.srcRect, isDark ? "rgba(20,22,26,0.60)" : "rgba(255,255,255,0.72)");
-      }
+      var baseTint = isDark
+        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)"
+        : "#F9FAF9";
+      text.style.background = baseTint;
       inner.appendChild(card);
       inner.appendChild(text);
 
@@ -1098,25 +1246,16 @@ function openInfo(){
     enableInfiniteCarousel(infoCarousel, 'infoSlide');
   }
 
-  // Re-tint bestaande uitleg-tekstvlakken (infoSlideText) op basis van huidige modus.
-  // Noodzakelijk bij light↔dark switch: de carrousel-DOM wordt niet altijd opnieuw opgebouwd.
+  // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
   function retintInfoSlideTexts(){
-    if(!PK.applyDominantTint) return;
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
-    var base = isDark ? 'rgba(20,22,26,0.60)' : 'rgba(255,255,255,0.72)';
+    var base = isDark
+      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)'
+      : '#F9FAF9';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];
-      // Zoek het bijbehorende kaartbeeld binnen dezelfde slide.
-      var slide = t && t.closest ? t.closest('.infoSlide') : null;
-      var img = slide && slide.querySelector ? slide.querySelector('.infoSlideCard img') : null;
-      var src = img ? (img.getAttribute('src') || img.src) : null;
-      if(src){
-        try{ PK.applyDominantTint(t, src, base); }catch(_e){}
-      }else{
-        // Fallback: zet in elk geval een consistente basis.
-        try{ t.style.background = base; }catch(_e2){}
-      }
+      try{ t.style.background = base; }catch(_e2){}
     }
   }
 

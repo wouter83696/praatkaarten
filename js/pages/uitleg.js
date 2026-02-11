@@ -3,7 +3,7 @@
 // - 1 SVG tonen in hetzelfde frame als het grid (img in cardInner)
 // - uitlegtekst eronder tonen
 // - tik links/rechts op de kaart om te navigeren
-// - tekstvak pakt een lichte tint van de dominante kleur uit de SVG
+// - tekstvak gebruikt een vaste, rustige sheet-kleur (geen dominante kaart-tint)
 
 (function(w){
   'use strict';
@@ -33,10 +33,9 @@
 
   // paden
   var BASE = '..';
-  var setsDir = (PK.PATHS && PK.PATHS.setsDir) ? PK.PATHS.setsDir : (BASE + '/');
-  function cardPathRect(file){ return setsDir + '/' + encSet + '/cards_rect/' + file; }
-  function cardPathSquare(file){ return setsDir + '/' + encSet + '/cards/' + file; }
-  var uitlegPath = setsDir + '/' + encSet + '/uitleg.json';
+  function cardPathRect(file){ return BASE + '/sets/' + encSet + '/cards_rect/' + file; }
+  function cardPathSquare(file){ return BASE + '/sets/' + encSet + '/cards/' + file; }
+  var uitlegPath = BASE + '/sets/' + encSet + '/uitleg.json';
 
   // slides (wordt opgebouwd uit meta.json zodat elke set werkt)
   var slides = [];
@@ -51,12 +50,14 @@
   }
 
   function applyDominantTint(svgUrl){
-    if(PK.applyDominantTint){
-      PK.applyDominantTint(uitlegTextEl, svgUrl, '#F4F4F4');
-      return;
-    }
     if(!uitlegTextEl) return;
-    uitlegTextEl.style.background = '#F4F4F4';
+    var isDark = false;
+    try{
+      isDark = !!(w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
+    }catch(_eDark){}
+    uitlegTextEl.style.background = isDark
+      ? 'rgba(23, 22, 50, 0.78)'
+      : '#F9FAF9';
   }
 
   function render(){
@@ -102,8 +103,7 @@
       w.parent.postMessage({ type:'pk_close_help' }, '*');
       return;
     }
-    var cardsPage = (PK && PK.PATHS && PK.PATHS.cardsPage) ? PK.PATHS.cardsPage : '../kaarten.html';
-    w.location.href = cardsPage + '?set=' + encodeURIComponent(setName);
+    w.location.href = '../kaarten.html?set=' + encodeURIComponent(setName);
   }
 
   function buildSlidesFromMeta(meta){
@@ -125,7 +125,7 @@
   }
 
   function loadMeta(){
-    return PK.getJson(PK.withV(setsDir + '/' + encSet + '/meta.json'));
+    return PK.getJson(PK.withV(BASE + '/sets/' + encSet + '/meta.json'));
   }
 
   // data laden (mag falen)

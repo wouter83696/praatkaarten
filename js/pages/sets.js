@@ -35,12 +35,18 @@
   }
 
   var GRID_TINTS = [
-    // zelfde "mooie tinten" als de hero
-    '214,238,233',
-    '242,230,210',
-    '232,226,243',
-    '221,236,244',
-    '245,232,238'
+    // PLACEHOLDER_COLORS
+    // BASE
+    '243,236,226', // #F3ECE2 SAND
+    '230,240,236', // #E6F0EC MINT_GREY
+    // WARM ACCENT (max 1)
+    '242,223,210', // #F2DFD2 PEACH
+    // REFLECTIEF (max 1)
+    '238,234,243', // #EEEAF3 LILAC_GREY
+    // KOEL ACCENT (max 1)
+    '232,238,244', // #E8EEF4 BLUE_GREY_SOFT
+    // STEUNEND (indien nodig)
+    '227,233,238'  // #E3E9EE BLUE_GREY_STONE
   ];
 
   function trim(s){
@@ -560,14 +566,17 @@
   }
 
   function applyBackground(idx){
-    if(!(PK.indexBackground && PK.indexBackground.render)) return;
+    var bgApi = (PK && PK.gridBackground && PK.gridBackground.render)
+      ? PK.gridBackground
+      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    if(!bgApi) return;
     var bg = (idx && idx.indexPage && idx.indexPage.background)
       ? idx.indexPage.background
       : ((idx && idx.uiDefaults && idx.uiDefaults.index && idx.uiDefaults.index.background)
         ? idx.uiDefaults.index.background
         : null);
     var palette = bg && Array.isArray(bg.palette) ? bg.palette : [
-      '#F2C9A5','#F6D4B4'
+      '#DCE2DF','#C7E6E5','#DCEAF3'
     ];
     var darkPalette = bg && Array.isArray(bg.darkPalette) ? bg.darkPalette : null;
     var isDark = false;
@@ -575,9 +584,9 @@
       isDark = (doc && doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_e){ isDark = false; }
     var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
-    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 3;
-    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1;
-    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 2.2;
+    var blobCount = bg && typeof bg.blobCount === 'number' ? bg.blobCount : 4;
+    var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.05;
+    var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 1.15;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : undefined;
     var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : undefined;
     var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
@@ -585,7 +594,7 @@
     var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : undefined;
     var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : undefined;
     var baseWash = bg && bg.baseWash === false ? false : undefined;
-    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : 0.18;
+    var blobWash = bg && typeof bg.blobWash === 'number' ? bg.blobWash : undefined;
     var shapeWash = bg && typeof bg.shapeWash === 'number' ? bg.shapeWash : undefined;
     var shapeAlphaBoost = bg && typeof bg.shapeAlphaBoost === 'number' ? bg.shapeAlphaBoost : undefined;
     var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : undefined;
@@ -594,13 +603,13 @@
     var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
     var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : undefined;
-    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : 0.18;
+    var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : undefined;
 
     var baseId = (idx && idx.default) ? idx.default : ((idx && idx.sets && idx.sets[0]) ? idx.sets[0].id : 'samenwerken');
     var cardBase = (PK.pathForSet
       ? PK.pathForSet(baseId, 'cards_rect/')
       : ((PK.PATHS && PK.PATHS.setsDir ? PK.PATHS.setsDir : '.') + '/' + encodeURIComponent(baseId) + '/cards_rect/'));
-    PK.indexBackground.render({
+    bgApi.render({
       cardBase: cardBase,
       palette: paletteUse,
       darkPalette: darkPalette,

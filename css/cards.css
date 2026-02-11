@@ -90,10 +90,8 @@ html[data-contrast="dark"] .pkFlip:focus-visible{
   /* Kaartvlak: opaak, warm off-white (geen hard wit) */
   background: var(--pk-set-card, #FAFAF8);
   border: 1px solid rgba(0,0,0,0.015);
-  /* Ultralichte 'papier' schaduw (nooit donker / geen glass) */
-  box-shadow:
-    0 6px 14px rgba(0,0,0,0.012),
-    0 1px 0 rgba(255,255,255,0.75);
+  /* Flat look: geen schaduw achter kaarten */
+  box-shadow: none;
 }
 
 html[data-contrast="dark"] .cardInner{
@@ -180,16 +178,14 @@ html[data-contrast="dark"] .cardInner{
 /* Mini kaart (menu thumbnail) gebruikt dezelfde .cardInner-achtige look */
 .menuThumbCard{
   /* mini-kaartjes in menu moeten voelen als verkleinde index-kaart */
-  width: 46px;
-  height: 30px;
-  /* Zelfde *vormgevoel* als index-kaartjes:
-     op 32px hoog maakt radius 16 het mini-kaartje te rond.
-     Schaal de radius mee zodat hij visueel overeenkomt met de grote kaart. */
+  width: var(--menuThumbSize, 56px);
+  aspect-ratio: 85 / 55;
+  height: auto;
   /* Zelfde radius als de index-kaart (grid) */
-  border-radius: 12px;
+  border-radius: var(--menuThumbRadius, 12px);
   overflow:hidden;
   /* Zelfde kaartvlak als index-kaarten */
-  background: var(--pk-set-card, #FAFAF8);
+  background: var(--menuThumbBg, var(--pk-set-card, #FAFAF8));
   /* Geen extra rand; voorkomt 'dubbele' dikke rand */
   border: 0;
   box-shadow: none;
@@ -201,10 +197,25 @@ html[data-contrast="dark"] .cardInner{
   height:100%;
   display:block;
   object-fit: cover;
-  object-position:center;
+  object-position: var(--menuThumbImgPos, var(--cardImgPos, center));
+  opacity: 1;
+  filter: none;
   border:0;
   background: var(--pk-set-card, #FAFAF8);
   transform: none;
+}
+
+/* Cover-SVG heeft op sommige devices een 1px "witrand"; zoom subtiel in om dat weg te nemen. */
+.cardInner > img[src*="voorkant.svg"],
+.card .bg[src*="voorkant.svg"],
+.menuThumbCard img[src*="voorkant.svg"],
+.menuItemThumb img[src*="voorkant.svg"],
+.menu-thumb img[src*="voorkant.svg"],
+.menuThumb img[src*="voorkant.svg"],
+.menu-item-thumb img[src*="voorkant.svg"],
+.infoSlideCard img[src*="voorkant.svg"]{
+  transform: scale(1.018);
+  transform-origin: center;
 }
 
 
@@ -231,18 +242,19 @@ html[data-contrast="dark"] .cardInner{
   opacity: 0 !important;
 }
 
-/* Kaarten: volledig opaak, warm off-white, zonder rand/schaduw */
-/* Zorg dat ‘grote kaart’ en ‘index kaart’ exact hetzelfde vlak-profiel delen */
-.cardInner{
-  background: #FAFAF8 !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
+/* Kaarten: gebruik de centrale variabele voor het kaartvlak.
+   Geen hardcoded kleur hier, zodat per-set thema’s kunnen werken. */
 /* Kaarten-index flip: geen witte plaat achter de kaart */
 .pkFlipInner{
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+}
+
+/* Kaartenpagina: geen kaartschaduw */
+body[data-page="kaarten"] .cardInner{
+  box-shadow: none !important;
+  border: 0 !important;
 }
 
 /* (verwijderd) dubbele landscape-regel voor .qText — zie de regel hoger in dit bestand */
@@ -271,11 +283,11 @@ html[data-contrast="dark"] .cardInner{
 .menu-thumb,
 .menuThumb,
 .menu-item-thumb {
-  width: 64px;
+  width: var(--menuThumbSize, 56px);
   aspect-ratio: 85 / 55;
-  border-radius: 12px;
+  border-radius: var(--menuThumbRadius, 12px);
   overflow: hidden;
-  background: transparent;
+  background: var(--menuThumbBg, transparent);
 }
 
 .menuItemThumb img,
@@ -290,6 +302,7 @@ html[data-contrast="dark"] .cardInner{
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: var(--menuThumbImgPos, center);
 }
 /* If thumbnails are set as background-image on a div */
 .menuItemThumb,

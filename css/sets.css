@@ -1,8 +1,8 @@
 /* Praatkaartjes – sets index (kaartensets overzicht) */
 
 :root{
-  --setsBg: #ffffff;
-  --setsHeaderBg: #ffffff;
+  --setsBg: #FAFAF8;
+  --setsHeaderBg: #FAFAF8;
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
@@ -15,14 +15,10 @@
   --setsGridRadius: 12px;
   --setsHeroBg: transparent;
   --setsGridBg: transparent;
-  --setsHeroCardBg: #ffffff;
-  --setsGridCardBg: #ffffff;
-  --setsHeroCardImgOpacity: 1;
-  --setsGridCardImgOpacity: 1;
 }
 
 html, body{
-  background: var(--setsHeaderBg, #FAFAF8);
+  background: var(--setsBaseBg, var(--setsHeaderBg, #FAFAF8));
   height: 100%;
   min-height: 100dvh;
 }
@@ -34,9 +30,9 @@ body.setsIndex{
   /* Laat cover/themakaart bovenaan beginnen (override global card centering) */
   --cardImgPos: top center;
   --menuSurface: 255, 255, 255;
-  --menuSurfaceAlpha: 1;
-  --menuSheetAlpha: 1;
-  --menuBtnAlpha: 1;
+  --menuSurfaceAlpha: 0.82;
+  --menuSheetAlpha: 0.82;
+  --menuBtnAlpha: 0.86;
 }
 
 /* Achtergrond blobs (statisch) */
@@ -46,6 +42,7 @@ body.setsIndex{
   width: 100vw;
   height: 100dvh;
   min-height: 100vh;
+  background: transparent !important;
   z-index: 0;
   pointer-events: none;
   opacity: 1;
@@ -163,24 +160,24 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 .setsHeroCard .cardInner{
   width: 100%;
   border-radius: var(--setsHeroRadius);
-  background: var(--setsHeroCardBg, #FAFAF8) !important;
-}
-/* Hero card image translucency */
-.setsHeroCard .cardInner > img{
-  opacity: var(--setsHeroCardImgOpacity, 1);
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .setsHeroCard.is-placeholder .cardInner{
-  background: rgba(var(--ph-rgb, 223, 238, 232), 0.90) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.03) 0%,
+      rgba(0,0,0,0.03) 100%
+    ),
+    rgba(var(--ph-rgb, 223, 238, 232), 0.90) !important;
   border: 0;
-  box-shadow: 0 10px 22px rgba(11,18,32,0.05) !important;
+  box-shadow: none !important;
 }
 .setsHeroCard.is-placeholder .cardInner::after{
-  content:"";
-  position:absolute;
-  inset:-4%;
-  background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.45), rgba(255,255,255,0) 60%);
-  opacity: 0.45;
+  content:none;
+  display:none;
   pointer-events: none;
 }
 
@@ -227,20 +224,31 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   display: block;
   text-decoration: none;
   color: inherit;
+  --setGridCardOpacity: 0.90;
 }
 
 .setGridCard .cardInner{
   width: 100%;
   border-radius: var(--setsGridRadius);
-  background: var(--setsGridCardBg, #FAFAF8) !important;
+  background: #FAFAF8 !important;
   border: 0 !important;
-  box-shadow:
-    0 6px 14px rgba(0,0,0,0.012),
-    0 1px 0 rgba(255,255,255,0.75) !important;
+  box-shadow: none !important;
+  opacity: var(--setGridCardOpacity, 0.90);
 }
-/* Grid card image translucency */
-.setGridCard .cardInner > img{
-  opacity: var(--setsGridCardImgOpacity, 1);
+.setGridCard .cardInner::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.013) 0%,
+    rgba(0,0,0,0.013) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+.setGridCard .cardInner > img.bg{
+  z-index: 1;
 }
 
 html[data-contrast="dark"] .setGridCard .cardInner{
@@ -249,16 +257,13 @@ html[data-contrast="dark"] .setGridCard .cardInner{
 }
 
 .setGridCard.is-placeholder .cardInner{
-  background: rgba(var(--ph-rgb, 223, 238, 232), 0.90) !important;
+  background: rgb(var(--ph-rgb, 223, 238, 232)) !important;
   border: 0 !important;
-  box-shadow: 0 10px 22px rgba(11,18,32,0.05) !important;
+  box-shadow: none !important;
 }
 .setGridCard.is-placeholder .cardInner::after{
-  content:"";
-  position:absolute;
-  inset:-6%;
-  background: radial-gradient(circle at 75% 28%, rgba(255,255,255,0.40), rgba(255,255,255,0) 58%);
-  opacity: 0.45;
+  content:none;
+  display:none;
   pointer-events: none;
 }
 
@@ -283,7 +288,7 @@ html[data-contrast="dark"] body.setsIndex{
   color: rgba(245,250,255,0.9);
   --darkBaseRgb: 24, 18, 60;
   --setsHeroBg: rgba(24, 18, 60, 0);
-  --setsGridBg: rgba(24, 18, 60, 0.78);
+  --setsGridBg: transparent;
 }
 
 /* Carrousel dots */

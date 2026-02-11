@@ -4,11 +4,19 @@
   var w = window;
   var doc = document;
   var page = (doc.body && doc.body.getAttribute('data-page')) ? doc.body.getAttribute('data-page') : '';
+  var ASSET_V = '0.57';
+  w.PK_ASSET_V = ASSET_V;
+
+  function withV(src){
+    if(!src) return src;
+    if(/[?&]v=/.test(src)) return src;
+    return src + (src.indexOf('?') === -1 ? '?' : '&') + 'v=' + encodeURIComponent(ASSET_V);
+  }
 
   function loadScript(src){
     return new Promise(function(resolve){
       var s = doc.createElement('script');
-      s.src = src;
+      s.src = withV(src);
       s.defer = true;
       s.onload = function(){ resolve({ ok: true, src: src }); };
       s.onerror = function(){
@@ -52,14 +60,20 @@
     p('./js/components/bottomSheet.js'),
     p('./js/components/menu.js'),
     p('./js/components/cardRenderer.js'),
-    p('./js/components/indexBackground.js'),
     p('./js/shell/initShell.js'),
     p('./js/templates/index.js')
   ];
 
   var pageScript = null;
-  if(page === 'grid') pageScript = p('./js/pages/grid.page.js');
-  if(page === 'kaarten') pageScript = p('./js/pages/kaarten.page.js');
+  var backgroundScript = null;
+  if(page === 'grid'){
+    pageScript = p('./js/pages/grid.page.js');
+    backgroundScript = p('./js/components/gridBackground.js');
+  }
+  if(page === 'kaarten'){
+    pageScript = p('./js/pages/kaarten.page.js');
+    backgroundScript = p('./js/components/cardsBackground.js');
+  }
 
   // 1) probeer paths.js, anders config.js (fallback)
   loadScript(pathsSrc).then(function(res){
@@ -68,7 +82,7 @@
     }
     return res;
   }).then(function(){
-    return loadScripts(common.concat([pageScript]));
+    return loadScripts(common.concat([backgroundScript, pageScript]));
   }).then(function(){
     try{
       if(window.PK && PK.DEBUG && console && console.log){

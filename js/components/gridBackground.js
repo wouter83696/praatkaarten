@@ -772,7 +772,7 @@
   var lastToken = 0;
   var cache = null; // { key, seed, assets, lite }
 
-  PK.indexBackground = {
+  PK.gridBackground = {
     render: function(opts){
       var canvas = w.document.getElementById('indexBg');
       if(!canvas) return;
