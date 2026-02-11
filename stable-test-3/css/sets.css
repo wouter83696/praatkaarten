@@ -235,6 +235,21 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   box-shadow: none !important;
   opacity: var(--setGridCardOpacity, 0.90);
 }
+.setGridCard .cardInner::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.013) 0%,
+    rgba(0,0,0,0.013) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+.setGridCard .cardInner > img.bg{
+  z-index: 1;
+}
 
 html[data-contrast="dark"] .setGridCard .cardInner{
   border: 0 !important;
@@ -242,13 +257,7 @@ html[data-contrast="dark"] .setGridCard .cardInner{
 }
 
 .setGridCard.is-placeholder .cardInner{
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,0.013) 0%,
-      rgba(0,0,0,0.013) 100%
-    ),
-    rgb(var(--ph-rgb, 223, 238, 232)) !important;
+  background: rgb(var(--ph-rgb, 223, 238, 232)) !important;
   border: 0 !important;
   box-shadow: none !important;
 }

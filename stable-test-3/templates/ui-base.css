@@ -14,6 +14,11 @@
   --menuCardBg: color-mix(in srgb, var(--menuSurfaceColor) 82%, transparent);
   --menuSheetBg: color-mix(in srgb, var(--menuSurfaceColor) 82%, transparent);
   --menuBtnBg: color-mix(in srgb, var(--menuSurfaceColor) 86%, transparent);
+  --menuTopBorderColor: rgba(0,0,0,0.06);
+  --menuHeaderToolsAlpha: 0.69;
+  --menuMiniIconAlpha: 0.51;
+  --menuMiniActiveBgAlpha: 0.07;
+  --menuMiniActiveTextAlpha: 0.59;
 
   /* Menu text */
   --menuHeaderText: rgba(11,18,32,0.68);
@@ -42,4 +47,9 @@ html[data-contrast="dark"]{
   --menuFooterText: rgba(245,250,255,0.60);
   --menuIcon: rgba(245,250,255,0.62);
   --menuLine: rgba(255,255,255,0.10);
+  --menuTopBorderColor: rgba(255,255,255,0.10);
+  --menuHeaderToolsAlpha: 0.67;
+  --menuMiniIconAlpha: 0.61;
+  --menuMiniActiveBgAlpha: 0.12;
+  --menuMiniActiveTextAlpha: 0.77;
 }
