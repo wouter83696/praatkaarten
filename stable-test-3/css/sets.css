@@ -160,6 +160,8 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 .setsHeroCard .cardInner{
   width: 100%;
   border-radius: var(--setsHeroRadius);
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .setsHeroCard.is-placeholder .cardInner{

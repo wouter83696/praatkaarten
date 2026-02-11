@@ -149,8 +149,8 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   width: 52px;
   height: 52px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.015);
-  background: rgba(255,255,255, var(--menuBtnAlpha));
+  border: 1px solid rgba(0,0,0,0.012);
+  background: rgba(var(--menuSurface, 255, 255, 255), var(--menuBtnAlpha));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: none;
@@ -205,10 +205,10 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
 
 .menuCard{
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.015);
+  border: 1px solid rgba(0,0,0,0.012);
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
-  background: rgba(255,255,255, var(--menuSheetAlpha));
+  background: rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: none;
@@ -260,11 +260,11 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   padding: 1px var(--menuToolsPadX);
   border-radius: 999px;
   /* Subtiel pill-vlak dat wegvalt in het menu */
-  border: 1px solid rgba(11,18,32,0.02);
+  border: 1px solid rgba(11,18,32,0.014);
   /* Light mode: wittere tool-strip voor betere leesbaarheid */
-  background: rgba(255,255,255, 0.78);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.64);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   box-shadow: none;
 }
 
@@ -276,7 +276,7 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
   padding: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--menuIcon);
+  color: rgba(11,18,32,0.46);
   display: inline-grid;
   place-items: center;
   cursor: pointer;
@@ -284,13 +284,13 @@ html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
 }
 
 .menuMiniBtn:active{
-  background: rgba(0,0,0,0.04);
+  background: rgba(0,0,0,0.018);
 }
 .menuMiniBtn[aria-pressed="true"]{
   /* Shuffle aan: geen opvallende kleur, alleen iets 'actiever' */
-  background: rgba(0,0,0,0.03);
-  color: rgba(11,18,32,.58);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03);
+  background: rgba(0,0,0,0.02);
+  color: rgba(11,18,32,.54);
+  box-shadow: none;
 }
 
 .themePill:focus-visible,
@@ -407,10 +407,10 @@ html[data-contrast="dark"] .toolBtn{
 }
 
 html[data-contrast="dark"] .menuHeaderTools{
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   box-shadow: none;
 }
 
@@ -503,12 +503,12 @@ html[data-contrast="dark"] .sheetHandle::before{
 }
 
 html[data-contrast="dark"] .menuMiniBtn{
-  color: rgba(245,250,255,.62);
+  color: rgba(245,250,255,.56);
 }
 
 html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
-  color: rgba(245,250,255,.82);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+  color: rgba(245,250,255,.72);
+  box-shadow: none;
 }
 
 
@@ -559,7 +559,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   border-right: 0;
   border-bottom: 0;
   /* Light mode: veel transparanter sheet-oppervlak */
-  background: rgba(255,255,255, 0.52);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.52);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   overflow: hidden;
@@ -974,7 +974,7 @@ html[data-contrast="dark"] .infoSlideInner{
   border-radius: 0;
   border: 0;
   /* Lichte doorkijk zonder dominante kaartkleur; tekst blijft stabiel leesbaar. */
-  background: var(--pkTextBg, rgba(255,255,255, 0.94));
+  background: var(--pkTextBg, #F9FAF9);
   box-shadow: none;
   /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
   color: rgba(11,18,32,.68);
