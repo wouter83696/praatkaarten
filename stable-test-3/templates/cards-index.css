@@ -5,3 +5,19 @@
   --bg-base-color: var(--pk-set-bg, var(--cardsPageBg, #FAFAF8));
   --cardsPageBg: #FAFAF8;
 }
+
+/* Kaarten/content haze overlay: subtiele ademruimte tussen blobs en UI */
+body[data-page="kaarten"] .haze-cards{
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      600px 420px at 50% 40%,
+      rgba(255,255,255,0.65) 0%,
+      rgba(255,255,255,0.45) 28%,
+      rgba(255,255,255,0.16) 60%,
+      rgba(255,255,255,0) 78%
+    );
+}
