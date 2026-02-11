@@ -7,19 +7,3 @@
   --setsHeroBg: transparent;
   --setsGridBg: transparent;
 }
-
-/* Landing/home haze layer above blobs, below content */
-body[data-page="grid"] .haze-landing{
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      900px 520px at 50% 45%,
-      rgba(255,255,255,0.78) 0%,
-      rgba(255,255,255,0.60) 22%,
-      rgba(255,255,255,0.22) 52%,
-      rgba(255,255,255,0) 72%
-    );
-}
