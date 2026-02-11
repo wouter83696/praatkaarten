@@ -2030,7 +2030,6 @@ function openInfo(){
   }
   // Init: content laden. Sheet is standaard volledig dicht en opent alleen via info-knop.
   if(infoSheet){
-    renderBuildStamp();
     // start altijd volledig dicht; alleen openen via info-knop
     infoSheet.hidden = true;
     loadAndRender();

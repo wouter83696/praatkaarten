@@ -977,7 +977,6 @@
 
   function init(){
     resetPositions();
-    renderBuildStamp();
     if(!PK.loadJson && !PK.getJson) return;
 
     function normalizeIndex(idx){
