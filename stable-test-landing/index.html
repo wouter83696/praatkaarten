@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Uitgesproken</title>
+
+  <link rel="icon" type="image/png" sizes="512x512" href="./assets/logo-icons/browser/browser-icon-512.png?v=flat-2">
+  <link rel="icon" type="image/png" sizes="256x256" href="./assets/logo-icons/browser/browser-icon-256.png?v=flat-2">
+  <link rel="shortcut icon" href="./assets/logo-icons/browser/browser-icon-256.png?v=flat-2">
+
+  <meta name="apple-mobile-web-app-title" content="Uitgesproken">
+  <meta name="application-name" content="Uitgesproken">
+  <link rel="apple-touch-icon" sizes="120x120" href="./assets/logo-icons/app/apple-touch-icon-120.png?v=ios-1">
+  <link rel="apple-touch-icon" sizes="152x152" href="./assets/logo-icons/app/apple-touch-icon-152.png?v=ios-1">
+  <link rel="apple-touch-icon" sizes="167x167" href="./assets/logo-icons/app/apple-touch-icon-167.png?v=ios-1">
+  <link rel="apple-touch-icon" href="./assets/logo-icons/app/apple-touch-icon.png?v=ios-1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Zelfde basis-achtergrond als main index -->
+  <link rel="stylesheet" href="./css/shell.css?v=4.0.31">
+  <link rel="stylesheet" href="./css/sets.css?v=3.7.1.92">
+  <link rel="stylesheet" href="./templates/ui-base.css?v=3.7.1.15">
+  <link rel="stylesheet" href="./templates/main-index.css?v=3.7.1.45">
+
+  <style>
+    /* Landing layout (simpel, app-store achtig) */
+    :root{
+      --landingMax: 560px;
+      --mint: #2fd3b0;
+      --ink: rgba(11,18,32,0.86);
+      --muted: rgba(11,18,32,0.62);
+      --glass: rgba(255,255,255,0.55);
+      --glass2: rgba(255,255,255,0.38);
+      --stroke: rgba(11,18,32,0.10);
+      --shadow: 0 18px 50px rgba(11,18,32,0.10);
+    }
+
+    body.setsIndex.landing{
+      display: grid;
+      place-items: center;
+      padding: calc(env(safe-area-inset-top, 0px) + 28px) 18px calc(env(safe-area-inset-bottom, 0px) + 28px);
+    }
+
+    .landingWrap{
+      width: 100%;
+      max-width: var(--landingMax);
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logoBlob{
+      width: 128px;
+      height: 128px;
+      margin: 0 auto 18px;
+      border-radius: 32px;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%),
+                  radial-gradient(circle at 70% 80%, rgba(0,0,0,0.06), rgba(0,0,0,0) 55%),
+                  var(--mint);
+      box-shadow: var(--shadow);
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,0.55);
+    }
+
+    .logoBlob img{
+      width: 84px;
+      height: 84px;
+      display: block;
+      border-radius: 20px;
+    }
+
+    h1{
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      font-size: 40px;
+      line-height: 1.05;
+      margin: 0 0 10px;
+      color: var(--ink);
+    }
+
+    .tagline{
+      font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      margin: 0 0 22px;
+      color: var(--muted);
+    }
+
+    .storeRow{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 0 0 14px;
+    }
+
+    .storeBadge{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: rgba(11,18,32,0.78);
+      background: var(--glass);
+      border: 1px solid var(--stroke);
+      box-shadow: 0 10px 24px rgba(11,18,32,0.08);
+      opacity: 0.82;
+      transition: transform 120ms ease, opacity 120ms ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .storeBadge:hover{ transform: translateY(-1px); opacity: 0.92; }
+    .storeBadge:active{ transform: translateY(0px) scale(0.99); }
+
+    .storeBadge svg{ width: 18px; height: 18px; flex: 0 0 auto; }
+
+    .storeText{
+      display: grid;
+      text-align: left;
+      line-height: 1.05;
+    }
+
+    .storeText small{ font-size: 11px; color: rgba(11,18,32,0.55); }
+    .storeText strong{ font-size: 13px; font-weight: 600; color: rgba(11,18,32,0.78); }
+
+    .webLink{
+      display: inline-block;
+      margin-top: 6px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: var(--glass2);
+      border: 1px solid var(--stroke);
+      color: rgba(11,18,32,0.70);
+      text-decoration: none;
+      font-size: 13px;
+      opacity: 0.88;
+    }
+
+    .webLink:hover{ opacity: 1; }
+
+    /* Toegankelijk: reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      .storeBadge{ transition: none; }
+      .storeBadge:hover{ transform: none; }
+      .storeBadge:active{ transform: none; }
+    }
+
+    @media (max-width: 380px){
+      h1{ font-size: 34px; }
+      .logoBlob{ width: 116px; height: 116px; }
+      .logoBlob img{ width: 78px; height: 78px; }
+    }
+  </style>
+</head>
+<body class="setsIndex landing" data-brand-icon="1">
+  <canvas id="indexBg" class="indexBg" aria-hidden="true"></canvas>
+
+  <main class="landingWrap" aria-label="Landing">
+    <div class="logoBlob" aria-hidden="true">
+      <img src="./assets/logo-icons/app/apple-touch-icon.png" alt="">
+    </div>
+
+    <h1>Uitgesproken</h1>
+    <p class="tagline">Ruimte om te verkennen</p>
+
+    <div class="storeRow" aria-label="Download">
+      <!-- iOS -->
+      <a class="storeBadge" href="#" aria-label="Download in de App Store (link later invullen)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16.6 13.2c0-2 1.6-2.9 1.7-3-0.9-1.3-2.4-1.5-2.9-1.5-1.2-0.1-2.3 0.7-2.9 0.7-0.6 0-1.6-0.7-2.6-0.7-1.3 0-2.6 0.8-3.3 2-1.4 2.4-0.4 6 1 8 0.7 1 1.5 2 2.6 2 1 0 1.4-0.6 2.6-0.6 1.2 0 1.5 0.6 2.6 0.6 1.1 0 1.8-1 2.4-2 0.8-1.1 1.1-2.2 1.1-2.2-0.0-0.0-2.2-0.8-2.2-3.3z" fill="currentColor"/>
+          <path d="M14.9 6.9c0.6-0.7 1-1.7 0.9-2.7-0.9 0-1.9 0.6-2.5 1.3-0.6 0.7-1.1 1.7-0.9 2.7 1 0.1 1.9-0.5 2.5-1.3z" fill="currentColor"/>
+        </svg>
+        <span class="storeText"><small>Download op</small><strong>App Store</strong></span>
+      </a>
+
+      <!-- Android -->
+      <a class="storeBadge" href="#" aria-label="Download in Google Play (link later invullen)">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7.5 5.5 13.6 12 7.5 18.5 6 17 10.6 12 6 7z" fill="currentColor"/>
+          <path d="M14.3 11.1 16.6 8.8c0.5-0.5 1.3-0.5 1.8 0l0.2 0.2c0.5 0.5 0.5 1.3 0 1.8l-1.8 1.8 1.8 1.8c0.5 0.5 0.5 1.3 0 1.8l-0.2 0.2c-0.5 0.5-1.3 0.5-1.8 0l-2.3-2.3z" fill="currentColor"/>
+        </svg>
+        <span class="storeText"><small>Download op</small><strong>Google Play</strong></span>
+      </a>
+    </div>
+
+    <a class="webLink" href="./app.html">Open de web-app</a>
+  </main>
+
+  <script>
+    // Subtiele canvas-blobs in dezelfde stijl als de main index (zonder set-afhankelijkheden)
+    (function(){
+      var canvas = document.getElementById('indexBg');
+      if(!canvas) return;
+      var ctx = canvas.getContext('2d');
+      if(!ctx) return;
+
+      function dpr(){ return window.devicePixelRatio || 1; }
+
+      function resize(){
+        var w = Math.max(1, Math.floor(window.innerWidth * dpr()));
+        var h = Math.max(1, Math.floor(window.innerHeight * dpr()));
+        if(canvas.width !== w) canvas.width = w;
+        if(canvas.height !== h) canvas.height = h;
+        canvas.style.width = '100vw';
+        canvas.style.height = '100dvh';
+        draw();
+      }
+
+      function rgba(hex, a){
+        hex = String(hex||'').trim();
+        if(hex[0] === '#') hex = hex.slice(1);
+        if(hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        var r = parseInt(hex.slice(0,2),16);
+        var g = parseInt(hex.slice(2,4),16);
+        var b = parseInt(hex.slice(4,6),16);
+        return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+      }
+
+      function draw(){
+        var w = canvas.width, h = canvas.height;
+        var scale = dpr();
+        ctx.setTransform(1,0,0,1,0,0);
+        ctx.clearRect(0,0,w,h);
+
+        // Basis: pak dezelfde achtergrondkleur als sets-index
+        var bg = getComputedStyle(document.documentElement).getPropertyValue('--setsBaseBg').trim() || '#F4F7F5';
+        ctx.fillStyle = bg;
+        ctx.fillRect(0,0,w,h);
+
+        // Palet (fris/koel) + mint
+        var mint = getComputedStyle(document.documentElement).getPropertyValue('--mint').trim() || '#2fd3b0';
+        var c1 = '#8fd7ff'; // licht blauw
+        var c2 = '#b9f2d0'; // zacht groen
+        var c3 = '#ffe6b0'; // warm zand (heel subtiel)
+
+        function blob(x,y,r,color,alpha,blur){
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.filter = 'blur(' + (blur*scale) + 'px)';
+          var g = ctx.createRadialGradient(x,y,0,x,y,r);
+          g.addColorStop(0, rgba(color, 1));
+          g.addColorStop(1, rgba(color, 0));
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(x,y,r,0,Math.PI*2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Layout: 4 blobs
+        blob(w*0.18, h*0.22, Math.min(w,h)*0.36, c1, 0.55, 22);
+        blob(w*0.82, h*0.28, Math.min(w,h)*0.34, c2, 0.50, 22);
+        blob(w*0.55, h*0.78, Math.min(w,h)*0.42, mint, 0.30, 26);
+        blob(w*0.18, h*0.78, Math.min(w,h)*0.30, c3, 0.22, 24);
+
+        // Zachte vignette voor leesbaarheid
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        var vg = ctx.createRadialGradient(w*0.5,h*0.5, Math.min(w,h)*0.15, w*0.5,h*0.5, Math.min(w,h)*0.85);
+        vg.addColorStop(0,'rgba(0,0,0,0)');
+        vg.addColorStop(1,'rgba(0,0,0,0.12)');
+        ctx.fillStyle = vg;
+        ctx.fillRect(0,0,w,h);
+        ctx.restore();
+      }
+
+      window.addEventListener('resize', resize, { passive: true });
+      resize();
+    })();
+  </script>
+</body>
+</html>
