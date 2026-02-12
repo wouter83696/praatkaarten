@@ -277,7 +277,6 @@
     if(bgBandsTimer) w.clearTimeout(bgBandsTimer);
     bgBandsTimer = w.setTimeout(function(){
       updateBackgroundBandsNow();
-      if(lastIndexConfig) applyBackground(lastIndexConfig);
       syncHeroCardStates();
       syncGridCardStates();
     }, 48);
@@ -957,13 +956,15 @@
   }
 
   function applyContrast(mode){
-    CONTRAST = (mode === 'dark') ? 'dark' : 'light';
+    var nextContrast = (mode === 'dark') ? 'dark' : 'light';
+    var changed = (nextContrast !== CONTRAST);
+    CONTRAST = nextContrast;
     try{ w.sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
     if(doc && doc.documentElement){
       doc.documentElement.setAttribute('data-contrast', CONTRAST);
     }
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
-    if(lastIndexConfig) applyBackground(lastIndexConfig);
+    if(changed && lastIndexConfig) applyBackground(lastIndexConfig);
   }
 
   function setShuffleEnabled(on){
@@ -1067,10 +1068,8 @@
       scheduleBackgroundBands();
       w.requestAnimationFrame(function(){
         updateBackgroundBandsNow();
-        if(lastIndexConfig) applyBackground(lastIndexConfig);
         w.requestAnimationFrame(function(){
           updateBackgroundBandsNow();
-          if(lastIndexConfig) applyBackground(lastIndexConfig);
         });
       });
 

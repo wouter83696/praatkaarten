@@ -700,7 +700,9 @@ if(PK.createMenuItem){
   var contrastBtn = w.document.getElementById('menuContrastToggle');
   var CONTRAST = 'light';
   function applyContrast(mode){
-    CONTRAST = (mode === 'dark') ? 'dark' : 'light';
+    var nextContrast = (mode === 'dark') ? 'dark' : 'light';
+    var changed = (nextContrast !== CONTRAST);
+    CONTRAST = nextContrast;
     // Session-only: default altijd LIGHT bij een nieuwe sessie,
     // maar na klikken mag DARK de rest van de sessie blijven.
     try{ w.sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
@@ -717,8 +719,10 @@ if(PK.createMenuItem){
     // willen we echter ALTIJD opnieuw toepassen, ook als de index gelijk blijft.
     try{ __lastTintIdx = -1; }catch(_eX){}
     try{ setActiveTintByIndex && setActiveTintByIndex(getActiveCardIndex ? getActiveCardIndex() : 0); }catch(_e2){}
-    // Herteken blobs: dark mode heeft een andere blob-palette.
-    try{ renderIndexBackground(); }catch(_e3){}
+    if(changed){
+      // Herteken blobs alleen als mode echt wisselt.
+      try{ renderIndexBackground(); }catch(_e3){}
+    }
   }
   if(contrastBtn){
     var savedC = 'light';

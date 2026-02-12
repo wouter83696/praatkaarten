@@ -764,42 +764,8 @@
         doRender(c.assets, c.seed);
       });
 
-      // re-render on resize (debounced) – zónder nieuwe random
-      var t = 0;
-      function onResize(){
-        if(t) w.clearTimeout(t);
-        t = w.setTimeout(function(){
-          if(!cache || cache.key!==key) return;
-          // Op sommige browsers triggert scroll (address bar / layout) een resize.
-          // De gebruiker wil: eenmaal geladen = niet meer veranderen bij scroll.
-          // Daarom negeren we 'resize' events die alleen (klein) de hoogte aanpassen.
-          var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
-          if(!rect){
-            doRender(cache.assets, cache.seed);
-            return;
-          }
-          var cw = rect.width || 0;
-          var ch = rect.height || 0;
-          var lastW = cache._lastCssW || 0;
-          var lastH = cache._lastCssH || 0;
-
-          var dw = Math.abs(cw - lastW);
-          var dh = Math.abs(ch - lastH);
-
-          // Redraw alleen bij:
-          // - duidelijke breedte verandering (desktop resize / rotatie)
-          // - of grote hoogte verandering (rotatie)
-          // Kleine hoogte-shifts door scroll → overslaan.
-          if(dw >= 2 || dh >= 140){
-            doRender(cache.assets, cache.seed);
-          }
-        }, 120);
-      }
-
-      if(!canvas._pkBgBound){
-        canvas._pkBgBound = true;
-        w.addEventListener('resize', onResize, { passive:true });
-      }
+      // Achtergrond blijft statisch na eerste render.
+      // Geen re-render op resize om zichtbare "beweging" te voorkomen.
     }
   };
 })(window);
