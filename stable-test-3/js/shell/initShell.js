@@ -31,7 +31,7 @@
       var brand = !!(body && body.getAttribute && body.getAttribute('data-brand-icon') === '1');
       var icon = w.document && w.document.getElementById ? w.document.getElementById('setCoverIcon') : null;
       if(brand && icon && PK.pathForAsset){
-        var src = PK.pathForAsset('logo-icons/app/apple-touch-icon.png');
+        var src = PK.pathForAsset('logo-icons/masters/icon-mark-only.svg');
         icon.setAttribute('src', PK.withV ? PK.withV(src) : src);
       }
     }catch(_eIcon){}

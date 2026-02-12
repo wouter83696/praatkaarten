@@ -82,7 +82,7 @@ html[data-contrast="dark"] .topBar{
 
 /* Brand pill (kaarten-index): vaste mint achtergrond + logo */
 body[data-brand-icon="1"] .themePill{
-  background: #7fcfc9;
+  background: linear-gradient(135deg, #8fd6d0 0%, #74c3bc 100%);
   border: 0;
   box-shadow: none;
   backdrop-filter: none;
@@ -103,7 +103,7 @@ body[data-brand-icon="1"] .setCoverIcon{
 }
 
 html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
-  background: #7fcfc9;
+  background: linear-gradient(135deg, #8fd6d0 0%, #74c3bc 100%);
   border: 0;
 }
 
