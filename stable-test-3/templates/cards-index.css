@@ -2,6 +2,6 @@
    Adjust this background for the cards page.
 */
 :root{
-  --bg-base-color: var(--pk-set-bg, var(--cardsPageBg, #FAFAF8));
-  --cardsPageBg: #FAFAF8;
+  --bg-base-color: var(--pk-set-bg, var(--cardsPageBg, #7fcfc9));
+  --cardsPageBg: #7fcfc9;
 }

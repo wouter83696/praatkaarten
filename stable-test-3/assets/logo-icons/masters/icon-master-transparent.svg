@@ -10,7 +10,7 @@
       .st1 {
         fill: #7fcfc9;
         isolation: isolate;
-        opacity: .71;
+        opacity: 1;
       }
 
       .st2 {
