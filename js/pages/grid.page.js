@@ -977,6 +977,7 @@
   }
 
   function init(){
+    renderBuildStamp();
     resetPositions();
     if(!PK.loadJson && !PK.getJson) return;
 
