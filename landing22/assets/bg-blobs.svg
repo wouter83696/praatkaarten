@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="800" fill="#ffffff"/>
+  <!-- Blobs -->
+  <path d="M98 210 C30 160 20 70 90 40 C170 5 260 35 290 120 C315 190 255 250 190 265 C145 275 120 245 98 210 Z"
+        fill="#BFEDE7" opacity="0.55"/>
+  <path d="M980 120 C1060 40 1180 70 1195 175 C1210 300 1070 330 970 290 C890 255 900 160 980 120 Z"
+        fill="#B8EEE5" opacity="0.50"/>
+  <path d="M820 640 C900 570 1030 595 1080 680 C1135 775 1030 840 900 820 C785 803 750 700 820 640 Z"
+        fill="#B4EAE1" opacity="0.55"/>
+  <path d="M180 690 C80 630 70 520 160 470 C255 415 370 455 395 560 C420 665 315 755 220 740 C205 737 192 732 180 690 Z"
+        fill="#C9F3EE" opacity="0.55"/>
+  <path d="M520 420 C450 360 470 260 555 235 C650 205 745 270 742 370 C738 480 625 515 560 490 C545 484 532 475 520 420 Z"
+        fill="#AEE4DB" opacity="0.35" filter="url(#softBlur)"/>
+</svg>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Uitgesproken</title>
+
+  <!-- IBM Plex Sans (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <main class="wrap">
+    <div class="stack">
+      <img class="logo" src="./assets/app-icon-512.png" alt="Uitgesproken logo" />
+
+      <h1 class="title">Uitgesproken</h1>
+      <p class="subtitle">Ruimte om te verkennen</p>
+
+      <div class="buttons" role="group" aria-label="Downloads">
+        <a class="btn btn--ghost" href="#" aria-disabled="true" tabindex="-1">
+          <span class="btn__small">Download op</span>
+          <span class="btn__big">App Store</span>
+        </a>
+        <a class="btn btn--ghost" href="#" aria-disabled="true" tabindex="-1">
+          <span class="btn__small">Download op</span>
+          <span class="btn__big">Google Play</span>
+        </a>
+        <button class="btn btn--primary" id="openWebApp" type="button">
+          <span class="btn__small">Tijdelijk</span>
+          <span class="btn__big">Open web-app</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Desktop / large-screen modal -->
+  <div class="modal" id="desktopModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h2 id="modalTitle">Open op mobiel</h2>
+      <p class="modal__text">
+        Deze web-app is gemaakt voor je telefoon. Open deze pagina op mobiel.
+        <span class="muted">(Hier kan later een QR-code komen.)</span>
+      </p>
+      <div class="modal__actions">
+        <button class="modal__btn" type="button" data-close>Sluiten</button>
+        <button class="modal__btn modal__btn--primary" type="button" data-close>Oké</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>
