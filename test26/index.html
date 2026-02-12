@@ -43,11 +43,12 @@
 
     .wrap{position:relative;
       z-index:1;
-      
-      min-height:100%;
-      display:grid;
-      place-items:center;
-      padding: 56px 18px;
+      min-height:100vh;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 24px 18px;
       text-align:center;
     }
 
@@ -163,11 +164,6 @@
 
 
 
-@media (min-width: 900px){
-  html, body{
-    height: 100%;
-    overflow: hidden; /* geen scroll op desktop */
-  }
 
   .wrap{
     min-height: 100vh;
@@ -192,6 +188,29 @@
 
   .stores{
     margin-top: 12px;
+  }
+}
+
+
+@media (min-width: 900px){
+  body{
+    overflow: hidden; /* geen scroll op desktop */
+  }
+
+  .wrap{
+    padding: 0 18px;   /* geen top/bottom padding */
+  }
+
+  .hero{
+    transform: translateY(-28px); /* net wat hoger */
+  }
+
+  h1{
+    margin: 10px 0 2px; /* ondertitel strak */
+  }
+
+  .stores{
+    margin-top: 10px;
   }
 }
 
