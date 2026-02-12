@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Uitgesproken</title>
+
+  <!-- Fonts (zelfde als je vroeg) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>:root{
+      --bg: #F4F7F5;              /* match stable sfeer */
+      --title: rgba(47,58,64,.88); /* zachter dan zwart */
+      --sub: rgba(47,58,64,.62);
+      --glass: rgba(255,255,255,.62);
+      --stroke: rgba(47,58,64,.10);
+      --shadow: 0 22px 70px rgba(35, 50, 55, .12);
+      --shadow-soft: 0 12px 32px rgba(35, 50, 55, .10);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--title);
+      font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow-x:hidden;
+    }
+
+    /* Canvas background (stable) */
+    #indexBg{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .wrap{position:relative;
+      z-index:1;
+      
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding: 56px 18px;
+      text-align:center;
+    }
+
+    .hero{
+      width:min(560px, 100%);
+      display:grid;
+      gap:14px;
+      justify-items:center;
+    }
+
+    /* Logo: geen extra vierkant, icon zelf is leidend */
+    .logo{
+      width: 132px;
+      height: 132px;
+      border-radius: 28px; /* past bij icon */
+      overflow:hidden;
+      box-shadow: var(--shadow-soft);
+      transform: translateZ(0);
+    }
+    .logo img{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    h1{
+      margin: 10px 0 0;
+      font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight:700;
+      letter-spacing:-0.02em;
+      font-size: clamp(32px, 4.8vw, 44px);
+      line-height:1.05;
+      color: var(--title);
+      margin-bottom: 14px;}
+
+    .tagline{
+      margin:0;
+      font-size: clamp(18px, 2.6vw, 22px);
+      line-height:1.35;
+      font-weight:500;
+      color: var(--sub);
+    }
+
+    .stores{
+      margin-top: 18px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+
+    .store{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--glass);
+      border: 1px solid rgba(47,58,64,.08);
+      box-shadow: var(--shadow);
+      text-decoration:none;
+      color: rgba(47,58,64,.86);
+      opacity:.90;
+      transition: transform .12s ease, opacity .12s ease, background .12s ease;
+      user-select:none;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .store:hover{ transform: translateY(-1px); opacity: .98; background: rgba(255,255,255,.70); }
+    .store:active{ transform: translateY(0px); }
+
+    .store small{
+      display:block;
+      font-size:12px;
+      line-height:1.1;
+      color: rgba(47,58,64,.55);
+      font-weight:500;
+      letter-spacing:.01em;
+    }
+    .store strong{
+      display:block;
+      font-size:16px;
+      line-height:1.1;
+      font-weight:700;
+      letter-spacing:-0.01em;
+      color: rgba(47,58,64,.85);
+    }
+
+    .ico{
+      width:22px;
+      height:22px;
+      opacity:.80;
+    }
+
+    footer{
+      margin-top: 22px;
+      font-size: 12px;
+      color: rgba(47,58,64,.42);
+    }
+  
+    .store.disabled{
+      opacity:.4;
+      filter: grayscale(1);
+      cursor: default;
+      pointer-events: none;
+      box-shadow: 0 8px 18px rgba(35, 50, 55, .08);
+    }
+    .store.web{
+      opacity: .95;
+      filter:none;
+      pointer-events: auto;
+    }
+/* ===== Uitgesproken landing tweaks ===== */
+:root{
+  --title: #2F6F67;      /* donker mint */
+  --sub: #6B7F7C;        /* zacht mint-grijs */
+}
+
+html, body{
+  height:100%;
+  margin:0;
+  padding:0;
+  overflow:hidden; /* geen scroll */
+}
+
+body{
+  min-height:100svh;
+  font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* Houd content altijd binnen viewport (mobile-first) */
+.wrap{
+  min-height:100svh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding: clamp(18px, 5vh, 36px) 18px 18px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+
+/* Spacing: logo iets verder van titel; ondertitel strak tegen titel */
+.logo{
+  margin-bottom: 20px;
+}
+
+h1{
+  color: var(--title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+  font-size: clamp(30px, 5.4vw, 46px);
+}
+
+.tagline{
+  color: var(--sub);
+  font-weight: 500;
+  margin: 0 0 18px 0;
+  font-size: clamp(14px, 2.6vw, 18px);
+}
+
+/* ===== Desktop modal ===== */
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:none;
+}
+
+.modal.is-open{
+  display:block;
+}
+
+.modal__backdrop{
+  position:absolute;
+  inset:0;
+  background: rgba(20, 40, 35, 0.25);
+  backdrop-filter: blur(6px);
+}
+
+.modal__card{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%, -50%);
+  width:min(520px, calc(100vw - 32px));
+  border-radius: 18px;
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(47,111,103,0.18);
+}
+
+.modal__close{
+  position:absolute;
+  right:10px;
+  top:8px;
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  border:0;
+  background: transparent;
+  font-size: 26px;
+  line-height: 36px;
+  cursor:pointer;
+  color: rgba(47,111,103,0.85);
+}
+
+.modal__title{
+  margin: 4px 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--title);
+}
+
+.modal__text{
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: rgba(60, 90, 86, 0.92);
+}
+
+.modal__qr{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin: 0 0 14px;
+}
+
+.modal__qrBox{
+  width: 86px;
+  height: 86px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  font-weight: 600;
+  color: rgba(47,111,103,0.75);
+  background: rgba(47,111,103,0.06);
+  border: 1px dashed rgba(47,111,103,0.22);
+}
+
+.modal__qrHint{
+  font-size: 12px;
+  color: rgba(60, 90, 86, 0.70);
+}
+
+.modal__btn{
+  width:100%;
+  border:0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 600;
+  cursor:pointer;
+  background: rgba(47,111,103,0.12);
+  color: rgba(47,111,103,0.95);
+}
+
+/* Desktop-only behavior hint */
+@media (hover:hover) and (pointer:fine){
+  .wrap{ cursor: pointer; }
+}
+/* ===== Landing hotfix: content zichtbaar + geen blob "movement" ===== */
+#indexBg{ z-index:-1 !important; }
+body{ position:relative; }
+.hero{ margin-top: 0 !important; }
+
+/* ===== CLEAN OVERRIDES (v8) ===== */
+/* Always full-viewport, no scroll */
+html, body { height: 100%; }
+body{
+  margin: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Canvas background ALWAYS behind everything */
+#indexBg{
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 1; /* blobs visible */
+}
+
+/* Foreground content above */
+.wrap{
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 18px;
+  text-align: center;
+}
+
+/* Spacing tweaks */
+.logo{ margin: 0 auto 18px; }
+h1{ margin: 14px 0 0; }
+.tagline{ margin: 4px 0 18px; }
+
+/* Minty text colors (match balloon stroke family) */
+h1{ color: #2E7E78; }          /* dark mint/teal */
+.tagline{ color: #4F9C96; }     /* softer mint */
+
+/* Keep store buttons subtle */
+.store.disabled{
+  opacity: .35;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
+/* Desktop-only modal trigger is still on-page; ensure modal sits above */
+.modal{
+  z-index: 10;
+}
+</style>
+<script>window.PK_GRID_BG_NO_RESIZE = true;</script>
+</head>
+
+<body>
+
+  <!-- Desktop-only modal (mobile app notice) -->
+  <div id="desktopModal" class="modal" aria-hidden="true">
+    <div class="modal__backdrop" data-close="1"></div>
+    <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal__close" type="button" aria-label="Sluiten" data-close="1">×</button>
+      <h2 id="modalTitle" class="modal__title">Deze web-app is mobile-only</h2>
+      <p class="modal__text">Open Uitgesproken op je telefoon. Later kun je hier ook een QR-code scannen.</p>
+      <div class="modal__qr" aria-hidden="true">
+        <div class="modal__qrBox">QR</div>
+        <div class="modal__qrHint">QR-code placeholder</div>
+      </div>
+      <button class="modal__btn" type="button" data-close="1">Oké</button>
+    </div>
+  </div>
+
+  <canvas id="indexBg" aria-hidden="true"></canvas>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="logo" aria-label="Uitgesproken logo">
+        <img src="./assets/logo-icons/app/app-icon-512.png" alt="Uitgesproken">
+      </div>
+
+      <h1>Uitgesproken</h1>
+      <p class="tagline">Ruimte om te verkennen</p>
+
+      <!-- Store buttons (subtiel) -->
+      <div class="stores" aria-label="App stores">
+<a class="store disabled" href="#" aria-label="Download in de App Store">
+          <!-- Apple -->
+          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
+            <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
+          </svg>
+          <span>
+            <small>Download op</small>
+            <strong>App Store</strong>
+          </span>
+        </a>
+
+        <a class="store disabled" href="#" aria-label="Download op Google Play">
+          <!-- Google Play (correcte 'play' triangle) -->
+          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
+            <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
+            <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
+            <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
+          </svg>
+          <span>
+            <small>Download op</small>
+            <strong>Google Play</strong>
+          </span>
+        </a>
+
+        <a class="store web" href="./app.html" aria-label="Open de web-app (mobiel)">
+          <span>
+            <small>Tijdelijk</small>
+            <strong>Open web-app</strong>
+          </span>
+        </a>
+    
+</div>
+
+      
+    </section>
+  </main>
+
+  <!-- Stable background JS (overgenomen uit stable-test-3) -->
+  <script src="./js/core/net.js"></script>
+  <script src="./js/components/gridBackground.js"></script>
+  <script>
+    (function(){
+      function run(){
+        if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
+
+        // Zelfde defaults als in stable grid.page.js fallback
+        var isDark = false;
+        try{ isDark = (document.documentElement.getAttribute('data-contrast') === 'dark'); }catch(_e){}
+
+        var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+
+        var blobCount = ((window.innerWidth||0) < 900) ? 5 : 6;
+        var alphaBoost = 1.12;
+        var sizeScale = 1.34;
+
+        window.PK.gridBackground.render({
+          cardBase: './sets/kaartensets/cards/',
+          meta: null,
+          palette: palette,
+          blobCount: blobCount,
+          alphaBoost: alphaBoost,
+          sizeScale: sizeScale
+        });
+      }
+      if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', run);
+      }else{
+        run();
+      }
+    })();
+  </script>
+</body>
+</html>
