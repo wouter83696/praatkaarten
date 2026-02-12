@@ -666,6 +666,7 @@ if(PK.createMenuItem){
       if(w.console && w.console.error) w.console.error(e);
     });
 
+  renderBuildStamp();
   setThemePillText();
 
   // Menu wiring
