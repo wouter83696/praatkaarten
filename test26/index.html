@@ -161,21 +161,37 @@
       pointer-events: auto;
     }
 
+
+
 @media (min-width: 900px){
+  html, body{
+    height: 100%;
+    overflow: hidden; /* geen scroll op desktop */
+  }
+
   .wrap{
     min-height: 100vh;
-    padding: 16px 18px;
+    height: 100vh;
+    padding: 0 18px;           /* geen top/bottom padding */
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
+  .hero{
+    transform: translateY(-18px); /* iets omhoog zodat alles ‘boven de vouw’ zit */
+  }
+
   h1{
-    margin-bottom: 8px;
+    margin: 10px 0 4px;        /* ondertitel strak onder titel */
+  }
+
+  .tagline{
+    line-height: 1.22;
   }
 
   .stores{
-    margin-top: 14px;
+    margin-top: 12px;
   }
 }
 
