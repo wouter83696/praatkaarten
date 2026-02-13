@@ -699,7 +699,11 @@
         cy = (rnd()*1.10 - 0.05) * info.h;
       }
 
-      if(i===1){
+      if(opts && opts.centerBlob === true && i===1){
+        rr *= 1.05;
+        cx = info.w * (0.50 + (rnd()-0.5) * 0.08);
+        cy = info.h * (0.50 + (rnd()-0.5) * 0.10);
+      }else if(i===1){
         rr *= 1.08;
         cx = info.w * 1.02;
         cy = info.h * 0.12;
