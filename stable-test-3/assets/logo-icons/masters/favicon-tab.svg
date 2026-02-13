@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Uitgesproken favicon">
+  <defs>
+    <linearGradient id="mintCircle" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8ad7d2"/>
+      <stop offset=".58" stop-color="#7fcfc9"/>
+      <stop offset="1" stop-color="#74c5bf"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="512" cy="512" r="512" fill="url(#mintCircle)"/>
+
+  <path
+    d="M314 296h396c75 0 136 61 136 136v168c0 75-61 136-136 136H557l-92 63c-15 10-35-3-31-21l14-42H314c-75 0-136-61-136-136V432c0-75 61-136 136-136z"
+    fill="none"
+    stroke="#81becc"
+    stroke-opacity=".50"
+    stroke-width="80"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+
+  <path
+    d="M314 296h396c75 0 136 61 136 136v168c0 75-61 136-136 136H557l-92 63c-15 10-35-3-31-21l14-42H314c-75 0-136-61-136-136V432c0-75 61-136 136-136z"
+    fill="none"
+    stroke="#fff"
+    stroke-width="58"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+
+  <path
+    d="M404 534c34-34 79-34 113 0 34 34 79 34 113 0"
+    fill="none"
+    stroke="#81becc"
+    stroke-width="40"
+    stroke-linecap="round"
+    stroke-linejoin="round"/>
+</svg>
