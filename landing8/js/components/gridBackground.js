@@ -316,10 +316,13 @@
   function pinSvgLayer(svg){
     if(!svg || !svg.style) return svg;
     svg.style.position = 'fixed';
-    svg.style.top = '0';
-    svg.style.left = '0';
-    svg.style.width = '100%';
-    svg.style.height = '100%';
+    // Firefox kan op 100vw/100vh afrondingsrandjes tonen; daarom lichte bleed.
+    svg.style.top = '-2px';
+    svg.style.left = '-2px';
+    svg.style.right = '-2px';
+    svg.style.bottom = '-2px';
+    svg.style.width = 'auto';
+    svg.style.height = 'auto';
     svg.style.pointerEvents = 'none';
     svg.style.zIndex = '0';
     svg.style.display = 'block';
