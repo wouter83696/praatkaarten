@@ -313,22 +313,38 @@
   }
 
   
+  function pinSvgLayer(svg){
+    if(!svg || !svg.style) return svg;
+    svg.style.position = 'fixed';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '0';
+    svg.style.display = 'block';
+    return svg;
+  }
+
   function ensureSvgLayer(canvas){
     var parent = canvas && canvas.parentNode;
     if(!parent) return null;
     var existing = parent.querySelector && parent.querySelector('#indexBgSvg');
-    if(existing) return existing;
+    if(existing) return pinSvgLayer(existing);
     var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('id','indexBgSvg');
     svg.setAttribute('class','indexBgSvg');
     svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('focusable','false');
     svg.setAttribute('preserveAspectRatio','none');
+    svg.setAttribute('width','100%');
+    svg.setAttribute('height','100%');
     // fixed coord space, easier for random placement
     svg.setAttribute('viewBox','0 0 1000 1000');
     // insert directly after canvas so it sits above it
     if(canvas.nextSibling) parent.insertBefore(svg, canvas.nextSibling);
     else parent.appendChild(svg);
-    return svg;
+    return pinSvgLayer(svg);
   }
 
   function parseViewBox(root){
