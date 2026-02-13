@@ -80,9 +80,9 @@ html[data-contrast="dark"] .topBar{
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Brand pill (kaarten-index): vaste mint met subtiele transparantie */
+/* Brand pill (kaarten-index): vaste mint-gradient (zoals het logo) */
 body[data-brand-icon="1"] .themePill{
-  background: rgba(127, 207, 201, 0.9);
+  background: linear-gradient(180deg, #8ad7d2 0%, #7fcfc9 58%, #74c5bf 100%);
   border: 0;
   box-shadow: none;
   backdrop-filter: none;
@@ -103,7 +103,7 @@ body[data-brand-icon="1"] .setCoverIcon{
 }
 
 html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
-  background: rgba(127, 207, 201, 0.9);
+  background: linear-gradient(180deg, #8ad7d2 0%, #7fcfc9 58%, #74c5bf 100%);
   border: 0;
 }
 
