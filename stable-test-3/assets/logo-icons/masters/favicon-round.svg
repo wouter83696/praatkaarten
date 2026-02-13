@@ -8,7 +8,7 @@
       }
 
       .st1 {
-        fill: #7fcfc9;
+        fill: url(#mint_circle);
         isolation: isolate;
         opacity: 1;
       }
@@ -33,6 +33,11 @@
       <stop offset="0" stop-color="#fff"/>
       <stop offset=".6" stop-color="#f7fbfb"/>
       <stop offset="1" stop-color="#eef6f5"/>
+    </linearGradient>
+    <linearGradient id="mint_circle" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8ad7d2"/>
+      <stop offset=".58" stop-color="#7fcfc9"/>
+      <stop offset="1" stop-color="#74c5bf"/>
     </linearGradient>
   </defs>
   <circle class="st1" cx="512" cy="512" r="512"/>
