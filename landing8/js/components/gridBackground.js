@@ -300,7 +300,7 @@
       var fill = b.fill ? String(b.fill) : '#7fcfc9';
       var alpha = (typeof b.opacity === 'number') ? b.opacity : 0.4;
       alpha = clamp(alpha * opacityScale, 0.02, 0.95);
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = 0.18;
       ctx.fillStyle = fill;
       try{
         var p = new w.Path2D(d);
@@ -598,10 +598,10 @@
       var g = ctx.createLinearGradient(0,0,info.w,info.h);
       g.addColorStop(0, mixWithWhite(base, 0.985));
       g.addColorStop(1, mixWithWhite(base, 0.97));
-      ctx.globalAlpha = 0.015;
+      ctx.globalAlpha = 0.18;
       ctx.fillStyle = g;
       ctx.fillRect(0,0,info.w,info.h);
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = 0.18;
     }
 
     // Main index: vaste blobset (aangeleverde SVG-vormen/kleuren) in light mode.
@@ -713,7 +713,7 @@
       }
 
       ctx.save();
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = 0.18;
       ctx.fillStyle = c;
       // Geen grijze filters; in dark mode geven we een subtiele "glow" via shadow.
       if('filter' in ctx) ctx.filter = 'none';
