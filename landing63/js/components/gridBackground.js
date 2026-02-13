@@ -171,13 +171,9 @@
   }
 
   function pickFiles(meta){
-    var files = ['voorkant.svg'];
-    if(meta && Array.isArray(meta.themes)){
-      for(var i=0;i<meta.themes.length;i++){
-        var t = meta.themes[i] || {};
-        if(t.card) files.push(String(t.card));
-        else if(t.key) files.push(String(t.key)+'.svg');
-      }
+    // Standalone background: always use the same local blob source only.
+    return ['voorkant.svg'];
+  }
     }
     // keep it small and diverse
     files = uniq(files);
@@ -465,7 +461,7 @@
     while(svg.firstChild) svg.removeChild(svg.firstChild);
 
     // defs: blur (duur in Firefox). In lite-modus géén SVG blur filter gebruiken.
-    var useSvgBlur = !lite;
+    var useSvgBlur = false; // never use SVG blur (avoids haze/artifacts)
     if(useSvgBlur){
       var defs = svgEl('defs');
       var flt = svgEl('filter');
@@ -476,7 +472,7 @@
       flt.setAttribute('height','140%');
       var g = svgEl('feGaussianBlur');
       // Minder blur: kleuren blijven minder "diffuus".
-      g.setAttribute('stdDeviation', '6');
+      g.setAttribute('stdDeviation', '0');
       defs.appendChild(flt);
       flt.appendChild(g);
       svg.appendChild(defs);
@@ -779,7 +775,7 @@
 
       // 1x genereren per tab/page load: assets + seed cachen.
       // Bij resize opnieuw tekenen met dezelfde seed (dus geen nieuwe random).
-      var lite = isFirefox();
+      var lite = true; // forced lite mode: stable, no blur, no heavy layers
       var palKey = (opts && Array.isArray(opts.palette)) ? opts.palette.join(',') : '';
       var blobKey = (opts && typeof opts.blobCount === 'number') ? String(opts.blobCount) : '';
       var alphaKey = (opts && typeof opts.alphaBoost === 'number') ? String(opts.alphaBoost) : '';

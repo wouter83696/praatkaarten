@@ -3,14 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<title>Uitgesproken — Web-app (beta)</title>
+  <title>Uitgesproken — Web-app (beta)</title>
 
-  <!-- Fonts (zelfde als je vroeg) -->
-  <style>
+  <!-- Fonts (zelfde als je vroeg) --><style>
     :root{
       --bg: #F4F7F5;              /* match stable sfeer */
       --title: #6DAFBD; /* zachter dan zwart */
@@ -22,12 +17,12 @@
     }
 
     *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    html,body{ width:100%; height:100%; overflow:hidden; background: var(--bg); }
     body{
       margin:0;
       background: var(--bg);
       color: var(--title);
-      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       overflow-x:hidden;
     }
 
@@ -35,8 +30,8 @@
     #indexBg{
       position:fixed;
       inset:0;
-      width:100%;
-      height:100%;
+      width:100vw;
+      height:100vh;
       z-index:0;
       pointer-events:none;
     }
@@ -44,14 +39,12 @@
     .wrap{
       position: relative;
       z-index: 1;
-position:relative;
-      z-index:1;
-      
-      min-height:100%;
-      display:grid;
-      place-items:center;
-      padding: 56px 18px;
-      text-align:center;
+      min-height: 100vh;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 0 18px;
+      text-align: center;
     }
 
     .hero{
@@ -77,20 +70,22 @@ position:relative;
     }
 
     h1{
-      margin: 10px 0 0;
-      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 600;
+      margin: 14px 0 1px;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight:600;
       letter-spacing:-0.02em;
-      font-size: clamp(40px, 6vw, 56px);
-      line-height:1.05;
+      font-size: clamp(36px, 5.1vw, 54px);
+      line-height:1.02;
       color: var(--title);
+      text-shadow: 0 8px 26px rgba(47, 78, 86, .08);
     }
 
     .tagline{
       margin:0;
-      font-size: clamp(18px, 2.6vw, 22px);
-      line-height:1.35;
-      font-weight: 400;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: clamp(18px, 2.2vw, 23px);
+      line-height:1.18;
+      font-weight:400;
       color: var(--sub);
     }
 
@@ -151,14 +146,37 @@ position:relative;
       color: rgba(47,58,64,.42);
     }
   
+    /* SVG overlay layer created by gridBackground.js must not affect layout */
+    .indexBgSvg, #indexBgSvg{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* hero sits on viewport without pushing the page */
+    .wrap{
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 0 18px;
+      text-align: center;
+    }
+
     /* availability line (monochroom, compact) */
     .availability{
       margin: 18px 0 0;
       display: inline-flex;
       align-items: center;
       gap: 12px;
-      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 500;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 600;
       font-size: 16px;
       line-height: 1;
       color: rgba(109,175,189,0.72);
@@ -196,52 +214,50 @@ position:relative;
   
     /* --- Typografie (zoals close-up) --- */
     h1{
-      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 600;
-      letter-spacing: -0.02em;
+      margin: 14px 0 1px;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight:600;
+      letter-spacing:-0.02em;
+      font-size: clamp(36px, 5.1vw, 54px);
+      line-height:1.02;
+      color: var(--title);
+      text-shadow: 0 8px 26px rgba(47, 78, 86, .08);
     }
     .tagline{
-      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 400;
-      letter-spacing: -0.01em;
-      opacity: .9;
+      margin:0;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: clamp(18px, 2.2vw, 23px);
+      line-height:1.18;
+      font-weight:400;
+      color: var(--sub);
     }
 
     /* --- Onderste regel: iets groter voor betere verhouding --- */
     .availability{
+      margin: 18px 0 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 600;
       font-size: 16px;
-      gap: 14px;
+      line-height: 1;
+      color: rgba(109,175,189,0.72);
+      white-space: nowrap;
+      user-select: none;
     }
     .mini-ico{
       width: 20px;
       height: 20px;
+      fill: currentColor;
+      opacity: .9;
+      flex: 0 0 auto;
     }
 
   
     /* Background mag nooit door content beïnvloed worden (geen blending/filters) */
     body{ isolation: isolate; }
     #indexBg, .indexBgSvg, #indexBgSvg{ mix-blend-mode: normal !important; filter: none !important; }
-
-  
-    /* Statische achtergrond: blobs worden NIET beïnvloed door content */
-    body{
-      margin:0;
-      min-height:100vh;
-      overflow:hidden;
-      background: #ffffff;
-    }
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      background-image: url("sets/kaartensets/cards/voorkant.svg");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 1;
-      pointer-events:none;
-      z-index:0;
-    }
 
   </style>
 </head>
@@ -277,6 +293,7 @@ position:relative;
 
   <!-- Stable background JS (overgenomen uit stable-test-3) -->
   <script src="./js/core/net.js"></script>
+  <script src="./js/components/gridBackground.js"></script>
   <script>
     (function(){
       function run(){
