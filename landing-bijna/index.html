@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Uitgesproken — Web-app (beta)</title>
+
+  <!-- Fonts (zelfde als je vroeg) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #F4F7F5;              /* match stable sfeer */
+      --title: #6DAFBD; /* zachter dan zwart */
+      --sub: rgba(159,210,220,.95);
+      --glass: rgba(255,255,255,.62);
+      --stroke: rgba(47,58,64,.10);
+      --shadow: 0 22px 70px rgba(35, 50, 55, .12);
+      --shadow-soft: 0 12px 32px rgba(35, 50, 55, .10);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--title);
+      font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow-x:hidden;
+    }
+
+    /* Canvas background (stable) */
+    #indexBg{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:0;
+      pointer-events:none;
+    }
+
+    .wrap{position:relative;
+      z-index:1;
+      
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding: 56px 18px;
+      text-align:center;
+    }
+
+    .hero{
+      width:min(560px, 100%);
+      display:grid;
+      gap:14px;
+      justify-items:center;
+    }
+
+    /* Logo: geen extra vierkant, icon zelf is leidend */
+    .logo{
+      width: 132px;
+      height: 132px;
+      border-radius: 28px; /* past bij icon */
+      overflow:hidden;
+      box-shadow: var(--shadow-soft);
+      transform: translateZ(0);
+    }
+    .logo img{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    h1{
+      margin: 10px 0 0;
+      font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight:700;
+      letter-spacing:-0.02em;
+      font-size: clamp(40px, 6vw, 56px);
+      line-height:1.05;
+      color: var(--title);
+    }
+
+    .tagline{
+      margin:0;
+      font-size: clamp(18px, 2.6vw, 22px);
+      line-height:1.35;
+      font-weight:500;
+      color: var(--sub);
+    }
+
+    .stores{
+      margin-top: 18px;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+
+    .store{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: var(--glass);
+      border: 1px solid rgba(47,58,64,.08);
+      box-shadow: var(--shadow);
+      text-decoration:none;
+      color: rgba(47,58,64,.86);
+      opacity:.90;
+      transition: transform .12s ease, opacity .12s ease, background .12s ease;
+      user-select:none;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .store:hover{ transform: translateY(-1px); opacity: .98; background: rgba(255,255,255,.70); }
+    .store:active{ transform: translateY(0px); }
+
+    .store small{
+      display:block;
+      font-size:12px;
+      line-height:1.1;
+      color: rgba(47,58,64,.55);
+      font-weight:500;
+      letter-spacing:.01em;
+    }
+    .store strong{
+      display:block;
+      font-size:16px;
+      line-height:1.1;
+      font-weight:700;
+      letter-spacing:-0.01em;
+      color: rgba(47,58,64,.85);
+    }
+
+    .ico{
+      width:22px;
+      height:22px;
+      opacity:.80;
+    }
+
+    footer{
+      margin-top: 22px;
+      font-size: 12px;
+      color: rgba(47,58,64,.42);
+    }
+  
+    /* SVG overlay layer created by gridBackground.js must not affect layout */
+    .indexBgSvg, #indexBgSvg{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      display: block;
+    }
+
+    /* hero sits on viewport without pushing the page */
+    .wrap{
+      min-height: 100vh;
+      height: 100vh;
+      padding: 0 18px;
+    }
+
+    /* availability line (monochroom, compact) */
+    .availability{
+      margin: 18px 0 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 1;
+      color: rgba(109,175,189,0.72);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .availability .label{ letter-spacing: .01em; }
+    .availability .sep{ opacity: .55; }
+    .availability .icons{ display:inline-flex; align-items:center; gap:10px; }
+    .mini-ico{
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      opacity: .9;
+      flex: 0 0 auto;
+    }
+    .nowlink{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      text-decoration: none;
+      color: rgba(109,175,189,0.92);
+      transition: transform .15s ease, filter .15s ease, opacity .15s ease;
+      cursor: pointer;
+    }
+    .nowlink .beta{ opacity: .75; font-weight: 400; }
+    .nowlink .arrow{ opacity: .7; }
+    .nowlink:hover{ transform: translateY(-1px); filter: saturate(1.05) contrast(1.05); }
+    .nowlink:focus-visible{
+      outline: 2px solid rgba(109,175,189,0.30);
+      outline-offset: 4px;
+      border-radius: 12px;
+    }
+
+  
+    /* --- Typografie (zoals close-up) --- */
+    h1{
+      font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .tagline{
+      font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      opacity: .9;
+    }
+
+    /* --- Onderste regel: iets groter voor betere verhouding --- */
+    .availability{
+      font-size: 16px;
+      gap: 14px;
+    }
+    .mini-ico{
+      width: 20px;
+      height: 20px;
+    }
+
+  
+    /* Background mag nooit door content beïnvloed worden (geen blending/filters) */
+    body{ isolation: isolate; }
+    #indexBg, .indexBgSvg, #indexBgSvg{ mix-blend-mode: normal !important; filter: none !important; }
+
+  </style>
+</head>
+
+<body>
+  <canvas id="indexBg" aria-hidden="true"></canvas>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="logo" aria-label="Uitgesproken logo">
+        <img src="./assets/logo-icons/app/app-icon-512.png" alt="Uitgesproken">
+      </div>
+
+      <h1>Uitgesproken</h1>
+      <p class="tagline">Ruimte om te verkennen</p>
+
+      <p class="availability" aria-label="Beschikbaarheid">
+        <span class="label">Binnenkort</span>
+        <span class="icons" aria-hidden="true">
+          <svg class="mini-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/><path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/></svg>
+          <svg class="mini-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 8.7c-.6 0-1 .5-1 1v6.7c0 .6.5 1 1 1h.6v2.1c0 .6.5 1 1 1s1-.5 1-1v-2.1h3v2.1c0 .6.5 1 1 1s1-.5 1-1v-2.1h.6c.6 0 1-.5 1-1V9.7c0-.6-.5-1-1-1H7.2z"/><path d="M15.6 7.9l.8-1.5c.1-.2 0-.5-.2-.6-.2-.1-.5 0-.6.2l-.8 1.6c-.9-.4-1.8-.6-2.8-.6s-1.9.2-2.8.6L8.4 6c-.1-.2-.4-.3-.6-.2-.2.1-.3.4-.2.6l.8 1.5C7.5 8.5 7 9.4 7 10.5h10c0-1.1-.5-2-1.4-2.6z"/><circle cx="10.1" cy="10.2" r=".6"/><circle cx="13.9" cy="10.2" r=".6"/></svg>
+        </span>
+        <span class="sep" aria-hidden="true">·</span>
+        <a class="nowlink" href="app.html" aria-label="Open de web-app (beta)">
+          <span class="label">Nu</span>
+          <span class="icons" aria-hidden="true"><svg class="mini-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 1.8h-9C6.1 1.8 5 2.9 5 4.3v15.4c0 1.4 1.1 2.5 2.5 2.5h9c1.4 0 2.5-1.1 2.5-2.5V4.3c0-1.4-1.1-2.5-2.5-2.5zm.7 17.9c0 .4-.3.7-.7.7h-9c-.4 0-.7-.3-.7-.7V4.3c0-.4.3-.7.7-.7h9c.4 0 .7.3.7.7v15.4z"/><path d="M10 4.6h4v1.2h-4z"/></svg></span>
+          <span class="beta">(beta)</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </p>
+</section>
+  </main>
+
+  <!-- Stable background JS (overgenomen uit stable-test-3) -->
+  <script src="./js/core/net.js"></script>
+  <script src="./js/components/gridBackground.js"></script>
+  <script>
+    (function(){
+      function run(){
+        if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
+
+        // Zelfde defaults als in stable grid.page.js fallback
+        var isDark = false;
+        try{ isDark = (document.documentElement.getAttribute('data-contrast') === 'dark'); }catch(_e){}
+
+        var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+
+        var blobCount = ((window.innerWidth||0) < 900) ? 5 : 6;
+        var alphaBoost = 1.12;
+        var sizeScale = 1.34;
+
+        window.PK.gridBackground.render({
+          cardBase: './sets/kaartensets/cards/',
+          meta: null,
+          palette: palette,
+          blobCount: blobCount,
+          alphaBoost: alphaBoost,
+          sizeScale: sizeScale
+        });
+      }
+      if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', run);
+      }else{
+        run();
+      }
+    })();
+  </script>
+</body>
+</html>
