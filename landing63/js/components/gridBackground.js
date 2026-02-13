@@ -172,7 +172,7 @@
 
   function pickFiles(meta){
     // Standalone background: always use the same local blob source only.
-    return ['voorkant.svg'];
+    return ['sets/kaartensets/cards/voorkant.svg'];
   }
     }
     // keep it small and diverse

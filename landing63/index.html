@@ -6,62 +6,92 @@
   <title>Uitgesproken — Web-app (beta)</title>
 
   <!-- Fonts (zelfde als je vroeg) --><style>
-    :root{
-      --bg: #F4F7F5;              /* match stable sfeer */
-      --title: #6DAFBD; /* zachter dan zwart */
-      --sub: rgba(159,210,220,.95);
-      --glass: rgba(255,255,255,.62);
-      --stroke: rgba(47,58,64,.10);
-      --shadow: 0 22px 70px rgba(35, 50, 55, .12);
-      --shadow-soft: 0 12px 32px rgba(35, 50, 55, .10);
+:root{
+      --bg: #F3F7F6;
+      --title-rgb: 109,175,189;
+      --title: #6DAFBD;
+      --sub: rgba(var(--title-rgb), .82);
+      --glass: rgba(250, 254, 253, .72);
+      --stroke: rgba(109,175,189,.28);
+      --shadow: 0 16px 40px rgba(47, 78, 86, .13);
+      --shadow-soft: 0 10px 26px rgba(47, 78, 86, .13);
+      --modal-backdrop: rgba(15, 35, 32, .40);
+      --modal-surface: rgba(242, 250, 248, .97);
     }
 
     *{ box-sizing:border-box; }
-    html,body{ width:100%; height:100%; overflow:hidden; background: var(--bg); }
+    html,body{
+      width:100%;
+      height:100%;
+      overflow:hidden;
+    }
     body{
       margin:0;
+      width:100vw;
+      height:100dvh;
       background: var(--bg);
       color: var(--title);
       font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      overflow-x:hidden;
+      position: relative;
     }
 
-    /* Canvas background (stable) */
+    /* Achtergrond in vaste viewportlaag, zonder layout-impact */
     #indexBg{
       position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
+      inset:-2px;
+      width:auto;
+      height:auto;
       z-index:0;
       pointer-events:none;
+      display:block;
+    }
+    .indexBgSvg{
+      position:fixed;
+      inset:-2px;
+      width:auto;
+      height:auto;
+      z-index:0;
+      pointer-events:none;
+      display:block;
     }
 
     .wrap{
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 0 18px;
-      text-align: center;
+      position:relative;
+      z-index:2;
+      width:100vw;
+      height:100dvh;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 16px 10px;
+      text-align:center;
+      overflow:hidden;
     }
 
     .hero{
-      width:min(560px, 100%);
-      display:grid;
-      gap:14px;
-      justify-items:center;
+      width:min(620px, 94vw);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      transform: translateY(-6px);
     }
 
-    /* Logo: geen extra vierkant, icon zelf is leidend */
     .logo{
-      width: 132px;
-      height: 132px;
-      border-radius: 28px; /* past bij icon */
+      width: clamp(88px, 17vw, 124px);
+      height: clamp(88px, 17vw, 124px);
+      border-radius: 26px;
       overflow:hidden;
       box-shadow: var(--shadow-soft);
-      transform: translateZ(0);
+      transform: translateY(-6px) translateZ(0) scale(1);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .logo:hover{
+      transform: translateY(-8px) translateZ(0) scale(1.035);
+      box-shadow: 0 14px 30px rgba(47, 78, 86, .16);
+    }
+    .logo:active{
+      transform: translateY(-7px) translateZ(0) scale(1.018);
     }
     .logo img{
       width:100%;
@@ -72,17 +102,16 @@
     h1{
       margin: 14px 0 1px;
       font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight:600;
+      font-weight:500;
       letter-spacing:-0.02em;
       font-size: clamp(36px, 5.1vw, 54px);
       line-height:1.02;
       color: var(--title);
-      text-shadow: 0 8px 26px rgba(47, 78, 86, .08);
+      text-shadow: 0 1px 0 rgba(255,255,255,.36);
     }
 
     .tagline{
       margin:0;
-      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       font-size: clamp(18px, 2.2vw, 23px);
       line-height:1.18;
       font-weight:400;
@@ -90,38 +119,44 @@
     }
 
     .stores{
-      margin-top: 18px;
+      margin-top: 34px;
       display:flex;
-      gap:12px;
+      gap:11px;
       flex-wrap:wrap;
       justify-content:center;
     }
 
     .store{
       display:inline-flex;
-      gap:10px;
+      gap:9px;
       align-items:center;
-      padding: 12px 16px;
-      border-radius: 14px;
+      padding: 11px 16px;
+      min-height: 48px;
+      border-radius: 13px;
       background: var(--glass);
-      border: 1px solid rgba(47,58,64,.08);
+      border: 1px solid var(--stroke);
       box-shadow: var(--shadow);
       text-decoration:none;
-      color: rgba(47,58,64,.86);
-      opacity:.90;
-      transition: transform .12s ease, opacity .12s ease, background .12s ease;
+      color: rgba(56, 110, 122, .96);
+      opacity:.94;
+      transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease, background .15s ease;
       user-select:none;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
-    .store:hover{ transform: translateY(-1px); opacity: .98; background: rgba(255,255,255,.70); }
-    .store:active{ transform: translateY(0px); }
+    .store:hover{
+      transform: translateY(-2px);
+      opacity:1;
+      background: rgba(255,255,255,.84);
+      box-shadow: 0 12px 28px rgba(46, 92, 102, .18);
+    }
+    .store:active{ transform: translateY(0); }
 
     .store small{
       display:block;
       font-size:12px;
       line-height:1.1;
-      color: rgba(47,58,64,.55);
+      color: rgba(var(--title-rgb), .82);
       font-weight:500;
       letter-spacing:.01em;
     }
@@ -129,9 +164,9 @@
       display:block;
       font-size:16px;
       line-height:1.1;
-      font-weight:700;
+      font-weight:600;
       letter-spacing:-0.01em;
-      color: rgba(47,58,64,.85);
+      color: rgba(58, 114, 126, .98);
     }
 
     .ico{
@@ -140,43 +175,240 @@
       opacity:.80;
     }
 
-    footer{
-      margin-top: 22px;
-      font-size: 12px;
-      color: rgba(47,58,64,.42);
+    .store.disabled{
+      opacity:.4;
+      filter: grayscale(1);
+      cursor: default;
+      pointer-events: none;
+      box-shadow: 0 7px 16px rgba(35, 50, 55, .08);
     }
-  
-    /* SVG overlay layer created by gridBackground.js must not affect layout */
-    .indexBgSvg, #indexBgSvg{
+    .store.web{
+      opacity: .95;
+      filter:none;
+      pointer-events: auto;
+    }
+    .store.mobile-app{
+      background: rgba(239, 249, 248, .98);
+      border-color: rgba(109,175,189,.32);
+      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
+      transition: none;
+    }
+    .store.mobile-app:hover{
+      transform:none;
+      opacity:.95;
+      background: rgba(239, 249, 248, .98);
+      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
+    }
+
+    .mobile-modal{
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-      display: block;
+      z-index: 15;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
     }
-
-    /* hero sits on viewport without pushing the page */
-    .wrap{
+    .mobile-modal.is-open{
+      display: flex;
+    }
+    .mobile-modal__backdrop{
+      position: absolute;
+      inset: 0;
+      background: var(--modal-backdrop);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .mobile-modal__card{
       position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      height: 100vh;
+      width: min(400px, 100%);
+      border-radius: 18px;
+      padding: 20px 18px 18px;
+      border: 1px solid rgba(44,131,122,.20);
+      background: var(--modal-surface);
+      box-shadow: 0 26px 60px rgba(19, 58, 53, .22);
+      text-align: left;
+    }
+    .mobile-modal__close{
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 10px;
+      background: rgba(44,131,122,.10);
+      color: rgba(26, 91, 84, .95);
+      font-size: 21px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .mobile-modal__eyebrow{
+      margin: 0 0 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(43, 118, 109, .72);
+      font-weight: 600;
+    }
+    .mobile-modal h2{
+      margin: 0 0 8px;
+      font-size: clamp(24px, 7vw, 30px);
+      line-height: 1.1;
+      color: var(--title);
+    }
+    .mobile-modal p{
+      margin: 0;
+      color: rgba(37, 97, 90, .82);
+      line-height: 1.4;
+    }
+    .mobile-modal__qr{
+      margin-top: 14px;
+      min-height: 148px;
+      border: 1.5px dashed rgba(44,131,122,.38);
+      border-radius: 14px;
+      background: rgba(255,255,255,.65);
       display: grid;
       place-items: center;
-      padding: 0 18px;
+      color: rgba(43, 118, 109, .76);
+      font-weight: 500;
       text-align: center;
+      padding: 16px;
+    }
+    .mobile-modal__cta{
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: #0F4E48;
+      background: linear-gradient(180deg, #CBEEE8, #B4E2DA);
+      border: 1px solid rgba(44,131,122,.26);
+      font-family: inherit;
+      font-size: 15px;
+      cursor: pointer;
     }
 
-    /* availability line (monochroom, compact) */
-    .availability{
+    @media (max-height: 760px){
+      .wrap{ padding: 4px 14px 8px; }
+      .hero{ transform: translateY(-2px); }
+      .logo{
+        width: clamp(76px, 15vw, 102px);
+        height: clamp(76px, 15vw, 102px);
+      }
+      h1{
+        margin-top: 10px;
+        font-size: clamp(30px, 4.2vw, 42px);
+      }
+      .tagline{
+        font-size: clamp(16px, 2.2vw, 20px);
+      }
+      .stores{
+        margin-top: 20px;
+      }
+      .store{
+        padding: 10px 14px;
+        min-height: 44px;
+      }
+    }
+
+
+/* --- Hero typografie (creatief & speels, maar rustig) --- */
+h1{
+  font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight:500;
+  color: #6DAFBD;
+  letter-spacing: -0.01em;
+  margin: 10px 0 2px;
+}
+.tagline{
+  font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 400;
+  color: rgba(109,175,189,0.78); /* zelfde familie, zachter */
+  margin: 0;
+}
+/* subtiele één-regel status */
+.statusline{
+  margin: 14px 0 0;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 400;
+  font-size: 0.92em;          /* net kleiner dan ondertitel */
+  color: rgba(109,175,189,0.70);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+.statusline .platforms{
+  letter-spacing: 0.08em;
+  opacity: 0.95;
+}
+.statusline .dot{
+  opacity: 0.7;
+}
+.statusline .webbeta{
+  text-decoration: none;       /* geen underline */
+  color: rgba(109,175,189,0.98);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  transition: transform .15s ease, opacity .15s ease, filter .15s ease;
+}
+.statusline .webbeta .beta{
+  font-weight: 400;
+  opacity: 0.75;
+}
+.statusline .webbeta:hover{
+  transform: translateY(-1px);
+  filter: saturate(1.05) contrast(1.05);
+}
+.statusline .webbeta:focus-visible{
+  outline: 2px solid rgba(109,175,189,0.35);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+/* logo iets dichter op titel */
+.logo{ margin-bottom: 6px; }
+
+/* achtergrondlaag altijd fixed en nooit layout pushen */
+#indexBg, .indexBgSvg{
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  display: block;
+}
+.wrap{
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  text-align: center;
+}
+.hero{ transform: translateY(-14px); }
+
+
+
+    /* --- Availability line (landing6) --- */
+.availability{
       margin: 18px 0 0;
       display: inline-flex;
       align-items: center;
       gap: 12px;
       font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 600;
+      font-weight: 500;
       font-size: 16px;
       line-height: 1;
       color: rgba(109,175,189,0.72);
@@ -202,7 +434,7 @@
       transition: transform .15s ease, filter .15s ease, opacity .15s ease;
       cursor: pointer;
     }
-    .nowlink .beta{ opacity: .75; font-weight: 400; }
+    .nowlink .beta{ opacity: .75; font-weight: 500; }
     .nowlink .arrow{ opacity: .7; }
     .nowlink:hover{ transform: translateY(-1px); filter: saturate(1.05) contrast(1.05); }
     .nowlink:focus-visible{
@@ -212,54 +444,8 @@
     }
 
   
-    /* --- Typografie (zoals close-up) --- */
-    h1{
-      margin: 14px 0 1px;
-      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight:600;
-      letter-spacing:-0.02em;
-      font-size: clamp(36px, 5.1vw, 54px);
-      line-height:1.02;
-      color: var(--title);
-      text-shadow: 0 8px 26px rgba(47, 78, 86, .08);
-    }
-    .tagline{
-      margin:0;
-      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-size: clamp(18px, 2.2vw, 23px);
-      line-height:1.18;
-      font-weight:400;
-      color: var(--sub);
-    }
-
-    /* --- Onderste regel: iets groter voor betere verhouding --- */
-    .availability{
-      margin: 18px 0 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight: 600;
-      font-size: 16px;
-      line-height: 1;
-      color: rgba(109,175,189,0.72);
-      white-space: nowrap;
-      user-select: none;
-    }
-    .mini-ico{
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-      opacity: .9;
-      flex: 0 0 auto;
-    }
-
-  
-    /* Background mag nooit door content beïnvloed worden (geen blending/filters) */
-    body{ isolation: isolate; }
-    #indexBg, .indexBgSvg, #indexBgSvg{ mix-blend-mode: normal !important; filter: none !important; }
-
-  </style>
+    
+</style>
 </head>
 
 <body>
@@ -310,6 +496,7 @@
         var sizeScale = 1.34;
 
         window.PK.gridBackground.render({
+        basePath: '',
           cardBase: './sets/kaartensets/cards/',
           meta: null,
           palette: palette,
