@@ -316,16 +316,13 @@
   function pinSvgLayer(svg){
     if(!svg || !svg.style) return svg;
     svg.style.position = 'fixed';
-    svg.style.top = '0';
-    svg.style.left = '0';
-    svg.style.right = 'auto';
-    svg.style.bottom = 'auto';
-    svg.style.width = '100vw';
-    svg.style.height = '100vh';
-    if(w.CSS && typeof w.CSS.supports === 'function'){
-      if(w.CSS.supports('height', '100dvh')) svg.style.height = '100dvh';
-      if(w.CSS.supports('height', '100svh')) svg.style.height = '100svh';
-    }
+    // Firefox kan op 100vw/100vh afrondingsrandjes tonen; daarom lichte bleed.
+    svg.style.top = '-2px';
+    svg.style.left = '-2px';
+    svg.style.right = '-2px';
+    svg.style.bottom = '-2px';
+    svg.style.width = 'auto';
+    svg.style.height = 'auto';
     svg.style.pointerEvents = 'none';
     svg.style.zIndex = '0';
     svg.style.display = 'block';
@@ -400,41 +397,15 @@
     return rgbToHex(r,g,b2);
   }
 
-  function hasClassToken(className, token){
-    if(!className) return false;
-    var normalized = (' ' + String(className).replace(/\s+/g, ' ') + ' ').toLowerCase();
-    return normalized.indexOf(' ' + String(token).toLowerCase() + ' ') !== -1;
-  }
-
-  function isTextLikeNode(el, root){
-    var cur = el;
-    while(cur && cur !== root){
-      if(cur.nodeType !== 1){
-        cur = cur.parentNode;
-        continue;
-      }
-      var tag = cur.tagName ? String(cur.tagName).toLowerCase() : '';
-      if(tag === 'text') return true;
-      var cls = cur.getAttribute ? cur.getAttribute('class') : '';
-      if(hasClassToken(cls, 'st2')) return true;
-      var isolation = cur.getAttribute ? cur.getAttribute('isolation') : '';
-      if(isolation && String(isolation).toLowerCase() === 'isolate') return true;
-      var style = cur.getAttribute ? cur.getAttribute('style') : '';
-      if(style && /isolation\s*:\s*isolate/i.test(String(style))) return true;
-      cur = cur.parentNode;
-    }
-    return false;
-  }
 
   function collectShapesFromSvgText(svgText){
-    var filtered = [];
-    var all = [];
-    if(!svgText) return filtered;
+    var out = [];
+    if(!svgText) return out;
     try{
       var dp = new DOMParser();
       var doc = dp.parseFromString(svgText, 'image/svg+xml');
       var root = doc && doc.documentElement;
-      if(!root) return filtered;
+      if(!root) return out;
       var vb = parseViewBox(root);
       // pick basic shape elements
       var nodes = root.querySelectorAll ? root.querySelectorAll('path,circle,rect,ellipse,polygon,polyline') : [];
@@ -486,17 +457,12 @@
         var tf = el.getAttribute('transform');
         if(tf) attrs._t = tf;
 
-        var shapeItem = {tag:tag, attrs:attrs, vb:vb};
-        all.push(shapeItem);
-        if(!isTextLikeNode(el, root)){
-          filtered.push(shapeItem);
-        }
+        out.push({tag:tag, attrs:attrs, vb:vb});
       }
     }catch(e){
       // ignore parse errors
     }
-    if(filtered.length) return filtered;
-    return all;
+    return out;
   }
 
   function svgEl(tag){

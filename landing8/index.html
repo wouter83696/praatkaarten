@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Uitgesproken</title>
+  <title>Uitgesproken — Web-app (beta)</title>
 
   <!-- IBM Plex Sans + DM Sans (Google fallback laadt automatisch) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,59 +28,43 @@
     html,body{
       width:100%;
       height:100%;
-      min-height:100%;
-      margin:0;
       overflow:hidden;
-      overflow:clip;
     }
     body{
-      width:100%;
-      min-height:100vh;
-      min-height:100dvh;
+      margin:0;
+      width:100vw;
+      height:100dvh;
       background: var(--bg);
       color: var(--title);
       font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       position: relative;
-      overflow: hidden;
-    }
-    @supports (height: 100svh){
-      body{ min-height:100svh; }
     }
 
     /* Achtergrond in vaste viewportlaag, zonder layout-impact */
     #indexBg{
       position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
+      inset:-2px;
+      width:auto;
+      height:auto;
       z-index:0;
       pointer-events:none;
       display:block;
     }
     .indexBgSvg{
       position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
+      inset:-2px;
+      width:auto;
+      height:auto;
       z-index:0;
       pointer-events:none;
       display:block;
     }
-    @supports (height: 100dvh){
-      #indexBg,
-      .indexBgSvg{ height:100dvh; }
-    }
-    @supports (height: 100svh){
-      #indexBg,
-      .indexBgSvg{ height:100svh; }
-    }
 
     .wrap{
-      position:fixed;
-      inset:0;
+      position:relative;
       z-index:2;
-      width:100%;
-      height:100%;
+      width:100vw;
+      height:100dvh;
       min-height:100vh;
       display:flex;
       align-items:center;
@@ -88,12 +72,6 @@
       padding: 8px 16px 10px;
       text-align:center;
       overflow:hidden;
-    }
-    @supports (height: 100dvh){
-      .wrap{ min-height:100dvh; }
-    }
-    @supports (height: 100svh){
-      .wrap{ min-height:100svh; }
     }
 
     .hero{
@@ -157,7 +135,6 @@
       display:inline-flex;
       gap:9px;
       align-items:center;
-      justify-content:flex-start;
       padding: 11px 16px;
       min-height: 48px;
       border-radius: 13px;
@@ -201,18 +178,6 @@
       width:22px;
       height:22px;
       opacity:.80;
-      flex: 0 0 auto;
-    }
-    .store span{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      text-align:left;
-    }
-    .ico-android{
-      width:24px;
-      height:24px;
-      opacity:.88;
     }
 
     .store.disabled{
@@ -355,57 +320,147 @@
       }
     }
 
+
+/* --- Hero typografie (creatief & speels, maar rustig) --- */
+h1{
+  font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 600;
+  color: #6DAFBD;
+  letter-spacing: -0.01em;
+  margin: 10px 0 2px;
+}
+.tagline{
+  font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 400;
+  color: rgba(109,175,189,0.78); /* zelfde familie, zachter */
+  margin: 0;
+}
+/* subtiele één-regel status */
+.statusline{
+  margin: 14px 0 0;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 400;
+  font-size: 0.92em;          /* net kleiner dan ondertitel */
+  color: rgba(109,175,189,0.70);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+.statusline .platforms{
+  letter-spacing: 0.08em;
+  opacity: 0.95;
+}
+.statusline .dot{
+  opacity: 0.7;
+}
+.statusline .webbeta{
+  text-decoration: none;       /* geen underline */
+  color: rgba(109,175,189,0.98);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  transition: transform .15s ease, opacity .15s ease, filter .15s ease;
+}
+.statusline .webbeta .beta{
+  font-weight: 400;
+  opacity: 0.75;
+}
+.statusline .webbeta:hover{
+  transform: translateY(-1px);
+  filter: saturate(1.05) contrast(1.05);
+}
+.statusline .webbeta:focus-visible{
+  outline: 2px solid rgba(109,175,189,0.35);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
+/* logo iets dichter op titel */
+.logo{ margin-bottom: 6px; }
+
+/* achtergrondlaag altijd fixed en nooit layout pushen */
+#indexBg, .indexBgSvg{
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  display: block;
+}
+.wrap{
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  text-align: center;
+}
+.hero{ transform: translateY(-14px); }
+
+
+/* --- Minimalistische onderste regel (geen knoppen) --- */
+.statusline{
+  margin: 14px 0 0;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 400;
+  font-size: 0.88em; /* iets kleiner dan ondertitel */
+  color: rgba(109,175,189,0.68);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+.statusline .platforms{ letter-spacing: 0.06em; opacity: 0.95; }
+.statusline .dot{ opacity: 0.65; }
+.statusline .webbeta{
+  text-decoration: none;
+  color: rgba(109,175,189,0.98);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  transition: transform .15s ease, opacity .15s ease, filter .15s ease;
+}
+.statusline .webbeta .beta{ font-weight: 400; opacity: 0.75; }
+.statusline .webbeta:hover{ transform: translateY(-1px); filter: saturate(1.05) contrast(1.05); }
+.statusline .webbeta:focus-visible{
+  outline: 2px solid rgba(109,175,189,0.35);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
+
 </style>
 </head>
 
 <body>
   <canvas id="indexBg" aria-hidden="true"></canvas>
 
+  
   <main class="wrap">
-    <section class="hero">
-      <div class="logo" aria-label="Uitgesproken logo">
-        <img src="./assets/logo-icons/app/app-icon-512.png" alt="Uitgesproken">
-      </div>
-
+    <div class="hero">
+      <img class="logo" src="assets/logo-icons/app/app-icon-512.png" alt="Uitgesproken" />
       <h1>Uitgesproken</h1>
       <p class="tagline">Ruimte om te verkennen</p>
 
-      <!-- Store buttons (subtiel) -->
-      <div class="stores" aria-label="App stores">
-        <a class="store disabled" href="#" aria-label="Download in de App Store">
-          <!-- Apple -->
-          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
-            <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
-          </svg>
-          <span>
-            <small>Binnenkort op</small>
-            <strong>App Store</strong>
-          </span>
+      <p class="statusline">
+        <span class="soon">Binnenkort op</span>
+        <span class="platforms" aria-hidden="true">  🤖 </span>
+        <span class="dot" aria-hidden="true"> · </span>
+        <a class="webbeta" href="app.html" aria-label="Open de web-app (beta)">
+          Web-app <span class="beta">(beta)</span> <span class="arrow">→</span>
         </a>
-
-        <a class="store disabled" href="#" aria-label="Download op Google Play">
-          <img class="ico ico-android" src="./assets/logo-icons/app/android-monochrome.svg" alt="" aria-hidden="true">
-          <span>
-            <small>Binnenkort op</small>
-            <strong>Google Play</strong>
-          </span>
-        </a>
-
-        <a class="store web mobile-app" href="./app.html" aria-label="Open de mobiele app">
-          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M7.5 1.8h9a2.7 2.7 0 0 1 2.7 2.7v15a2.7 2.7 0 0 1-2.7 2.7h-9a2.7 2.7 0 0 1-2.7-2.7v-15a2.7 2.7 0 0 1 2.7-2.7Zm-.9 4v11.4h10.8V5.8H6.6Zm5.4 13.6a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/>
-          </svg>
-          <span>
-            <small>Binnenkort</small>
-            <strong>Mobile app</strong>
-          </span>
-        </a>
-      </div>
-
-      
-    </section>
+      </p>
+    </div>
   </main>
+
 
   <div class="mobile-modal" id="mobileOnlyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mobileModalTitle">
     <div class="mobile-modal__backdrop" data-modal-close></div>
