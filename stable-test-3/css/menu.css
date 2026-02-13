@@ -80,9 +80,9 @@ html[data-contrast="dark"] .topBar{
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Brand pill (kaarten-index): vaste mint achtergrond + logo */
+/* Brand pill (kaarten-index): vaste mint met subtiele transparantie */
 body[data-brand-icon="1"] .themePill{
-  background: #7fcfc9;
+  background: rgba(127, 207, 201, 0.9);
   border: 0;
   box-shadow: none;
   backdrop-filter: none;
@@ -103,7 +103,7 @@ body[data-brand-icon="1"] .setCoverIcon{
 }
 
 html[data-contrast="dark"] body[data-brand-icon="1"] .themePill{
-  background: #7fcfc9;
+  background: rgba(127, 207, 201, 0.9);
   border: 0;
 }
 
