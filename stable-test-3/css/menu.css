@@ -18,11 +18,11 @@
   --menuBtnAlpha: 0.86;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
-  --topBarInset: 16px;
+  --topBarInset: 0px;
   --topBarHeight: 64px;
   --topBarRadius: 0px;
   --topBarPadX: 18px;
-  --topBarLogoSize: 34px;
+  --topBarLogoSize: 40px;
   --topBarMenuTap: 36px;
   --topBarMenuSize: 20px;
   /* Align header action icons with menu card thumbnails */
@@ -42,7 +42,7 @@ html[data-contrast="dark"]{
 }
 .topBar{
   position: fixed;
-  top: calc(var(--topBarInset, 16px) + env(safe-area-inset-top, 0px));
+  top: 0;
   left: env(safe-area-inset-left, 0px);
   right: env(safe-area-inset-right, 0px);
   z-index: var(--z-topbar);
@@ -57,12 +57,12 @@ html[data-contrast="dark"]{
 .themePill{
   width: 100%;
   height: var(--topBarHeight, 64px);
-  padding: 0 var(--topBarPadX, 16px);
+  padding: env(safe-area-inset-top, 0px) var(--topBarPadX, 16px) 0;
   border-radius: var(--topBarRadius, 20px);
   border: 1px solid rgba(11,18,32,0.04);
   border-left: 0;
   border-right: 0;
-  background: rgba(var(--menuSurface, 255, 255, 255), 0.86);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.68);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow:
@@ -100,7 +100,7 @@ html[data-contrast="dark"]{
 
 body[data-brand-icon="1"] .themePill{
   border-color: rgba(11,18,32,0.04);
-  background: rgba(var(--menuSurface, 255, 255, 255), 0.86);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.68);
 }
 
 .setCoverWrap{
@@ -129,13 +129,18 @@ body[data-brand-icon="1"] .setCoverWrap{
   overflow: visible;
 }
 
+body[data-brand-icon="1"] .setCoverIcon{
+  transform: scale(1.14);
+  transform-origin: center;
+}
+
 @media (max-width: 680px){
   :root{
-    --topBarInset: 12px;
+    --topBarInset: 0px;
     --topBarHeight: 56px;
     --topBarRadius: 0px;
     --topBarPadX: 12px;
-    --topBarLogoSize: 30px;
+    --topBarLogoSize: 34px;
     --topBarMenuTap: 34px;
     --topBarMenuSize: 18px;
   }
@@ -191,11 +196,12 @@ body[data-brand-icon="1"] .setCoverWrap{
 .themeMenu{
   position: fixed;
   /* sluit visueel aan op de topbar (lichte overlap) */
-  top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 16px) + var(--topBarHeight, 64px) + 8px);
-  right: env(safe-area-inset-right, 0px);
+  top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 0px) + var(--topBarHeight, 64px) + 8px);
+  left: auto;
+  right: calc(env(safe-area-inset-right, 0px) + 8px);
   z-index: var(--z-menu);
   /* iets compacter zodat het menu minder 'blok' voelt */
-  width: min(320px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 12px));
+  width: min(320px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 16px));
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity var(--ui-med) var(--ui-ease), transform var(--ui-med) var(--ui-ease);
@@ -228,7 +234,6 @@ body[data-brand-icon="1"] .setCoverWrap{
   display:flex;
   align-items:center;
   justify-content: flex-start;
-  flex-direction: row-reverse;
   /* gelijkere top/bottom padding zodat titel en tool-pill optisch netjes uitlijnen */
   padding: 10px var(--menuRowPadX) 10px calc(var(--menuRightAlign) - var(--menuToolsPadX));
   gap: 10px;
@@ -259,6 +264,7 @@ body[data-brand-icon="1"] .setCoverWrap{
   /* 1 container zoals in je screenshot (subtiele "pill" met 3 knoppen erin) */
   display:flex;
   align-items:center;
+  order: 1;
   margin-left: 0;
   /* compacter + subtieler */
   gap: 10px;
@@ -315,6 +321,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 }
 
 .menuHeader{
+  order: 2;
   padding: 0;
   font-weight: 500;
   color: var(--menuHeaderText);
@@ -323,6 +330,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   height: 30px;
   display: flex;
   align-items: center;
+  margin-left: auto;
   text-align: right;
   margin-top: 2px;
 }
@@ -341,7 +349,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   color: var(--menuText);
   display:flex;
   align-items:center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 12px;
   line-height: 1.2;
   -webkit-tap-highlight-color: transparent;
@@ -350,16 +358,17 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 .menuItem:active{ background: rgba(0,0,0,0.03); }
 
 .miLabel{
+  order: 2;
   flex: 1 1 auto;
   text-align: right;
 }
 .miThumbRight{
+  order: 1;
   flex: 0 0 auto;
   display:flex;
   align-items:center;
-  margin-left: var(--menuThumbOffset);
-  margin-right: auto;
-  order: -1;
+  margin-left: 0;
+  margin-right: var(--menuThumbOffset);
 }
 
 .menuFooter{
@@ -411,7 +420,7 @@ html[data-contrast="dark"] .themePill,
 html[data-contrast="dark"] .toolBtn{
   /* Knoppen moeten in de taakbalk "vallen" (niet als losse schijven erbovenop) */
   border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.74);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.62);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: rgba(245,250,255,.84);

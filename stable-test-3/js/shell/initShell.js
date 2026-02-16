@@ -31,7 +31,7 @@
       var brand = !!(body && body.getAttribute && body.getAttribute('data-brand-icon') === '1');
       var icon = w.document && w.document.getElementById ? w.document.getElementById('setCoverIcon') : null;
       if(brand && icon && PK.pathForAsset){
-        var src = PK.pathForAsset('logo-icons/masters/icon-master-transparent.svg');
+        var src = PK.pathForAsset('logo-icons/transparent/icon-transparent-512.png');
         icon.setAttribute('src', PK.withV ? PK.withV(src) : src);
       }
     }catch(_eIcon){}

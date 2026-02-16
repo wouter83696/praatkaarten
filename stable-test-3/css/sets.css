@@ -5,7 +5,7 @@
   --setsHeaderBg: #FAFAF8;
   --setsMax: 920px;
   --setsPadX: 16px;
-  --topBarInset: 16px;
+  --topBarInset: 0px;
   --topBarPill: 64px;
   --setsTopGap: 12px;
   --setsHeroPadExtra: 16px;
@@ -325,7 +325,7 @@ html[data-contrast="dark"] .indexBgSvg{
 
 @media (max-width: 680px){
   :root{
-    --topBarInset: 12px;
+    --topBarInset: 0px;
     --topBarPill: 56px;
     --setsTopGap: 10px;
   }

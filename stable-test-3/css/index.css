@@ -22,7 +22,7 @@ html[data-contrast="dark"] body{
 /* IP-variant: vaste nachtbasis (indigo/paarsblauw) */
 :root{
   --darkBaseRgb: 24, 18, 60; /* indigo: geen zwart/grijs */
-  --cardsTopBarInset: 16px;
+  --cardsTopBarInset: 0px;
   --cardsTopBarHeight: 64px;
   --cardsTopBarGap: 14px;
 }
@@ -129,7 +129,7 @@ html[data-contrast="dark"] .indexTint{
 
 @media (max-width: 680px){
   :root{
-    --cardsTopBarInset: 12px;
+    --cardsTopBarInset: 0px;
     --cardsTopBarHeight: 56px;
     --cardsTopBarGap: 10px;
   }
