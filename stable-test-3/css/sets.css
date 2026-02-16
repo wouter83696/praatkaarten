@@ -6,8 +6,8 @@
   --setsMax: 920px;
   --setsPadX: 16px;
   --topBarInset: 16px;
-  --topBarPill: 56px;
-  --setsTopGap: 18px;
+  --topBarPill: 64px;
+  --setsTopGap: 12px;
   --setsHeroPadExtra: 16px;
   /* Top offset = safe-area + topbar inset + pill size + small gap */
   --setsTopOffset: calc(env(safe-area-inset-top, 0px) + var(--topBarInset) + var(--topBarPill) + var(--setsTopGap));
@@ -321,4 +321,12 @@ html[data-contrast="dark"] .indexBg{ opacity: 0.78; }
 
 html[data-contrast="dark"] .indexBgSvg{
   filter: saturate(0.66) brightness(0.92);
+}
+
+@media (max-width: 680px){
+  :root{
+    --topBarInset: 12px;
+    --topBarPill: 56px;
+    --setsTopGap: 10px;
+  }
 }

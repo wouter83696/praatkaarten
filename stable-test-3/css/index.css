@@ -22,6 +22,9 @@ html[data-contrast="dark"] body{
 /* IP-variant: vaste nachtbasis (indigo/paarsblauw) */
 :root{
   --darkBaseRgb: 24, 18, 60; /* indigo: geen zwart/grijs */
+  --cardsTopBarInset: 16px;
+  --cardsTopBarHeight: 64px;
+  --cardsTopBarGap: 14px;
 }
 
 .pkBuildStamp{
@@ -121,7 +124,15 @@ html[data-contrast="dark"] .indexTint{
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 84px 0 44px; /* ruimte voor topbar + klein beetje onder */
+  padding: calc(env(safe-area-inset-top, 0px) + var(--cardsTopBarInset) + var(--cardsTopBarHeight) + var(--cardsTopBarGap)) 0 44px;
+}
+
+@media (max-width: 680px){
+  :root{
+    --cardsTopBarInset: 12px;
+    --cardsTopBarHeight: 56px;
+    --cardsTopBarGap: 10px;
+  }
 }
 
 /* Geen extra waas/vlek achter de kaart.
