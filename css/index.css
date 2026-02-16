@@ -181,10 +181,12 @@ body[data-page="kaarten"] .indexBgSvg{
   display: none !important;
 }
 
-/* Kaartenindex: alleen blobs, geen volledige viewport tint-lagen */
-body[data-page="kaarten"] .indexTint,
-body[data-page="kaarten"] .indexSoftBlob{
+/* Kaartenindex: geen volle viewport-tint, wel een heel subtiele meekleur-blob */
+body[data-page="kaarten"] .indexTint{
   display: none !important;
+}
+body[data-page="kaarten"] .indexSoftBlob{
+  display: block !important;
 }
 
 
@@ -242,6 +244,13 @@ body[data-page="kaarten"] .indexSoftBlob{
 /* Light mode: geen extra waas-veld */
 html[data-contrast="light"] .indexSoftBlob{
   background: transparent !important;
+}
+html[data-contrast="light"] body[data-page="kaarten"] .indexSoftBlob{
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(var(--activeHueRgb, 120, 160, 190), 0.022) 0%,
+    rgba(var(--activeHueRgb, 120, 160, 190), 0) 66%
+  ) !important;
 }
 
 html[data-contrast="dark"] .indexSoftBlob{

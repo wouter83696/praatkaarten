@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Favicon Proposal C</title>
+  <defs>
+    <linearGradient id="mint" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8ad7d2"/>
+      <stop offset="100%" stop-color="#74c5bf"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="248" fill="url(#mint)"/>
+  <g transform="rotate(-7 256 256)">
+    <path d="M130 168h232c28 0 50 22 50 50v86c0 28-22 50-50 50h-48l8 36-72-36H130c-28 0-50-22-50-50v-86c0-28 22-50 50-50z" fill="#e8f2f2"/>
+    <path d="M130 168h232c28 0 50 22 50 50v86c0 28-22 50-50 50h-48l8 36-72-36H130c-28 0-50-22-50-50v-86c0-28 22-50 50-50z" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M206 252c26-27 63-27 89 0 25 24 59 24 86-2" fill="none" stroke="#81becc" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
