@@ -300,7 +300,7 @@
       var fill = b.fill ? String(b.fill) : '#7fcfc9';
       var alpha = (typeof b.opacity === 'number') ? b.opacity : 0.4;
       alpha = clamp(alpha * opacityScale, 0.02, 0.95);
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = alpha;
       ctx.fillStyle = fill;
       try{
         var p = new w.Path2D(d);
@@ -316,13 +316,16 @@
   function pinSvgLayer(svg){
     if(!svg || !svg.style) return svg;
     svg.style.position = 'fixed';
-    // Firefox kan op 100vw/100vh afrondingsrandjes tonen; daarom lichte bleed.
-    svg.style.top = '-2px';
-    svg.style.left = '-2px';
-    svg.style.right = '-2px';
-    svg.style.bottom = '-2px';
-    svg.style.width = 'auto';
-    svg.style.height = 'auto';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.right = 'auto';
+    svg.style.bottom = 'auto';
+    svg.style.width = '100vw';
+    svg.style.height = '100vh';
+    if(w.CSS && typeof w.CSS.supports === 'function'){
+      if(w.CSS.supports('height', '100dvh')) svg.style.height = '100dvh';
+      if(w.CSS.supports('height', '100svh')) svg.style.height = '100svh';
+    }
     svg.style.pointerEvents = 'none';
     svg.style.zIndex = '0';
     svg.style.display = 'block';
@@ -397,15 +400,41 @@
     return rgbToHex(r,g,b2);
   }
 
+  function hasClassToken(className, token){
+    if(!className) return false;
+    var normalized = (' ' + String(className).replace(/\s+/g, ' ') + ' ').toLowerCase();
+    return normalized.indexOf(' ' + String(token).toLowerCase() + ' ') !== -1;
+  }
+
+  function isTextLikeNode(el, root){
+    var cur = el;
+    while(cur && cur !== root){
+      if(cur.nodeType !== 1){
+        cur = cur.parentNode;
+        continue;
+      }
+      var tag = cur.tagName ? String(cur.tagName).toLowerCase() : '';
+      if(tag === 'text') return true;
+      var cls = cur.getAttribute ? cur.getAttribute('class') : '';
+      if(hasClassToken(cls, 'st2')) return true;
+      var isolation = cur.getAttribute ? cur.getAttribute('isolation') : '';
+      if(isolation && String(isolation).toLowerCase() === 'isolate') return true;
+      var style = cur.getAttribute ? cur.getAttribute('style') : '';
+      if(style && /isolation\s*:\s*isolate/i.test(String(style))) return true;
+      cur = cur.parentNode;
+    }
+    return false;
+  }
 
   function collectShapesFromSvgText(svgText){
-    var out = [];
-    if(!svgText) return out;
+    var filtered = [];
+    var all = [];
+    if(!svgText) return filtered;
     try{
       var dp = new DOMParser();
       var doc = dp.parseFromString(svgText, 'image/svg+xml');
       var root = doc && doc.documentElement;
-      if(!root) return out;
+      if(!root) return filtered;
       var vb = parseViewBox(root);
       // pick basic shape elements
       var nodes = root.querySelectorAll ? root.querySelectorAll('path,circle,rect,ellipse,polygon,polyline') : [];
@@ -457,12 +486,17 @@
         var tf = el.getAttribute('transform');
         if(tf) attrs._t = tf;
 
-        out.push({tag:tag, attrs:attrs, vb:vb});
+        var shapeItem = {tag:tag, attrs:attrs, vb:vb};
+        all.push(shapeItem);
+        if(!isTextLikeNode(el, root)){
+          filtered.push(shapeItem);
+        }
       }
     }catch(e){
       // ignore parse errors
     }
-    return out;
+    if(filtered.length) return filtered;
+    return all;
   }
 
   function svgEl(tag){
@@ -598,10 +632,10 @@
       var g = ctx.createLinearGradient(0,0,info.w,info.h);
       g.addColorStop(0, mixWithWhite(base, 0.985));
       g.addColorStop(1, mixWithWhite(base, 0.97));
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = 0.015;
       ctx.fillStyle = g;
       ctx.fillRect(0,0,info.w,info.h);
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = 1;
     }
 
     // Main index: vaste blobset (aangeleverde SVG-vormen/kleuren) in light mode.
@@ -642,6 +676,24 @@
     };
     var darkPalette = (opts && Array.isArray(opts.darkPalette)) ? opts.darkPalette : null;
     var darkMix = (opts && typeof opts.darkMix === 'number') ? opts.darkMix : 0.25;
+    var blobRadiusMinLight = (opts && typeof opts.blobRadiusMin === 'number') ? opts.blobRadiusMin : 0.10;
+    var blobRadiusMaxLight = (opts && typeof opts.blobRadiusMax === 'number') ? opts.blobRadiusMax : 0.28;
+    var blobRadiusMinDark = (opts && typeof opts.blobRadiusMinDark === 'number') ? opts.blobRadiusMinDark : 0.11;
+    var blobRadiusMaxDark = (opts && typeof opts.blobRadiusMaxDark === 'number') ? opts.blobRadiusMaxDark : 0.31;
+    blobRadiusMinLight = clamp(blobRadiusMinLight, 0.04, 0.45);
+    blobRadiusMaxLight = clamp(blobRadiusMaxLight, 0.05, 0.55);
+    blobRadiusMinDark = clamp(blobRadiusMinDark, 0.04, 0.45);
+    blobRadiusMaxDark = clamp(blobRadiusMaxDark, 0.05, 0.55);
+    if(blobRadiusMaxLight < blobRadiusMinLight){
+      var tLight = blobRadiusMinLight;
+      blobRadiusMinLight = blobRadiusMaxLight;
+      blobRadiusMaxLight = tLight;
+    }
+    if(blobRadiusMaxDark < blobRadiusMinDark){
+      var tDark = blobRadiusMinDark;
+      blobRadiusMinDark = blobRadiusMaxDark;
+      blobRadiusMaxDark = tDark;
+    }
     // Dark mode: vaste neon palette (80/90's vibe), elke blob eigen kleur.
     var neon = ['#ff2bd6','#00e5ff','#a855f7','#ffe600','#ff7a00','#2aff8f','#ff4d4d'];
     var spread = (opts && opts.blobSpread) ? String(opts.blobSpread) : '';
@@ -691,7 +743,9 @@
       if(cap === null) cap = 0.6;
       if(alpha > cap) alpha = cap;
 
-      var rr = (Math.min(info.w, info.h) * (isDark ? (0.11 + rnd()*0.20) : (0.10 + rnd()*0.18)));
+      var radiusMin = isDark ? blobRadiusMinDark : blobRadiusMinLight;
+      var radiusMax = isDark ? blobRadiusMaxDark : blobRadiusMaxLight;
+      var rr = (Math.min(info.w, info.h) * (radiusMin + rnd() * (radiusMax - radiusMin)));
       rr = rr * (isDark ? sizeScaleDark : sizeScale);
       var cx, cy;
       if(spreadPositions && spreadPositions[i]){
@@ -713,7 +767,7 @@
       }
 
       ctx.save();
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = alpha;
       ctx.fillStyle = c;
       // Geen grijze filters; in dark mode geven we een subtiele "glow" via shadow.
       if('filter' in ctx) ctx.filter = 'none';
@@ -799,6 +853,7 @@
     render: function(opts){
       var canvas = w.document.getElementById('indexBg');
       if(!canvas) return;
+      var shapeEnabled = !!(opts && opts.shapeEnabled === true);
 
       // 1x genereren per tab/page load: assets + seed cachen.
       // Bij resize opnieuw tekenen met dezelfde seed (dus geen nieuwe random).
@@ -812,18 +867,28 @@
       var shapeAlphaKey = (opts && typeof opts.shapeAlphaBoost === 'number') ? String(opts.shapeAlphaBoost) : '';
       var capKey = (opts && typeof opts.blobAlphaCap === 'number') ? String(opts.blobAlphaCap) : '';
       var capDarkKey = (opts && typeof opts.blobAlphaCapDark === 'number') ? String(opts.blobAlphaCapDark) : '';
-      var shapeEnabledKey = (opts && opts.shapeEnabled === false) ? '0' : '1';
+      var shapeEnabledKey = shapeEnabled ? '1' : '0';
       var spreadKey = (opts && opts.blobSpread) ? String(opts.blobSpread) : '';
       var spreadMarginKey = (opts && typeof opts.blobSpreadMargin === 'number') ? String(opts.blobSpreadMargin) : '';
+      var radiusMinKey = (opts && typeof opts.blobRadiusMin === 'number') ? String(opts.blobRadiusMin) : '';
+      var radiusMaxKey = (opts && typeof opts.blobRadiusMax === 'number') ? String(opts.blobRadiusMax) : '';
+      var radiusMinDarkKey = (opts && typeof opts.blobRadiusMinDark === 'number') ? String(opts.blobRadiusMinDark) : '';
+      var radiusMaxDarkKey = (opts && typeof opts.blobRadiusMaxDark === 'number') ? String(opts.blobRadiusMaxDark) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + radiusMinKey + '|' + radiusMaxKey + '|' + radiusMinDarkKey + '|' + radiusMaxDarkKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
 
       var token = ++lastToken;
 
       function doRender(assets, seed){
         if(token !== lastToken) return;
-        var svg = ensureSvgLayer(canvas);
+        var parent = canvas && canvas.parentNode;
+        var svg = null;
+        if(shapeEnabled){
+          svg = ensureSvgLayer(canvas);
+        }else{
+          svg = parent && parent.querySelector ? parent.querySelector('#indexBgSvg') : null;
+        }
         var rnd = mulberry32(seed);
         // onthoud de canvas/viewport maat van de eerste echte render.
         var info = renderCanvas(canvas, assets.palette, rnd, lite, opts);
@@ -831,9 +896,9 @@
           cache._lastCssW = info && info.cssW ? info.cssW : cache._lastCssW;
           cache._lastCssH = info && info.cssH ? info.cssH : cache._lastCssH;
         }
-        if(opts && opts.shapeEnabled === false){
-          if(svg){
-            while(svg.firstChild) svg.removeChild(svg.firstChild);
+        if(!shapeEnabled){
+          if(svg && svg.parentNode){
+            svg.parentNode.removeChild(svg);
           }
           return;
         }
@@ -847,6 +912,18 @@
           return Promise.resolve(cache);
         }
         var seed = (Date.now() ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
+        if(!shapeEnabled){
+          var pal = [];
+          if(opts && Array.isArray(opts.palette)){
+            for(var i=0;i<opts.palette.length;i++){
+              var nh = normHex(opts.palette[i]);
+              if(nh) pal.push(nh);
+            }
+          }
+          if(!pal.length) pal = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+          cache = { key:key, seed:seed, assets:{ palette: pal, shapes: [] }, lite:lite };
+          return Promise.resolve(cache);
+        }
         return buildAssets(opts).then(function(assets){
           cache = { key:key, seed:seed, assets:assets, lite:lite };
           return cache;
