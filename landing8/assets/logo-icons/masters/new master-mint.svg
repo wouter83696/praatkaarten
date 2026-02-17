@@ -18,7 +18,7 @@
       .st2 {
         fill: #7fcfc9;
         isolation: isolate;
-        opacity: .71;
+        opacity: .95;
       }
 
       .st3 {
