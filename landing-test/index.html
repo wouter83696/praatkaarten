@@ -97,52 +97,57 @@
     }
 
     .hero{
-      width: min(1140px, 94vw);
+      width:min(620px, 94vw);
       display:flex;
+      flex-direction:column;
       align-items:center;
-      justify-content:space-between;
-      gap: 56px;
       transform: translateY(-6px);
-      text-align:left;
     }
 
-    .cta{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      width: min(520px, 100%);
+    .logo{
+      width: clamp(116px, 20vw, 162px);
+      height: clamp(116px, 20vw, 162px);
+      border-radius: 27px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-8px) translateZ(0) scale(1);
+      transition: transform .22s ease, box-shadow .22s ease;
     }
-
-    /* iPhone mockup (voor live iframe) */
-    .phone{
-      width: min(380px, 42vw);
-      aspect-ratio: 9 / 19.5;
-      border-radius: 46px;
-      background: #0E1012;
-      padding: 14px;
-      box-shadow: 0 34px 90px rgba(0,0,0,.18);
-      transform: perspective(1200px) rotateY(-10deg);
-      transform-origin: center;
+    .logo:hover{
+      transform: translateY(-10px) translateZ(0) scale(1.035);
+      box-shadow: 0 14px 30px rgba(47, 78, 86, .16);
     }
-    .phone__screen{
+    .logo:active{
+      transform: translateY(-9px) translateZ(0) scale(1.018);
+    }
+    .logo img{
       width:100%;
       height:100%;
-      border-radius: 34px;
-      overflow:hidden;
-      background:#fff;
-      position:relative;
-    }
-    .phone__screen iframe{
-      width: 430px;
-      height: 932px;
-      border: 0;
-      transform: scale(.86);
-      transform-origin: top left;
+      object-fit: cover;
       display:block;
     }
 
+    h1{
+      margin: 16px 0 1px;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight:600;
+      letter-spacing:0.01em;
+      font-size: clamp(36px, 5.1vw, 54px);
+      line-height:1.02;
+      color: #4F8E9E;
+      text-shadow: 0 1px 0 rgba(255,255,255,.36);
+    }
+
+    .tagline{
+      margin:8px 0 0;
+      font-size: clamp(18px, 2.2vw, 23px);
+      line-height:1.18;
+      font-weight:400;
+      color: #6FAFBE;
+    }
+
     .stores{
-      margin-top: 0;
+      margin-top: 34px;
       display:flex;
       gap:11px;
       flex-wrap:nowrap;
@@ -328,28 +333,25 @@
     @media (max-height: 760px){
       .wrap{ padding: 4px 14px 8px; }
       .hero{ transform: translateY(-2px); }
-      .phone{ padding: 12px; border-radius: 44px; }
-      .phone__screen{ border-radius: 32px; }
-      .phone__screen iframe{ transform: scale(.84); }
+      .logo{
+        width: clamp(94px, 18vw, 126px);
+        height: clamp(94px, 18vw, 126px);
+      }
+      h1{
+        margin-top: 10px;
+        font-size: clamp(30px, 4.2vw, 42px);
+      }
+      .tagline{
+        font-size: clamp(16px, 2.2vw, 20px);
+      }
+      .stores{
+        margin-top: 20px;
+      }
       .store{
         padding: 10px 14px;
         min-height: 44px;
       }
     }
-
-    @media (max-width: 960px){
-      .hero{
-        flex-direction: column;
-        gap: 20px;
-        text-align:center;
-      }
-      .cta{ width: 100%; }
-      .phone{
-        width: min(360px, 92vw);
-        transform: none;
-      }
-    }
-
     @media (max-width: 760px){
       .stores{
         flex-wrap: nowrap;
@@ -389,9 +391,15 @@
 
   <main class="wrap">
     <section class="hero">
-      <div class="cta" aria-label="App stores">
-        <!-- Store buttons (subtiel) -->
-        <div class="stores">
+      <div class="logo" aria-label="Uitgesproken logo">
+        <img src="./assets/logo-icons/masters/new%20master-mint.svg?v=20260217e" alt="Uitgesproken">
+      </div>
+
+      <h1>Uitgesproken</h1>
+      <p class="tagline">Ruimte om te verkennen</p>
+
+      <!-- Store buttons (subtiel) -->
+      <div class="stores" aria-label="App stores">
         <a class="store disabled" href="#" aria-label="Download in de App Store">
           <!-- Apple -->
           <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -429,18 +437,6 @@
             <strong>Web-app</strong>
           </span>
         </a>
-        </div>
-      </div>
-
-      <div class="phone" aria-label="Live preview">
-        <div class="phone__screen">
-          <iframe
-            src="https://wouter83696.github.io/praatkaarten/stable-test-3/"
-            title="Uitgesproken Web-app"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-          ></iframe>
-        </div>
       </div>
 
       

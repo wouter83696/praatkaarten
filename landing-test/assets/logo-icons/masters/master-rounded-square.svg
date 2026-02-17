@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Uitgesproken logo</title>
+  <desc id="desc">Rounded-square icoon met chatballon.</desc>
+  <rect width="1024" height="1024" fill="#7CC9C6"/>
+
+  <path
+    d="M252 282C203 313 171 370 179 437L220 673C234 766 307 816 399 812L613 795C635 793 655 798 673 808L753 848C761 852 770 845 769 836L759 754C757 740 766 727 780 723C841 709 879 650 869 587L826 343C812 249 728 190 635 202L326 242C299 245 273 258 252 282Z"
+    fill="#F1F3F3"
+    stroke="#5FA7BA"
+    stroke-width="20"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M382 521C429 475 505 465 570 493C631 519 696 505 744 457"
+    fill="none"
+    stroke="#63B7C4"
+    stroke-width="16"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
