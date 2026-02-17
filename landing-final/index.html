@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&amp;family=Nunito+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&amp;family=Manrope:wght@500;600;700&amp;family=Nunito+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -18,6 +18,7 @@
       --mint-soft: rgba(170, 222, 228, 0.42);
       --muted: #adb1b9;
       --shadow: 0 16px 32px rgba(73, 106, 115, 0.16);
+      --shadow-soft: 0 10px 26px rgba(47, 78, 86, 0.13);
       --btn-shadow: 0 12px 26px rgba(90, 119, 126, 0.14);
     }
 
@@ -36,7 +37,10 @@
       background: var(--bg);
       color: var(--ink);
       font-family: "Nunito Sans", "Manrope", "Avenir Next", "Segoe UI", sans-serif;
-      overflow-x: hidden;
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
     }
 
     #indexBg {
@@ -49,40 +53,61 @@
       pointer-events: none;
     }
 
+    .indexBgSvg {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      display: block;
+      pointer-events: none;
+    }
+
     @supports (height: 100dvh) {
-      #indexBg {
+      #indexBg,
+      .indexBgSvg {
         height: 100dvh;
+      }
+    }
+    @supports (height: 100svh) {
+      #indexBg,
+      .indexBgSvg {
+        height: 100svh;
       }
     }
 
     .scene {
-      position: relative;
+      position: fixed;
+      inset: 0;
       min-height: 100vh;
       min-height: 100dvh;
       width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 48px 20px 72px;
+      padding: 8px 16px 10px;
       z-index: 2;
       background: transparent;
+      text-align: center;
+      overflow: hidden;
     }
 
     .hero {
-      width: min(560px, 100%);
+      width: min(620px, 94vw);
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transform: translateY(-8px);
+      transform: none;
     }
 
     .logo {
-      width: clamp(136px, 24vw, 198px);
-      height: clamp(136px, 24vw, 198px);
-      border-radius: 34px;
-      box-shadow: var(--shadow);
-      margin-bottom: 22px;
+      width: clamp(116px, 20vw, 162px);
+      height: clamp(116px, 20vw, 162px);
+      border-radius: 27px;
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 14px;
     }
 
     .logo img {
@@ -94,49 +119,50 @@
     }
 
     h1 {
-      margin: 0;
-      font-family: "Manrope", "Nunito Sans", sans-serif;
-      font-size: clamp(2.45rem, 8.1vw, 5.1rem);
+      margin: 16px 0 1px;
+      font-family: "DM Sans", "Manrope", "Nunito Sans", sans-serif;
+      font-size: clamp(36px, 5.1vw, 54px);
       line-height: 1.02;
-      letter-spacing: -0.02em;
-      font-weight: 700;
-      color: var(--ink);
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.56);
+      letter-spacing: 0.01em;
+      font-weight: 600;
+      color: #4f8e9e;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.36);
     }
 
     .tagline {
-      margin: 10px 0 0;
-      font-size: clamp(1.22rem, 4vw, 2.28rem);
-      font-weight: 500;
-      color: var(--ink-soft);
-      letter-spacing: 0.004em;
+      margin: 8px 0 0;
+      font-size: clamp(18px, 2.2vw, 23px);
+      line-height: 1.18;
+      font-weight: 400;
+      color: #6fafbe;
+      letter-spacing: 0;
     }
 
     .web-btn {
-      margin-top: 36px;
-      min-height: 58px;
-      width: min(470px, 84vw);
+      margin-top: 28px;
+      min-height: 48px;
+      width: min(344px, 78vw);
       border-radius: 999px;
-      border: 2px solid rgba(146, 210, 218, 0.95);
-      background: rgba(238, 245, 247, 0.9);
-      box-shadow: var(--btn-shadow);
+      border: 1.5px solid rgba(146, 210, 218, 0.7);
+      background: rgba(238, 245, 247, 0.7);
+      box-shadow: 0 6px 14px rgba(90, 119, 126, 0.08);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      padding: 12px 30px;
-      color: #648f9f;
+      gap: 8px;
+      padding: 9px 20px;
+      color: #6693a2;
       text-decoration: none;
-      font-size: clamp(1.3rem, 4.4vw, 2rem);
+      font-size: clamp(1rem, 2.6vw, 1.35rem);
       font-weight: 600;
       letter-spacing: -0.01em;
       transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
 
     .web-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 26px rgba(86, 118, 126, 0.16);
-      background: rgba(244, 250, 251, 0.95);
+      transform: none;
+      box-shadow: 0 8px 16px rgba(86, 118, 126, 0.1);
+      background: rgba(243, 249, 250, 0.8);
     }
 
     .web-btn:active {
@@ -144,33 +170,33 @@
     }
 
     .web-btn svg {
-      width: 1.22em;
-      height: 1.22em;
+      width: 1.1em;
+      height: 1.1em;
       flex: 0 0 auto;
     }
 
     .availability {
-      margin-top: 56px;
+      margin-top: 42px;
       color: var(--muted);
-      font-size: clamp(1.15rem, 3.4vw, 2rem);
+      font-size: clamp(18px, 2.8vw, 22px);
       font-weight: 500;
     }
 
     .stores {
-      margin-top: 16px;
+      margin-top: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 24px;
+      gap: 30px;
     }
 
     .store-item {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       color: #b4b8bf;
-      font-size: clamp(1.15rem, 3.2vw, 2rem);
+      font-size: clamp(18px, 2.8vw, 20px);
       font-weight: 500;
       text-decoration: none;
       pointer-events: none;
@@ -186,50 +212,45 @@
 
     @media (max-width: 640px) {
       .scene {
-        padding: 36px 16px 64px;
-      }
-
-      .hero {
-        transform: translateY(-2px);
+        padding: 6px 14px 10px;
       }
 
       .web-btn {
-        width: min(430px, 88vw);
-        margin-top: 30px;
-        min-height: 54px;
-      }
-
-      .availability {
-        margin-top: 46px;
-      }
-
-      .stores {
-        gap: 18px;
-      }
-    }
-
-    @media (max-height: 760px) {
-      .scene {
-        align-items: start;
-        padding-top: 30px;
-      }
-
-      .hero {
-        transform: none;
-      }
-
-      .logo {
-        width: clamp(118px, 21vw, 170px);
-        height: clamp(118px, 21vw, 170px);
-        margin-bottom: 18px;
-      }
-
-      .web-btn {
-        margin-top: 24px;
+        width: min(320px, 82vw);
+        margin-top: 22px;
+        min-height: 46px;
       }
 
       .availability {
         margin-top: 34px;
+      }
+
+      .stores {
+        gap: 20px;
+      }
+    }
+
+    @media (max-height: 760px) {
+      .logo {
+        width: clamp(94px, 18vw, 126px);
+        height: clamp(94px, 18vw, 126px);
+      }
+
+      h1 {
+        margin-top: 10px;
+        font-size: clamp(30px, 4.2vw, 42px);
+      }
+
+      .tagline {
+        font-size: clamp(16px, 2.2vw, 20px);
+      }
+
+      .web-btn {
+        margin-top: 18px;
+      }
+
+      .availability {
+        margin-top: 24px;
       }
     }
   </style>
@@ -286,24 +307,31 @@
       function run(){
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
-        var palette = ['#8ECED7', '#A4DCE4', '#B2E5EB', '#C0EEF3'];
+        var isDark = false;
+        try{ isDark = (document.documentElement.getAttribute('data-contrast') === 'dark'); }catch(_e){}
+
+        var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+        var vw = (window.innerWidth || 0);
+        var blobCount = (vw < 900) ? 5 : 8;
+        var alphaBoost = 1.12;
+        var sizeScale = 1.34;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
           meta: null,
           palette: palette,
-          blobCount: 4,
-          alphaBoost: 1.08,
-          sizeScale: 1.54,
-          sizeLimit: 1.95,
-          blobWash: 0.03,
-          blobAlphaCap: 0.27,
-          blobAlphaCapDark: 0.30,
+          blobCount: blobCount,
+          alphaBoost: alphaBoost,
+          sizeScale: sizeScale,
+          sizeLimit: 1.9,
+          blobWash: 0,
+          blobAlphaCap: 0.26,
+          blobAlphaCapDark: 0.28,
           baseWash: false,
           blobSpread: 'grid',
           blobSpreadMargin: 0.15,
-          blobRadiusMin: 0.18,
-          blobRadiusMax: 0.30,
+          blobRadiusMin: 0.10,
+          blobRadiusMax: 0.20,
           centerBlob: false,
           shapeEnabled: false
         });
