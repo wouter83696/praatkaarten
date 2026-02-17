@@ -105,29 +105,27 @@
     }
 
     .logo{
-      width: clamp(100px, 19vw, 142px);
-      height: clamp(100px, 19vw, 142px);
-      border-radius: 26px;
-      overflow:hidden;
-      box-shadow: var(--shadow-soft);
-      transform: translateY(-6px) translateZ(0) scale(1);
-      transition: transform .22s ease, box-shadow .22s ease;
+      width: clamp(130px, 23vw, 186px);
+      height: clamp(130px, 23vw, 186px);
+      transform: translateY(-8px) translateZ(0) scale(1);
+      transition: transform .22s ease;
     }
     .logo:hover{
-      transform: translateY(-8px) translateZ(0) scale(1.035);
-      box-shadow: 0 14px 30px rgba(47, 78, 86, .16);
+      transform: translateY(-10px) translateZ(0) scale(1.035);
     }
     .logo:active{
-      transform: translateY(-7px) translateZ(0) scale(1.018);
+      transform: translateY(-9px) translateZ(0) scale(1.018);
     }
     .logo img{
       width:100%;
       height:100%;
+      object-fit: contain;
       display:block;
+      filter: drop-shadow(0 12px 24px rgba(47, 78, 86, .16));
     }
 
     h1{
-      margin: 14px 0 1px;
+      margin: 16px 0 1px;
       font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       font-weight:600;
       letter-spacing:0.01em;
@@ -333,8 +331,8 @@
       .wrap{ padding: 4px 14px 8px; }
       .hero{ transform: translateY(-2px); }
       .logo{
-        width: clamp(84px, 16vw, 112px);
-        height: clamp(84px, 16vw, 112px);
+        width: clamp(104px, 20vw, 138px);
+        height: clamp(104px, 20vw, 138px);
       }
       h1{
         margin-top: 10px;
@@ -364,7 +362,7 @@
   <main class="wrap">
     <section class="hero">
       <div class="logo" aria-label="Uitgesproken logo">
-        <img src="./assets/logo-icons/masters/master-squircle-gradient.svg" alt="Uitgesproken">
+        <img src="./assets/logo-icons/masters/master-squircle-gradient.svg?v=20260217" alt="Uitgesproken">
       </div>
 
       <h1>Uitgesproken</h1>
