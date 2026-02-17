@@ -105,13 +105,17 @@
     }
 
     .logo{
-      width: clamp(130px, 23vw, 186px);
-      height: clamp(130px, 23vw, 186px);
+      width: clamp(116px, 20vw, 162px);
+      height: clamp(116px, 20vw, 162px);
+      border-radius: 27px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
       transform: translateY(-8px) translateZ(0) scale(1);
-      transition: transform .22s ease;
+      transition: transform .22s ease, box-shadow .22s ease;
     }
     .logo:hover{
       transform: translateY(-10px) translateZ(0) scale(1.035);
+      box-shadow: 0 14px 30px rgba(47, 78, 86, .16);
     }
     .logo:active{
       transform: translateY(-9px) translateZ(0) scale(1.018);
@@ -119,9 +123,8 @@
     .logo img{
       width:100%;
       height:100%;
-      object-fit: contain;
+      object-fit: cover;
       display:block;
-      filter: drop-shadow(0 12px 24px rgba(47, 78, 86, .16));
     }
 
     h1{
@@ -331,8 +334,8 @@
       .wrap{ padding: 4px 14px 8px; }
       .hero{ transform: translateY(-2px); }
       .logo{
-        width: clamp(104px, 20vw, 138px);
-        height: clamp(104px, 20vw, 138px);
+        width: clamp(94px, 18vw, 126px);
+        height: clamp(94px, 18vw, 126px);
       }
       h1{
         margin-top: 10px;
@@ -350,7 +353,34 @@
       }
     }
     @media (max-width: 760px){
-      .stores{ flex-wrap: wrap; }
+      .stores{
+        flex-wrap: nowrap;
+        gap: 8px;
+        width: min(100%, 396px);
+      }
+      .store{
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 8px;
+        min-height: 44px;
+        border-radius: 12px;
+      }
+      .store span{
+        min-width: 0;
+      }
+      .store small{
+        font-size: clamp(9px, 2.6vw, 10.5px);
+      }
+      .store strong{
+        font-size: clamp(10.5px, 3.2vw, 13.5px);
+        white-space: nowrap;
+      }
+      .ico{
+        width: 18px;
+        height: 18px;
+      }
     }
 
 </style>
@@ -362,7 +392,7 @@
   <main class="wrap">
     <section class="hero">
       <div class="logo" aria-label="Uitgesproken logo">
-        <img src="./assets/logo-icons/masters/master-squircle-gradient.svg?v=20260217" alt="Uitgesproken">
+        <img src="./assets/logo-icons/masters/master-rounded-square-1024.png?v=20260217c" alt="Uitgesproken">
       </div>
 
       <h1>Uitgesproken</h1>
