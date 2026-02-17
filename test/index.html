@@ -3,16 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- iOS webclip -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Uitgesproken" />
+
+  <!-- True master icon (1:1 gerenderd van de SVG) -->
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <title>Uitgesproken Test</title>
+
+  <title>Uitgesproken – iPhone test (v6 true master)</title>
+
   <style>
-    html,body{margin:0;height:100%;display:flex;align-items:center;justify-content:center;background:#fff;}
-    img{width:60vw;max-width:300px;}
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .wrap { text-align: center; }
+    .logo {
+      width: 60vw;
+      max-width: 320px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .info {
+      margin-top: 14px;
+      font-size: 14px;
+      opacity: 0.6;
+    }
   </style>
 </head>
 <body>
-<img src="master-4.svg" alt="Logo">
+  <div class="wrap">
+    <img src="new-min-4.svg" class="logo" alt="Logo (SVG preview)">
+    <div class="info">v6 true master • Deel → Zet op beginscherm</div>
+  </div>
 </body>
 </html>
