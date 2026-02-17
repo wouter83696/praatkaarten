@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Uitgesproken</title>
+  <meta http-equiv="refresh" content="0;url=./kaarten/">
+  <script>
+    (function(){
+      try{
+        var q = location.search || '';
+        var h = location.hash || '';
+        location.replace('./kaarten/' + q + h);
+      }catch(_e){
+        location.replace('./kaarten/');
+      }
+    })();
+  </script>
+</head>
+<body></body>
+</html>
