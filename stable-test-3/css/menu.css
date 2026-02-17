@@ -85,7 +85,7 @@ html[data-contrast="dark"]{
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .themePillBrand{
@@ -104,7 +104,7 @@ html[data-contrast="dark"]{
   height: var(--topBarMenuTap, 36px);
   display: inline-grid;
   place-items: center;
-  color: var(--topBarAccentColor, #4F8E9E);
+  color: rgba(11,18,32,0.36);
 }
 
 .themePillMenuIcon .gmIcon{
@@ -440,7 +440,7 @@ html[data-contrast="dark"] .toolBtn{
 }
 
 html[data-contrast="dark"] .themePillMenuIcon{
-  color: var(--topBarAccentColor, #4F8E9E);
+  color: rgba(245,250,255,0.72);
 }
 
 html[data-contrast="dark"] .themePillBrand{
