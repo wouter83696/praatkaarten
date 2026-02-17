@@ -1,73 +1,65 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Uitgesproken – icoon test</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uitgesproken – Apple optimized preview</title>
 
-  <!-- iOS Home Screen icons (voorkomt gokken/caching issues) -->
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png?v=1771331546">
-  <link rel="apple-touch-icon" sizes="167x167" href="apple-touch-icon-167.png?v=1771331546">
-  <link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152.png?v=1771331546">
-  <link rel="apple-touch-icon" sizes="120x120" href="apple-touch-icon-120.png?v=1771331546">
-  <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-180.png?v=1771331546">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
 
-  <!-- desktop -->
-  <link rel="icon" href="favicon-32.png?v=1771331546" type="image/png">
-
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Uitgesproken">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-  <style>
-    html, body { height: 100%; margin: 0; }
-    body {
-      display: grid;
-      place-items: center;
-      font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif;
-      background: #fff;
-    }
-    .wrap { text-align: center; padding: 24px; max-width: 520px; }
-    .row { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin: 18px 0 6px; }
-    figure { margin:0; }
-    img { width: 120px; height: 120px; border-radius: 24px; }
-    figcaption { font-size: 12px; opacity: .7; margin-top: 6px; }
-    .note { font-size: 14px; opacity: .75; line-height: 1.4; }
-    .steps { text-align:left; display:inline-block; margin-top: 10px; }
-  </style>
+<style>
+body{
+  font-family:-apple-system,system-ui;
+  background:#f4f6f8;
+  margin:40px;
+}
+.grid{
+  display:flex;
+  gap:60px;
+  align-items:center;
+}
+.block{text-align:center}
+.squircle{
+  width:160px;
+  height:160px;
+  border-radius:22%;
+  overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,0.18);
+}
+.squircle img{
+  width:100%;
+  height:100%;
+}
+.square img{
+  width:160px;
+  height:160px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.18);
+}
+h1{font-weight:600}
+p{opacity:.7;max-width:600px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Icoon test (iOS)</h1>
-    <p class="note">Deze pagina levert meerdere Apple Touch Icon formaten zodat iOS niet hoeft te gokken en minder snel een “eigen” webclip-icoon maakt.</p>
 
-    <div class="row">
-      <figure>
-        <img src="apple-touch-icon-180.png?v=1771331546" alt="180">
-        <figcaption>180×180</figcaption>
-      </figure>
-      <figure>
-        <img src="apple-touch-icon-167.png?v=1771331546" alt="167">
-        <figcaption>167×167</figcaption>
-      </figure>
-      <figure>
-        <img src="apple-touch-icon-152.png?v=1771331546" alt="152">
-        <figcaption>152×152</figcaption>
-      </figure>
-      <figure>
-        <img src="apple-touch-icon-120.png?v=1771331546" alt="120">
-        <figcaption>120×120</figcaption>
-      </figure>
-    </div>
+<h1>Apple-geoptimaliseerde versie (+18%)</h1>
+<p>
+Links: vierkant (browser). Rechts: iOS squircle simulatie.
+Dit is +18% schaal + lichte kleurcompensatie.
+</p>
 
-    <div class="steps">
-      <ol>
-        <li>Verwijder eerst het oude “Uitgesproken” icoon van je beginscherm.</li>
-        <li>Open deze pagina in <b>Safari</b> (niet via in-app browser).</li>
-        <li>Sluit Safari volledig (wegvegen) en open opnieuw.</li>
-        <li>Deel → <b>Zet op beginscherm</b>.</li>
-      </ol>
+<div class="grid">
+  <div class="block square">
+    <h3>Browser</h3>
+    <img src="apple-touch-icon-180.png">
+  </div>
+
+  <div class="block">
+    <h3>iOS simulatie</h3>
+    <div class="squircle">
+      <img src="apple-touch-icon-180.png">
     </div>
   </div>
+</div>
+
 </body>
 </html>
