@@ -384,15 +384,14 @@
           </span>
         </a>
 
-        <a class="store web mobile-app" href="./app.html" aria-label="Open de mobiele app">
+        <a class="store web mobile-app" href="./app.html" aria-label="Open de web-app">
           <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <rect x="6.2" y="1.9" width="11.6" height="20.2" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
             <line x1="10.2" y1="4.8" x2="13.8" y2="4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             <circle cx="12" cy="18.5" r="1.1" fill="currentColor"/>
           </svg>
           <span>
-            <small>Binnenkort</small>
-            <strong>Mobiele app (Beta)</strong>
+            <strong>Web-app (Beta)</strong>
           </span>
         </a>
       </div>
@@ -428,7 +427,7 @@
         var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
 
         var vw = (window.innerWidth||0);
-        var blobCount = (vw < 900) ? 5 : 6;
+        var blobCount = (vw < 900) ? 5 : 8;
         var alphaBoost = 1.12;
         var sizeScale = 1.34;
 
@@ -444,9 +443,11 @@
           blobAlphaCap: 0.26,
           blobAlphaCapDark: 0.28,
           baseWash: false,
+          blobSpread: 'grid',
+          blobSpreadMargin: 0.15,
           blobRadiusMin: 0.10,
-          blobRadiusMax: 0.22,
-          centerBlob: true,
+          blobRadiusMax: 0.20,
+          centerBlob: false,
           shapeEnabled: false
         });
       }
