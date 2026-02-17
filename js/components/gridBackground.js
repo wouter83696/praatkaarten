@@ -313,22 +313,44 @@
   }
 
   
+  function pinSvgLayer(svg){
+    if(!svg || !svg.style) return svg;
+    svg.style.position = 'fixed';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.right = 'auto';
+    svg.style.bottom = 'auto';
+    svg.style.width = '100vw';
+    svg.style.height = '100vh';
+    if(w.CSS && typeof w.CSS.supports === 'function'){
+      if(w.CSS.supports('height', '100dvh')) svg.style.height = '100dvh';
+      if(w.CSS.supports('height', '100svh')) svg.style.height = '100svh';
+    }
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '0';
+    svg.style.display = 'block';
+    return svg;
+  }
+
   function ensureSvgLayer(canvas){
     var parent = canvas && canvas.parentNode;
     if(!parent) return null;
     var existing = parent.querySelector && parent.querySelector('#indexBgSvg');
-    if(existing) return existing;
+    if(existing) return pinSvgLayer(existing);
     var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('id','indexBgSvg');
     svg.setAttribute('class','indexBgSvg');
     svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('focusable','false');
     svg.setAttribute('preserveAspectRatio','none');
+    svg.setAttribute('width','100%');
+    svg.setAttribute('height','100%');
     // fixed coord space, easier for random placement
     svg.setAttribute('viewBox','0 0 1000 1000');
     // insert directly after canvas so it sits above it
     if(canvas.nextSibling) parent.insertBefore(svg, canvas.nextSibling);
     else parent.appendChild(svg);
-    return svg;
+    return pinSvgLayer(svg);
   }
 
   function parseViewBox(root){
@@ -378,15 +400,41 @@
     return rgbToHex(r,g,b2);
   }
 
+  function hasClassToken(className, token){
+    if(!className) return false;
+    var normalized = (' ' + String(className).replace(/\s+/g, ' ') + ' ').toLowerCase();
+    return normalized.indexOf(' ' + String(token).toLowerCase() + ' ') !== -1;
+  }
+
+  function isTextLikeNode(el, root){
+    var cur = el;
+    while(cur && cur !== root){
+      if(cur.nodeType !== 1){
+        cur = cur.parentNode;
+        continue;
+      }
+      var tag = cur.tagName ? String(cur.tagName).toLowerCase() : '';
+      if(tag === 'text') return true;
+      var cls = cur.getAttribute ? cur.getAttribute('class') : '';
+      if(hasClassToken(cls, 'st2')) return true;
+      var isolation = cur.getAttribute ? cur.getAttribute('isolation') : '';
+      if(isolation && String(isolation).toLowerCase() === 'isolate') return true;
+      var style = cur.getAttribute ? cur.getAttribute('style') : '';
+      if(style && /isolation\s*:\s*isolate/i.test(String(style))) return true;
+      cur = cur.parentNode;
+    }
+    return false;
+  }
 
   function collectShapesFromSvgText(svgText){
-    var out = [];
-    if(!svgText) return out;
+    var filtered = [];
+    var all = [];
+    if(!svgText) return filtered;
     try{
       var dp = new DOMParser();
       var doc = dp.parseFromString(svgText, 'image/svg+xml');
       var root = doc && doc.documentElement;
-      if(!root) return out;
+      if(!root) return filtered;
       var vb = parseViewBox(root);
       // pick basic shape elements
       var nodes = root.querySelectorAll ? root.querySelectorAll('path,circle,rect,ellipse,polygon,polyline') : [];
@@ -438,12 +486,17 @@
         var tf = el.getAttribute('transform');
         if(tf) attrs._t = tf;
 
-        out.push({tag:tag, attrs:attrs, vb:vb});
+        var shapeItem = {tag:tag, attrs:attrs, vb:vb};
+        all.push(shapeItem);
+        if(!isTextLikeNode(el, root)){
+          filtered.push(shapeItem);
+        }
       }
     }catch(e){
       // ignore parse errors
     }
-    return out;
+    if(filtered.length) return filtered;
+    return all;
   }
 
   function svgEl(tag){
@@ -623,6 +676,24 @@
     };
     var darkPalette = (opts && Array.isArray(opts.darkPalette)) ? opts.darkPalette : null;
     var darkMix = (opts && typeof opts.darkMix === 'number') ? opts.darkMix : 0.25;
+    var blobRadiusMinLight = (opts && typeof opts.blobRadiusMin === 'number') ? opts.blobRadiusMin : 0.10;
+    var blobRadiusMaxLight = (opts && typeof opts.blobRadiusMax === 'number') ? opts.blobRadiusMax : 0.28;
+    var blobRadiusMinDark = (opts && typeof opts.blobRadiusMinDark === 'number') ? opts.blobRadiusMinDark : 0.11;
+    var blobRadiusMaxDark = (opts && typeof opts.blobRadiusMaxDark === 'number') ? opts.blobRadiusMaxDark : 0.31;
+    blobRadiusMinLight = clamp(blobRadiusMinLight, 0.04, 0.45);
+    blobRadiusMaxLight = clamp(blobRadiusMaxLight, 0.05, 0.55);
+    blobRadiusMinDark = clamp(blobRadiusMinDark, 0.04, 0.45);
+    blobRadiusMaxDark = clamp(blobRadiusMaxDark, 0.05, 0.55);
+    if(blobRadiusMaxLight < blobRadiusMinLight){
+      var tLight = blobRadiusMinLight;
+      blobRadiusMinLight = blobRadiusMaxLight;
+      blobRadiusMaxLight = tLight;
+    }
+    if(blobRadiusMaxDark < blobRadiusMinDark){
+      var tDark = blobRadiusMinDark;
+      blobRadiusMinDark = blobRadiusMaxDark;
+      blobRadiusMaxDark = tDark;
+    }
     // Dark mode: vaste neon palette (80/90's vibe), elke blob eigen kleur.
     var neon = ['#ff2bd6','#00e5ff','#a855f7','#ffe600','#ff7a00','#2aff8f','#ff4d4d'];
     var spread = (opts && opts.blobSpread) ? String(opts.blobSpread) : '';
@@ -672,7 +743,9 @@
       if(cap === null) cap = 0.6;
       if(alpha > cap) alpha = cap;
 
-      var rr = (Math.min(info.w, info.h) * (isDark ? (0.11 + rnd()*0.20) : (0.10 + rnd()*0.18)));
+      var radiusMin = isDark ? blobRadiusMinDark : blobRadiusMinLight;
+      var radiusMax = isDark ? blobRadiusMaxDark : blobRadiusMaxLight;
+      var rr = (Math.min(info.w, info.h) * (radiusMin + rnd() * (radiusMax - radiusMin)));
       rr = rr * (isDark ? sizeScaleDark : sizeScale);
       var cx, cy;
       if(spreadPositions && spreadPositions[i]){
@@ -683,7 +756,11 @@
         cy = (rnd()*1.10 - 0.05) * info.h;
       }
 
-      if(i===1){
+      if(opts && opts.centerBlob === true && i===1){
+        rr *= 1.05;
+        cx = info.w * (0.50 + (rnd()-0.5) * 0.08);
+        cy = info.h * (0.50 + (rnd()-0.5) * 0.10);
+      }else if(i===1){
         rr *= 1.08;
         cx = info.w * 1.02;
         cy = info.h * 0.12;
@@ -776,6 +853,7 @@
     render: function(opts){
       var canvas = w.document.getElementById('indexBg');
       if(!canvas) return;
+      var shapeEnabled = !!(opts && opts.shapeEnabled === true);
 
       // 1x genereren per tab/page load: assets + seed cachen.
       // Bij resize opnieuw tekenen met dezelfde seed (dus geen nieuwe random).
@@ -789,18 +867,28 @@
       var shapeAlphaKey = (opts && typeof opts.shapeAlphaBoost === 'number') ? String(opts.shapeAlphaBoost) : '';
       var capKey = (opts && typeof opts.blobAlphaCap === 'number') ? String(opts.blobAlphaCap) : '';
       var capDarkKey = (opts && typeof opts.blobAlphaCapDark === 'number') ? String(opts.blobAlphaCapDark) : '';
-      var shapeEnabledKey = (opts && opts.shapeEnabled === false) ? '0' : '1';
+      var shapeEnabledKey = shapeEnabled ? '1' : '0';
       var spreadKey = (opts && opts.blobSpread) ? String(opts.blobSpread) : '';
       var spreadMarginKey = (opts && typeof opts.blobSpreadMargin === 'number') ? String(opts.blobSpreadMargin) : '';
+      var radiusMinKey = (opts && typeof opts.blobRadiusMin === 'number') ? String(opts.blobRadiusMin) : '';
+      var radiusMaxKey = (opts && typeof opts.blobRadiusMax === 'number') ? String(opts.blobRadiusMax) : '';
+      var radiusMinDarkKey = (opts && typeof opts.blobRadiusMinDark === 'number') ? String(opts.blobRadiusMinDark) : '';
+      var radiusMaxDarkKey = (opts && typeof opts.blobRadiusMaxDark === 'number') ? String(opts.blobRadiusMaxDark) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + radiusMinKey + '|' + radiusMaxKey + '|' + radiusMinDarkKey + '|' + radiusMaxDarkKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
 
       var token = ++lastToken;
 
       function doRender(assets, seed){
         if(token !== lastToken) return;
-        var svg = ensureSvgLayer(canvas);
+        var parent = canvas && canvas.parentNode;
+        var svg = null;
+        if(shapeEnabled){
+          svg = ensureSvgLayer(canvas);
+        }else{
+          svg = parent && parent.querySelector ? parent.querySelector('#indexBgSvg') : null;
+        }
         var rnd = mulberry32(seed);
         // onthoud de canvas/viewport maat van de eerste echte render.
         var info = renderCanvas(canvas, assets.palette, rnd, lite, opts);
@@ -808,9 +896,9 @@
           cache._lastCssW = info && info.cssW ? info.cssW : cache._lastCssW;
           cache._lastCssH = info && info.cssH ? info.cssH : cache._lastCssH;
         }
-        if(opts && opts.shapeEnabled === false){
-          if(svg){
-            while(svg.firstChild) svg.removeChild(svg.firstChild);
+        if(!shapeEnabled){
+          if(svg && svg.parentNode){
+            svg.parentNode.removeChild(svg);
           }
           return;
         }
@@ -824,6 +912,18 @@
           return Promise.resolve(cache);
         }
         var seed = (Date.now() ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
+        if(!shapeEnabled){
+          var pal = [];
+          if(opts && Array.isArray(opts.palette)){
+            for(var i=0;i<opts.palette.length;i++){
+              var nh = normHex(opts.palette[i]);
+              if(nh) pal.push(nh);
+            }
+          }
+          if(!pal.length) pal = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+          cache = { key:key, seed:seed, assets:{ palette: pal, shapes: [] }, lite:lite };
+          return Promise.resolve(cache);
+        }
         return buildAssets(opts).then(function(assets){
           cache = { key:key, seed:seed, assets:assets, lite:lite };
           return cache;
@@ -834,8 +934,42 @@
         doRender(c.assets, c.seed);
       });
 
-      // Achtergrond blijft statisch na eerste render.
-      // Geen re-render op resize om zichtbare "beweging" te voorkomen.
+      // re-render on resize (debounced) – zónder nieuwe random
+      var t = 0;
+      function onResize(){
+        if(t) w.clearTimeout(t);
+        t = w.setTimeout(function(){
+          if(!cache || cache.key!==key) return;
+          // Op sommige browsers triggert scroll (address bar / layout) een resize.
+          // De gebruiker wil: eenmaal geladen = niet meer veranderen bij scroll.
+          // Daarom negeren we 'resize' events die alleen (klein) de hoogte aanpassen.
+          var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+          if(!rect){
+            doRender(cache.assets, cache.seed);
+            return;
+          }
+          var cw = rect.width || 0;
+          var ch = rect.height || 0;
+          var lastW = cache._lastCssW || 0;
+          var lastH = cache._lastCssH || 0;
+
+          var dw = Math.abs(cw - lastW);
+          var dh = Math.abs(ch - lastH);
+
+          // Redraw alleen bij:
+          // - duidelijke breedte verandering (desktop resize / rotatie)
+          // - of grote hoogte verandering (rotatie)
+          // Kleine hoogte-shifts door scroll → overslaan.
+          if(dw >= 2 || dh >= 140){
+            doRender(cache.assets, cache.seed);
+          }
+        }, 120);
+      }
+
+      if(!canvas._pkBgBound){
+        canvas._pkBgBound = true;
+        w.addEventListener('resize', onResize, { passive:true });
+      }
     }
   };
 })(window);

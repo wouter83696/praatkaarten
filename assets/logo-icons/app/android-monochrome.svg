@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Uitgesproken Android monochroom logo</title>
+  <g fill="none" stroke="#5FA9B7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="62" y="62" width="388" height="388" rx="108" ry="108" stroke-width="34"/>
+    <path d="M136 165h240c35.35 0 64 28.65 64 64v72c0 35.35-28.65 64-64 64H274l-40 45c-8.79 9.9-25 .68-25-12.56V365h-73c-35.35 0-64-28.65-64-64v-72c0-35.35 28.65-64 64-64z" stroke-width="26"/>
+    <path d="M197 266c21-18 39-18 60 0s39 18 60 0" stroke-width="30"/>
+  </g>
+</svg>

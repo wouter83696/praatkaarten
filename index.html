@@ -1,115 +1,545 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Uitgesproken</title>
-  <script>
-    (function(){
-      try{
-        var p = location.pathname || '';
-        if(p && p.indexOf('.') === -1 && p.slice(-1) !== '/'){
-          location.replace(p + '/' + location.search + location.hash);
-        }
-      }catch(_e){}
-    })();
-  </script>
-  <link rel="icon" type="image/png" sizes="16x16" href="./assets/logo-icons/favicon/favicon-16x16.png?v=icon-22">
-  <link rel="icon" type="image/png" sizes="32x32" href="./assets/logo-icons/favicon/favicon-32x32.png?v=icon-22">
-  <link rel="icon" type="image/png" sizes="48x48" href="./assets/logo-icons/favicon/favicon-48x48.png?v=icon-22">
-  <link rel="shortcut icon" href="./assets/logo-icons/favicon/favicon-32x32.png?v=icon-22">
-  <meta name="apple-mobile-web-app-title" content="Uitgesproken">
-  <meta name="application-name" content="Uitgesproken">
-  <link rel="apple-touch-icon" sizes="120x120" href="./assets/logo-icons/app/apple-touch-icon-120.png?v=ios-7">
-  <link rel="apple-touch-icon" sizes="152x152" href="./assets/logo-icons/app/apple-touch-icon-152.png?v=ios-7">
-  <link rel="apple-touch-icon" sizes="167x167" href="./assets/logo-icons/app/apple-touch-icon-167.png?v=ios-7">
-  <link rel="apple-touch-icon" href="./assets/logo-icons/app/apple-touch-icon.png?v=ios-7">
 
+  <!-- IBM Plex Sans + DM Sans (Google fallback laadt automatisch) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Zet contrast-modus vroeg (SESSION), om flash te voorkomen -->
-  <script>
-    (function(){
-      try{
-        var m = sessionStorage.getItem('pk_contrast_session');
-        if(m === 'dark') document.documentElement.setAttribute('data-contrast','dark');
-        else document.documentElement.setAttribute('data-contrast','light');
-        try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(_e2){}
-      }catch(_e){
-        document.documentElement.setAttribute('data-contrast','light');
+  <style>
+:root{
+      --bg: #FFFFFF;
+      --title-rgb: 109,175,189;
+      --title: #6DAFBD;
+      --sub: rgba(var(--title-rgb), .82);
+      --glass: rgba(250, 254, 253, .72);
+      --stroke: rgba(109,175,189,.28);
+      --shadow: 0 16px 40px rgba(47, 78, 86, .13);
+      --shadow-soft: 0 10px 26px rgba(47, 78, 86, .13);
+      --modal-backdrop: rgba(15, 35, 32, .40);
+      --modal-surface: rgba(242, 250, 248, .97);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{
+      width:100%;
+      height:100%;
+      min-height:100%;
+      margin:0;
+      overflow:hidden;
+      overflow:clip;
+    }
+    body{
+      width:100%;
+      min-height:100vh;
+      min-height:100dvh;
+      background: var(--bg);
+      color: var(--title);
+      font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    @supports (height: 100svh){
+      body{ min-height:100svh; }
+    }
+
+    /* Achtergrond in vaste viewportlaag, zonder layout-impact */
+    #indexBg{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      z-index:0;
+      pointer-events:none;
+      display:block;
+    }
+    .indexBgSvg{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      z-index:0;
+      pointer-events:none;
+      display:block;
+    }
+    @supports (height: 100dvh){
+      #indexBg,
+      .indexBgSvg{ height:100dvh; }
+    }
+    @supports (height: 100svh){
+      #indexBg,
+      .indexBgSvg{ height:100svh; }
+    }
+
+    .wrap{
+      position:fixed;
+      inset:0;
+      z-index:2;
+      width:100%;
+      height:100%;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 16px 10px;
+      text-align:center;
+      overflow:hidden;
+    }
+    @supports (height: 100dvh){
+      .wrap{ min-height:100dvh; }
+    }
+    @supports (height: 100svh){
+      .wrap{ min-height:100svh; }
+    }
+
+    .hero{
+      width:min(620px, 94vw);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      transform: translateY(-6px);
+    }
+
+    .logo{
+      width: clamp(116px, 20vw, 162px);
+      height: clamp(116px, 20vw, 162px);
+      border-radius: 27px;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-8px) translateZ(0) scale(1);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .logo:hover{
+      transform: translateY(-10px) translateZ(0) scale(1.035);
+      box-shadow: 0 14px 30px rgba(47, 78, 86, .16);
+    }
+    .logo:active{
+      transform: translateY(-9px) translateZ(0) scale(1.018);
+    }
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    h1{
+      margin: 16px 0 1px;
+      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-weight:600;
+      letter-spacing:0.01em;
+      font-size: clamp(36px, 5.1vw, 54px);
+      line-height:1.02;
+      color: #4F8E9E;
+      text-shadow: 0 1px 0 rgba(255,255,255,.36);
+    }
+
+    .tagline{
+      margin:8px 0 0;
+      font-size: clamp(18px, 2.2vw, 23px);
+      line-height:1.18;
+      font-weight:400;
+      color: #6FAFBE;
+    }
+
+    .stores{
+      margin-top: 34px;
+      display:flex;
+      gap:11px;
+      flex-wrap:nowrap;
+      justify-content:center;
+    }
+
+    .store{
+      display:inline-flex;
+      gap:9px;
+      align-items:center;
+      padding: 11px 16px;
+      min-height: 48px;
+      border-radius: 13px;
+      background: var(--glass);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      text-decoration:none;
+      color: rgba(56, 110, 122, .96);
+      opacity:.94;
+      transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease, background .15s ease;
+      user-select:none;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .store:hover{
+      transform: translateY(-2px);
+      opacity:1;
+      background: rgba(255,255,255,.84);
+      box-shadow: 0 12px 28px rgba(46, 92, 102, .18);
+    }
+    .store:active{ transform: translateY(0); }
+
+    .store small{
+      display:block;
+      font-size:12px;
+      line-height:1.1;
+      color: rgba(var(--title-rgb), .82);
+      font-weight:500;
+      letter-spacing:.01em;
+    }
+    .store strong{
+      display:block;
+      font-size:16px;
+      line-height:1.1;
+      font-weight:600;
+      letter-spacing:-0.01em;
+      color: rgba(58, 114, 126, .98);
+    }
+    .store.web small{
+      color: rgba(95, 158, 174, .82);
+    }
+
+    .ico{
+      width:22px;
+      height:22px;
+      opacity:.80;
+      flex: 0 0 auto;
+    }
+
+    .store.disabled{
+      opacity:.6;
+      filter: grayscale(1);
+      cursor: default;
+      pointer-events: none;
+      box-shadow: 0 7px 16px rgba(35, 50, 55, .08);
+    }
+    .store.disabled:hover{
+      transform:none;
+      opacity:.6;
+      background: var(--glass);
+      box-shadow: 0 7px 16px rgba(35, 50, 55, .08);
+    }
+    .store.web{
+      opacity: .95;
+      filter:none;
+      pointer-events: auto;
+    }
+    .store.mobile-app{
+      background: rgba(239, 249, 248, .98);
+      border-color: rgba(109,175,189,.32);
+      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
+      transition: none;
+    }
+    .store.mobile-app:hover{
+      transform:none;
+      opacity:.95;
+      background: rgba(239, 249, 248, .98);
+      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
+    }
+
+    .mobile-modal{
+      position: fixed;
+      inset: 0;
+      z-index: 15;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .mobile-modal.is-open{
+      display: flex;
+    }
+    .mobile-modal__backdrop{
+      position: absolute;
+      inset: 0;
+      background: var(--modal-backdrop);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .mobile-modal__card{
+      position: relative;
+      width: min(400px, 100%);
+      border-radius: 18px;
+      padding: 20px 18px 18px;
+      border: 1px solid rgba(44,131,122,.20);
+      background: var(--modal-surface);
+      box-shadow: 0 26px 60px rgba(19, 58, 53, .22);
+      text-align: left;
+    }
+    .mobile-modal__close{
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 10px;
+      background: rgba(44,131,122,.10);
+      color: rgba(26, 91, 84, .95);
+      font-size: 21px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .mobile-modal__eyebrow{
+      margin: 0 0 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(43, 118, 109, .72);
+      font-weight: 600;
+    }
+    .mobile-modal h2{
+      margin: 0 0 8px;
+      font-size: clamp(24px, 7vw, 30px);
+      line-height: 1.1;
+      color: var(--title);
+    }
+    .mobile-modal p{
+      margin: 0;
+      color: rgba(37, 97, 90, .82);
+      line-height: 1.4;
+    }
+    .mobile-modal__qr{
+      margin-top: 14px;
+      min-height: 148px;
+      border: 1.5px dashed rgba(44,131,122,.38);
+      border-radius: 14px;
+      background: rgba(255,255,255,.65);
+      display: grid;
+      place-items: center;
+      color: rgba(43, 118, 109, .76);
+      font-weight: 500;
+      text-align: center;
+      padding: 16px;
+    }
+    .mobile-modal__cta{
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: #0F4E48;
+      background: linear-gradient(180deg, #CBEEE8, #B4E2DA);
+      border: 1px solid rgba(44,131,122,.26);
+      font-family: inherit;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    @media (max-height: 760px){
+      .wrap{ padding: 4px 14px 8px; }
+      .hero{ transform: translateY(-2px); }
+      .logo{
+        width: clamp(94px, 18vw, 126px);
+        height: clamp(94px, 18vw, 126px);
       }
-    })();
-  </script>
+      h1{
+        margin-top: 10px;
+        font-size: clamp(30px, 4.2vw, 42px);
+      }
+      .tagline{
+        font-size: clamp(16px, 2.2vw, 20px);
+      }
+      .stores{
+        margin-top: 20px;
+      }
+      .store{
+        padding: 10px 14px;
+        min-height: 44px;
+      }
+    }
+    @media (max-width: 760px){
+      .stores{
+        flex-wrap: nowrap;
+        gap: 8px;
+        width: min(100%, 396px);
+      }
+      .store{
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 8px;
+        min-height: 44px;
+        border-radius: 12px;
+      }
+      .store span{
+        min-width: 0;
+      }
+      .store small{
+        font-size: clamp(9px, 2.6vw, 10.5px);
+      }
+      .store strong{
+        font-size: clamp(10.5px, 3.2vw, 13.5px);
+        white-space: nowrap;
+      }
+      .ico{
+        width: 18px;
+        height: 18px;
+      }
+    }
 
-  <link rel="stylesheet" href="./css/shell.css?v=4.0.36">
-  <link rel="stylesheet" href="./css/sets.css?v=3.7.1.92">
-  <link rel="stylesheet" href="./templates/ui-base.css?v=3.7.1.15">
-  <link rel="stylesheet" href="./templates/main-index.css?v=3.7.1.46">
+</style>
 </head>
-<body data-page="grid" class="setsIndex" data-brand-icon="1">
-  <canvas id="indexBg" class="indexBg" aria-hidden="true"></canvas>
 
-  <header class="topBar" aria-label="Menu">
-    <button id="themePill" class="themePill" type="button" aria-haspopup="dialog" aria-expanded="false">
-      <span class="setCoverWrap" aria-hidden="true">
-        <img id="setCoverIcon" class="setCoverIcon" src="./assets/logo-icons/masters/icon-master-round.svg" alt="">
-      </span>
-      <span id="themePillText" class="srOnly">Kaartensets</span>
-    </button>
-  </header>
+<body>
+  <canvas id="indexBg" aria-hidden="true"></canvas>
 
-  <div id="themeMenuOverlay" class="menuOverlay" hidden></div>
-  <section id="themeMenu" class="themeMenu" role="dialog" aria-label="Kaartensets" hidden>
-    <div class="menuCard">
-      <div class="menuHeaderRow">
-        <div id="menuSetTitle" class="menuHeader">Kaartensets</div>
-        <div class="menuHeaderTools" aria-label="Acties">
-          <button id="menuContrastToggle" class="menuMiniBtn" type="button" aria-label="Contrastmodus" aria-pressed="false">
-            <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 3a9 9 0 1 0 0 18"/>
-              <path d="M12 3v18"/>
-            </svg>
-          </button>
-          <button id="menuInfoBtn" class="menuMiniBtn" type="button" aria-label="Informatie">
-            <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M12 10v7"></path>
-              <path d="M12 7h.01"></path>
-            </svg>
-          </button>
-          <button id="menuShuffleToggle" class="menuMiniBtn" type="button" aria-label="Shuffle" aria-pressed="false">
-            <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M16 3h5v5"></path>
-              <path d="M4 20l16-16"></path>
-              <path d="M4 4l8 8"></path>
-              <path d="M12 12l8 8"></path>
-              <path d="M21 16v5h-5"></path>
-            </svg>
-          </button>
-        </div>
+  <main class="wrap">
+    <section class="hero">
+      <div class="logo" aria-label="Uitgesproken logo">
+        <img src="./assets/logo-icons/masters/new%20master-mint.svg?v=20260217e" alt="Uitgesproken">
       </div>
-      <div id="menuList" class="menuList"></div>
-      <div class="menuFooter">
-        <button id="naarOverzicht" class="menuLink" type="button">Alle kaartensets</button>
-      </div>
-    </div>
-  </section>
 
-  <main class="setsIndexMain">
-    <section class="setsHero" aria-label="Uitgelichte kaartensets">
-      <div id="setsCarousel" class="setsHeroCarousel" aria-label="Kaartenset carrousel"></div>
-      <div id="setsDots" class="setsDots" aria-hidden="true"></div>
-    </section>
-    <section class="setsGridSection" aria-label="Alle kaartensets">
-      <div id="setsGrid" class="setsGrid"></div>
+      <h1>Uitgesproken</h1>
+      <p class="tagline">Ruimte om te verkennen</p>
+
+      <!-- Store buttons (subtiel) -->
+      <div class="stores" aria-label="App stores">
+        <a class="store disabled" href="#" aria-label="Download in de App Store">
+          <!-- Apple -->
+          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
+            <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
+          </svg>
+          <span>
+            <small>Binnenkort</small>
+            <strong>App Store</strong>
+          </span>
+        </a>
+
+        <a class="store disabled" href="#" aria-label="Download op Google Play">
+          <!-- Google Play (correcte 'play' triangle) -->
+          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
+            <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
+            <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
+            <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
+          </svg>
+          <span>
+            <small>Binnenkort</small>
+            <strong>Google Play</strong>
+          </span>
+        </a>
+
+        <a class="store web mobile-app" href="./app.html" aria-label="Open de web-app">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="6.2" y="1.9" width="11.6" height="20.2" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+            <line x1="10.2" y1="4.8" x2="13.8" y2="4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="12" cy="18.5" r="1.1" fill="currentColor"/>
+          </svg>
+          <span>
+            <small>Beta</small>
+            <strong>Web-app</strong>
+          </span>
+        </a>
+      </div>
+
+      
     </section>
   </main>
 
-  <script src="./js/main.js?v=0.60" defer></script>
+  <div class="mobile-modal" id="mobileOnlyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mobileModalTitle">
+    <div class="mobile-modal__backdrop" data-modal-close></div>
+    <section class="mobile-modal__card">
+      <button class="mobile-modal__close" type="button" aria-label="Sluiten" data-modal-close>&times;</button>
+      <p class="mobile-modal__eyebrow">Alleen mobiel</p>
+      <h2 id="mobileModalTitle">Mobiele app</h2>
+      <p>Je blijft op deze site. Hier kun je straks direct de app openen via een QR-code.</p>
+      <div class="mobile-modal__qr">Hier komt later je QR-code</div>
+      <button class="mobile-modal__cta" type="button" data-modal-close>Sluiten</button>
+    </section>
+  </div>
+
+  <!-- Stable background JS (overgenomen uit stable-test-3) -->
+  <script src="./js/core/net.js"></script>
+  <script src="./js/components/gridBackground.js?v=20260216"></script>
+  <script>
+    (function(){
+      function run(){
+        if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
+
+        // Zelfde defaults als in stable grid.page.js fallback
+        var isDark = false;
+        try{ isDark = (document.documentElement.getAttribute('data-contrast') === 'dark'); }catch(_e){}
+
+        var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+
+        var vw = (window.innerWidth||0);
+        var blobCount = (vw < 900) ? 5 : 8;
+        var alphaBoost = 1.12;
+        var sizeScale = 1.34;
+
+        window.PK.gridBackground.render({
+          cardBase: './sets/kaartensets/cards/',
+          meta: null,
+          palette: palette,
+          blobCount: blobCount,
+          alphaBoost: alphaBoost,
+          sizeScale: sizeScale,
+          sizeLimit: 1.9,
+          blobWash: 0,
+          blobAlphaCap: 0.26,
+          blobAlphaCapDark: 0.28,
+          baseWash: false,
+          blobSpread: 'grid',
+          blobSpreadMargin: 0.15,
+          blobRadiusMin: 0.10,
+          blobRadiusMax: 0.20,
+          centerBlob: false,
+          shapeEnabled: false
+        });
+      }
+      if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', run);
+      }else{
+        run();
+      }
+    })();
+  </script>
+  <script>
+    (function(){
+      var appLink = document.querySelector('.mobile-app');
+      var modal = document.getElementById('mobileOnlyModal');
+      if(!appLink || !modal) return;
+
+      var closeTriggers = modal.querySelectorAll('[data-modal-close]');
+      var isMobileQuery = window.matchMedia('(max-width: 900px), (pointer: coarse)');
+
+      function isMobileLike(){
+        return isMobileQuery.matches;
+      }
+
+      function openModal(){
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeModal(){
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      appLink.addEventListener('click', function(event){
+        if(!isMobileLike()) return;
+        event.preventDefault();
+        openModal();
+      });
+
+      closeTriggers.forEach(function(node){
+        node.addEventListener('click', closeModal);
+      });
+
+      document.addEventListener('keydown', function(event){
+        if(event.key === 'Escape'){
+          closeModal();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
