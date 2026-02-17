@@ -23,6 +23,9 @@
   --topBarRadius: 0px;
   --topBarPadX: 18px;
   --topBarLogoSize: 42px;
+  --topBarBrandSize: 17px;
+  --topBarBrandWeight: 500;
+  --topBarBrandColor: #669eac;
   --topBarMenuTap: 36px;
   --topBarMenuSize: 20px;
   /* Align header action icons with menu card thumbnails */
@@ -81,7 +84,17 @@ html[data-contrast="dark"]{
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 10px;
+}
+
+.themePillBrand{
+  color: var(--topBarBrandColor, #669eac);
+  font-size: var(--topBarBrandSize, 17px);
+  font-weight: var(--topBarBrandWeight, 500);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0.92;
 }
 
 .themePillMenuIcon{
@@ -141,6 +154,8 @@ body[data-brand-icon="1"] .setCoverIcon{
     --topBarRadius: 0px;
     --topBarPadX: 12px;
     --topBarLogoSize: 36px;
+    --topBarBrandSize: 16px;
+    --topBarBrandWeight: 500;
     --topBarMenuTap: 34px;
     --topBarMenuSize: 18px;
   }
@@ -424,6 +439,10 @@ html[data-contrast="dark"] .toolBtn{
 
 html[data-contrast="dark"] .themePillMenuIcon{
   color: rgba(245,250,255,0.72);
+}
+
+html[data-contrast="dark"] .themePillBrand{
+  color: rgba(150, 202, 216, 0.92);
 }
 
 html[data-contrast="dark"] .menuHeaderTools{
