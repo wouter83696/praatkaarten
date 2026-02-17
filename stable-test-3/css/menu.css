@@ -22,7 +22,7 @@
   --topBarHeight: 64px;
   --topBarRadius: 0px;
   --topBarPadX: 18px;
-  --topBarLogoSize: 40px;
+  --topBarLogoSize: 42px;
   --topBarMenuTap: 36px;
   --topBarMenuSize: 20px;
   /* Align header action icons with menu card thumbnails */
@@ -130,7 +130,7 @@ body[data-brand-icon="1"] .setCoverWrap{
 }
 
 body[data-brand-icon="1"] .setCoverIcon{
-  transform: scale(1.14);
+  transform: scale(1);
   transform-origin: center;
 }
 
@@ -140,7 +140,7 @@ body[data-brand-icon="1"] .setCoverIcon{
     --topBarHeight: 56px;
     --topBarRadius: 0px;
     --topBarPadX: 12px;
-    --topBarLogoSize: 34px;
+    --topBarLogoSize: 36px;
     --topBarMenuTap: 34px;
     --topBarMenuSize: 18px;
   }
@@ -235,7 +235,7 @@ body[data-brand-icon="1"] .setCoverIcon{
   align-items:center;
   justify-content: flex-start;
   /* gelijkere top/bottom padding zodat titel en tool-pill optisch netjes uitlijnen */
-  padding: 10px var(--menuRowPadX) 10px calc(var(--menuRightAlign) - var(--menuToolsPadX));
+  padding: 10px calc(var(--menuRightAlign) - var(--menuToolsPadX)) 10px var(--menuRowPadX);
   gap: 10px;
 
   /* geen afscheidingslijn of gradient */
@@ -264,11 +264,10 @@ body[data-brand-icon="1"] .setCoverIcon{
   /* 1 container zoals in je screenshot (subtiele "pill" met 3 knoppen erin) */
   display:flex;
   align-items:center;
-  order: 1;
-  margin-left: 0;
+  margin-left: auto;
   /* compacter + subtieler */
   gap: 10px;
-  margin-right: auto;
+  margin-right: 0;
   padding: 1px var(--menuToolsPadX);
   border-radius: 999px;
   /* Subtiel pill-vlak dat wegvalt in het menu */
@@ -321,7 +320,6 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 }
 
 .menuHeader{
-  order: 2;
   padding: 0;
   font-weight: 500;
   color: var(--menuHeaderText);
@@ -330,8 +328,8 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   height: 30px;
   display: flex;
   align-items: center;
-  margin-left: auto;
-  text-align: right;
+  margin-left: 0;
+  text-align: left;
   margin-top: 2px;
 }
 
@@ -341,7 +339,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 }
 
 .menuItem{
-  text-align:right;
+  text-align:left;
   padding: 10px var(--menuRowPadX);
   border: 0;
   background: transparent;
@@ -358,16 +356,14 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 .menuItem:active{ background: rgba(0,0,0,0.03); }
 
 .miLabel{
-  order: 2;
   flex: 1 1 auto;
-  text-align: right;
+  text-align: left;
 }
 .miThumbRight{
-  order: 1;
   flex: 0 0 auto;
   display:flex;
   align-items:center;
-  margin-left: 0;
+  margin-left: auto;
   margin-right: var(--menuThumbOffset);
 }
 
@@ -385,7 +381,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 .menuLink{
   display:block;
   width:100%;
-  text-align:right;
+  text-align:left;
   padding: 10px 12px;
   border:0;
   background: transparent;
