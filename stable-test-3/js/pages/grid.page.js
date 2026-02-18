@@ -35,6 +35,34 @@
   var menuApi = null;
   if(PK.createMenu){
     menuApi = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
+  }else if(menuEl){
+    function openMenuFallback(){
+      menuEl.hidden = false;
+      if(overlay) overlay.hidden = false;
+      if(pillBtn && pillBtn.setAttribute) pillBtn.setAttribute('aria-expanded', 'true');
+    }
+    function closeMenuFallback(){
+      menuEl.hidden = true;
+      if(overlay) overlay.hidden = true;
+      if(pillBtn && pillBtn.setAttribute) pillBtn.setAttribute('aria-expanded', 'false');
+    }
+    function toggleMenuFallback(){
+      if(menuEl.hidden) openMenuFallback(); else closeMenuFallback();
+    }
+    if(pillBtn && !pillBtn.__pkMenuFallbackBound){
+      pillBtn.__pkMenuFallbackBound = true;
+      pillBtn.addEventListener('click', toggleMenuFallback);
+    }
+    if(overlay && !overlay.__pkMenuFallbackBound){
+      overlay.__pkMenuFallbackBound = true;
+      overlay.addEventListener('click', closeMenuFallback);
+    }
+    menuApi = {
+      open: openMenuFallback,
+      close: closeMenuFallback,
+      toggle: toggleMenuFallback,
+      isOpen: function(){ return !menuEl.hidden; }
+    };
   }
 
   // Main-index kaartpalet (referentie uit ontwerp-SVG):

@@ -209,6 +209,257 @@
     return !!(car && car.children && car.children.length);
   }
 
+  function parseInlineQuestions(){
+    try{
+      var el = d.getElementById('questions-json');
+      if(!el || !el.textContent) return null;
+      var txt = String(el.textContent || '');
+      if(!txt.replace(/\s+/g,'').length) return null;
+      return JSON.parse(txt);
+    }catch(_e){ return null; }
+  }
+
+  function getQueryParam(name){
+    var q = (w.location && w.location.search) ? String(w.location.search) : '';
+    if(q.charAt(0) === '?') q = q.slice(1);
+    var parts = q ? q.split('&') : [];
+    var i;
+    for(i = 0; i < parts.length; i++){
+      var kv = parts[i].split('=');
+      var k = decodeURIComponent(kv[0] || '');
+      if(k === name) return decodeURIComponent(kv[1] || '');
+    }
+    return '';
+  }
+
+  function trim(v){
+    return String(v == null ? '' : v).replace(/^\s+|\s+$/g,'');
+  }
+
+  function prettyName(setId){
+    var s = trim(setId || '').toLowerCase();
+    if(s === 'samenwerken') return 'Samen onderzoeken';
+    if(!s) return 'Samen onderzoeken';
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function loadJson(url){
+    if(!w.fetch) return Promise.reject(new Error('fetch not available'));
+    return w.fetch(url, { cache: 'no-store' }).then(function(r){
+      if(!r || !r.ok) throw new Error('HTTP ' + (r ? r.status : '0') + ' ' + url);
+      return r.json();
+    });
+  }
+
+  function normalizeQuestionEntry(entry){
+    if(entry == null) return { q: '', back: '' };
+    var t = typeof entry;
+    if(t === 'string' || t === 'number') return { q: String(entry), back: '' };
+    if(t === 'object'){
+      var q = entry.voorkant || entry.q || entry.front || entry.vraag || entry.text || '';
+      var back = entry.achterkant || entry.back || entry.backText || entry.achter || '';
+      return { q: String(q || ''), back: String(back || '') };
+    }
+    return { q: String(entry), back: '' };
+  }
+
+  function openMenuFallback(){
+    var menu = d.getElementById('themeMenu');
+    var overlay = d.getElementById('themeMenuOverlay');
+    var pill = d.getElementById('themePill');
+    if(menu) menu.hidden = false;
+    if(overlay) overlay.hidden = false;
+    if(pill) pill.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMenuFallback(){
+    var menu = d.getElementById('themeMenu');
+    var overlay = d.getElementById('themeMenuOverlay');
+    var pill = d.getElementById('themePill');
+    if(menu) menu.hidden = true;
+    if(overlay) overlay.hidden = true;
+    if(pill) pill.setAttribute('aria-expanded', 'false');
+  }
+
+  function wireMenuFallback(themeKeys, themeLabels, firstIndexByTheme){
+    var menuList = d.getElementById('menuList');
+    var menuTitle = d.getElementById('menuSetTitle');
+    var pillText = d.getElementById('themePillText');
+    var pillBtn = d.getElementById('themePill');
+    var overlay = d.getElementById('themeMenuOverlay');
+    var naarOverzicht = d.getElementById('naarOverzicht');
+    var setId = trim(getQueryParam('set') || getQueryParam('s') || 'samenwerken');
+
+    if(menuTitle) menuTitle.textContent = prettyName(setId);
+    if(pillText) pillText.textContent = prettyName(setId);
+
+    if(menuList){
+      menuList.innerHTML = '';
+      var i;
+      for(i = 0; i < themeKeys.length; i++){
+        var key = themeKeys[i];
+        var btn = d.createElement('button');
+        btn.className = 'menuItem themeItem';
+        btn.type = 'button';
+        btn.setAttribute('data-set', key);
+
+        var lab = d.createElement('span');
+        lab.className = 'miLabel';
+        lab.textContent = themeLabels[key] || key;
+        btn.appendChild(lab);
+        menuList.appendChild(btn);
+      }
+      if(!menuList.__pkFallbackBound){
+        menuList.__pkFallbackBound = true;
+        menuList.addEventListener('click', function(e){
+          var btn = e.target && (e.target.closest ? e.target.closest('button[data-set]') : null);
+          if(!btn) return;
+          var key = trim(btn.getAttribute('data-set') || '');
+          var idx = firstIndexByTheme[key];
+          var car = d.getElementById('mainCarousel');
+          if(car && typeof idx === 'number' && idx >= 0){
+            var slide = car.children && car.children[idx] ? car.children[idx] : null;
+            if(slide && slide.offsetLeft >= 0){
+              car.scrollLeft = slide.offsetLeft;
+            }
+          }
+          closeMenuFallback();
+        });
+      }
+    }
+
+    if(pillBtn && !pillBtn.__pkFallbackBound){
+      pillBtn.__pkFallbackBound = true;
+      pillBtn.addEventListener('click', function(){
+        var expanded = pillBtn.getAttribute('aria-expanded') === 'true';
+        if(expanded) closeMenuFallback(); else openMenuFallback();
+      });
+    }
+    if(overlay && !overlay.__pkFallbackBound){
+      overlay.__pkFallbackBound = true;
+      overlay.addEventListener('click', closeMenuFallback);
+    }
+    if(naarOverzicht && !naarOverzicht.__pkFallbackBound){
+      naarOverzicht.__pkFallbackBound = true;
+      naarOverzicht.addEventListener('click', function(){
+        closeMenuFallback();
+        w.location.href = '../index.html';
+      });
+    }
+  }
+
+  function renderCardsFallback(setId, themes, themeLabels, cardByTheme, qObj){
+    var car = d.getElementById('mainCarousel');
+    if(!car) return { rendered: 0, firstIndexByTheme: {} };
+    car.innerHTML = '';
+
+    var items = [];
+    var firstIndexByTheme = {};
+    var i, j;
+    for(i = 0; i < themes.length; i++){
+      var theme = themes[i];
+      var arr = (qObj && qObj[theme] && qObj[theme].length) ? qObj[theme] : [];
+      if(typeof firstIndexByTheme[theme] !== 'number') firstIndexByTheme[theme] = items.length;
+      for(j = 0; j < arr.length; j++){
+        var norm = normalizeQuestionEntry(arr[j]);
+        items.push({
+          theme: theme,
+          label: themeLabels[theme] || theme,
+          q: norm.q,
+          bg: '../sets/' + encodeURIComponent(setId) + '/cards_rect/' + (cardByTheme[theme] || (theme + '.svg'))
+        });
+      }
+    }
+
+    for(i = 0; i < items.length; i++){
+      var it = items[i];
+      var slide = d.createElement('div');
+      slide.className = 'cardsSlide';
+      slide.setAttribute('data-theme', it.theme);
+
+      var inner = d.createElement('div');
+      inner.className = 'cardsSlideInner';
+
+      var card = d.createElement('div');
+      card.className = 'cardsSlideCard';
+
+      var flip = d.createElement('div');
+      flip.className = 'pkFlipInner';
+
+      var front = d.createElement('div');
+      front.className = 'pkFace pkFront';
+
+      var img = d.createElement('img');
+      img.className = 'bg';
+      img.src = withV(it.bg);
+      img.alt = '';
+
+      var q = d.createElement('div');
+      q.className = 'cardsSlideQ';
+      var qs = d.createElement('span');
+      qs.className = 'cardsSlideQText';
+      qs.textContent = it.q || '';
+      q.appendChild(qs);
+
+      front.appendChild(img);
+      front.appendChild(q);
+      flip.appendChild(front);
+      card.appendChild(flip);
+      inner.appendChild(card);
+      slide.appendChild(inner);
+      car.appendChild(slide);
+    }
+
+    return { rendered: items.length, firstIndexByTheme: firstIndexByTheme };
+  }
+
+  function bootMinimalCards(){
+    var setId = trim(getQueryParam('set') || getQueryParam('s') || 'samenwerken');
+    if(!setId) setId = 'samenwerken';
+    var setBase = '../sets/' + encodeURIComponent(setId);
+
+    var metaReq = loadJson(withV(setBase + '/meta.json')).catch(function(){ return null; });
+    var qReq = loadJson(withV(setBase + '/questions.json')).catch(function(){ return null; });
+
+    return Promise.all([metaReq, qReq]).then(function(res){
+      var meta = res[0] || {};
+      var qObj = res[1] || parseInlineQuestions() || null;
+      if(!qObj || typeof qObj !== 'object') return false;
+
+      var themeKeys = [];
+      var themeLabels = {};
+      var cardByTheme = {};
+      var i;
+
+      if(meta && Array.isArray(meta.themes) && meta.themes.length){
+        for(i = 0; i < meta.themes.length; i++){
+          var th = meta.themes[i] || {};
+          var key = trim(th.key || '');
+          if(!key) continue;
+          themeKeys.push(key);
+          themeLabels[key] = trim(th.label || key) || key;
+          cardByTheme[key] = trim(th.card || (key + '.svg')) || (key + '.svg');
+        }
+      }else{
+        for(var k in qObj){
+          if(!Object.prototype.hasOwnProperty.call(qObj, k)) continue;
+          if(k === '_uitleg') continue;
+          themeKeys.push(k);
+          themeLabels[k] = prettyName(k);
+          cardByTheme[k] = k + '.svg';
+        }
+      }
+
+      if(!themeKeys.length) return false;
+      var out = renderCardsFallback(setId, themeKeys, themeLabels, cardByTheme, qObj);
+      if(!out || !out.rendered) return false;
+      wireMenuFallback(themeKeys, themeLabels, out.firstIndexByTheme || {});
+      return true;
+    }).catch(function(){
+      return false;
+    });
+  }
+
   function showInitError(failed){
     if(hasCards()) return;
     var car = d.getElementById('mainCarousel');
@@ -295,7 +546,10 @@
             }
           }catch(_eInit){}
           w.setTimeout(function(){
-            if(!hasCards()) showInitError(failed);
+            if(hasCards()) return;
+            bootMinimalCards().then(function(ok){
+              if(!ok && !hasCards()) showInitError(failed);
+            });
           }, 520);
         });
       }, 260);
@@ -315,7 +569,10 @@
   }, 1200);
 
   w.setTimeout(function(){
-    if(!hasCards()) showInitError([]);
+    if(hasCards()) return;
+    bootMinimalCards().then(function(ok){
+      if(!ok && !hasCards()) showInitError([]);
+    });
   }, 3400);
 })();
 </script>

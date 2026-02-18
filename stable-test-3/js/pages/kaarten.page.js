@@ -6,6 +6,57 @@
   if(!PK.pages.initKaarten){
     PK.pages.initKaarten = function(){ /* kaarten pagina init gebeurt in dit bestand */ };
   }
+  // Hard fallback helpers: als query/net helpers ontbreken door een onvolledige upload,
+  // mag de kaartenpagina niet crashen.
+  if(typeof PK.getQueryParam !== 'function'){
+    PK.getQueryParam = function(name){
+      var s = (w.location && w.location.search) ? String(w.location.search) : '';
+      if(s.charAt(0) === '?') s = s.substring(1);
+      var parts = s ? s.split('&') : [];
+      var i;
+      for(i = 0; i < parts.length; i++){
+        var kv = parts[i].split('=');
+        if(decodeURIComponent(kv[0] || '') === name){
+          return decodeURIComponent(kv[1] || '');
+        }
+      }
+      return '';
+    };
+  }
+  if(typeof PK.getActiveSet !== 'function'){
+    PK.getActiveSet = function(){
+      var s = '';
+      try{
+        s = (PK.state && PK.state.activeSet) ? String(PK.state.activeSet) : '';
+      }catch(_eS){ s = ''; }
+      s = String(s || '').replace(/^\s+|\s+$/g,'');
+      if(s) return s;
+      s = String(PK.getQueryParam('set') || PK.getQueryParam('s') || '').replace(/^\s+|\s+$/g,'');
+      return s || 'samenwerken';
+    };
+  }
+  if(typeof PK.prettyName !== 'function'){
+    PK.prettyName = function(setId){
+      var s = String(setId || '').toLowerCase();
+      if(s === 'samenwerken') return 'Samen onderzoeken';
+      if(!s) return 'Samen onderzoeken';
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    };
+  }
+  if(typeof PK.getText !== 'function'){
+    PK.getText = function(url){
+      if(!w.fetch) return Promise.reject(new Error('fetch unavailable'));
+      return w.fetch(url, { cache: 'no-store' }).then(function(r){
+        if(!r || !r.ok) throw new Error('HTTP ' + (r ? r.status : '0') + ' ' + url);
+        return r.text();
+      });
+    };
+  }
+  if(typeof PK.loadJson !== 'function'){
+    PK.loadJson = function(url){
+      return PK.getText(url).then(function(t){ return JSON.parse(t); });
+    };
+  }
   var DEBUG_BUILD = '';
 
   // Desktop/iPad landing: app niet initialiseren
