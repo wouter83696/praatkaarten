@@ -11,16 +11,16 @@
 
   <style>
     :root{
-      --page-bg:#ffffff;
+      --page-bg:#fcfcfc;
       --ink:#211217;
-      --mint:#9cd7d0;
-      --mint-deep:#93cfc8;
-      --mint-line:rgba(255,255,255,.38);
+      --mint:#b8dfdc;
+      --mint-deep:#a8d6d2;
+      --mint-line:rgba(148,198,194,.46);
       --panel:#ffffff;
       --panel-line:rgba(33,18,23,.09);
-      --blob:rgba(255,255,255,.24);
-      --blob-soft:rgba(255,255,255,.15);
-      --shadow:0 30px 70px rgba(17,38,36,.17);
+      --blob:rgba(219,242,238,.46);
+      --blob-soft:rgba(211,237,233,.34);
+      --shadow:0 14px 32px rgba(41,90,86,.12);
     }
 
     *{ box-sizing:border-box; }
@@ -97,7 +97,7 @@
       border-radius:32px;
       overflow:hidden;
       border:1px solid var(--mint-line);
-      background:linear-gradient(180deg,var(--mint) 0%,var(--mint-deep) 100%);
+      background:linear-gradient(90deg,#acd9d5 0%, #9dceca 72%, #b8e2dd 100%);
       box-shadow:var(--shadow);
       padding:clamp(18px,2.5vw,34px);
       display:flex;
@@ -114,21 +114,21 @@
     }
 
     .mint-field::before{
-      width:88%;
-      height:135%;
-      left:-26%;
-      bottom:-72%;
-      background:rgba(255,255,255,.16);
-      animation: swellLeft 24s ease-in-out infinite alternate;
+      width:74%;
+      height:176%;
+      left:-12%;
+      bottom:-92%;
+      background:rgba(217,239,235,.36);
+      animation: swellLeft 20s ease-in-out infinite alternate;
     }
 
     .mint-field::after{
-      width:46%;
-      height:88%;
-      right:-14%;
-      top:-30%;
-      background:radial-gradient(circle at 42% 58%, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 70%);
-      animation: haloFloat 20s ease-in-out infinite alternate;
+      width:58%;
+      height:42%;
+      right:-20%;
+      top:48%;
+      background:rgba(205,233,229,.33);
+      animation: haloFloat 17s ease-in-out infinite alternate;
     }
 
     .blob{
@@ -136,8 +136,8 @@
       z-index:1;
       border-radius:999px;
       pointer-events:none;
-      background:linear-gradient(145deg,var(--blob),rgba(255,255,255,.05));
-      border:1px solid rgba(255,255,255,.22);
+      background:linear-gradient(145deg,var(--blob),rgba(255,255,255,.08));
+      border:1px solid rgba(227,244,241,.55);
       backdrop-filter:blur(.8px);
       -webkit-backdrop-filter:blur(.8px);
       transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotate(var(--rot,0deg)) scale(var(--scale,1));
@@ -145,25 +145,27 @@
     }
 
     .blob.one{
-      width:250px;
-      height:168px;
-      left:24%;
-      top:12%;
+      width:182px;
+      height:128px;
+      left:45%;
+      top:48%;
     }
 
     .blob.two{
-      width:148px;
-      height:118px;
-      right:35%;
-      bottom:13%;
+      width:132px;
+      height:102px;
+      right:15%;
+      bottom:12%;
     }
 
     .blob.three{
-      width:126px;
-      height:98px;
-      right:9%;
-      top:56%;
-      background:linear-gradient(145deg,var(--blob-soft),rgba(255,255,255,.05));
+      width:108px;
+      height:82px;
+      right:33%;
+      bottom:6%;
+      top:auto;
+      background:linear-gradient(145deg,var(--blob-soft),rgba(255,255,255,.08));
+      opacity:.86;
     }
 
     .panel{
@@ -222,8 +224,8 @@
       bottom:-28px;
       height:46px;
       border-radius:999px;
-      background:radial-gradient(ellipse at center, rgba(11,19,30,.34) 0%, rgba(11,19,30,0) 72%);
-      filter:blur(2px);
+      background:radial-gradient(ellipse at center, rgba(56,88,92,.32) 0%, rgba(56,88,92,0) 74%);
+      filter:blur(4px);
       z-index:0;
     }
 
@@ -498,21 +500,22 @@
       }
 
       .blob.one{
-        left:56%;
-        top:5%;
-        width:196px;
-        height:136px;
+        left:50%;
+        top:52%;
+        width:156px;
+        height:108px;
       }
 
       .blob.two{
         right:auto;
-        left:9%;
+        left:8%;
         bottom:14%;
       }
 
       .blob.three{
-        right:6%;
-        top:50%;
+        right:16%;
+        top:auto;
+        bottom:7%;
       }
     }
 
@@ -630,9 +633,9 @@
       if(!blobs.length) return;
 
       var seed = [
-        { ax: 16, ay: 11, rot: 3.4, scale: 0.026, speed: 0.00022, phase: 0.2 },
-        { ax: 12, ay: 9,  rot: 4.0, scale: 0.030, speed: 0.00028, phase: 1.8 },
-        { ax: 10, ay: 8,  rot: 3.1, scale: 0.024, speed: 0.00032, phase: 3.1 }
+        { ax: 30, ay: 18, rot: 6.2, scale: 0.060, speed: 0.00044, phase: 0.2 },
+        { ax: 24, ay: 16, rot: 5.1, scale: 0.050, speed: 0.00036, phase: 1.8 },
+        { ax: 18, ay: 13, rot: 4.0, scale: 0.042, speed: 0.00048, phase: 3.1 }
       ];
 
       function frame(ts){
