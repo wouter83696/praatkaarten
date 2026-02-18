@@ -11,10 +11,10 @@
 
   <style>
     :root{
-      --page-bg:#f5f6f8;
+      --page-bg:#ffffff;
       --ink:#211217;
-      --mint:#9dd6d0;
-      --mint-deep:#93cec7;
+      --mint:#9cd7d0;
+      --mint-deep:#93cfc8;
       --mint-line:rgba(255,255,255,.38);
       --panel:#ffffff;
       --panel-line:rgba(33,18,23,.09);
@@ -54,7 +54,7 @@
     }
 
     .intro{
-      min-height:clamp(250px,44vh,500px);
+      min-height:clamp(300px,52vh,620px);
       padding-top:clamp(10px,2vh,30px);
       display:flex;
       flex-direction:column;
@@ -65,25 +65,26 @@
     .intro h1{
       margin:0;
       font-family:"DM Sans","IBM Plex Sans",system-ui,sans-serif;
-      font-size:clamp(60px,11vw,186px);
-      line-height:.84;
-      letter-spacing:.005em;
-      font-weight:700;
+      font-size:clamp(58px,10.2vw,174px);
+      line-height:.9;
+      letter-spacing:.01em;
+      font-weight:600;
       color:var(--ink);
     }
 
     .intro-sub{
       margin:0;
       font-family:"IBM Plex Sans",system-ui,sans-serif;
-      font-size:clamp(24px,2.9vw,40px);
-      line-height:1.06;
-      letter-spacing:.01em;
-      color:rgba(33,18,23,.92);
+      font-size:clamp(26px,3.1vw,46px);
+      line-height:1.1;
+      letter-spacing:0;
+      font-weight:400;
+      color:rgba(33,18,23,.88);
     }
 
     .hero-zone{
       position:relative;
-      min-height:clamp(340px,44vh,560px);
+      min-height:clamp(320px,40vh,520px);
       padding-bottom:clamp(8px,1.8vh,18px);
     }
 
@@ -92,7 +93,7 @@
       left:0;
       right:0;
       bottom:0;
-      height:clamp(320px,46vh,500px);
+      height:clamp(300px,40vh,460px);
       border-radius:32px;
       overflow:hidden;
       border:1px solid var(--mint-line);
@@ -139,6 +140,8 @@
       border:1px solid rgba(255,255,255,.22);
       backdrop-filter:blur(.8px);
       -webkit-backdrop-filter:blur(.8px);
+      transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotate(var(--rot,0deg)) scale(var(--scale,1));
+      will-change:transform;
     }
 
     .blob.one{
@@ -146,7 +149,6 @@
       height:168px;
       left:24%;
       top:12%;
-      animation: blobOne 17s ease-in-out infinite;
     }
 
     .blob.two{
@@ -154,7 +156,6 @@
       height:118px;
       right:35%;
       bottom:13%;
-      animation: blobTwo 21s ease-in-out infinite;
     }
 
     .blob.three{
@@ -163,7 +164,6 @@
       right:9%;
       top:56%;
       background:linear-gradient(145deg,var(--blob-soft),rgba(255,255,255,.05));
-      animation: blobThree 19s ease-in-out infinite;
     }
 
     .panel{
@@ -431,24 +431,6 @@
       background:rgba(26,38,39,.54);
     }
 
-    @keyframes blobOne{
-      0%{ transform:translate3d(0,0,0) scale(1) rotate(-10deg); }
-      50%{ transform:translate3d(20px,-14px,0) scale(1.03) rotate(-5deg); }
-      100%{ transform:translate3d(-12px,10px,0) scale(.98) rotate(-12deg); }
-    }
-
-    @keyframes blobTwo{
-      0%{ transform:translate3d(0,0,0) scale(1) rotate(14deg); }
-      50%{ transform:translate3d(-18px,-12px,0) scale(1.05) rotate(18deg); }
-      100%{ transform:translate3d(11px,8px,0) scale(.96) rotate(10deg); }
-    }
-
-    @keyframes blobThree{
-      0%{ transform:translate3d(0,0,0) scale(1) rotate(-8deg); }
-      50%{ transform:translate3d(10px,-15px,0) scale(1.04) rotate(-3deg); }
-      100%{ transform:translate3d(-14px,6px,0) scale(.98) rotate(-12deg); }
-    }
-
     @keyframes swellLeft{
       0%{ transform:translate3d(0,0,0) scale(1); }
       100%{ transform:translate3d(26px,-14px,0) scale(1.04); }
@@ -642,5 +624,36 @@
       </aside>
     </section>
   </main>
+  <script>
+    (function(){
+      var blobs = Array.prototype.slice.call(document.querySelectorAll('.mint-field .blob'));
+      if(!blobs.length) return;
+
+      var seed = [
+        { ax: 16, ay: 11, rot: 3.4, scale: 0.026, speed: 0.00022, phase: 0.2 },
+        { ax: 12, ay: 9,  rot: 4.0, scale: 0.030, speed: 0.00028, phase: 1.8 },
+        { ax: 10, ay: 8,  rot: 3.1, scale: 0.024, speed: 0.00032, phase: 3.1 }
+      ];
+
+      function frame(ts){
+        for(var i=0;i<blobs.length;i++){
+          var cfg = seed[i % seed.length];
+          var t = ts * cfg.speed + cfg.phase;
+          var x = Math.sin(t) * cfg.ax;
+          var y = Math.cos(t * 0.9) * cfg.ay;
+          var r = Math.sin(t * 0.8) * cfg.rot;
+          var s = 1 + Math.sin(t * 1.15) * cfg.scale;
+          var el = blobs[i];
+          el.style.setProperty('--tx', x.toFixed(2) + 'px');
+          el.style.setProperty('--ty', y.toFixed(2) + 'px');
+          el.style.setProperty('--rot', r.toFixed(2) + 'deg');
+          el.style.setProperty('--scale', s.toFixed(3));
+        }
+        window.requestAnimationFrame(frame);
+      }
+
+      window.requestAnimationFrame(frame);
+    })();
+  </script>
 </body>
 </html>
