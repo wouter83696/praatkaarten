@@ -5,599 +5,218 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Uitgesproken</title>
 
-  <!-- IBM Plex Sans + DM Sans (Google fallback laadt automatisch) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-:root{
-      --bg: #FFFFFF;
-      --title-rgb: 109,175,189;
-      --title: #6DAFBD;
-      --sub: rgba(var(--title-rgb), .82);
-      --glass: rgba(250, 254, 253, .72);
-      --stroke: rgba(109,175,189,.28);
-      --shadow: 0 16px 40px rgba(47, 78, 86, .13);
-      --shadow-soft: 0 10px 26px rgba(47, 78, 86, .13);
-      --modal-backdrop: rgba(15, 35, 32, .40);
-      --modal-surface: rgba(242, 250, 248, .97);
+    :root{
+      --mint: #7fcfc9;
+      --mint2:#81becc;
+      --bgTop: #fbfdfc;
+      --bgBottom:#e7f5f2;
+      --panel: rgba(255,255,255,.64);
+      --stroke: rgba(109,175,189,.18);
+      --shadow: 0 24px 80px rgba(0,0,0,.08);
+      --shadow2: 0 30px 90px rgba(0,0,0,.18);
     }
 
     *{ box-sizing:border-box; }
-    html,body{
-      width:100%;
-      height:100%;
-      min-height:100%;
-      margin:0;
-      overflow:hidden;
-      overflow:clip;
-    }
+    html,body{ height:100%; }
     body{
-      width:100%;
-      min-height:100vh;
-      min-height:100dvh;
-      background: var(--bg);
-      color: var(--title);
-      font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      position: relative;
-      overflow: hidden;
-    }
-    @supports (height: 100svh){
-      body{ min-height:100svh; }
+      margin:0;
+      font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:#0f1b1a;
+
+      /* Option 1: top subtle white, bottom subtle mint */
+      background:
+        linear-gradient(to bottom, var(--bgTop) 0%, var(--bgTop) 58%, var(--bgBottom) 100%);
+      overflow-x:hidden;
     }
 
-    /* Achtergrond in vaste viewportlaag, zonder layout-impact */
-    #indexBg{
+    /* soft corner washes (very subtle, not blobs) */
+    body:before, body:after{
+      content:"";
       position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      z-index:0;
+      inset:auto;
+      width:720px; height:720px;
+      border-radius:50%;
+      filter: blur(0px);
+      opacity:.22;
       pointer-events:none;
-      display:block;
+      z-index:-1;
     }
-    .indexBgSvg{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      z-index:0;
-      pointer-events:none;
-      display:block;
+    body:before{
+      left:-260px; top:-240px;
+      background: radial-gradient(circle at 30% 30%, rgba(127,207,201,.55), transparent 62%);
     }
-    @supports (height: 100dvh){
-      #indexBg,
-      .indexBgSvg{ height:100dvh; }
-    }
-    @supports (height: 100svh){
-      #indexBg,
-      .indexBgSvg{ height:100svh; }
+    body:after{
+      right:-300px; bottom:-280px;
+      background: radial-gradient(circle at 70% 70%, rgba(129,190,204,.45), transparent 62%);
     }
 
     .wrap{
-      position:fixed;
-      inset:0;
-      z-index:2;
-      width:100%;
       height:100%;
-      min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: 8px 16px 10px;
-      text-align:center;
-      overflow:hidden;
-    }
-    @supports (height: 100dvh){
-      .wrap{ min-height:100dvh; }
-    }
-    @supports (height: 100svh){
-      .wrap{ min-height:100svh; }
+      padding: clamp(18px, 4vw, 56px);
     }
 
     .hero{
-      width: min(1140px, 94vw);
+      width:min(1280px, 94vw);
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 56px;
-      transform: translateY(-6px);
-      text-align:left;
+      gap: clamp(28px, 4vw, 72px);
     }
 
+    /* Left area: icon buttons only */
     .cta{
       display:flex;
-      align-items:center;
+      flex-direction:column;
+      gap:16px;
+      align-items:flex-start;
       justify-content:center;
-      width: min(520px, 100%);
+      padding-left: clamp(0px, 1vw, 6px);
     }
 
-    /* iPhone mockup (voor live iframe) */
-    .phone{
-      width: min(380px, 42vw);
-      aspect-ratio: 9 / 19.5;
-      border-radius: 46px;
-      background: #0E1012;
-      padding: 14px;
-      box-shadow: 0 34px 90px rgba(0,0,0,.18);
-      transform: perspective(1200px) rotateY(-10deg);
-      transform-origin: center;
+    .iconRow{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      padding: 14px 16px;
+      background: var(--panel);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
-    .phone__screen{
-      width:100%;
-      height:100%;
-      border-radius: 34px;
-      overflow:hidden;
-      background:#fff;
+
+    .iconBtn{
+      width:44px; height:44px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.85);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 10px 22px rgba(0,0,0,.08);
+      cursor:pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+      user-select:none;
+    }
+    .iconBtn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 14px 26px rgba(0,0,0,.10);
+    }
+    .iconBtn:active{ transform: translateY(-1px) scale(.99); }
+
+    .iconBtn svg{
+      width:20px; height:20px;
+      opacity:.85;
+    }
+
+    /* Right area: phone */
+    .phone{
+      width: clamp(240px, 21vw, 310px); /* smaller, like your example */
+      aspect-ratio: 9 / 19.5;
+      border-radius: 44px;
+      background: #0E1012;
+      padding: 12px;
+      box-shadow: var(--shadow2);
+      transform: perspective(1400px) rotateY(-4deg) translateY(-18px);
+      transform-origin: center;
       position:relative;
     }
-    .phone__screen iframe{
-      width: 430px;
-      height: 932px;
-      border: 0;
-      transform: scale(.86);
-      transform-origin: top left;
+    .phone:after{
+      content:"";
+      position:absolute;
+      left: 14%;
+      right: 14%;
+      bottom: -26px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.18);
+      filter: blur(14px);
+      z-index:-1;
+    }
+
+    .screen{
+      width:100%;
+      height:100%;
+      border-radius: 32px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .screen img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
       display:block;
     }
 
-    .stores{
-      margin-top: 0;
-      display:flex;
-      gap:11px;
-      flex-wrap:nowrap;
-      justify-content:center;
+    /* Make the screenshot feel like it sits inside the glass */
+    .screen img{
+      transform: scale(1.02);
+      transform-origin: top center;
     }
 
-    .store{
-      display:inline-flex;
-      gap:9px;
-      align-items:center;
-      padding: 11px 16px;
-      min-height: 48px;
-      border-radius: 13px;
-      background: var(--glass);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      text-decoration:none;
-      color: rgba(56, 110, 122, .96);
-      opacity:.94;
-      transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease, background .15s ease;
-      user-select:none;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-    .store:hover{
-      transform: translateY(-2px);
-      opacity:1;
-      background: rgba(255,255,255,.84);
-      box-shadow: 0 12px 28px rgba(46, 92, 102, .18);
-    }
-    .store:active{ transform: translateY(0); }
-
-    .store small{
-      display:block;
-      font-size:12px;
-      line-height:1.1;
-      color: rgba(var(--title-rgb), .82);
-      font-weight:500;
-      letter-spacing:.01em;
-    }
-    .store strong{
-      display:block;
-      font-size:16px;
-      line-height:1.1;
-      font-weight:600;
-      letter-spacing:-0.01em;
-      color: rgba(58, 114, 126, .98);
-    }
-    .store.web small{
-      color: rgba(95, 158, 174, .82);
-    }
-
-    .ico{
-      width:22px;
-      height:22px;
-      opacity:.80;
-      flex: 0 0 auto;
-    }
-
-    .store.disabled{
-      opacity:.6;
-      filter: grayscale(1);
-      cursor: default;
-      pointer-events: none;
-      box-shadow: 0 7px 16px rgba(35, 50, 55, .08);
-    }
-    .store.disabled:hover{
-      transform:none;
-      opacity:.6;
-      background: var(--glass);
-      box-shadow: 0 7px 16px rgba(35, 50, 55, .08);
-    }
-    .store.web{
-      opacity: .95;
-      filter:none;
-      pointer-events: auto;
-    }
-    .store.mobile-app{
-      background: rgba(239, 249, 248, .98);
-      border-color: rgba(109,175,189,.32);
-      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
-      transition: none;
-    }
-    .store.mobile-app:hover{
-      transform:none;
-      opacity:.95;
-      background: rgba(239, 249, 248, .98);
-      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
-    }
-
-    .mobile-modal{
-      position: fixed;
-      inset: 0;
-      z-index: 15;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-    .mobile-modal.is-open{
-      display: flex;
-    }
-    .mobile-modal__backdrop{
-      position: absolute;
-      inset: 0;
-      background: var(--modal-backdrop);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-    }
-    .mobile-modal__card{
-      position: relative;
-      width: min(400px, 100%);
-      border-radius: 18px;
-      padding: 20px 18px 18px;
-      border: 1px solid rgba(44,131,122,.20);
-      background: var(--modal-surface);
-      box-shadow: 0 26px 60px rgba(19, 58, 53, .22);
-      text-align: left;
-    }
-    .mobile-modal__close{
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 34px;
-      height: 34px;
-      border: 0;
-      border-radius: 10px;
-      background: rgba(44,131,122,.10);
-      color: rgba(26, 91, 84, .95);
-      font-size: 21px;
-      line-height: 1;
-      cursor: pointer;
-    }
-    .mobile-modal__eyebrow{
-      margin: 0 0 4px;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: rgba(43, 118, 109, .72);
-      font-weight: 600;
-    }
-    .mobile-modal h2{
-      margin: 0 0 8px;
-      font-size: clamp(24px, 7vw, 30px);
-      line-height: 1.1;
-      color: var(--title);
-    }
-    .mobile-modal p{
-      margin: 0;
-      color: rgba(37, 97, 90, .82);
-      line-height: 1.4;
-    }
-    .mobile-modal__qr{
-      margin-top: 14px;
-      min-height: 148px;
-      border: 1.5px dashed rgba(44,131,122,.38);
-      border-radius: 14px;
-      background: rgba(255,255,255,.65);
-      display: grid;
-      place-items: center;
-      color: rgba(43, 118, 109, .76);
-      font-weight: 500;
-      text-align: center;
-      padding: 16px;
-    }
-    .mobile-modal__cta{
-      margin-top: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 44px;
-      border-radius: 12px;
-      font-weight: 600;
-      color: #0F4E48;
-      background: linear-gradient(180deg, #CBEEE8, #B4E2DA);
-      border: 1px solid rgba(44,131,122,.26);
-      font-family: inherit;
-      font-size: 15px;
-      cursor: pointer;
-    }
-
-    @media (max-height: 760px){
-      .wrap{ padding: 4px 14px 8px; }
-      .hero{ transform: translateY(-2px); }
-      .phone{ padding: 12px; border-radius: 44px; }
-      .phone__screen{ border-radius: 32px; }
-      .phone__screen iframe{ transform: scale(.84); }
-      .store{
-        padding: 10px 14px;
-        min-height: 44px;
-      }
-    }
-
-    @media (max-width: 960px){
+    @media (max-width: 980px){
       .hero{
-        flex-direction: column;
-        gap: 20px;
-        text-align:center;
+        flex-direction: column-reverse;
+        gap: 26px;
       }
-      .cta{ width: 100%; }
+      .cta{ align-items:center; }
       .phone{
-        width: min(360px, 92vw);
-        transform: none;
+        transform:none;
+        width: min(74vw, 340px);
       }
+      .wrap{ padding: 18px; }
     }
-
-    @media (max-width: 760px){
-      .stores{
-        flex-wrap: nowrap;
-        gap: 8px;
-        width: min(100%, 396px);
-      }
-      .store{
-        flex: 1 1 0;
-        min-width: 0;
-        justify-content: center;
-        gap: 6px;
-        padding: 9px 8px;
-        min-height: 44px;
-        border-radius: 12px;
-      }
-      .store span{
-        min-width: 0;
-      }
-      .store small{
-        font-size: clamp(9px, 2.6vw, 10.5px);
-      }
-      .store strong{
-        font-size: clamp(10.5px, 3.2vw, 13.5px);
-        white-space: nowrap;
-      }
-      .ico{
-        width: 18px;
-        height: 18px;
-      }
-    }
-
-
-/* ===== v10 Apple-strakker hero ===== */
-.hero{
-  max-width: 1280px;
-  width: min(92vw, 1280px);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: clamp(36px, 5vw, 88px);
-}
-.cta, .buttons, .store-buttons{
-  display:flex;
-  gap: 18px;
-  flex-wrap: nowrap;
-  align-items: center;
-}
-.phone, .device, .phone-mock{
-  width: clamp(320px, 26vw, 420px);
-  transform: perspective(1400px) rotateY(-6deg) translateY(-24px);
-  transform-origin: center;
-}
-.phone::before, .device::before{
-  content:'';
-  position:absolute;
-  inset:-12px;
-  border-radius: inherit;
-  pointer-events:none;
-}
-.screen img, .screenShot{
-  width: 100%;
-  height: auto;
-  display:block;
-}
-@media (max-width: 900px){
-  .hero{
-    flex-direction: column-reverse;
-    align-items: center;
-    gap: 28px;
-  }
-  .cta, .buttons, .store-buttons{
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .phone, .device, .phone-mock{
-    transform: none;
-    width: min(78vw, 420px);
-  }
-}
-
-
-/* ===== landing11: minder dynamische blobs, meer 'panel' zoals voorbeeld ===== */
-body{
-  background: radial-gradient(1200px 700px at 15% 20%, rgba(127,207,201,.14), transparent 60%),
-              radial-gradient(900px 600px at 85% 15%, rgba(129,190,204,.12), transparent 62%),
-              radial-gradient(1000px 700px at 80% 80%, rgba(127,207,201,.10), transparent 65%),
-              #F7FBFA;
-}
-.wrap{
-  width: min(1280px, 94vw);
-  margin: 0 auto;
-}
-.hero{
-  width: 100%;
-  background: rgba(127,207,201,.10);
-  border: 1px solid rgba(109,175,189,.18);
-  border-radius: 40px;
-  padding: clamp(28px, 5vw, 64px);
-  box-shadow: 0 26px 80px rgba(0,0,0,.06);
-  gap: clamp(28px, 4vw, 64px);
-  transform: translateY(-8px);
-}
-.cta{
-  align-self: center;
-}
-.stores{
-  display:flex;
-  flex-direction: row;
-  gap: 18px;
-  flex-wrap: nowrap;
-}
-.store{
-  transform: none !important;
-}
-.phone{
-  width: clamp(280px, 24vw, 340px);
-  transform: perspective(1400px) rotateY(-4deg) translateY(-22px);
-  box-shadow: 0 40px 110px rgba(0,0,0,.18);
-}
-@media (max-width: 900px){
-  .hero{
-    border-radius: 32px;
-    padding: 28px 18px;
-  }
-  .stores{
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .phone{
-    width: min(78vw, 360px);
-    transform: none;
-  }
-}
-
-</style>
+  </style>
 </head>
 
 <body>
-<main class="wrap">
-    <section class="hero">
-      <div class="cta" aria-label="App stores">
-        <!-- Store buttons (subtiel) -->
-        <div class="stores">
-        <a class="store disabled" href="#" aria-label="Download in de App Store">
-          <!-- Apple -->
-          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
-            <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
-          </svg>
-          <span>
-            <small>Binnenkort</small>
-            <strong>App Store</strong>
-          </span>
-        </a>
+  <main class="wrap">
+    <section class="hero" aria-label="Uitgesproken landing">
+      <div class="cta" aria-label="Download links">
+        <div class="iconRow" role="group" aria-label="Platforms">
+          <button class="iconBtn" type="button" aria-label="Binnenkort: App Store" title="Binnenkort: App Store">
+            <!-- Apple -->
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
+              <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
+            </svg>
+          </button>
 
-        <a class="store disabled" href="#" aria-label="Download op Google Play">
-          <!-- Google Play (correcte 'play' triangle) -->
-          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
-            <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
-            <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
-            <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
-          </svg>
-          <span>
-            <small>Binnenkort</small>
-            <strong>Google Play</strong>
-          </span>
-        </a>
+          <button class="iconBtn" type="button" aria-label="Binnenkort: Google Play" title="Binnenkort: Google Play">
+            <!-- Play -->
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
+              <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
+              <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
+              <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
+            </svg>
+          </button>
 
-        <a class="store web mobile-app" href="./app.html" aria-label="Open de web-app">
-          <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="6.2" y="1.9" width="11.6" height="20.2" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="10.2" y1="4.8" x2="13.8" y2="4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            <circle cx="12" cy="18.5" r="1.1" fill="currentColor"/>
-          </svg>
-          <span>
-            <small>Beta</small>
-            <strong>Web-app</strong>
-          </span>
-        </a>
+          <a class="iconBtn" href="./app.html" aria-label="Open beta web-app" title="Open beta web-app">
+            <!-- phone -->
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="6.2" y="1.9" width="11.6" height="20.2" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+              <line x1="10.2" y1="4.8" x2="13.8" y2="4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <circle cx="12" cy="18.5" r="1.1" fill="currentColor"/>
+            </svg>
+          </a>
         </div>
       </div>
 
-      <div class="phone" aria-label="Live preview">
-        <div class="phone__screen">
-          <img class="screenShot" src="app-screenshot-crop.png" alt="Uitgesproken web-app (screenshot)">
+      <div class="phone" aria-label="App preview">
+        <div class="screen">
+          <img src="app-screenshot.png" alt="Uitgesproken web-app screenshot">
         </div>
       </div>
-
-      
     </section>
   </main>
-
-  <div class="mobile-modal" id="mobileOnlyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mobileModalTitle">
-    <div class="mobile-modal__backdrop" data-modal-close></div>
-    <section class="mobile-modal__card">
-      <button class="mobile-modal__close" type="button" aria-label="Sluiten" data-modal-close>&times;</button>
-      <p class="mobile-modal__eyebrow">Alleen mobiel</p>
-      
-      <p>Je blijft op deze site. Hier kun je straks direct de app openen via een QR-code.</p>
-      <div class="mobile-modal__qr">Hier komt later je QR-code</div>
-      <button class="mobile-modal__cta" type="button" data-modal-close>Sluiten</button>
-    </section>
-  </div>
-
-  <!-- Stable background JS (overgenomen uit stable-test-3) -->
-  <script src="./js/core/net.js"></script>
-  <script src="./js/components/gridBackground.js?v=20260216"></script>
-  <script>
-    (function(){
-      var appLink = document.querySelector('.mobile-app');
-      var modal = document.getElementById('mobileOnlyModal');
-      if(!appLink || !modal) return;
-
-      var closeTriggers = modal.querySelectorAll('[data-modal-close]');
-      var isMobileQuery = window.matchMedia('(max-width: 900px), (pointer: coarse)');
-
-      function isMobileLike(){
-        return isMobileQuery.matches;
-      }
-
-      function openModal(){
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeModal(){
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-
-      appLink.addEventListener('click', function(event){
-        if(!isMobileLike()) return;
-        event.preventDefault();
-        openModal();
-      });
-
-      closeTriggers.forEach(function(node){
-        node.addEventListener('click', closeModal);
-      });
-
-      document.addEventListener('keydown', function(event){
-        if(event.key === 'Escape'){
-          closeModal();
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
