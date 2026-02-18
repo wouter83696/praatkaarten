@@ -826,8 +826,9 @@
     var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.26;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : 0.28;
     var shapeEnabled = bg && typeof bg.shapeEnabled === 'boolean' ? bg.shapeEnabled : false;
-    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
-    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
+    // Default: spreid blobs over het hele scherm (geen clusteren in één hoek).
+    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : 'grid';
+    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.06;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 1.9;
     // Geen vaste light-alpha als default; daardoor ontstaan natuurlijke verschillen.
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : undefined;

@@ -24,7 +24,7 @@
   --topBarPadX: 18px;
   --topBarLogoSize: 42px;
   --topBarBrandSize: 15.6px;
-  --topBarBrandWeight: 500;
+  --topBarBrandWeight: 400;
   --topBarBrandColor: #5e9ca5;
   --topBarAccentColor: #4F8E9E;
   --topBarMenuTap: 36px;
@@ -88,12 +88,24 @@ html[data-contrast="dark"]{
 .themePillBrand{
   color: var(--topBarBrandColor, #4F8E9E);
   font-size: var(--topBarBrandSize, 15px);
-  font-weight: var(--topBarBrandWeight, 500);
+  font-weight: var(--topBarBrandWeight, 400);
   letter-spacing: 0.02em;
   line-height: 1;
   white-space: nowrap;
   opacity: 0.92;
   transform: translateY(-1px);
+}
+
+.themePillBrand::after{
+  content: "beta";
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.62em;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(94, 156, 165, 0.72);
+  transform: translateY(-0.08em);
 }
 
 .themePillMenuIcon{
@@ -153,7 +165,7 @@ body[data-brand-icon="1"] .setCoverIcon{
     --topBarPadX: 16px;
     --topBarLogoSize: 36px;
     --topBarBrandSize: 14.56px;
-    --topBarBrandWeight: 500;
+    --topBarBrandWeight: 400;
     --topBarMenuTap: 34px;
     --topBarMenuSize: 21.6px;
   }
@@ -441,6 +453,10 @@ html[data-contrast="dark"] .themePillMenuIcon{
 
 html[data-contrast="dark"] .themePillBrand{
   color: var(--topBarBrandColor, #4F8E9E);
+}
+
+html[data-contrast="dark"] .themePillBrand::after{
+  color: rgba(154, 210, 220, 0.72);
 }
 
 html[data-contrast="dark"] .menuHeaderTools{

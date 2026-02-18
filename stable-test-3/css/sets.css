@@ -142,7 +142,8 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 }
 
 .setsHeroSlideInner{
-  width: min(760px, 100%);
+  width: min(760px, 66.6667%);
+  margin: 0 auto;
 }
 
 .setsHeroCard{
