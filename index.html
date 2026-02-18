@@ -5,457 +5,638 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Uitgesproken</title>
 
-  <!-- IBM Plex Sans + DM Sans (Google fallback laadt automatisch) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=Montserrat:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
 
   <style>
-:root{
-      --bg: #FFFFFF;
-      --title-rgb: 109,175,189;
-      --title: #6DAFBD;
-      --sub: rgba(var(--title-rgb), .82);
-      --glass: rgba(250, 254, 253, .72);
-      --stroke: rgba(109,175,189,.28);
-      --shadow: 0 16px 40px rgba(47, 78, 86, .13);
-      --shadow-soft: 0 10px 26px rgba(47, 78, 86, .13);
-      --modal-backdrop: rgba(15, 35, 32, .40);
-      --modal-surface: rgba(242, 250, 248, .97);
+    :root{
+      --page-bg:#fcfcfc;
+      --ink:#211217;
+      --mint:#b8dfdc;
+      --mint-deep:#a8d6d2;
+      --mint-line:rgba(148,198,194,.46);
+      --panel:#ffffff;
+      --panel-line:rgba(33,18,23,.09);
+      --blob:rgba(219,242,238,.46);
+      --blob-soft:rgba(211,237,233,.34);
+      --shadow:0 14px 32px rgba(41,90,86,.12);
     }
 
     *{ box-sizing:border-box; }
+
     html,body{
       width:100%;
-      height:100%;
       min-height:100%;
       margin:0;
-      overflow:hidden;
-      overflow:clip;
     }
+
     body{
-      width:100%;
       min-height:100vh;
       min-height:100dvh;
-      background: var(--bg);
-      color: var(--title);
-      font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      position: relative;
-      overflow: hidden;
+      background:var(--page-bg);
+      color:var(--ink);
+      font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      padding:clamp(16px,2.2vw,30px);
+      overflow-x:hidden;
     }
     @supports (height: 100svh){
       body{ min-height:100svh; }
     }
 
-    /* Achtergrond in vaste viewportlaag, zonder layout-impact */
-    #indexBg{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      z-index:0;
-      pointer-events:none;
-      display:block;
-    }
-    .indexBgSvg{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      z-index:0;
-      pointer-events:none;
-      display:block;
-    }
-    @supports (height: 100dvh){
-      #indexBg,
-      .indexBgSvg{ height:100dvh; }
-    }
-    @supports (height: 100svh){
-      #indexBg,
-      .indexBgSvg{ height:100svh; }
+    .landing{
+      width:min(1500px,100%);
+      margin:0 auto;
+      min-height:calc(100vh - clamp(32px,4.2vw,60px));
+      min-height:calc(100dvh - clamp(32px,4.2vw,60px));
+      display:grid;
+      grid-template-rows:auto 1fr;
     }
 
-    .wrap{
-      position:fixed;
-      inset:0;
-      z-index:2;
-      width:100%;
-      height:100%;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 8px 16px 10px;
-      text-align:center;
-      overflow:hidden;
-    }
-    @supports (height: 100dvh){
-      .wrap{ min-height:100dvh; }
-    }
-    @supports (height: 100svh){
-      .wrap{ min-height:100svh; }
-    }
-
-    .hero{
-      width:min(620px, 94vw);
+    .intro{
+      min-height:clamp(250px,42vh,500px);
+      padding-top:clamp(10px,2vh,30px);
       display:flex;
       flex-direction:column;
-      align-items:center;
-      transform: translateY(-6px);
+      justify-content:flex-start;
+      gap:clamp(8px,1vh,16px);
     }
 
-    .logo{
-      width: clamp(116px, 20vw, 162px);
-      height: clamp(116px, 20vw, 162px);
-      border-radius: 27px;
-      overflow: hidden;
-      box-shadow: var(--shadow-soft);
-      transform: translateY(-8px) translateZ(0) scale(1);
-      transition: transform .22s ease, box-shadow .22s ease;
+    .intro h1{
+      margin:0;
+      font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
+      font-size:clamp(42px,7.2vw,118px);
+      line-height:.94;
+      letter-spacing:.01em;
+      font-weight:700;
+      color:#5e9ca5;
     }
-    .logo:hover{
-      transform: translateY(-10px) translateZ(0) scale(1.035);
-      box-shadow: 0 14px 30px rgba(47, 78, 86, .16);
+
+    .intro-sub{
+      margin:0;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+      font-size:clamp(18px,2.05vw,32px);
+      line-height:1.15;
+      letter-spacing:0;
+      font-weight:400;
+      color:rgba(94,156,165,.76);
     }
-    .logo:active{
-      transform: translateY(-9px) translateZ(0) scale(1.018);
+
+    .hero-zone{
+      position:relative;
+      min-height:clamp(360px,44vh,560px);
+      padding-bottom:clamp(8px,1.8vh,18px);
     }
-    .logo img{
+
+    .mint-field{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:clamp(350px,44vh,540px);
+      border-radius:32px;
+      overflow:hidden;
+      border:1px solid var(--mint-line);
+      background:#b9e2de;
+      box-shadow:var(--shadow);
+      padding:clamp(18px,2.5vw,34px);
+      display:flex;
+      align-items:flex-end;
+    }
+
+    #indexBg{
+      position:absolute;
+      inset:0;
       width:100%;
       height:100%;
-      object-fit: cover;
       display:block;
+      pointer-events:none;
+      z-index:0;
     }
 
-    h1{
-      margin: 16px 0 1px;
-      font-family: "DM Sans", "IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-weight:600;
-      letter-spacing:0.01em;
-      font-size: clamp(36px, 5.1vw, 54px);
-      line-height:1.02;
-      color: #4F8E9E;
-      text-shadow: 0 1px 0 rgba(255,255,255,.36);
+    .mint-field::before,
+    .mint-field::after{
+      content:"";
+      position:absolute;
+      pointer-events:none;
+      z-index:0;
+      border-radius:999px;
+      display:none;
     }
 
-    .tagline{
-      margin:8px 0 0;
-      font-size: clamp(18px, 2.2vw, 23px);
-      line-height:1.18;
-      font-weight:400;
-      color: #6FAFBE;
+    .mint-field::before{
+      width:74%;
+      height:176%;
+      left:-12%;
+      bottom:-92%;
+      background:rgba(217,239,235,.36);
+      animation: swellLeft 20s ease-in-out infinite alternate;
     }
 
-    .stores{
-      margin-top: 34px;
+    .mint-field::after{
+      width:58%;
+      height:42%;
+      right:-20%;
+      top:48%;
+      background:rgba(205,233,229,.33);
+      animation: haloFloat 17s ease-in-out infinite alternate;
+    }
+
+    .blob{
+      position:absolute;
+      z-index:1;
+      border-radius:999px;
+      pointer-events:none;
+      background:linear-gradient(145deg,var(--blob),rgba(255,255,255,.08));
+      border:1px solid rgba(227,244,241,.55);
+      backdrop-filter:blur(.8px);
+      -webkit-backdrop-filter:blur(.8px);
+      transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotate(var(--rot,0deg)) scale(var(--scale,1));
+      will-change:transform;
+      display:none;
+    }
+
+    .blob.one{
+      width:182px;
+      height:128px;
+      left:45%;
+      top:48%;
+    }
+
+    .blob.two{
+      width:132px;
+      height:102px;
+      right:15%;
+      bottom:12%;
+    }
+
+    .blob.three{
+      width:108px;
+      height:82px;
+      right:33%;
+      bottom:6%;
+      top:auto;
+      background:linear-gradient(145deg,var(--blob-soft),rgba(255,255,255,.08));
+      opacity:.86;
+    }
+
+    .panel{
+      position:relative;
+      z-index:3;
+      background:var(--panel);
+      border:1px solid var(--panel-line);
+      border-radius:30px;
+      padding:clamp(20px,2.5vw,34px);
+      box-shadow:0 16px 40px rgba(23,38,36,.12);
+      width:min(760px,calc(100% - clamp(230px,22vw,330px)));
+      min-width:280px;
+    }
+
+    .panel-kicker{
+      margin:0;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+      font-size:clamp(11px,1vw,13px);
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:rgba(33,18,23,.66);
+    }
+
+    .panel h2{
+      margin:12px 0 10px;
+      font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
+      font-size:clamp(36px,4.2vw,66px);
+      line-height:.93;
+      letter-spacing:.005em;
+      color:var(--ink);
+    }
+
+    .panel p{
+      margin:0;
+      max-width:36ch;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+      font-size:clamp(17px,1.5vw,30px);
+      line-height:1.35;
+      color:rgba(33,18,23,.82);
+    }
+
+    .phone-wrap{
+      position:absolute;
+      right:clamp(20px,5vw,100px);
+      bottom:clamp(6px,2.2vh,26px);
+      transform:translateY(-20%);
+      z-index:5;
+      pointer-events:none;
+    }
+
+    .phone-shadow{
+      position:absolute;
+      left:-10%;
+      right:-10%;
+      bottom:-28px;
+      height:46px;
+      border-radius:999px;
+      background:radial-gradient(ellipse at center, rgba(20,33,46,.38) 0%, rgba(20,33,46,0) 74%);
+      filter:blur(5px);
+      z-index:0;
+    }
+
+    .iphone{
+      position:relative;
+      z-index:2;
+      width:clamp(156px,14.8vw,224px);
+      aspect-ratio:71.5/146.7;
+      border-radius:42px;
+      padding:5px;
+      background:linear-gradient(156deg,#1f232a 0%, #060709 54%, #232933 100%);
+      box-shadow:
+        0 24px 40px rgba(8,14,24,.36),
+        inset 0 0 0 1px rgba(255,255,255,.16),
+        inset 0 -8px 14px rgba(255,255,255,.08);
+    }
+
+    .iphone::before,
+    .iphone::after{
+      content:"";
+      position:absolute;
+      pointer-events:none;
+    }
+
+    .iphone::before{
+      inset:0;
+      border-radius:42px;
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.78), inset 0 0 0 2px rgba(255,255,255,.06);
+      z-index:3;
+    }
+
+    .iphone::after{
+      top:8px;
+      bottom:8px;
+      left:8px;
+      right:8px;
+      border-radius:36px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.11);
+      z-index:3;
+    }
+
+    .side-btn{
+      position:absolute;
+      z-index:2;
+      background:linear-gradient(180deg,#2d3138,#181b22);
+      border-radius:3px;
+    }
+
+    .side-btn.up{
+      left:-1px;
+      top:26%;
+      width:2px;
+      height:26px;
+    }
+
+    .side-btn.down{
+      left:-1px;
+      top:34.5%;
+      width:2px;
+      height:34px;
+    }
+
+    .side-btn.power{
+      right:-1px;
+      top:31%;
+      width:2px;
+      height:44px;
+    }
+
+    .screen{
+      position:relative;
+      width:100%;
+      height:100%;
+      border-radius:37px;
+      overflow:hidden;
+      border:1px solid rgba(18,23,33,.42);
+      background:#f2f6f5;
+    }
+
+    .island{
+      position:absolute;
+      top:8px;
+      left:50%;
+      transform:translateX(-50%);
+      width:40%;
+      height:18px;
+      border-radius:999px;
+      background:#07090d;
+      z-index:6;
+    }
+
+    .island::after{
+      content:"";
+      position:absolute;
+      top:6px;
+      right:10px;
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#1c2430;
+      box-shadow:0 0 0 1px rgba(255,255,255,.08);
+    }
+
+    .status{
+      height:28px;
       display:flex;
-      gap:11px;
-      flex-wrap:nowrap;
-      justify-content:center;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:8px 15px 4px;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+      font-size:10px;
+      color:#1d2430;
     }
 
-    .store{
-      display:inline-flex;
-      gap:9px;
-      align-items:center;
-      padding: 11px 16px;
-      min-height: 48px;
-      border-radius: 13px;
-      background: var(--glass);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      text-decoration:none;
-      color: rgba(56, 110, 122, .96);
-      opacity:.94;
-      transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease, background .15s ease;
-      user-select:none;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-    .store:hover{
-      transform: translateY(-2px);
-      opacity:1;
-      background: rgba(255,255,255,.84);
-      box-shadow: 0 12px 28px rgba(46, 92, 102, .18);
-    }
-    .store:active{ transform: translateY(0); }
-
-    .store small{
-      display:block;
-      font-size:12px;
-      line-height:1.1;
-      color: rgba(var(--title-rgb), .82);
-      font-weight:500;
-      letter-spacing:.01em;
-    }
-    .store strong{
-      display:block;
-      font-size:16px;
-      line-height:1.1;
-      font-weight:600;
-      letter-spacing:-0.01em;
-      color: rgba(58, 114, 126, .98);
-    }
-    .store.web small{
-      color: rgba(95, 158, 174, .82);
+    .screen-header{
+      background:rgba(149,205,198,.5);
+      border-bottom:1px solid rgba(23,39,37,.1);
+      padding:10px 13px 11px;
     }
 
-    .ico{
-      width:22px;
-      height:22px;
-      opacity:.80;
-      flex: 0 0 auto;
+    .screen-header h3{
+      margin:0;
+      font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
+      font-size:17px;
+      color:#1e252f;
+      letter-spacing:.005em;
     }
 
-    .store.disabled{
-      opacity:.6;
-      filter: grayscale(1);
-      cursor: default;
-      pointer-events: none;
-      box-shadow: 0 7px 16px rgba(35, 50, 55, .08);
-    }
-    .store.disabled:hover{
-      transform:none;
-      opacity:.6;
-      background: var(--glass);
-      box-shadow: 0 7px 16px rgba(35, 50, 55, .08);
-    }
-    .store.web{
-      opacity: .95;
-      filter:none;
-      pointer-events: auto;
-    }
-    .store.mobile-app{
-      background: rgba(239, 249, 248, .98);
-      border-color: rgba(109,175,189,.32);
-      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
-      transition: none;
-    }
-    .store.mobile-app:hover{
-      transform:none;
-      opacity:.95;
-      background: rgba(239, 249, 248, .98);
-      box-shadow: 0 9px 20px rgba(46, 92, 102, .12);
+    .tab-row{
+      margin-top:8px;
+      display:flex;
+      gap:7px;
     }
 
-    .mobile-modal{
-      position: fixed;
-      inset: 0;
-      z-index: 15;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-    .mobile-modal.is-open{
-      display: flex;
-    }
-    .mobile-modal__backdrop{
-      position: absolute;
-      inset: 0;
-      background: var(--modal-backdrop);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-    }
-    .mobile-modal__card{
-      position: relative;
-      width: min(400px, 100%);
-      border-radius: 18px;
-      padding: 20px 18px 18px;
-      border: 1px solid rgba(44,131,122,.20);
-      background: var(--modal-surface);
-      box-shadow: 0 26px 60px rgba(19, 58, 53, .22);
-      text-align: left;
-    }
-    .mobile-modal__close{
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 34px;
-      height: 34px;
-      border: 0;
-      border-radius: 10px;
-      background: rgba(44,131,122,.10);
-      color: rgba(26, 91, 84, .95);
-      font-size: 21px;
-      line-height: 1;
-      cursor: pointer;
-    }
-    .mobile-modal__eyebrow{
-      margin: 0 0 4px;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: rgba(43, 118, 109, .72);
-      font-weight: 600;
-    }
-    .mobile-modal h2{
-      margin: 0 0 8px;
-      font-size: clamp(24px, 7vw, 30px);
-      line-height: 1.1;
-      color: var(--title);
-    }
-    .mobile-modal p{
-      margin: 0;
-      color: rgba(37, 97, 90, .82);
-      line-height: 1.4;
-    }
-    .mobile-modal__qr{
-      margin-top: 14px;
-      min-height: 148px;
-      border: 1.5px dashed rgba(44,131,122,.38);
-      border-radius: 14px;
-      background: rgba(255,255,255,.65);
-      display: grid;
-      place-items: center;
-      color: rgba(43, 118, 109, .76);
-      font-weight: 500;
-      text-align: center;
-      padding: 16px;
-    }
-    .mobile-modal__cta{
-      margin-top: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 44px;
-      border-radius: 12px;
-      font-weight: 600;
-      color: #0F4E48;
-      background: linear-gradient(180deg, #CBEEE8, #B4E2DA);
-      border: 1px solid rgba(44,131,122,.26);
-      font-family: inherit;
-      font-size: 15px;
-      cursor: pointer;
+    .tab-row span{
+      height:7px;
+      border-radius:999px;
+      background:rgba(30,37,47,.2);
     }
 
-    @media (max-height: 760px){
-      .wrap{ padding: 4px 14px 8px; }
-      .hero{ transform: translateY(-2px); }
-      .logo{
-        width: clamp(94px, 18vw, 126px);
-        height: clamp(94px, 18vw, 126px);
-      }
-      h1{
-        margin-top: 10px;
-        font-size: clamp(30px, 4.2vw, 42px);
-      }
-      .tagline{
-        font-size: clamp(16px, 2.2vw, 20px);
-      }
-      .stores{
-        margin-top: 20px;
-      }
-      .store{
-        padding: 10px 14px;
-        min-height: 44px;
-      }
+    .tab-row .a{ width:56px; background:rgba(30,37,47,.54); }
+    .tab-row .b{ width:48px; }
+    .tab-row .c{ width:58px; }
+
+    .screen-body{
+      padding:11px;
+      display:grid;
+      gap:10px;
+      background:linear-gradient(180deg,#f4f8f7 0%,#ffffff 100%);
+      min-height:calc(100% - 88px);
     }
-    @media (max-width: 760px){
-      .stores{
-        flex-wrap: nowrap;
-        gap: 8px;
-        width: min(100%, 396px);
+
+    .card{
+      border-radius:12px;
+      border:1px solid rgba(26,38,39,.12);
+      background:#ffffff;
+      padding:10px;
+    }
+
+    .line{
+      height:6px;
+      border-radius:999px;
+      background:rgba(26,38,39,.17);
+    }
+
+    .line + .line{
+      margin-top:6px;
+    }
+
+    .line.wide{ width:88%; }
+    .line.mid{ width:66%; }
+    .line.short{ width:45%; }
+
+    .card.large{
+      background:rgba(240,246,244,.98);
+      min-height:148px;
+    }
+
+    .thumb{
+      margin-top:8px;
+      height:78px;
+      border-radius:10px;
+      background:linear-gradient(130deg,#8acabe,#6eb8ab);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.34);
+    }
+
+    .phone-nav{
+      margin-top:auto;
+      border-top:1px solid rgba(26,38,39,.11);
+      background:#fff;
+      padding:8px 10px 10px;
+      display:flex;
+      gap:6px;
+      justify-content:space-between;
+    }
+
+    .phone-nav span{
+      height:6px;
+      border-radius:999px;
+      background:rgba(26,38,39,.2);
+      flex:1;
+    }
+
+    .phone-nav .active{
+      background:rgba(26,38,39,.54);
+    }
+
+    @keyframes swellLeft{
+      0%{ transform:translate3d(0,0,0) scale(1); }
+      100%{ transform:translate3d(26px,-14px,0) scale(1.04); }
+    }
+
+    @keyframes haloFloat{
+      0%{ transform:translate3d(0,0,0); }
+      100%{ transform:translate3d(-18px,16px,0); }
+    }
+
+    @media (max-width: 1140px){
+      .phone-wrap{
+        right:clamp(12px,3vw,36px);
+        transform:translateY(-16%);
       }
-      .store{
-        flex: 1 1 0;
-        min-width: 0;
-        justify-content: center;
-        gap: 6px;
-        padding: 9px 8px;
-        min-height: 44px;
-        border-radius: 12px;
-      }
-      .store span{
-        min-width: 0;
-      }
-      .store small{
-        font-size: clamp(9px, 2.6vw, 10.5px);
-      }
-      .store strong{
-        font-size: clamp(10.5px, 3.2vw, 13.5px);
-        white-space: nowrap;
-      }
-      .ico{
-        width: 18px;
-        height: 18px;
+
+      .panel{
+        width:min(720px,calc(100% - clamp(205px,23vw,288px)));
       }
     }
 
-</style>
+    @media (max-width: 960px){
+      .landing{
+        min-height:auto;
+      }
+
+      .intro{
+        min-height:unset;
+        padding-top:4px;
+        margin-bottom:20px;
+      }
+
+      .intro h1{
+        font-size:clamp(40px,10.5vw,72px);
+      }
+
+      .intro-sub{
+        font-size:clamp(17px,4.2vw,26px);
+      }
+
+      .hero-zone{
+        min-height:auto;
+        display:grid;
+        gap:14px;
+      }
+
+      .mint-field{
+        position:relative;
+        height:auto;
+        min-height:380px;
+        align-items:flex-end;
+      }
+
+      .panel{
+        width:min(680px,100%);
+      }
+
+      .phone-wrap{
+        position:relative;
+        right:auto;
+        bottom:auto;
+        transform:none;
+        justify-self:center;
+        margin-top:-40px;
+      }
+
+      .blob.one{
+        left:50%;
+        top:52%;
+        width:156px;
+        height:108px;
+      }
+
+      .blob.two{
+        right:auto;
+        left:8%;
+        bottom:14%;
+      }
+
+      .blob.three{
+        right:16%;
+        top:auto;
+        bottom:7%;
+      }
+    }
+
+    @media (max-width: 680px){
+      body{
+        padding:12px;
+      }
+
+      .mint-field{
+        min-height:340px;
+        border-radius:24px;
+        padding:14px;
+      }
+
+      .panel{
+        border-radius:20px;
+        padding:16px;
+      }
+
+      .panel h2{
+        font-size:clamp(31px,9.4vw,44px);
+      }
+
+      .panel p{
+        font-size:clamp(18px,4.6vw,22px);
+      }
+
+      .phone-wrap{
+        margin-top:-24px;
+      }
+
+      .iphone{
+        width:min(57vw,220px);
+      }
+
+      .blob.three{
+        display:none;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <canvas id="indexBg" aria-hidden="true"></canvas>
-
-  <main class="wrap">
-    <section class="hero">
-      <div class="logo" aria-label="Uitgesproken logo">
-        <img src="./assets/logo-icons/masters/new%20master-mint.svg?v=20260217e" alt="Uitgesproken">
-      </div>
-
+  <main class="landing">
+    <header class="intro" aria-label="Introductie">
       <h1>Uitgesproken</h1>
-      <p class="tagline">Ruimte om te verkennen</p>
+      <p class="intro-sub">Ruimte om te verkennen</p>
+    </header>
 
-      <!-- Store buttons (subtiel) -->
-      <div class="stores" aria-label="App stores">
-        <a class="store disabled" href="#" aria-label="Download in de App Store">
-          <!-- Apple -->
-          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
-            <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
-          </svg>
-          <span>
-            <small>Binnenkort</small>
-            <strong>App Store</strong>
-          </span>
-        </a>
+    <section class="hero-zone" aria-label="Hero">
+      <div class="mint-field">
+        <canvas id="indexBg" aria-hidden="true"></canvas>
 
-        <a class="store disabled" href="#" aria-label="Download op Google Play">
-          <!-- Google Play (correcte 'play' triangle) -->
-          <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
-            <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
-            <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
-            <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
-          </svg>
-          <span>
-            <small>Binnenkort</small>
-            <strong>Google Play</strong>
-          </span>
-        </a>
-
-        <a class="store web mobile-app" href="./app.html" aria-label="Open de web-app">
-          <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="6.2" y="1.9" width="11.6" height="20.2" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
-            <line x1="10.2" y1="4.8" x2="13.8" y2="4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            <circle cx="12" cy="18.5" r="1.1" fill="currentColor"/>
-          </svg>
-          <span>
-            <small>Beta</small>
-            <strong>Web-app</strong>
-          </span>
-        </a>
+        <article class="panel">
+          <p class="panel-kicker">Titel en ondertitel</p>
+          <h2>Jouw titel komt hier</h2>
+          <p>Dit is alvast de plek voor je ondertitel. Je kunt hier straks je eigen tekst invullen en later verder uitbreiden met extra informatie.</p>
+        </article>
       </div>
 
-      
+      <aside class="phone-wrap" aria-hidden="true">
+        <div class="phone-shadow"></div>
+        <div class="iphone">
+          <span class="side-btn up"></span>
+          <span class="side-btn down"></span>
+          <span class="side-btn power"></span>
+
+          <div class="screen">
+            <div class="island"></div>
+
+            <div class="status">
+              <span>9:41</span>
+              <span>5G</span>
+            </div>
+
+            <div class="screen-header">
+              <h3>Uitgesproken</h3>
+              <div class="tab-row">
+                <span class="a"></span>
+                <span class="b"></span>
+                <span class="c"></span>
+              </div>
+            </div>
+
+            <div class="screen-body">
+              <div class="card">
+                <div class="line wide"></div>
+                <div class="line mid"></div>
+                <div class="line short"></div>
+              </div>
+
+              <div class="card large">
+                <div class="line wide"></div>
+                <div class="line mid"></div>
+                <div class="thumb"></div>
+              </div>
+
+              <div class="phone-nav">
+                <span></span>
+                <span></span>
+                <span class="active"></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
     </section>
   </main>
-
-  <div class="mobile-modal" id="mobileOnlyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mobileModalTitle">
-    <div class="mobile-modal__backdrop" data-modal-close></div>
-    <section class="mobile-modal__card">
-      <button class="mobile-modal__close" type="button" aria-label="Sluiten" data-modal-close>&times;</button>
-      <p class="mobile-modal__eyebrow">Alleen mobiel</p>
-      <h2 id="mobileModalTitle">Mobiele app</h2>
-      <p>Je blijft op deze site. Hier kun je straks direct de app openen via een QR-code.</p>
-      <div class="mobile-modal__qr">Hier komt later je QR-code</div>
-      <button class="mobile-modal__cta" type="button" data-modal-close>Sluiten</button>
-    </section>
-  </div>
-
-  <!-- Stable background JS (overgenomen uit stable-test-3) -->
   <script src="./js/core/net.js"></script>
   <script src="./js/components/gridBackground.js?v=20260216"></script>
   <script>
@@ -463,24 +644,17 @@
       function run(){
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
-        // Zelfde defaults als in stable grid.page.js fallback
-        var isDark = false;
-        try{ isDark = (document.documentElement.getAttribute('data-contrast') === 'dark'); }catch(_e){}
-
         var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
-
-        var vw = (window.innerWidth||0);
+        var vw = (window.innerWidth || 0);
         var blobCount = (vw < 900) ? 5 : 8;
-        var alphaBoost = 1.12;
-        var sizeScale = 1.34;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
           meta: null,
           palette: palette,
           blobCount: blobCount,
-          alphaBoost: alphaBoost,
-          sizeScale: sizeScale,
+          alphaBoost: 1.12,
+          sizeScale: 1.34,
           sizeLimit: 1.9,
           blobWash: 0,
           blobAlphaCap: 0.26,
@@ -494,51 +668,12 @@
           shapeEnabled: false
         });
       }
+
       if(document.readyState === 'loading'){
         document.addEventListener('DOMContentLoaded', run);
       }else{
         run();
       }
-    })();
-  </script>
-  <script>
-    (function(){
-      var appLink = document.querySelector('.mobile-app');
-      var modal = document.getElementById('mobileOnlyModal');
-      if(!appLink || !modal) return;
-
-      var closeTriggers = modal.querySelectorAll('[data-modal-close]');
-      var isMobileQuery = window.matchMedia('(max-width: 900px), (pointer: coarse)');
-
-      function isMobileLike(){
-        return isMobileQuery.matches;
-      }
-
-      function openModal(){
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeModal(){
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-
-      appLink.addEventListener('click', function(event){
-        if(!isMobileLike()) return;
-        event.preventDefault();
-        openModal();
-      });
-
-      closeTriggers.forEach(function(node){
-        node.addEventListener('click', closeModal);
-      });
-
-      document.addEventListener('keydown', function(event){
-        if(event.key === 'Escape'){
-          closeModal();
-        }
-      });
     })();
   </script>
 </body>
