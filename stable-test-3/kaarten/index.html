@@ -209,23 +209,41 @@
     return !!(car && car.children && car.children.length);
   }
 
+  function showInitError(failed){
+    if(hasCards()) return;
+    var car = d.getElementById('mainCarousel');
+    if(!car) return;
+    var msg = 'Kaarten konden niet worden geladen. Controleer of de volledige js-map is geupload.';
+    if(failed && failed.length){
+      msg += ' Missende scripts: ' + failed.join(', ');
+    }
+    car.innerHTML = '<div role="status" aria-live="polite" aria-atomic="true" style="padding:24px;font-family:system-ui;color:#4b5963;">' + msg + '</div>';
+  }
+
   function loadScript(src){
     return new Promise(function(resolve){
       var existing = d.querySelector('script[src*="' + src.replace(/"/g, '') + '"]');
-      if(existing) return resolve();
+      if(existing) return resolve({ ok: true, src: src, existing: true });
       var s = d.createElement('script');
       s.src = withV(src);
       s.defer = true;
-      s.onload = function(){ resolve(); };
-      s.onerror = function(){ resolve(); };
+      s.onload = function(){ resolve({ ok: true, src: src }); };
+      s.onerror = function(){ resolve({ ok: false, src: src }); };
       d.head.appendChild(s);
     });
   }
 
   function loadScripts(list){
+    var out = [];
     return list.reduce(function(p, src){
-      return p.then(function(){ return loadScript(src); });
-    }, Promise.resolve());
+      return p.then(function(){
+        return loadScript(src).then(function(res){
+          out.push(res);
+        });
+      });
+    }, Promise.resolve()).then(function(){
+      return out;
+    });
   }
 
   function bootFallback(){
@@ -236,33 +254,51 @@
       d.body.setAttribute('data-page', 'kaarten');
     }
 
-    var list = [
-      '../js/core/paths.js',
-      '../js/core/net.js',
-      '../js/core/query.js',
-      '../js/core/state.js',
-      '../js/core/color.js',
-      '../js/core/ui.js',
-      '../js/components/bottomSheet.js',
-      '../js/components/menu.js',
-      '../js/components/cardRenderer.js',
-      '../js/shell/initShell.js',
-      '../js/templates/index.js',
-      '../js/components/cardsBackground.js',
-      '../js/pages/kaarten.page.js'
-    ];
+    // 1) Compat met oudere deploys: probeer oude app-bootstrap eerst.
+    loadScript('../js/app.js').then(function(res){
+      var firstFailed = (!res || !res.ok) ? ['../js/app.js'] : [];
+      w.setTimeout(function(){
+        if(hasCards()) return;
 
-    loadScripts(list).then(function(){
-      try{
-        if(w.PK && w.PK.shell && w.PK.shell.initShell){
-          w.PK.shell.initShell();
-        }
-      }catch(_eShell){}
-      try{
-        if(w.PK && w.PK.pages && w.PK.pages.initKaarten){
-          w.PK.pages.initKaarten();
-        }
-      }catch(_eInit){}
+        // 2) Nieuwe modulaire bootstrap.
+        var list = [
+          '../js/core/paths.js',
+          '../js/core/net.js',
+          '../js/core/query.js',
+          '../js/core/state.js',
+          '../js/core/color.js',
+          '../js/core/ui.js',
+          '../js/components/bottomSheet.js',
+          '../js/components/menu.js',
+          '../js/components/cardRenderer.js',
+          '../js/shell/initShell.js',
+          '../js/templates/index.js',
+          '../js/components/cardsBackground.js',
+          '../js/pages/kaarten.page.js'
+        ];
+
+        loadScripts(list).then(function(results){
+          var failed = firstFailed.slice();
+          var i;
+          for(i = 0; i < (results || []).length; i++){
+            var r = results[i];
+            if(r && r.ok === false && r.src) failed.push(r.src);
+          }
+          try{
+            if(w.PK && w.PK.shell && w.PK.shell.initShell){
+              w.PK.shell.initShell();
+            }
+          }catch(_eShell){}
+          try{
+            if(w.PK && w.PK.pages && w.PK.pages.initKaarten){
+              w.PK.pages.initKaarten();
+            }
+          }catch(_eInit){}
+          w.setTimeout(function(){
+            if(!hasCards()) showInitError(failed);
+          }, 520);
+        });
+      }, 260);
     });
   }
 
@@ -277,6 +313,10 @@
       if(!hasCards()) bootFallback();
     }, 420);
   }, 1200);
+
+  w.setTimeout(function(){
+    if(!hasCards()) showInitError([]);
+  }, 3400);
 })();
 </script>
 
