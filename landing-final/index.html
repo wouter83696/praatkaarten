@@ -51,10 +51,12 @@
       min-height:calc(100dvh - clamp(32px,4.2vw,60px));
       display:grid;
       grid-template-rows:auto 1fr;
+      position:relative;
+      z-index:2;
     }
 
     .intro{
-      min-height:clamp(250px,42vh,500px);
+      min-height:clamp(190px,32vh,360px);
       padding-top:clamp(10px,2vh,30px);
       display:flex;
       flex-direction:column;
@@ -65,7 +67,7 @@
     .intro h1{
       margin:0;
       font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
-      font-size:clamp(42px,7.2vw,118px);
+      font-size:clamp(34px,5.6vw,88px);
       line-height:.94;
       letter-spacing:.01em;
       font-weight:700;
@@ -75,25 +77,27 @@
     .intro-sub{
       margin:0;
       font-family:"IBM Plex Sans",system-ui,sans-serif;
-      font-size:clamp(18px,2.05vw,32px);
+      font-size:clamp(16px,1.5vw,24px);
       line-height:1.15;
       letter-spacing:0;
       font-weight:400;
-      color:rgba(94,156,165,.76);
+      color:rgba(94,156,165,.68);
     }
 
     .hero-zone{
       position:relative;
-      min-height:clamp(360px,44vh,560px);
+      min-height:clamp(320px,40vh,500px);
       padding-bottom:clamp(8px,1.8vh,18px);
     }
 
     .mint-field{
       position:absolute;
-      left:0;
-      right:0;
+      left:50%;
+      right:auto;
+      transform:translateX(-50%);
+      width:min(1260px,90vw);
       bottom:0;
-      height:clamp(350px,44vh,540px);
+      height:clamp(260px,34vh,390px);
       border-radius:32px;
       overflow:hidden;
       border:1px solid var(--mint-line);
@@ -105,10 +109,10 @@
     }
 
     #indexBg{
-      position:absolute;
+      position:fixed;
       inset:0;
-      width:100%;
-      height:100%;
+      width:100vw;
+      height:100vh;
       display:block;
       pointer-events:none;
       z-index:0;
@@ -121,7 +125,6 @@
       pointer-events:none;
       z-index:0;
       border-radius:999px;
-      display:none;
     }
 
     .mint-field::before{
@@ -153,31 +156,33 @@
       -webkit-backdrop-filter:blur(.8px);
       transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotate(var(--rot,0deg)) scale(var(--scale,1));
       will-change:transform;
-      display:none;
     }
 
     .blob.one{
-      width:182px;
-      height:128px;
-      left:45%;
-      top:48%;
+      width:172px;
+      height:124px;
+      left:40%;
+      top:50%;
+      animation: blobDriftA 18s ease-in-out infinite;
     }
 
     .blob.two{
       width:132px;
       height:102px;
-      right:15%;
-      bottom:12%;
+      right:10%;
+      bottom:10%;
+      animation: blobDriftB 15s ease-in-out infinite;
     }
 
     .blob.three{
       width:108px;
       height:82px;
-      right:33%;
-      bottom:6%;
+      right:30%;
+      bottom:7%;
       top:auto;
       background:linear-gradient(145deg,var(--blob-soft),rgba(255,255,255,.08));
       opacity:.86;
+      animation: blobDriftC 20s ease-in-out infinite;
     }
 
     .panel{
@@ -455,6 +460,24 @@
       100%{ transform:translate3d(-18px,16px,0); }
     }
 
+    @keyframes blobDriftA{
+      0%{ transform:translate3d(0,0,0) scale(1) rotate(-8deg); }
+      50%{ transform:translate3d(18px,-8px,0) scale(1.04) rotate(-3deg); }
+      100%{ transform:translate3d(-8px,10px,0) scale(.97) rotate(-11deg); }
+    }
+
+    @keyframes blobDriftB{
+      0%{ transform:translate3d(0,0,0) scale(1) rotate(10deg); }
+      50%{ transform:translate3d(-13px,-10px,0) scale(1.03) rotate(16deg); }
+      100%{ transform:translate3d(8px,9px,0) scale(.98) rotate(8deg); }
+    }
+
+    @keyframes blobDriftC{
+      0%{ transform:translate3d(0,0,0) scale(1) rotate(-5deg); }
+      50%{ transform:translate3d(10px,-8px,0) scale(1.06) rotate(-1deg); }
+      100%{ transform:translate3d(-6px,8px,0) scale(.96) rotate(-9deg); }
+    }
+
     @media (max-width: 1140px){
       .phone-wrap{
         right:clamp(12px,3vw,36px);
@@ -462,7 +485,7 @@
       }
 
       .panel{
-        width:min(720px,calc(100% - clamp(205px,23vw,288px)));
+        width:min(680px,calc(100% - clamp(190px,21vw,266px)));
       }
     }
 
@@ -474,15 +497,15 @@
       .intro{
         min-height:unset;
         padding-top:4px;
-        margin-bottom:20px;
+        margin-bottom:14px;
       }
 
       .intro h1{
-        font-size:clamp(40px,10.5vw,72px);
+        font-size:clamp(30px,8vw,54px);
       }
 
       .intro-sub{
-        font-size:clamp(17px,4.2vw,26px);
+        font-size:clamp(14px,3.4vw,20px);
       }
 
       .hero-zone{
@@ -493,8 +516,12 @@
 
       .mint-field{
         position:relative;
+        left:0;
+        right:auto;
+        transform:none;
+        width:100%;
         height:auto;
-        min-height:380px;
+        min-height:320px;
         align-items:flex-end;
       }
 
@@ -512,22 +539,22 @@
       }
 
       .blob.one{
-        left:50%;
-        top:52%;
-        width:156px;
-        height:108px;
+        left:48%;
+        top:56%;
+        width:132px;
+        height:94px;
       }
 
       .blob.two{
         right:auto;
         left:8%;
-        bottom:14%;
+        bottom:12%;
       }
 
       .blob.three{
-        right:16%;
+        right:12%;
         top:auto;
-        bottom:7%;
+        bottom:6%;
       }
     }
 
@@ -537,7 +564,7 @@
       }
 
       .mint-field{
-        min-height:340px;
+        min-height:300px;
         border-radius:24px;
         padding:14px;
       }
@@ -571,6 +598,7 @@
 </head>
 
 <body>
+  <canvas id="indexBg" aria-hidden="true"></canvas>
   <main class="landing">
     <header class="intro" aria-label="Introductie">
       <h1>Uitgesproken</h1>
@@ -579,7 +607,9 @@
 
     <section class="hero-zone" aria-label="Hero">
       <div class="mint-field">
-        <canvas id="indexBg" aria-hidden="true"></canvas>
+        <span class="blob one" aria-hidden="true"></span>
+        <span class="blob two" aria-hidden="true"></span>
+        <span class="blob three" aria-hidden="true"></span>
 
         <article class="panel">
           <p class="panel-kicker">Titel en ondertitel</p>
@@ -646,15 +676,15 @@
 
         var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 5 : 8;
+        var blobCount = (vw < 900) ? 7 : 11;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
           meta: null,
           palette: palette,
           blobCount: blobCount,
-          alphaBoost: 1.12,
-          sizeScale: 1.34,
+          alphaBoost: 1.18,
+          sizeScale: 1.38,
           sizeLimit: 1.9,
           blobWash: 0,
           blobAlphaCap: 0.26,
