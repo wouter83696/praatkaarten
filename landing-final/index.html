@@ -18,9 +18,9 @@
       --mint-line:rgba(152,192,189,.24);
       --panel:#ffffff;
       --panel-line:rgba(33,18,23,.09);
-      --blob:rgba(220,238,238,.40);
-      --blob-soft:rgba(196,228,227,.34);
-      --blob-warm:rgba(239,230,216,.30);
+      --blob:rgba(220,238,238,.58);
+      --blob-soft:rgba(196,228,227,.52);
+      --blob-warm:rgba(239,230,216,.44);
       --shadow:0 12px 24px rgba(41,90,86,.08);
     }
 
@@ -936,24 +936,24 @@
 
         var palette = ['#DCEEEE', '#C4E4E3', '#A7D4D2', '#EFE6D8'];
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 4 : 6;
+        var blobCount = (vw < 900) ? 5 : 8;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
           meta: null,
           palette: palette,
           blobCount: blobCount,
-          alphaBoost: 0.82,
-          sizeScale: 1.10,
-          sizeLimit: 1.46,
-          blobWash: 0.14,
-          blobAlphaCap: 0.15,
-          blobAlphaCapDark: 0.18,
+          alphaBoost: 1.18,
+          sizeScale: 1.16,
+          sizeLimit: 1.62,
+          blobWash: 0.08,
+          blobAlphaCap: 0.24,
+          blobAlphaCapDark: 0.28,
           baseWash: false,
           blobSpread: 'grid',
-          blobSpreadMargin: 0.16,
-          blobRadiusMin: 0.08,
-          blobRadiusMax: 0.14,
+          blobSpreadMargin: 0.10,
+          blobRadiusMin: 0.10,
+          blobRadiusMax: 0.19,
           centerBlob: false,
           shapeEnabled: false
         });
