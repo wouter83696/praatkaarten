@@ -362,7 +362,8 @@
       position:absolute;
       right:clamp(86px,12vw,196px);
       bottom:clamp(10px,2.6vh,28px);
-      transform:translateY(0);
+      transform:translateY(0) rotate(-5deg);
+      transform-origin:56% 100%;
       z-index:5;
       pointer-events:none;
     }
@@ -452,7 +453,11 @@
       border-radius:37px;
       overflow:hidden;
       border:1px solid rgba(18,23,33,.42);
-      background:#f2f6f5;
+      background:#f1f4f3;
+    }
+
+    .screen.has-shot .island{
+      display:none;
     }
 
     .island{
@@ -479,109 +484,309 @@
       box-shadow:0 0 0 1px rgba(255,255,255,.08);
     }
 
-    .status{
-      height:28px;
+    .phone-ui{
+      position:relative;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      background:#f2f4f3;
+    }
+
+    .phone-shot{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center top;
+      z-index:8;
+      display:none;
+    }
+
+    .phone-ui.has-shot .phone-shot{
+      display:block;
+    }
+
+    .phone-ui.has-shot .phone-status,
+    .phone-ui.has-shot .phone-head,
+    .phone-ui.has-shot .phone-content{
+      display:none;
+    }
+
+    .phone-status{
+      height:30px;
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
-      padding:8px 15px 4px;
+      padding:7px 12px 4px;
       font-family:"IBM Plex Sans",system-ui,sans-serif;
       font-size:10px;
-      color:#1d2430;
+      color:#111820;
+      font-weight:700;
     }
 
-    .screen-header{
-      background:rgba(149,205,198,.5);
-      border-bottom:1px solid rgba(23,39,37,.1);
-      padding:10px 13px 11px;
+    .phone-status-icons{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
     }
 
-    .screen-header h3{
-      margin:0;
-      font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
-      font-size:17px;
-      color:#1e252f;
-      letter-spacing:.005em;
+    .phone-status-icons i{
+      display:inline-block;
+      width:13px;
+      height:8px;
+      border-radius:2px;
+      border:1px solid rgba(17,24,32,.46);
+      position:relative;
+      opacity:.8;
     }
 
-    .tab-row{
-      margin-top:8px;
+    .phone-status-icons i::after{
+      content:"";
+      position:absolute;
+      left:2px;
+      right:2px;
+      bottom:2px;
+      top:2px;
+      border-radius:1px;
+      background:rgba(17,24,32,.42);
+    }
+
+    .phone-status-icons b{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:18px;
+      height:11px;
+      padding:0 3px;
+      border-radius:5px;
+      font-size:8px;
+      background:rgba(17,24,32,.5);
+      color:#fff;
+      font-weight:700;
+    }
+
+    .phone-head{
       display:flex;
-      gap:7px;
-    }
-
-    .tab-row span{
-      height:7px;
-      border-radius:999px;
-      background:rgba(30,37,47,.2);
-    }
-
-    .tab-row .a{ width:56px; background:rgba(30,37,47,.54); }
-    .tab-row .b{ width:48px; }
-    .tab-row .c{ width:58px; }
-
-    .screen-body{
-      padding:11px;
-      display:grid;
-      gap:10px;
-      background:linear-gradient(180deg,#f4f8f7 0%,#ffffff 100%);
-      min-height:calc(100% - 88px);
-    }
-
-    .card{
-      border-radius:12px;
-      border:1px solid rgba(26,38,39,.12);
-      background:#ffffff;
-      padding:10px;
-    }
-
-    .line{
-      height:6px;
-      border-radius:999px;
-      background:rgba(26,38,39,.17);
-    }
-
-    .line + .line{
-      margin-top:6px;
-    }
-
-    .line.wide{ width:88%; }
-    .line.mid{ width:66%; }
-    .line.short{ width:45%; }
-
-    .card.large{
-      background:rgba(240,246,244,.98);
-      min-height:148px;
-    }
-
-    .thumb{
-      margin-top:8px;
-      height:78px;
-      border-radius:10px;
-      background:linear-gradient(130deg,#8acabe,#6eb8ab);
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.34);
-    }
-
-    .phone-nav{
-      margin-top:auto;
-      border-top:1px solid rgba(26,38,39,.11);
-      background:#fff;
-      padding:8px 10px 10px;
-      display:flex;
-      gap:6px;
+      align-items:center;
       justify-content:space-between;
+      padding:9px 10px;
+      border-top:1px solid rgba(17,24,32,.07);
+      border-bottom:1px solid rgba(17,24,32,.07);
+      background:#f6f8f7;
     }
 
-    .phone-nav span{
+    .phone-brand{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+    }
+
+    .phone-brand-mark{
+      width:18px;
+      height:14px;
+      border:2px solid #5e9ca5;
+      border-radius:6px;
+      position:relative;
+      flex:0 0 auto;
+    }
+
+    .phone-brand-mark::after{
+      content:"";
+      position:absolute;
+      right:2px;
+      bottom:-5px;
+      width:6px;
       height:6px;
+      border-right:2px solid #5e9ca5;
+      border-bottom:2px solid #5e9ca5;
+      transform:skewX(-22deg) rotate(27deg);
+      border-radius:1px;
+      background:transparent;
+    }
+
+    .phone-brand strong{
+      font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
+      font-size:10px;
+      color:#4b919b;
+      letter-spacing:.01em;
+      white-space:nowrap;
+    }
+
+    .phone-brand em{
+      font-style:normal;
+      font-size:8px;
+      color:rgba(75,145,155,.62);
+      letter-spacing:.08em;
+      margin-left:2px;
+      white-space:nowrap;
+    }
+
+    .phone-menu{
+      width:12px;
+      height:10px;
+      position:relative;
+      opacity:.58;
+    }
+
+    .phone-menu::before,
+    .phone-menu::after,
+    .phone-menu span{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      height:2px;
       border-radius:999px;
-      background:rgba(26,38,39,.2);
+      background:rgba(25,33,42,.58);
+    }
+
+    .phone-menu::before{ top:0; }
+    .phone-menu span{ top:4px; }
+    .phone-menu::after{ bottom:0; }
+
+    .phone-content{
+      flex:1;
+      padding:10px 9px 11px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      background:#eef2f1;
+    }
+
+    .phone-feature{
+      position:relative;
+      min-height:104px;
+      border-radius:14px;
+      background:#86bbae;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.34);
+      overflow:hidden;
+      padding:14px 11px;
+    }
+
+    .phone-feature::before{
+      content:"";
+      position:absolute;
+      top:-14px;
+      left:42%;
+      width:44%;
+      height:26px;
+      border-radius:999px;
+      background:rgba(207,233,231,.56);
+      transform:translateX(-50%);
+    }
+
+    .phone-feature h4{
+      margin:28px 0 1px;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+      font-size:8px;
+      line-height:1.12;
+      color:#2e5788;
+      letter-spacing:.01em;
+      font-weight:700;
+      position:relative;
+      z-index:1;
+    }
+
+    .phone-feature p{
+      margin:0;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+      font-size:6px;
+      line-height:1.14;
+      color:#f06e9e;
+      position:relative;
+      z-index:1;
+      font-weight:500;
+    }
+
+    .phone-feature .orange{
+      position:absolute;
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      right:8px;
+      top:24px;
+      background:#e9883e;
+      box-shadow:0 4px 8px rgba(142,79,28,.16);
+    }
+
+    .phone-dots{
+      display:flex;
+      justify-content:center;
+      gap:4px;
+      padding:1px 0 0;
+    }
+
+    .phone-dots span{
+      width:5px;
+      height:5px;
+      border-radius:50%;
+      background:rgba(31,47,57,.22);
+    }
+
+    .phone-dots span.active{
+      background:rgba(31,47,57,.4);
+    }
+
+    .phone-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:7px;
       flex:1;
     }
 
-    .phone-nav .active{
-      background:rgba(26,38,39,.54);
+    .phone-tile{
+      border-radius:11px;
+      min-height:48px;
+      background:rgba(177,211,210,.5);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);
+      position:relative;
+      overflow:hidden;
     }
+
+    .phone-tile.hero-mini{
+      background:rgba(133,185,173,.72);
+    }
+
+    .phone-tile.hero-mini .mini-title{
+      position:absolute;
+      left:8px;
+      top:12px;
+      right:40px;
+      font-size:5.5px;
+      line-height:1.15;
+      color:#2e5788;
+      font-weight:700;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+    }
+
+    .phone-tile.hero-mini .mini-sub{
+      position:absolute;
+      left:8px;
+      top:24px;
+      font-size:5px;
+      line-height:1.1;
+      color:#f07ba3;
+      font-weight:500;
+      font-family:"IBM Plex Sans",system-ui,sans-serif;
+    }
+
+    .phone-tile.hero-mini .mini-orange{
+      position:absolute;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      right:6px;
+      top:6px;
+      background:#e98a43;
+    }
+
+    .phone-tile.blue{ background:rgba(190,206,227,.62); }
+    .phone-tile.lilac{ background:rgba(207,201,222,.54); }
+    .phone-tile.pink{ background:rgba(221,200,212,.56); }
+    .phone-tile.beige{ background:rgba(224,209,188,.58); }
+    .phone-tile.olive{ background:rgba(205,214,192,.58); }
 
     @keyframes swellLeft{
       0%{ transform:translate3d(0,0,0) scale(1); }
@@ -614,7 +819,7 @@
     @media (max-width: 1140px){
       .phone-wrap{
         right:clamp(34px,8vw,96px);
-        transform:translateY(0);
+        transform:translateY(0) rotate(-4deg);
       }
 
       .panel{
@@ -687,7 +892,7 @@
         position:relative;
         right:auto;
         bottom:auto;
-        transform:none;
+        transform:rotate(-3deg);
         justify-self:center;
         margin-top:-18px;
       }
@@ -766,6 +971,7 @@
 
       .phone-wrap{
         margin-top:-24px;
+        transform:rotate(-2deg);
       }
 
       .iphone{
@@ -861,39 +1067,55 @@
 
           <div class="screen">
             <div class="island"></div>
-
-            <div class="status">
-              <span>9:41</span>
-              <span>5G</span>
-            </div>
-
-            <div class="screen-header">
-              <h3>Uitgesproken</h3>
-              <div class="tab-row">
-                <span class="a"></span>
-                <span class="b"></span>
-                <span class="c"></span>
-              </div>
-            </div>
-
-            <div class="screen-body">
-              <div class="card">
-                <div class="line wide"></div>
-                <div class="line mid"></div>
-                <div class="line short"></div>
+            <div class="phone-ui">
+              <img class="phone-shot" src="./assets/phone-screen.png" alt="" aria-hidden="true" />
+              <div class="phone-status">
+                <span>00:32</span>
+                <span class="phone-status-icons">
+                  <i></i>
+                  <i></i>
+                  <b>21</b>
+                </span>
               </div>
 
-              <div class="card large">
-                <div class="line wide"></div>
-                <div class="line mid"></div>
-                <div class="thumb"></div>
+              <div class="phone-head">
+                <div class="phone-brand">
+                  <span class="phone-brand-mark"></span>
+                  <span>
+                    <strong>Uitgesproken</strong>
+                    <em>BETA</em>
+                  </span>
+                </div>
+                <span class="phone-menu"><span></span></span>
               </div>
 
-              <div class="phone-nav">
-                <span></span>
-                <span></span>
-                <span class="active"></span>
-                <span></span>
+              <div class="phone-content">
+                <article class="phone-feature">
+                  <h4>Samen onderzoeken</h4>
+                  <p>Gesprekskaarten voor teams</p>
+                  <span class="orange"></span>
+                </article>
+
+                <div class="phone-dots" aria-hidden="true">
+                  <span class="active"></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+
+                <section class="phone-grid" aria-hidden="true">
+                  <div class="phone-tile hero-mini">
+                    <span class="mini-title">Samen onderzoeken</span>
+                    <span class="mini-sub">Gesprekskaarten voor teams</span>
+                    <span class="mini-orange"></span>
+                  </div>
+                  <div class="phone-tile blue"></div>
+                  <div class="phone-tile lilac"></div>
+                  <div class="phone-tile pink"></div>
+                  <div class="phone-tile beige"></div>
+                  <div class="phone-tile olive"></div>
+                </section>
               </div>
             </div>
           </div>
@@ -927,6 +1149,21 @@
 
   <script src="./js/core/net.js"></script>
   <script src="./js/components/gridBackground.js?v=20260216"></script>
+  <script>
+    (function(){
+      var shot = document.querySelector('.phone-shot');
+      if(!shot) return;
+      function activateShot(){
+        if(!shot.naturalWidth) return;
+        var ui = shot.closest('.phone-ui');
+        var screen = shot.closest('.screen');
+        if(ui) ui.classList.add('has-shot');
+        if(screen) screen.classList.add('has-shot');
+      }
+      shot.addEventListener('load', activateShot);
+      if(shot.complete) activateShot();
+    })();
+  </script>
   <script>
     (function(){
       function run(){
