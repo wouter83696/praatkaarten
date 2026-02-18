@@ -190,7 +190,95 @@
   </div>
 </main>
 
-<script src="../js/main.js?v=0.64" defer></script>
+<script src="../js/main.js?v=0.65" defer></script>
+
+<!-- Failsafe: als de kaarten na boot leeg blijven (cache/oud pad), laad kernscripts direct. -->
+<script>
+(function(){
+  'use strict';
+  var w = window;
+  var d = document;
+  var FALLBACK_V = '0.65';
+
+  function withV(src){
+    return src + (src.indexOf('?') === -1 ? '?' : '&') + 'v=' + encodeURIComponent(FALLBACK_V);
+  }
+
+  function hasCards(){
+    var car = d.getElementById('mainCarousel');
+    return !!(car && car.children && car.children.length);
+  }
+
+  function loadScript(src){
+    return new Promise(function(resolve){
+      var existing = d.querySelector('script[src*="' + src.replace(/"/g, '') + '"]');
+      if(existing) return resolve();
+      var s = d.createElement('script');
+      s.src = withV(src);
+      s.defer = true;
+      s.onload = function(){ resolve(); };
+      s.onerror = function(){ resolve(); };
+      d.head.appendChild(s);
+    });
+  }
+
+  function loadScripts(list){
+    return list.reduce(function(p, src){
+      return p.then(function(){ return loadScript(src); });
+    }, Promise.resolve());
+  }
+
+  function bootFallback(){
+    if(w.__pkKaartenFallbackBooted) return;
+    w.__pkKaartenFallbackBooted = true;
+
+    if(d.body && !d.body.getAttribute('data-page')){
+      d.body.setAttribute('data-page', 'kaarten');
+    }
+
+    var list = [
+      '../js/core/paths.js',
+      '../js/core/net.js',
+      '../js/core/query.js',
+      '../js/core/state.js',
+      '../js/core/color.js',
+      '../js/core/ui.js',
+      '../js/components/bottomSheet.js',
+      '../js/components/menu.js',
+      '../js/components/cardRenderer.js',
+      '../js/shell/initShell.js',
+      '../js/templates/index.js',
+      '../js/components/cardsBackground.js',
+      '../js/pages/kaarten.page.js'
+    ];
+
+    loadScripts(list).then(function(){
+      try{
+        if(w.PK && w.PK.shell && w.PK.shell.initShell){
+          w.PK.shell.initShell();
+        }
+      }catch(_eShell){}
+      try{
+        if(w.PK && w.PK.pages && w.PK.pages.initKaarten){
+          w.PK.pages.initKaarten();
+        }
+      }catch(_eInit){}
+    });
+  }
+
+  w.setTimeout(function(){
+    if(hasCards()) return;
+    try{
+      if(w.PK && w.PK.pages && w.PK.pages.initKaarten){
+        w.PK.pages.initKaarten();
+      }
+    }catch(_eTry){}
+    w.setTimeout(function(){
+      if(!hasCards()) bootFallback();
+    }, 420);
+  }, 1200);
+})();
+</script>
 
 <!-- Fallback: subtiele achtergrond-tint mee laten kleuren met actieve kaart.
      (Als de hoofd-implementatie al bestaat, doet dit niets.) -->
