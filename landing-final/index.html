@@ -4,219 +4,226 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Uitgesproken</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <style>
     :root{
-      --mint: #7fcfc9;
-      --mint2:#81becc;
-      --bgTop: #fbfdfc;
-      --bgBottom:#e7f5f2;
-      --panel: rgba(255,255,255,.64);
-      --stroke: rgba(109,175,189,.18);
-      --shadow: 0 24px 80px rgba(0,0,0,.08);
-      --shadow2: 0 30px 90px rgba(0,0,0,.18);
+      --top:#fbfdfc;
+      --bottom:#e6f6f3;
+      --stroke: rgba(0,0,0,.06);
+      --shadow: 0 18px 60px rgba(0,0,0,.10);
+      --shadowSoft: 0 30px 90px rgba(0,0,0,.14);
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family:"IBM Plex Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      color:#0f1b1a;
-
-      /* Option 1: top subtle white, bottom subtle mint */
-      background:
-        linear-gradient(to bottom, var(--bgTop) 0%, var(--bgTop) 58%, var(--bgBottom) 100%);
-      overflow-x:hidden;
-    }
-
-    /* soft corner washes (very subtle, not blobs) */
-    body:before, body:after{
-      content:"";
-      position:fixed;
-      inset:auto;
-      width:720px; height:720px;
-      border-radius:50%;
-      filter: blur(0px);
-      opacity:.22;
-      pointer-events:none;
-      z-index:-1;
-    }
-    body:before{
-      left:-260px; top:-240px;
-      background: radial-gradient(circle at 30% 30%, rgba(127,207,201,.55), transparent 62%);
-    }
-    body:after{
-      right:-300px; bottom:-280px;
-      background: radial-gradient(circle at 70% 70%, rgba(129,190,204,.45), transparent 62%);
-    }
-
-    .wrap{
-      height:100%;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(to bottom, var(--top) 0%, var(--top) 55%, var(--bottom) 100%);
       display:flex;
       align-items:center;
       justify-content:center;
-      padding: clamp(18px, 4vw, 56px);
+      padding: clamp(18px, 3vw, 42px);
+      overflow:hidden;
     }
 
-    .hero{
-      width:min(1280px, 94vw);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: clamp(28px, 4vw, 72px);
-    }
-
-    /* Left area: icon buttons only */
-    .cta{
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-      align-items:flex-start;
-      justify-content:center;
-      padding-left: clamp(0px, 1vw, 6px);
-    }
-
-    .iconRow{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      padding: 14px 16px;
-      background: var(--panel);
-      border: 1px solid rgba(0,0,0,.06);
-      border-radius: 18px;
+    /* outer frame: like the example's centered card */
+    .frame{
+      width: min(1180px, 94vw);
+      border-radius: 34px;
+      background: rgba(255,255,255,.68);
+      border: 1px solid var(--stroke);
       box-shadow: var(--shadow);
+      padding: clamp(22px, 3vw, 36px);
+      position:relative;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
 
+    .card{
+      border-radius: 28px;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(0,0,0,.05);
+      padding: clamp(22px, 3vw, 34px);
+      position:relative;
+      overflow:hidden;
+      min-height: clamp(520px, 62vh, 660px);
+    }
+
+    /* mint stage block (like purple block in ref) */
+    .stage{
+      position:absolute;
+      left: clamp(18px, 3vw, 28px);
+      right: clamp(18px, 3vw, 28px);
+      bottom: clamp(18px, 3vw, 28px);
+      height: clamp(220px, 34vh, 320px);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(127,207,201,.12), rgba(127,207,201,.22));
+      border: 1px solid rgba(109,175,189,.12);
+      box-shadow: 0 14px 40px rgba(0,0,0,.06) inset;
+    }
+
+    .wave{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:.25;
+      mix-blend-mode:multiply;
+    }
+
+    .layout{
+      position:relative;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: clamp(22px, 4vw, 60px);
+      height: 100%;
+    }
+
+    .left{
+      flex: 1 1 52%;
+      min-width: 280px;
+      position:relative;
+    }
+
+    /* 3 icons next to each other, anchored inside the stage area */
+    .icons{
+      position:absolute;
+      left: clamp(38px, 5vw, 72px);
+      bottom: clamp(44px, 6vh, 72px);
+      display:flex;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.74);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 18px;
+      box-shadow: 0 16px 46px rgba(0,0,0,.10);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
     .iconBtn{
-      width:44px; height:44px;
+      width:44px;height:44px;
       border-radius: 999px;
       border: 1px solid rgba(0,0,0,.08);
-      background: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.92);
       display:grid;
       place-items:center;
       box-shadow: 0 10px 22px rgba(0,0,0,.08);
       cursor:pointer;
       transition: transform .18s ease, box-shadow .18s ease;
-      user-select:none;
+      padding:0;
     }
-    .iconBtn:hover{
-      transform: translateY(-2px);
-      box-shadow: 0 14px 26px rgba(0,0,0,.10);
-    }
-    .iconBtn:active{ transform: translateY(-1px) scale(.99); }
+    .iconBtn:hover{ transform: translateY(-2px); box-shadow: 0 14px 26px rgba(0,0,0,.10); }
+    .iconBtn svg{ width:20px;height:20px; opacity:.85; }
 
-    .iconBtn svg{
-      width:20px; height:20px;
-      opacity:.85;
+    .right{
+      flex: 0 0 auto;
+      width: clamp(280px, 26vw, 360px);
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-end;
+      padding-top: clamp(0px, 1vh, 12px);
     }
 
-    /* Right area: phone */
     .phone{
-      width: clamp(240px, 21vw, 310px); /* smaller, like your example */
+      width: 100%;
       aspect-ratio: 9 / 19.5;
-      border-radius: 44px;
-      background: #0E1012;
+      border-radius: 46px;
+      background:#0e1012;
       padding: 12px;
-      box-shadow: var(--shadow2);
-      transform: perspective(1400px) rotateY(-4deg) translateY(-18px);
+      box-shadow: var(--shadowSoft);
+      transform: perspective(1400px) rotateY(-6deg) rotateZ(0.6deg) translateY(-22px);
       transform-origin: center;
       position:relative;
     }
     .phone:after{
       content:"";
       position:absolute;
-      left: 14%;
-      right: 14%;
-      bottom: -26px;
-      height: 22px;
+      left: 18%;
+      right: 18%;
+      bottom: -28px;
+      height: 24px;
       border-radius: 999px;
-      background: rgba(0,0,0,.18);
-      filter: blur(14px);
+      background: rgba(0,0,0,.22);
+      filter: blur(16px);
       z-index:-1;
     }
-
     .screen{
       width:100%;
       height:100%;
-      border-radius: 32px;
+      border-radius: 34px;
       overflow:hidden;
       background:#fff;
     }
     .screen img{
       width:100%;
       height:100%;
-      object-fit: cover;
+      object-fit:cover;
       display:block;
-    }
-
-    /* Make the screenshot feel like it sits inside the glass */
-    .screen img{
       transform: scale(1.02);
       transform-origin: top center;
     }
 
     @media (max-width: 980px){
-      .hero{
-        flex-direction: column-reverse;
-        gap: 26px;
-      }
-      .cta{ align-items:center; }
-      .phone{
-        transform:none;
-        width: min(74vw, 340px);
-      }
-      .wrap{ padding: 18px; }
+      body{ padding: 14px; }
+      .layout{ flex-direction: column-reverse; align-items:center; gap: 18px; }
+      .right{ width: min(82vw, 380px); }
+      .phone{ transform:none; }
+      .left{ width:100%; min-width:0; }
+      .icons{ position: static; margin: 10px auto 0; }
+      .stage{ height: 240px; left: 14px; right: 14px; bottom: 14px; }
+      .card{ min-height:auto; }
     }
   </style>
 </head>
 
 <body>
-  <main class="wrap">
-    <section class="hero" aria-label="Uitgesproken landing">
-      <div class="cta" aria-label="Download links">
-        <div class="iconRow" role="group" aria-label="Platforms">
-          <button class="iconBtn" type="button" aria-label="Binnenkort: App Store" title="Binnenkort: App Store">
-            <!-- Apple -->
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
-              <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
-            </svg>
-          </button>
+  <div class="frame">
+    <div class="card">
+      <div class="stage" aria-hidden="true">
+        <svg class="wave" viewBox="0 0 1200 360" preserveAspectRatio="none">
+          <path d="M0,210 C160,130 260,310 420,210 C580,110 680,290 840,210 C1000,130 1080,250 1200,200"
+                fill="none" stroke="rgba(109,175,189,.55)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
 
-          <button class="iconBtn" type="button" aria-label="Binnenkort: Google Play" title="Binnenkort: Google Play">
-            <!-- Play -->
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
-              <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
-              <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
-              <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
-            </svg>
-          </button>
+      <div class="layout">
+        <div class="left">
+          <div class="icons" role="group" aria-label="Platforms">
+            <button class="iconBtn" type="button" aria-label="Binnenkort: App Store" title="Binnenkort: App Store">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
+                <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
+              </svg>
+            </button>
+            <button class="iconBtn" type="button" aria-label="Binnenkort: Google Play" title="Binnenkort: Google Play">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
+                <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
+                <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
+                <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
+              </svg>
+            </button>
+            <a class="iconBtn" href="./app.html" aria-label="Open beta web-app" title="Open beta web-app">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="6.2" y="1.9" width="11.6" height="20.2" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+                <line x1="10.2" y1="4.8" x2="13.8" y2="4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <circle cx="12" cy="18.5" r="1.1" fill="currentColor"/>
+              </svg>
+            </a>
+          </div>
+        </div>
 
-          <a class="iconBtn" href="./app.html" aria-label="Open beta web-app" title="Open beta web-app">
-            <!-- phone -->
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <rect x="6.2" y="1.9" width="11.6" height="20.2" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
-              <line x1="10.2" y1="4.8" x2="13.8" y2="4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <circle cx="12" cy="18.5" r="1.1" fill="currentColor"/>
-            </svg>
-          </a>
+        <div class="right">
+          <div class="phone" aria-label="App preview">
+            <div class="screen">
+              <img src="app-screenshot.png" alt="Uitgesproken web-app screenshot">
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="phone" aria-label="App preview">
-        <div class="screen">
-          <img src="app-screenshot.png" alt="Uitgesproken web-app screenshot">
-        </div>
-      </div>
-    </section>
-  </main>
+    </div>
+  </div>
+
 </body>
 </html>
