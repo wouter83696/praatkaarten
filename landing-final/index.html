@@ -65,21 +65,21 @@
     .intro h1{
       margin:0;
       font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
-      font-size:clamp(58px,10.2vw,174px);
-      line-height:.9;
+      font-size:clamp(42px,7.2vw,118px);
+      line-height:.94;
       letter-spacing:.01em;
       font-weight:700;
-      color:var(--ink);
+      color:#5e9ca5;
     }
 
     .intro-sub{
       margin:0;
       font-family:"IBM Plex Sans",system-ui,sans-serif;
-      font-size:clamp(26px,3.1vw,46px);
-      line-height:1.1;
+      font-size:clamp(18px,2.05vw,32px);
+      line-height:1.15;
       letter-spacing:0;
       font-weight:400;
-      color:rgba(33,18,23,.88);
+      color:rgba(94,156,165,.76);
     }
 
     .hero-zone{
@@ -97,11 +97,21 @@
       border-radius:32px;
       overflow:hidden;
       border:1px solid var(--mint-line);
-      background:linear-gradient(90deg,#acd9d5 0%, #9dceca 72%, #b8e2dd 100%);
+      background:#b9e2de;
       box-shadow:var(--shadow);
       padding:clamp(18px,2.5vw,34px);
       display:flex;
       align-items:flex-end;
+    }
+
+    #indexBg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      display:block;
+      pointer-events:none;
+      z-index:0;
     }
 
     .mint-field::before,
@@ -111,6 +121,7 @@
       pointer-events:none;
       z-index:0;
       border-radius:999px;
+      display:none;
     }
 
     .mint-field::before{
@@ -142,6 +153,7 @@
       -webkit-backdrop-filter:blur(.8px);
       transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotate(var(--rot,0deg)) scale(var(--scale,1));
       will-change:transform;
+      display:none;
     }
 
     .blob.one{
@@ -466,11 +478,11 @@
       }
 
       .intro h1{
-        font-size:clamp(56px,13vw,96px);
+        font-size:clamp(40px,10.5vw,72px);
       }
 
       .intro-sub{
-        font-size:clamp(20px,5vw,34px);
+        font-size:clamp(17px,4.2vw,26px);
       }
 
       .hero-zone{
@@ -567,9 +579,7 @@
 
     <section class="hero-zone" aria-label="Hero">
       <div class="mint-field">
-        <span class="blob one" aria-hidden="true"></span>
-        <span class="blob two" aria-hidden="true"></span>
-        <span class="blob three" aria-hidden="true"></span>
+        <canvas id="indexBg" aria-hidden="true"></canvas>
 
         <article class="panel">
           <p class="panel-kicker">Titel en ondertitel</p>
@@ -627,35 +637,43 @@
       </aside>
     </section>
   </main>
+  <script src="./js/core/net.js"></script>
+  <script src="./js/components/gridBackground.js?v=20260216"></script>
   <script>
     (function(){
-      var blobs = Array.prototype.slice.call(document.querySelectorAll('.mint-field .blob'));
-      if(!blobs.length) return;
+      function run(){
+        if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
-      var seed = [
-        { ax: 30, ay: 18, rot: 6.2, scale: 0.060, speed: 0.00044, phase: 0.2 },
-        { ax: 24, ay: 16, rot: 5.1, scale: 0.050, speed: 0.00036, phase: 1.8 },
-        { ax: 18, ay: 13, rot: 4.0, scale: 0.042, speed: 0.00048, phase: 3.1 }
-      ];
+        var palette = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+        var vw = (window.innerWidth || 0);
+        var blobCount = (vw < 900) ? 5 : 8;
 
-      function frame(ts){
-        for(var i=0;i<blobs.length;i++){
-          var cfg = seed[i % seed.length];
-          var t = ts * cfg.speed + cfg.phase;
-          var x = Math.sin(t) * cfg.ax;
-          var y = Math.cos(t * 0.9) * cfg.ay;
-          var r = Math.sin(t * 0.8) * cfg.rot;
-          var s = 1 + Math.sin(t * 1.15) * cfg.scale;
-          var el = blobs[i];
-          el.style.setProperty('--tx', x.toFixed(2) + 'px');
-          el.style.setProperty('--ty', y.toFixed(2) + 'px');
-          el.style.setProperty('--rot', r.toFixed(2) + 'deg');
-          el.style.setProperty('--scale', s.toFixed(3));
-        }
-        window.requestAnimationFrame(frame);
+        window.PK.gridBackground.render({
+          cardBase: './sets/kaartensets/cards/',
+          meta: null,
+          palette: palette,
+          blobCount: blobCount,
+          alphaBoost: 1.12,
+          sizeScale: 1.34,
+          sizeLimit: 1.9,
+          blobWash: 0,
+          blobAlphaCap: 0.26,
+          blobAlphaCapDark: 0.28,
+          baseWash: false,
+          blobSpread: 'grid',
+          blobSpreadMargin: 0.15,
+          blobRadiusMin: 0.10,
+          blobRadiusMax: 0.20,
+          centerBlob: false,
+          shapeEnabled: false
+        });
       }
 
-      window.requestAnimationFrame(frame);
+      if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', run);
+      }else{
+        run();
+      }
     })();
   </script>
 </body>
