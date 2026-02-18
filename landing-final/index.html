@@ -30,6 +30,9 @@
       min-height:100%;
       margin:0;
     }
+    html{
+      scroll-behavior:smooth;
+    }
 
     body{
       min-height:100vh;
@@ -49,10 +52,68 @@
       margin:0 auto;
       min-height:calc(100vh - clamp(32px,4.2vw,60px));
       min-height:calc(100dvh - clamp(32px,4.2vw,60px));
-      display:grid;
-      grid-template-rows:auto 1fr;
+      display:block;
       position:relative;
       z-index:2;
+    }
+
+    .site-header{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:center;
+      gap:clamp(12px,2vw,28px);
+      padding:clamp(6px,.8vw,10px) clamp(2px,.6vw,8px);
+    }
+
+    .brand{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+      color:#3f7b84;
+      font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
+      font-weight:600;
+      font-size:clamp(23px,2.1vw,36px);
+      letter-spacing:.005em;
+    }
+
+    .brand svg{
+      width:clamp(42px,3.3vw,56px);
+      height:clamp(42px,3.3vw,56px);
+      opacity:.88;
+      flex:0 0 auto;
+    }
+
+    .site-menu{
+      justify-self:center;
+      display:flex;
+      align-items:center;
+      gap:clamp(16px,2.8vw,44px);
+    }
+
+    .site-menu a{
+      text-decoration:none;
+      color:rgba(53,95,104,.86);
+      font-weight:500;
+      font-size:clamp(16px,1.25vw,25px);
+      letter-spacing:.005em;
+      transition:color .18s ease;
+    }
+
+    .site-menu a:hover{
+      color:#355f68;
+    }
+
+    .download-link{
+      text-decoration:none;
+      color:rgba(53,95,104,.86);
+      border:1px solid rgba(53,95,104,.30);
+      border-radius:999px;
+      padding:8px 20px;
+      font-size:clamp(15px,1.05vw,18px);
+      font-weight:500;
+      white-space:nowrap;
+      background:rgba(255,255,255,.6);
     }
 
     .intro{
@@ -259,6 +320,54 @@
 
     .store-chip.web{
       border-color:rgba(94,156,165,.28);
+    }
+
+    .sections{
+      width:min(1500px,100%);
+      margin:clamp(18px,2.8vw,34px) auto 0;
+      position:relative;
+      z-index:2;
+      display:grid;
+      gap:clamp(14px,2vw,24px);
+    }
+
+    .menu-section{
+      min-height:clamp(520px,88vh,980px);
+      border-radius:28px;
+      border:1px solid rgba(149,198,194,.24);
+      background:linear-gradient(180deg, rgba(245,252,250,.86) 0%, rgba(239,248,246,.74) 100%);
+      box-shadow:0 10px 28px rgba(39,84,84,.10);
+      scroll-margin-top:20px;
+      display:grid;
+      place-items:center;
+      padding:clamp(24px,3.2vw,46px);
+    }
+
+    .menu-section__inner{
+      width:min(980px,100%);
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(148,188,185,.28);
+      border-radius:24px;
+      padding:clamp(22px,3.2vw,38px);
+      backdrop-filter:blur(5px);
+      -webkit-backdrop-filter:blur(5px);
+    }
+
+    .menu-section h2{
+      margin:0 0 10px;
+      font-family:"Montserrat","IBM Plex Sans",system-ui,sans-serif;
+      font-size:clamp(34px,4vw,52px);
+      line-height:.95;
+      letter-spacing:.008em;
+      color:#355f68;
+    }
+
+    .menu-section p{
+      margin:0;
+      max-width:56ch;
+      color:rgba(53,95,104,.80);
+      font-size:clamp(18px,1.55vw,24px);
+      line-height:1.4;
     }
 
     .phone-wrap{
@@ -530,6 +639,21 @@
         min-height:auto;
       }
 
+      .site-header{
+        grid-template-columns:1fr;
+        justify-items:start;
+        gap:10px;
+      }
+
+      .site-menu{
+        justify-self:start;
+        gap:18px;
+      }
+
+      .download-link{
+        display:none;
+      }
+
       .intro{
         min-height:unset;
         padding-top:4px;
@@ -565,6 +689,10 @@
         width:min(680px,100%);
       }
 
+      .menu-section{
+        min-height:clamp(480px,72vh,760px);
+      }
+
       .phone-wrap{
         position:relative;
         right:auto;
@@ -597,6 +725,20 @@
     @media (max-width: 680px){
       body{
         padding:12px;
+      }
+
+      .brand{
+        font-size:clamp(21px,5.7vw,30px);
+      }
+
+      .site-menu{
+        width:100%;
+        justify-content:space-between;
+        gap:8px;
+      }
+
+      .site-menu a{
+        font-size:clamp(14px,4vw,16px);
       }
 
       .mint-field{
@@ -647,13 +789,39 @@
       .blob.three{
         display:none;
       }
+
+      .menu-section{
+        border-radius:22px;
+      }
+
+      .menu-section__inner{
+        border-radius:18px;
+        padding:18px;
+      }
     }
   </style>
 </head>
 
 <body>
   <canvas id="indexBg" aria-hidden="true"></canvas>
-  <main class="landing">
+  <main class="landing" id="top">
+    <header class="site-header" aria-label="Navigatie">
+      <a class="brand" href="#top" aria-label="Naar boven">
+        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect x="5" y="11" width="44" height="39" rx="10" stroke="currentColor" stroke-width="4"/>
+          <path d="M28 49L45 57L43 40" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 29h7M27 29h7M38 29h7" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <span>Uitgesproken</span>
+      </a>
+      <nav class="site-menu">
+        <a href="#menu1">Menu 1</a>
+        <a href="#menu2">Menu 2</a>
+        <a href="#menu3">Menu 3</a>
+      </nav>
+      <a class="download-link" href="#ctaRow">Download App</a>
+    </header>
+
     <header class="intro" aria-label="Introductie">
       <h1>Uitgesproken</h1>
       <p class="intro-sub">Ruimte om te verkennen</p>
@@ -665,7 +833,7 @@
         <span class="blob two" aria-hidden="true"></span>
         <span class="blob three" aria-hidden="true"></span>
 
-        <article class="panel" aria-label="Platform knoppen">
+        <article class="panel" id="ctaRow" aria-label="Platform knoppen">
           <div class="stores-row" aria-label="App platformen">
             <a class="store-chip disabled" href="#" aria-label="App Store binnenkort">
               <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -755,6 +923,30 @@
       </aside>
     </section>
   </main>
+
+  <div class="sections">
+    <section class="menu-section" id="menu1" aria-label="Menu 1">
+      <div class="menu-section__inner">
+        <h2>Menu 1</h2>
+        <p>Dit is de eerste vervolgsectie. Hier kun je straks de inhoud van Menu 1 plaatsen, met dezelfde rustige stijl als de hero erboven.</p>
+      </div>
+    </section>
+
+    <section class="menu-section" id="menu2" aria-label="Menu 2">
+      <div class="menu-section__inner">
+        <h2>Menu 2</h2>
+        <p>Dit is de tweede vervolgsectie. Klik in de navigatie op Menu 2 om direct hiernaartoe te scrollen met een zachte overgang.</p>
+      </div>
+    </section>
+
+    <section class="menu-section" id="menu3" aria-label="Menu 3">
+      <div class="menu-section__inner">
+        <h2>Menu 3</h2>
+        <p>Dit is de derde vervolgsectie. Deze kun je later vervangen door je echte pagina-inhoud en blokken per onderwerp.</p>
+      </div>
+    </section>
+  </div>
+
   <script src="./js/core/net.js"></script>
   <script src="./js/components/gridBackground.js?v=20260216"></script>
   <script>
