@@ -1,11 +1,35 @@
 {
-  "id": "template",
-  "title": "Template",
+  "id": "__SET_ID__",
+  "title": "__SET_TITLE__",
   "cover": "voorkant.svg",
   "viewerTemplate": "classic",
   "cssVars": {
     "--pk-set-accent": "#F3D7A3",
-    "--pk-set-bg": "#FBF9F4",
+    "--pk-set-bg": "#FFFFFF",
     "--pk-set-card": "rgba(255,255,255,1)"
-  }
+  },
+  "backMode": "mirror",
+  "ui": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "hero-grid"
+    },
+    "themeCss": "theme.css"
+  },
+  "themes": [
+    { "key": "verkennen", "label": "Verkennen", "card": "voorkant.svg" },
+    { "key": "duiden", "label": "Duiden", "card": "voorkant.svg" },
+    { "key": "verbinden", "label": "Verbinden", "card": "voorkant.svg" },
+    { "key": "verhelderen", "label": "Verhelderen", "card": "voorkant.svg" },
+    { "key": "vertragen", "label": "Vertragen", "card": "voorkant.svg" },
+    { "key": "bewegen", "label": "Bewegen", "card": "voorkant.svg" }
+  ]
 }

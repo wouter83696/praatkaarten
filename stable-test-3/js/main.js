@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var page = (doc.body && doc.body.getAttribute('data-page')) ? doc.body.getAttribute('data-page') : '';
-  var ASSET_V = '0.61';
+  var ASSET_V = '0.63';
   w.PK_ASSET_V = ASSET_V;
 
   function withV(src){
@@ -38,6 +38,7 @@
   var base = '.';
   try{
     var pth = (w.location && w.location.pathname) ? w.location.pathname : '';
+    if(!page && pth.indexOf('/uitleg/') !== -1) page = 'uitleg';
     if(pth.indexOf('/uitleg/') !== -1 || pth.indexOf('/kaarten/') !== -1){
       base = '..';
     }
@@ -52,11 +53,15 @@
   var pathsSrc = p('./js/core/paths.js');
   var configSrc = p('./js/core/config.js');
 
-  var common = [
+  var commonCore = [
     p('./js/core/net.js'),
     p('./js/core/query.js'),
+    p('./js/core/state.js'),
     p('./js/core/color.js'),
-    p('./js/core/ui.js'),
+    p('./js/core/ui.js')
+  ];
+
+  var shellCommon = [
     p('./js/components/bottomSheet.js'),
     p('./js/components/menu.js'),
     p('./js/components/cardRenderer.js'),
@@ -74,6 +79,9 @@
     pageScript = p('./js/pages/kaarten.page.js');
     backgroundScript = p('./js/components/cardsBackground.js');
   }
+  if(page === 'uitleg'){
+    pageScript = p('./js/pages/uitleg.js');
+  }
 
   // 1) probeer paths.js, anders config.js (fallback)
   loadScript(pathsSrc).then(function(res){
@@ -82,7 +90,13 @@
     }
     return res;
   }).then(function(){
-    return loadScripts(common.concat([backgroundScript, pageScript]));
+    var scripts = [];
+    if(page === 'grid' || page === 'kaarten'){
+      scripts = commonCore.concat(shellCommon, [backgroundScript, pageScript]);
+    }else if(page === 'uitleg'){
+      scripts = commonCore.concat([pageScript]);
+    }
+    return loadScripts(scripts);
   }).then(function(){
     try{
       if(window.PK && PK.DEBUG && console && console.log){
@@ -100,12 +114,5 @@
       if(page === 'kaarten' && PK.pages.initKaarten) PK.pages.initKaarten();
     }
 
-    // Legacy fallback: als nieuwe page modules ontbreken, laad oude scripts.
-    if(page === 'grid' && (!window.PK || !PK.pages || !PK.pages.initGrid)){
-      return loadScripts([p('./js/pages/sets.js')]);
-    }
-    if(page === 'kaarten' && (!window.PK || !PK.pages || !PK.pages.initKaarten)){
-      return loadScripts([p('./js/pages/index.js')]);
-    }
   });
 })();

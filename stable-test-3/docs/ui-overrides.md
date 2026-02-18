@@ -1,6 +1,6 @@
 # UI Overrides (menu / sheet / index)
 
-Dit project gebruikt **1 centrale template** (bijv. `kaarten.html`) en laat per set kleine afwijkingen toe via config. Daardoor kun je de look & feel globaal aanpassen zonder elke set handmatig te wijzigen.
+Dit project gebruikt **centrale pagina-templates** (bijv. `kaarten/index.html`) en laat per set kleine afwijkingen toe via config. Daardoor kun je de look & feel globaal aanpassen zonder elke set handmatig te wijzigen.
 
 ## 1. Globale defaults (voor alle sets)
 Bewerk `sets/index.json` onder `uiDefaults`.

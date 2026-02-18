@@ -53,37 +53,6 @@
   var CARDS_INDEX_PAGE_BG = null;
   var doc = w.document;
 
-  function resolveBuildVersion(){
-    var v = '';
-    try{ v = String(w.PK_ASSET_V || ''); }catch(_eV){}
-    if(v) return v;
-    try{
-      var scripts = doc.getElementsByTagName('script');
-      for(var i=0;i<scripts.length;i++){
-        var src = scripts[i] && scripts[i].getAttribute ? String(scripts[i].getAttribute('src') || '') : '';
-        if(src.indexOf('js/main.js') === -1) continue;
-        var m = src.match(/[?&]v=([^&]+)/);
-        if(m && m[1]) return decodeURIComponent(m[1]);
-      }
-    }catch(_eS){}
-    return '';
-  }
-
-  function renderBuildStamp(){
-    if(!doc || !doc.body) return;
-    if(!doc.body.getAttribute || doc.body.getAttribute('data-page') !== 'kaarten') return;
-    var el = doc.getElementById('pkBuildStamp');
-    if(!el){
-      el = doc.createElement('div');
-      el.id = 'pkBuildStamp';
-      el.className = 'pkBuildStamp';
-      el.setAttribute('aria-hidden', 'true');
-      doc.body.appendChild(el);
-    }
-    var v = resolveBuildVersion();
-    el.textContent = v ? ('build ' + v) : 'build ?';
-  }
-
   function parseHexToRgbCsv(input){
     var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
     if(hex.length === 3){
@@ -666,7 +635,6 @@ if(PK.createMenuItem){
       if(w.console && w.console.error) w.console.error(e);
     });
 
-  renderBuildStamp();
   setThemePillText();
 
   // Menu wiring

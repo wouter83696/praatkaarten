@@ -21,7 +21,7 @@
     setsDir: base + '/sets',
     assets: base + '/assets',
     gridPage: base + '/index.html',
-    cardsPage: base + '/kaarten.html'
+    cardsPage: base + '/kaarten/'
   };
 
   PK.pathForSet = function(setId, rel){

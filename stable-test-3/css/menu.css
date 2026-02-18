@@ -23,7 +23,7 @@
   --topBarRadius: 0px;
   --topBarPadX: 18px;
   --topBarLogoSize: 42px;
-  --topBarBrandSize: 15px;
+  --topBarBrandSize: 15.6px;
   --topBarBrandWeight: 500;
   --topBarBrandColor: #5e9ca5;
   --topBarAccentColor: #4F8E9E;
@@ -152,7 +152,7 @@ body[data-brand-icon="1"] .setCoverIcon{
     --topBarRadius: 0px;
     --topBarPadX: 16px;
     --topBarLogoSize: 36px;
-    --topBarBrandSize: 14px;
+    --topBarBrandSize: 14.56px;
     --topBarBrandWeight: 500;
     --topBarMenuTap: 34px;
     --topBarMenuSize: 21.6px;
