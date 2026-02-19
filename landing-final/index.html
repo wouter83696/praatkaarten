@@ -402,10 +402,52 @@
       position:absolute;
       right:clamp(64px,8.4vw,142px);
       bottom:clamp(-24px,-2vh,-8px);
-      transform:translateY(0) rotate(9.6deg);
+      transform:none;
       transform-origin:50% 94%;
       z-index:5;
       pointer-events:none;
+    }
+
+    .phone-wrap.use-photo .iphone{
+      display:none;
+    }
+
+    .phone-photo{
+      position:relative;
+      z-index:2;
+      width:clamp(188px,16.4vw,286px);
+      aspect-ratio:433/577;
+    }
+
+    .phone-frame-photo{
+      display:block;
+      width:100%;
+      height:auto;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+
+    .phone-photo-screen{
+      position:absolute;
+      left:17.3%;
+      top:4.6%;
+      width:57.8%;
+      height:85.2%;
+      border-radius:32px;
+      overflow:hidden;
+      clip-path:polygon(18% 1.4%, 96.5% 8%, 74.5% 98.4%, 2.8% 90%);
+      z-index:1;
+    }
+
+    .phone-shot-fit{
+      display:block;
+      width:128%;
+      height:113%;
+      object-fit:cover;
+      object-position:center top;
+      transform:translate(-12.2%,-2.2%) rotate(-1.1deg);
+      user-select:none;
+      -webkit-user-drag:none;
     }
 
     .phone-shadow{
@@ -861,7 +903,7 @@
       .phone-wrap{
         right:clamp(28px,7.2vw,104px);
         bottom:clamp(-18px,-1.8vh,-6px);
-        transform:translateY(0) rotate(9deg);
+        transform:none;
       }
 
       .panel{
@@ -937,7 +979,7 @@
         position:relative;
         right:auto;
         bottom:auto;
-        transform:rotate(5.6deg);
+        transform:none;
         justify-self:center;
         margin-top:-24px;
       }
@@ -1023,7 +1065,7 @@
 
       .phone-wrap{
         margin-top:-18px;
-        transform:rotate(3.6deg);
+        transform:none;
       }
 
       .iphone{
@@ -1110,8 +1152,14 @@
         </article>
       </div>
 
-      <aside class="phone-wrap" aria-hidden="true">
+      <aside class="phone-wrap use-photo" aria-hidden="true">
         <div class="phone-shadow"></div>
+        <div class="phone-photo">
+          <div class="phone-photo-screen">
+            <img class="phone-shot-fit" src="./assets/phone-screen-fit.png" alt="" aria-hidden="true" />
+          </div>
+          <img class="phone-frame-photo" src="./assets/iphone-frame-side.png" alt="" aria-hidden="true" />
+        </div>
         <div class="iphone">
           <span class="side-btn up"></span>
           <span class="side-btn down"></span>
