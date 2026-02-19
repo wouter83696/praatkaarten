@@ -94,18 +94,21 @@ html[data-contrast="dark"]{
   white-space: nowrap;
   opacity: 0.92;
   transform: translateY(-1px);
+  display: inline-flex;
+  align-items: flex-start;
 }
 
 .themePillBrand::after{
-  content: "beta";
+  content: "BETA";
   display: inline-block;
-  margin-left: 6px;
-  font-size: 0.62em;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  margin-left: 5px;
+  font-size: 0.46em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(94, 156, 165, 0.72);
-  transform: translateY(-0.08em);
+  color: rgba(94, 156, 165, 0.76);
+  transform: translateY(-0.54em);
+  line-height: 1;
 }
 
 .themePillMenuIcon{
@@ -456,7 +459,7 @@ html[data-contrast="dark"] .themePillBrand{
 }
 
 html[data-contrast="dark"] .themePillBrand::after{
-  color: rgba(154, 210, 220, 0.72);
+  color: rgba(168, 220, 228, 0.78);
 }
 
 html[data-contrast="dark"] .menuHeaderTools{
