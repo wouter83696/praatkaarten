@@ -412,6 +412,10 @@
       display:none;
     }
 
+    .phone-wrap.use-photo .phone-shadow{
+      display:none;
+    }
+
     .phone-photo{
       position:relative;
       z-index:2;
@@ -434,6 +438,12 @@
 
     .phone-photo.use-complete .phone-photo-complete{
       display:block;
+      position:absolute;
+      max-width:none;
+      width:225%;
+      height:auto;
+      left:-76%;
+      top:-16%;
     }
 
     .phone-frame-photo{
@@ -1001,6 +1011,12 @@
         margin-top:-24px;
       }
 
+      .phone-photo.use-complete .phone-photo-complete{
+        width:198%;
+        left:-64%;
+        top:-11%;
+      }
+
       .blob.one{
         left:48%;
         top:56%;
@@ -1083,6 +1099,12 @@
       .phone-wrap{
         margin-top:-18px;
         transform:none;
+      }
+
+      .phone-photo.use-complete .phone-photo-complete{
+        width:176%;
+        left:-50%;
+        top:-7%;
       }
 
       .iphone{
@@ -1172,7 +1194,7 @@
       <aside class="phone-wrap use-photo" aria-hidden="true">
         <div class="phone-shadow"></div>
         <div class="phone-photo">
-          <img class="phone-photo-complete" src="./assets/iphone-phone-complete.png" alt="" aria-hidden="true" />
+          <img class="phone-photo-complete" src="./assets/iphone-comlete.png" alt="" aria-hidden="true" />
           <div class="phone-photo-screen">
             <img class="phone-shot-fit" src="./assets/phone-screen-fit.png" alt="" aria-hidden="true" />
           </div>
@@ -1307,7 +1329,8 @@
           '#E6823A', '#F29C7A', '#E6823A',
           '#EADFD3', '#EADFD3',
           '#F3E9E2', '#F3E9E2',
-          '#D8E6DE'
+          '#D8E6DE',
+          '#DEE6EC'
         ];
         var families = {
           '#7fcfc9': 'teal',
@@ -1317,10 +1340,11 @@
           '#f29c7a': 'warm',
           '#eadfd3': 'neutral',
           '#f3e9e2': 'neutral',
-          '#d8e6de': 'neutral'
+          '#d8e6de': 'neutral',
+          '#dee6ec': 'neutral'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 8 : 11;
+        var blobCount = (vw < 900) ? 7 : 10;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1328,10 +1352,10 @@
           palette: palette,
           blobFamilies: families,
           blobStyleProfile: 'uitgesproken',
-          blobGradientChance: 0.16,
+          blobGradientChance: 0.12,
           blobCount: blobCount,
           alphaBoost: 1.0,
-          sizeScale: 0.98,
+          sizeScale: 0.94,
           sizeLimit: 1.45,
           blobAlphaCap: 0.40,
           blobAlphaCapDark: 0.28,
