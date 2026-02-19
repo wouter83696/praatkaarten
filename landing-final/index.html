@@ -11,11 +11,11 @@
 
   <style>
     :root{
-      --page-bg:#F6F8F7;
+      --page-bg:#F7F8F7;
       --ink:#211217;
-      --mint:#cde6e4;
-      --mint-deep:#c2dfdc;
-      --mint-line:rgba(152,192,189,.24);
+      --mint:#d7ebea;
+      --mint-deep:#cbe3e0;
+      --mint-line:rgba(152,192,189,.18);
       --panel:#ffffff;
       --panel-line:rgba(33,18,23,.09);
       --blob-teal-a:rgba(127,207,201,.34);
@@ -25,7 +25,7 @@
       --blob-neutral-b:rgba(243,233,226,.31);
       --blob-warm-a:rgba(230,130,58,.18);
       --blob-warm-b:rgba(242,156,122,.14);
-      --shadow:0 12px 24px rgba(41,90,86,.08);
+      --shadow:0 10px 20px rgba(41,90,86,.07);
     }
 
     *{ box-sizing:border-box; }
@@ -148,8 +148,8 @@
 
     .hero-zone{
       position:relative;
-      min-height:clamp(370px,48vh,560px);
-      padding-bottom:clamp(18px,2.5vh,40px);
+      min-height:clamp(430px,56vh,660px);
+      padding-bottom:clamp(10px,1.8vh,24px);
     }
 
     .mint-field{
@@ -157,15 +157,15 @@
       left:50%;
       right:auto;
       transform:translateX(-50%);
-      width:min(1180px,86vw);
-      bottom:clamp(8px,1.2vh,18px);
-      height:clamp(178px,22vh,258px);
-      border-radius:30px;
+      width:min(1100px,80vw);
+      bottom:clamp(2px,.6vh,10px);
+      height:clamp(164px,20vh,224px);
+      border-radius:32px;
       overflow:hidden;
-      border:1px solid rgba(170,205,203,.36);
-      background:linear-gradient(180deg, rgba(210,233,232,.36) 0%, rgba(201,226,224,.31) 100%);
-      box-shadow:0 12px 24px rgba(56,102,108,.07);
-      padding:clamp(14px,1.8vw,24px);
+      border:1px solid rgba(170,205,203,.27);
+      background:linear-gradient(180deg, rgba(210,233,232,.25) 0%, rgba(201,226,224,.22) 100%);
+      box-shadow:0 10px 20px rgba(56,102,108,.06);
+      padding:clamp(12px,1.5vw,20px);
       display:flex;
       align-items:flex-end;
       justify-content:flex-start;
@@ -177,6 +177,7 @@
       width:100vw;
       height:100vh;
       display:block;
+      opacity:.74;
       pointer-events:none;
       z-index:0;
     }
@@ -191,21 +192,21 @@
     }
 
     .mint-field::before{
-      width:70%;
-      height:150%;
-      left:-8%;
-      bottom:-74%;
-      background:rgba(127,207,201,.16);
-      animation:swellLeft 26s ease-in-out infinite alternate;
+      width:68%;
+      height:146%;
+      left:-10%;
+      bottom:-78%;
+      background:rgba(127,207,201,.11);
+      animation:swellLeft 34s ease-in-out infinite alternate;
     }
 
     .mint-field::after{
-      width:46%;
-      height:35%;
-      right:-16%;
-      top:54%;
-      background:rgba(234,223,211,.14);
-      animation:haloFloat 24s ease-in-out infinite alternate;
+      width:42%;
+      height:33%;
+      right:-14%;
+      top:58%;
+      background:rgba(234,223,211,.09);
+      animation:haloFloat 30s ease-in-out infinite alternate;
     }
 
     .blob{
@@ -213,8 +214,8 @@
       z-index:1;
       border-radius:999px;
       pointer-events:none;
-      background:linear-gradient(145deg,rgba(107,186,196,.22),rgba(255,255,255,.14));
-      border:1px solid rgba(255,255,255,.36);
+      background:linear-gradient(145deg,rgba(107,186,196,.18),rgba(255,255,255,.10));
+      border:1px solid rgba(255,255,255,.30);
       backdrop-filter:blur(.8px);
       -webkit-backdrop-filter:blur(.8px);
       transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotate(var(--rot,0deg)) scale(var(--scale,1));
@@ -222,48 +223,48 @@
     }
 
     .blob.one{
-      width:154px;
-      height:108px;
-      left:41%;
-      top:54%;
-      opacity:.18;
-      animation: blobDriftA 24s ease-in-out infinite;
+      width:136px;
+      height:98px;
+      left:42%;
+      top:56%;
+      opacity:.11;
+      animation:blobDriftA 28s ease-in-out infinite;
     }
 
     .blob.two{
-      width:112px;
-      height:112px;
-      right:10%;
-      bottom:8%;
-      opacity:.14;
-      background:linear-gradient(145deg,rgba(243,233,226,.28),rgba(255,255,255,.12));
-      animation: blobDriftB 20s ease-in-out infinite;
+      width:102px;
+      height:102px;
+      right:11%;
+      bottom:10%;
+      opacity:.09;
+      background:linear-gradient(145deg,rgba(243,233,226,.20),rgba(255,255,255,.10));
+      animation:blobDriftB 24s ease-in-out infinite;
     }
 
     .blob.three{
-      width:88px;
-      height:88px;
-      right:24%;
+      width:78px;
+      height:78px;
+      right:23%;
       bottom:10%;
       top:auto;
-      background:linear-gradient(145deg,rgba(242,156,122,.18),rgba(255,255,255,.08));
-      opacity:.10;
-      animation: blobDriftC 26s ease-in-out infinite;
+      background:linear-gradient(145deg,rgba(242,156,122,.15),rgba(255,255,255,.06));
+      opacity:.07;
+      animation:blobDriftC 30s ease-in-out infinite;
     }
 
     .panel{
       position:relative;
       z-index:3;
-      background:rgba(241,250,250,.56);
-      border:1px solid rgba(255,255,255,.74);
-      border-radius:30px;
-      padding:clamp(12px,1.4vw,18px);
-      box-shadow:0 14px 24px rgba(30,70,74,.08), inset 0 0 0 1px rgba(255,255,255,.24);
-      width:min(780px,calc(100% - clamp(228px,24vw,340px)));
+      background:rgba(246,252,252,.44);
+      border:1px solid rgba(255,255,255,.68);
+      border-radius:28px;
+      padding:clamp(10px,1.2vw,16px);
+      box-shadow:0 10px 18px rgba(30,70,74,.07), inset 0 0 0 1px rgba(255,255,255,.20);
+      width:min(760px,calc(100% - clamp(240px,26vw,360px)));
       min-width:300px;
-      margin-left:clamp(20px,3vw,72px);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
+      margin-left:clamp(18px,2.6vw,56px);
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
     }
 
     .stores-row{
@@ -400,8 +401,8 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(64px,8.4vw,142px);
-      bottom:clamp(-24px,-2vh,-8px);
+      right:clamp(66px,9.5vw,168px);
+      bottom:clamp(-34px,-2.8vh,-12px);
       transform:none;
       transform-origin:50% 94%;
       z-index:5;
@@ -419,7 +420,7 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(188px,16.4vw,286px);
+      width:clamp(180px,15.2vw,268px);
       aspect-ratio:433/577;
     }
 
@@ -440,10 +441,10 @@
       display:block;
       position:absolute;
       max-width:none;
-      width:225%;
+      width:216%;
       height:auto;
-      left:-76%;
-      top:-16%;
+      left:-72%;
+      top:-15%;
     }
 
     .phone-frame-photo{
@@ -928,14 +929,14 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(28px,7.2vw,104px);
-        bottom:clamp(-18px,-1.8vh,-6px);
+        right:clamp(26px,6.8vw,98px);
+        bottom:clamp(-20px,-2.0vh,-8px);
         transform:none;
       }
 
       .panel{
-        width:min(740px,calc(100% - clamp(208px,23vw,286px)));
-        margin-left:clamp(8px,1.8vw,24px);
+        width:min(720px,calc(100% - clamp(200px,23vw,286px)));
+        margin-left:clamp(8px,1.6vw,20px);
       }
     }
 
@@ -1322,28 +1323,26 @@
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
         var palette = [
-          '#7FCFC9', '#7FCFC9', '#7FCFC9', '#7FCFC9',
+          '#7FCFC9', '#7FCFC9', '#7FCFC9',
           '#6BBAC4', '#6BBAC4',
           '#5FA8B2', '#5FA8B2',
-          '#E6823A', '#F29C7A', '#E6823A',
-          '#EADFD3', '#EADFD3',
-          '#F3E9E2', '#F3E9E2',
-          '#D8E6DE',
-          '#DEE6EC'
+          '#DCEEEE', '#C4E4E3',
+          '#EADFD3', '#F3E9E2',
+          '#E6823A', '#F29C7A'
         ];
         var families = {
           '#7fcfc9': 'teal',
           '#6bbac4': 'teal',
           '#5fa8b2': 'teal',
+          '#dceeee': 'teal',
+          '#c4e4e3': 'teal',
           '#e6823a': 'warm',
           '#f29c7a': 'warm',
           '#eadfd3': 'neutral',
-          '#f3e9e2': 'neutral',
-          '#d8e6de': 'neutral',
-          '#dee6ec': 'neutral'
+          '#f3e9e2': 'neutral'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 7 : 10;
+        var blobCount = (vw < 900) ? 5 : 7;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1351,21 +1350,21 @@
           palette: palette,
           blobFamilies: families,
           blobStyleProfile: 'uitgesproken',
-          blobGradientChance: 0.12,
+          blobGradientChance: 0.08,
           blobCount: blobCount,
-          alphaBoost: 1.0,
-          sizeScale: 0.94,
+          alphaBoost: 0.84,
+          sizeScale: 0.86,
           sizeLimit: 1.45,
-          blobAlphaCap: 0.40,
-          blobAlphaCapDark: 0.28,
+          blobAlphaCap: 0.30,
+          blobAlphaCapDark: 0.22,
           baseWash: false,
           blobSpread: 'grid',
-          blobSpreadMargin: 0.14,
-          blobRadiusMin: 0.09,
-          blobRadiusMax: 0.22,
-          blobIrregularity: 0.28,
+          blobSpreadMargin: 0.19,
+          blobRadiusMin: 0.08,
+          blobRadiusMax: 0.18,
+          blobIrregularity: 0.24,
           blobPointsMin: 8,
-          blobPointsMax: 12,
+          blobPointsMax: 11,
           centerBlob: false,
           shapeEnabled: false
         });
