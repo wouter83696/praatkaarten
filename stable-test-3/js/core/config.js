@@ -1,42 +1,50 @@
-// Praatkaartjes – config (gedeeld)
-// Geen modules: bewust ES5 + één globale namespace.
+// Praatkaartjes – config fallback
+// Wordt alleen gebruikt als `core/paths.js` niet laadt.
 (function(w){
   'use strict';
   var PK = w.PK = w.PK || {};
-  PK.VERSION = '3.7.1.78';
-
-  // Centrale paden (één bron van waarheid)
-  // Bepaal basispad (werkt ook als je vanuit /uitleg/ of /kaarten/ draait)
   var base = '.';
-  try{
-    var p = w.location && w.location.pathname ? w.location.pathname : '';
-    if(p.indexOf('/uitleg/') !== -1 || p.indexOf('/kaarten/') !== -1) base = '..';
-  }catch(_eBase){}
+  var PATHS;
 
-  PK.BASE = base;
-  PK.PATHS = PK.PATHS || {
-    // Gebruik altijd relatieve paden zodat alles vanuit een map kan draaien.
+  try{
+    var p = (w.location && w.location.pathname) ? String(w.location.pathname) : '';
+    if(p.indexOf('/uitleg/') !== -1 || p.indexOf('/kaarten/') !== -1) base = '..';
+  }catch(_eBase){ base = '.'; }
+
+  PATHS = PK.PATHS || {
     base: base,
     setsIndex: base + '/sets/index.json',
     setsDir: base + '/sets',
-    assets: base + '/assets',
+    assetsDir: base + '/assets',
     gridPage: base + '/index.html',
     cardsPage: base + '/kaarten/'
   };
 
-  PK.pathForSet = function(setId, rel){
-    var s = String(setId||'').replace(/^\s+|\s+$/g,'') || 'samenwerken';
-    var r = String(rel||'').replace(/^\//,'');
-    return PK.PATHS.setsDir + '/' + encodeURIComponent(s) + '/' + r;
-  };
-  PK.pathForAsset = function(rel){
-    var r = String(rel||'').replace(/^\//,'');
-    var dir = (PK.PATHS && (PK.PATHS.assets || PK.PATHS.assetsDir)) ? (PK.PATHS.assets || PK.PATHS.assetsDir) : base + '/assets';
-    return dir + '/' + r;
-  };
-  PK.withV = function(url){
-    return url + (url.indexOf('?')===-1 ? '?' : '&') + 'v=' + encodeURIComponent(PK.VERSION);
-  };
-  // Cache-bust sets index (belangrijk voor main index)
-  try{ PK.PATHS.setsIndex = PK.withV(PK.PATHS.setsIndex); }catch(_eSet){}
+  PK.PATHS = PATHS;
+  w.PATHS = PATHS;
+  PK.VERSION = PK.VERSION || '4.2.6';
+
+  if(typeof PK.withV !== 'function'){
+    PK.withV = function(url){
+      return String(url || '') + (String(url || '').indexOf('?')===-1 ? '?' : '&') + 'v=' + encodeURIComponent(PK.VERSION);
+    };
+  }
+  if(typeof PK.pathForSet !== 'function'){
+    PK.pathForSet = function(setId, rel){
+      var s = String(setId||'').replace(/^\s+|\s+$/g,'') || 'samenwerken';
+      var r = String(rel||'').replace(/^\//,'');
+      return PATHS.setsDir + '/' + encodeURIComponent(s) + '/' + r;
+    };
+  }
+  if(typeof PK.pathForAsset !== 'function'){
+    PK.pathForAsset = function(rel){
+      var r = String(rel||'').replace(/^\//,'');
+      return (PATHS.assetsDir || (base + '/assets')) + '/' + r;
+    };
+  }
+  try{
+    if(PATHS.setsIndex && !/[?&]v=/.test(PATHS.setsIndex)){
+      PATHS.setsIndex = PK.withV(PATHS.setsIndex);
+    }
+  }catch(_eSet){}
 })(window);

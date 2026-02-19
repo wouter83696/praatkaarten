@@ -36,19 +36,19 @@
   if(PK.createMenu){
     menuApi = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(menuEl){
-    function openMenuFallback(){
+    var openMenuFallback = function(){
       menuEl.hidden = false;
       if(overlay) overlay.hidden = false;
       if(pillBtn && pillBtn.setAttribute) pillBtn.setAttribute('aria-expanded', 'true');
-    }
-    function closeMenuFallback(){
+    };
+    var closeMenuFallback = function(){
       menuEl.hidden = true;
       if(overlay) overlay.hidden = true;
       if(pillBtn && pillBtn.setAttribute) pillBtn.setAttribute('aria-expanded', 'false');
-    }
-    function toggleMenuFallback(){
+    };
+    var toggleMenuFallback = function(){
       if(menuEl.hidden) openMenuFallback(); else closeMenuFallback();
-    }
+    };
     if(pillBtn && !pillBtn.__pkMenuFallbackBound){
       pillBtn.__pkMenuFallbackBound = true;
       pillBtn.addEventListener('click', toggleMenuFallback);
@@ -816,9 +816,7 @@
   }
 
   function applyBackground(idx){
-    var bgApi = (PK && PK.gridBackground && PK.gridBackground.render)
-      ? PK.gridBackground
-      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    var bgApi = (PK && PK.gridBackground && PK.gridBackground.render) ? PK.gridBackground : null;
     if(!bgApi) return;
     var bg = (idx && idx.indexPage && idx.indexPage.background)
       ? idx.indexPage.background
