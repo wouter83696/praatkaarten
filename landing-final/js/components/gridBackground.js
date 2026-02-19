@@ -732,9 +732,15 @@
     var gradientBudgetUsed = 0;
     var gradientBudgetMax = (!isDark && useUitgesprokenProfile) ? 2 : 999;
     for(var i=0;i<blobCount;i++){
-      var raw = isDark
-        ? ((darkPalette && darkPalette.length) ? darkPalette[i % darkPalette.length] : neon[i % neon.length])
-        : ((palette && palette.length) ? palette[i % palette.length] : base);
+      var raw;
+      if(isDark){
+        raw = (darkPalette && darkPalette.length) ? darkPalette[i % darkPalette.length] : neon[i % neon.length];
+      }else if(useUitgesprokenProfile && palette && palette.length){
+        // Houd ingestelde kleurverhouding ook bij lagere blob-counts.
+        raw = palette[Math.floor(rnd() * palette.length)];
+      }else{
+        raw = (palette && palette.length) ? palette[i % palette.length] : base;
+      }
       var rawNorm = normHex(raw);
       var rawKey = rawNorm ? rawNorm.toLowerCase() : '';
 
