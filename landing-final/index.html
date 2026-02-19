@@ -54,6 +54,7 @@
       margin:0 auto;
       min-height:calc(100vh - clamp(32px,4.2vw,60px));
       min-height:calc(100dvh - clamp(32px,4.2vw,60px));
+      padding-bottom:clamp(84px,11vh,164px);
       display:block;
       position:relative;
       z-index:2;
@@ -112,8 +113,8 @@
 
     .hero-zone{
       position:relative;
-      min-height:clamp(440px,58vh,700px);
-      padding-bottom:clamp(30px,5vh,76px);
+      min-height:clamp(520px,64vh,780px);
+      padding-bottom:clamp(48px,7vh,106px);
     }
 
     .mint-field{
@@ -122,7 +123,7 @@
       right:auto;
       transform:translateX(-50%);
       width:min(1240px,89vw);
-      bottom:clamp(36px,7vh,90px);
+      bottom:clamp(24px,3.8vh,58px);
       height:clamp(224px,29vh,330px);
       border-radius:36px;
       overflow:hidden;
@@ -223,9 +224,9 @@
       border-radius:34px;
       padding:clamp(14px,1.8vw,20px);
       box-shadow:0 14px 24px rgba(30,70,74,.08), inset 0 0 0 1px rgba(255,255,255,.24);
-      width:min(920px,calc(100% - clamp(230px,24vw,356px)));
+      width:min(860px,calc(100% - clamp(250px,26vw,390px)));
       min-width:330px;
-      margin-left:clamp(12px,3vw,64px);
+      margin-left:clamp(24px,4vw,92px);
       backdrop-filter:blur(8px);
       -webkit-backdrop-filter:blur(8px);
     }
@@ -251,7 +252,7 @@
       color:#3e6a72;
       text-decoration:none;
       padding:13px 14px;
-      min-height:84px;
+      min-height:76px;
       box-shadow:0 8px 16px rgba(44,94,97,.08);
     }
 
@@ -265,7 +266,7 @@
 
     .store-chip strong{
       display:block;
-      font-size:clamp(20px,1.9vw,42px);
+      font-size:clamp(17px,1.5vw,30px);
       line-height:.97;
       color:rgba(56,96,103,.94);
       font-weight:700;
@@ -274,8 +275,8 @@
     }
 
     .store-chip .ico{
-      width:34px;
-      height:34px;
+      width:30px;
+      height:30px;
       opacity:.82;
       flex:0 0 auto;
     }
@@ -310,7 +311,7 @@
 
     .sections{
       width:min(1500px,100%);
-      margin:clamp(18px,2.8vw,34px) auto 0;
+      margin:clamp(110px,14vh,220px) auto 0;
       position:relative;
       z-index:2;
       display:grid;
@@ -358,9 +359,9 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(52px,9vw,150px);
-      bottom:clamp(-56px,-4.2vh,-20px);
-      transform:translateY(0) rotate(8.5deg);
+      right:clamp(88px,11vw,194px);
+      bottom:clamp(-12px,-1.1vh,10px);
+      transform:translateY(0) rotate(9.6deg);
       transform-origin:50% 94%;
       z-index:5;
       pointer-events:none;
@@ -368,10 +369,10 @@
 
     .phone-shadow{
       position:absolute;
-      left:-38%;
-      right:-26%;
-      bottom:-44px;
-      height:76px;
+      left:-36%;
+      right:-24%;
+      bottom:-42px;
+      height:72px;
       border-radius:999px;
       background:radial-gradient(ellipse at center, rgba(33,61,68,.24) 0%, rgba(33,61,68,0) 74%);
       filter:blur(10px);
@@ -381,7 +382,7 @@
     .iphone{
       position:relative;
       z-index:2;
-      width:clamp(182px,16.2vw,274px);
+      width:clamp(194px,17vw,302px);
       aspect-ratio:71.5/146.7;
       border-radius:42px;
       padding:5px;
@@ -816,13 +817,14 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(22px,7vw,88px);
-        transform:translateY(0) rotate(7deg);
+        right:clamp(28px,8vw,108px);
+        bottom:clamp(-8px,-.8vh,10px);
+        transform:translateY(0) rotate(8.2deg);
       }
 
       .panel{
-        width:min(820px,calc(100% - clamp(210px,22vw,290px)));
-        margin-left:clamp(8px,1.8vw,22px);
+        width:min(800px,calc(100% - clamp(216px,23vw,304px)));
+        margin-left:clamp(12px,2.4vw,30px);
       }
     }
 
@@ -856,7 +858,7 @@
       }
 
       .hero-zone{
-        min-height:auto;
+        min-height:clamp(420px,58vh,650px);
         display:grid;
         gap:14px;
       }
@@ -868,7 +870,7 @@
         transform:none;
         width:100%;
         height:auto;
-        min-height:352px;
+        min-height:372px;
         align-items:flex-end;
       }
 
@@ -885,7 +887,7 @@
         position:relative;
         right:auto;
         bottom:auto;
-        transform:rotate(4.5deg);
+        transform:rotate(3.4deg);
         justify-self:center;
         margin-top:-24px;
       }
@@ -916,7 +918,7 @@
       }
 
       .mint-field{
-        min-height:300px;
+        min-height:322px;
         border-radius:24px;
         padding:14px;
       }
@@ -960,8 +962,8 @@
       }
 
       .phone-wrap{
-        margin-top:-24px;
-        transform:rotate(3.2deg);
+        margin-top:-18px;
+        transform:rotate(2.4deg);
       }
 
       .iphone{
