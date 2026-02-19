@@ -419,6 +419,23 @@
       aspect-ratio:433/577;
     }
 
+    .phone-photo.use-complete .phone-photo-screen,
+    .phone-photo.use-complete .phone-frame-photo{
+      display:none;
+    }
+
+    .phone-photo-complete{
+      display:none;
+      width:100%;
+      height:auto;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+
+    .phone-photo.use-complete .phone-photo-complete{
+      display:block;
+    }
+
     .phone-frame-photo{
       display:block;
       width:100%;
@@ -1155,6 +1172,7 @@
       <aside class="phone-wrap use-photo" aria-hidden="true">
         <div class="phone-shadow"></div>
         <div class="phone-photo">
+          <img class="phone-photo-complete" src="./assets/iphone-phone-complete.png" alt="" aria-hidden="true" />
           <div class="phone-photo-screen">
             <img class="phone-shot-fit" src="./assets/phone-screen-fit.png" alt="" aria-hidden="true" />
           </div>
@@ -1266,6 +1284,19 @@
   </script>
   <script>
     (function(){
+      var full = document.querySelector('.phone-photo-complete');
+      if(!full) return;
+      function useFull(){
+        if(!full.naturalWidth) return;
+        var wrap = full.closest('.phone-photo');
+        if(wrap) wrap.classList.add('use-complete');
+      }
+      full.addEventListener('load', useFull);
+      if(full.complete) useFull();
+    })();
+  </script>
+  <script>
+    (function(){
       function run(){
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
@@ -1275,7 +1306,8 @@
           '#5FA8B2', '#5FA8B2',
           '#E6823A', '#F29C7A', '#E6823A',
           '#EADFD3', '#EADFD3',
-          '#F3E9E2', '#F3E9E2'
+          '#F3E9E2', '#F3E9E2',
+          '#D8E6DE'
         ];
         var families = {
           '#7fcfc9': 'teal',
@@ -1284,10 +1316,11 @@
           '#e6823a': 'warm',
           '#f29c7a': 'warm',
           '#eadfd3': 'neutral',
-          '#f3e9e2': 'neutral'
+          '#f3e9e2': 'neutral',
+          '#d8e6de': 'neutral'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 9 : 13;
+        var blobCount = (vw < 900) ? 8 : 11;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1298,7 +1331,7 @@
           blobGradientChance: 0.16,
           blobCount: blobCount,
           alphaBoost: 1.0,
-          sizeScale: 1.02,
+          sizeScale: 0.98,
           sizeLimit: 1.45,
           blobAlphaCap: 0.40,
           blobAlphaCapDark: 0.28,
