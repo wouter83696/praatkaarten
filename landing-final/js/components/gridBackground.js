@@ -757,6 +757,7 @@
         else if(family === 'warm') washAmt = 0.16;
         else if(family === 'neutral') washAmt = 0.12;
         else if(family === 'cool') washAmt = 0.14;
+        else if(family === 'soft') washAmt = 0.16;
         else washAmt = 0.10;
         c = mixWithWhite(raw, washAmt);
       }else{
@@ -771,11 +772,12 @@
         alpha = (lite ? 0.18 : 0.22) + rnd()*0.10;
       }else if(useUitgesprokenProfile){
         // Uitgesproken richer ranges:
-        // teal 24-34%, neutral 20-28%, cool 17-24%, warm 10-14%
-        if(family === 'warm') alpha = 0.10 + rnd()*0.04;
-        else if(family === 'neutral') alpha = 0.20 + rnd()*0.08;
-        else if(family === 'cool') alpha = 0.17 + rnd()*0.07;
-        else alpha = 0.24 + rnd()*0.10;
+        // teal 26-38%, neutral 22-30%, cool 20-28%, soft 18-24%, warm 12-16%
+        if(family === 'warm') alpha = 0.12 + rnd()*0.04;
+        else if(family === 'neutral') alpha = 0.22 + rnd()*0.08;
+        else if(family === 'cool') alpha = 0.20 + rnd()*0.08;
+        else if(family === 'soft') alpha = 0.18 + rnd()*0.06;
+        else alpha = 0.26 + rnd()*0.12;
       }else{
         var alphaBase = warm ? (lite ? 0.15 : 0.19) : (lite ? 0.18 : 0.24);
         var alphaVar  = warm ? 0.06 : 0.10;
@@ -816,21 +818,22 @@
       if(!isDark && useUitgesprokenProfile && family === 'warm'){
         // Warme accentkleur altijd klein/subtiel houden.
         if(variant !== 'circle' && rnd() < 0.72) variant = 'circle';
-        rr *= 0.62;
+        rr *= 0.68;
       }
       if(variant === 'circle'){
-        // cirkels 10-16%
-        alpha = 0.10 + rnd()*0.06;
+        // cirkels 11-18%
+        alpha = 0.11 + rnd()*0.07;
       }
 
       var cap = isDark ? blobAlphaCapDark : blobAlphaCap;
       if(cap === null){
         if(!isDark && useUitgesprokenProfile){
-          if(variant === 'circle') cap = 0.17;
-          else if(family === 'warm') cap = 0.15;
-          else if(family === 'neutral') cap = 0.28;
-          else if(family === 'cool') cap = 0.25;
-          else cap = 0.34;
+          if(variant === 'circle') cap = 0.18;
+          else if(family === 'warm') cap = 0.16;
+          else if(family === 'neutral') cap = 0.30;
+          else if(family === 'cool') cap = 0.28;
+          else if(family === 'soft') cap = 0.24;
+          else cap = 0.38;
         }else{
           cap = 0.6;
         }
