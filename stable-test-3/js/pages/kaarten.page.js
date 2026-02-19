@@ -490,7 +490,7 @@ if(PK.createMenuItem){
       if(!Array.isArray(list) || !list.length) return Promise.reject(new Error('empty cards index'));
       var basePath = PK.pathForSet ? null : (PK.PATHS && PK.PATHS.setsDir ? PK.PATHS.setsDir : '.');
       var tasks = list.map(function(file){
-        var rel = 'cards_rect/' + String(file || '').replace(/^\\//,'');
+        var rel = 'cards_rect/' + String(file || '').replace(/^\//,'');
         var url = PK.pathForSet ? PK.pathForSet(setId, rel) : (basePath + '/' + encodeURIComponent(setId) + '/' + rel);
         return PK.loadJson(url).then(function(card){
           card = card || {};

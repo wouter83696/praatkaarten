@@ -4,9 +4,10 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.66';
+  var ASSET_V = '0.67';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
+  var lastRuntimeError = '';
   w.PK_ASSET_V = ASSET_V;
 
   try{ pathName = (w.location && w.location.pathname) ? String(w.location.pathname) : ''; }catch(_ePath){ pathName = ''; }
@@ -120,6 +121,33 @@
       };
     }
   }
+
+  function rememberRuntimeError(err){
+    if(!err) return;
+    var txt = String(err);
+    if(!txt) return;
+    if(txt.length > 220) txt = txt.slice(0, 220) + '...';
+    lastRuntimeError = txt;
+  }
+
+  try{
+    w.addEventListener('error', function(ev){
+      var msg = '';
+      try{
+        msg = (ev && (ev.message || (ev.error && ev.error.message))) ? String(ev.message || ev.error.message) : '';
+      }catch(_eMsg){ msg = ''; }
+      rememberRuntimeError(msg);
+    });
+    w.addEventListener('unhandledrejection', function(ev){
+      var msg = '';
+      try{
+        var r = ev ? ev.reason : null;
+        if(r && r.message) msg = String(r.message);
+        else if(r) msg = String(r);
+      }catch(_eRej){ msg = ''; }
+      rememberRuntimeError(msg);
+    });
+  }catch(_eGlobal){}
 
   function normalizeScriptUrl(src){
     var raw = String(src || '');
@@ -254,6 +282,8 @@
         if(!hasCards){
           if(miss.length){
             showBootError('Kaarten konden niet worden geladen.', 'Missende scripts: ' + miss.join(', '));
+          }else if(lastRuntimeError){
+            showBootError('Kaarten konden niet worden geladen.', 'Scriptfout: ' + lastRuntimeError);
           }else{
             showBootError('Kaarten konden niet worden geladen.', 'Controleer set-bestanden en scriptfouten.');
           }
@@ -267,7 +297,7 @@
           showBootError('Kaartensets konden niet worden geladen.', 'Missende scripts: ' + miss.join(', '));
         }
       }
-    }, 900);
+    }, 1400);
   }
 
   function scriptPlan(){
