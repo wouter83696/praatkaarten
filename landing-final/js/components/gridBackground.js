@@ -729,6 +729,8 @@
     if(blobAlphaCapDark !== null) blobAlphaCapDark = clamp(blobAlphaCapDark, 0.05, 1);
     if(blobAlphaFixed !== null) blobAlphaFixed = clamp(blobAlphaFixed, 0.02, 0.9);
 
+    var gradientBudgetUsed = 0;
+    var gradientBudgetMax = (!isDark && useUitgesprokenProfile) ? 2 : 999;
     for(var i=0;i<blobCount;i++){
       var raw = isDark
         ? ((darkPalette && darkPalette.length) ? darkPalette[i % darkPalette.length] : neon[i % neon.length])
@@ -754,11 +756,9 @@
       }else if(useUitgesprokenProfile){
         var washAmt;
         if(blobWash !== null) washAmt = blobWash;
-        else if(family === 'warm') washAmt = 0.16;
-        else if(family === 'neutral') washAmt = 0.12;
-        else if(family === 'cool') washAmt = 0.14;
-        else if(family === 'soft') washAmt = 0.16;
-        else washAmt = 0.10;
+        else if(family === 'warm') washAmt = 0.11;
+        else if(family === 'neutral') washAmt = 0.08;
+        else washAmt = 0.06;
         c = mixWithWhite(raw, washAmt);
       }else{
         c = (blobWash !== null) ? mixWithWhite(raw, blobWash) : softenForBg(raw);
@@ -771,13 +771,11 @@
         // Iets lager dan de vorige IP zodat het rustiger kijkt.
         alpha = (lite ? 0.18 : 0.22) + rnd()*0.10;
       }else if(useUitgesprokenProfile){
-        // Uitgesproken richer ranges:
-        // teal 26-38%, neutral 22-30%, cool 20-28%, soft 18-24%, warm 12-16%
-        if(family === 'warm') alpha = 0.12 + rnd()*0.04;
-        else if(family === 'neutral') alpha = 0.22 + rnd()*0.08;
-        else if(family === 'cool') alpha = 0.20 + rnd()*0.08;
-        else if(family === 'soft') alpha = 0.18 + rnd()*0.06;
-        else alpha = 0.26 + rnd()*0.12;
+        // Richtlijn Uitgesproken:
+        // teal 25-40%, neutral 30-35%, warm 12-20%
+        if(family === 'warm') alpha = 0.12 + rnd()*0.08;
+        else if(family === 'neutral') alpha = 0.30 + rnd()*0.05;
+        else alpha = 0.25 + rnd()*0.15;
       }else{
         var alphaBase = warm ? (lite ? 0.15 : 0.19) : (lite ? 0.18 : 0.24);
         var alphaVar  = warm ? 0.06 : 0.10;
@@ -812,28 +810,26 @@
       var variant = 'organic';
       if(!isDark && useUitgesprokenProfile){
         var kindRnd = rnd();
-        if(kindRnd < 0.18) variant = 'circle';      // subtiele transparante cirkels
-        else if(kindRnd < 0.43) variant = 'wave';   // brede golvende vormen
+        if(kindRnd < 0.22) variant = 'circle';      // subtiele transparante cirkels
+        else if(kindRnd < 0.52) variant = 'wave';   // brede golvende vormen
       }
       if(!isDark && useUitgesprokenProfile && family === 'warm'){
         // Warme accentkleur altijd klein/subtiel houden.
-        if(variant !== 'circle' && rnd() < 0.72) variant = 'circle';
-        rr *= 0.68;
+        if(variant !== 'circle' && rnd() < 0.58) variant = 'circle';
+        rr *= 0.74;
       }
       if(variant === 'circle'){
-        // cirkels 11-18%
-        alpha = 0.11 + rnd()*0.07;
+        // Circles: 8-15%
+        alpha = 0.08 + rnd()*0.07;
       }
 
       var cap = isDark ? blobAlphaCapDark : blobAlphaCap;
       if(cap === null){
         if(!isDark && useUitgesprokenProfile){
-          if(variant === 'circle') cap = 0.18;
-          else if(family === 'warm') cap = 0.16;
-          else if(family === 'neutral') cap = 0.30;
-          else if(family === 'cool') cap = 0.28;
-          else if(family === 'soft') cap = 0.24;
-          else cap = 0.38;
+          if(variant === 'circle') cap = 0.15;
+          else if(family === 'warm') cap = 0.20;
+          else if(family === 'neutral') cap = 0.35;
+          else cap = 0.40;
         }else{
           cap = 0.6;
         }
@@ -841,8 +837,8 @@
       if(alpha > cap) alpha = cap;
 
       if(!isDark && useUitgesprokenProfile){
-        if(variant === 'wave') rr *= 1.16;
-        else if(variant === 'circle') rr *= 0.75;
+        if(variant === 'wave') rr *= 1.20;
+        else if(variant === 'circle') rr *= 0.68;
       }
 
       ctx.save();
@@ -857,7 +853,7 @@
         ctx.shadowBlur = 0;
       }
 
-      if(!isDark && useUitgesprokenProfile && variant !== 'circle' && blobGradientChance > 0 && rnd() < blobGradientChance){
+      if(!isDark && useUitgesprokenProfile && variant !== 'circle' && gradientBudgetUsed < gradientBudgetMax && blobGradientChance > 0 && rnd() < blobGradientChance){
         var grad;
         if(variant === 'wave'){
           grad = ctx.createLinearGradient(-rr, -rr*0.42, rr, rr*0.42);
@@ -867,6 +863,7 @@
         grad.addColorStop(0, c);
         grad.addColorStop(1, mixHex(c, '#ffffff', 0.24));
         ctx.fillStyle = grad;
+        gradientBudgetUsed++;
       }else{
         ctx.fillStyle = c;
       }
