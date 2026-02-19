@@ -11,6 +11,7 @@
 
   <style>
     :root{
+      --page-pad:clamp(12px,1.6vw,24px);
       --page-bg:#F7F8F7;
       --ink:#211217;
       --mint:#d7ebea;
@@ -45,8 +46,8 @@
       background:var(--page-bg);
       color:var(--ink);
       font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      padding:clamp(12px,1.6vw,24px);
-      overflow-x:hidden;
+      padding:var(--page-pad);
+      overflow:hidden;
     }
     @supports (height: 100svh){
       body{ min-height:100svh; }
@@ -55,10 +56,10 @@
     .landing{
       width:min(1500px,100%);
       margin:0 auto;
-      min-height:calc(100vh - clamp(24px,3.2vw,44px));
-      min-height:calc(100dvh - clamp(24px,3.2vw,44px));
-      height:calc(100vh - clamp(24px,3.2vw,44px));
-      height:calc(100dvh - clamp(24px,3.2vw,44px));
+      min-height:calc(100vh - (var(--page-pad) * 2));
+      min-height:calc(100dvh - (var(--page-pad) * 2));
+      height:calc(100vh - (var(--page-pad) * 2));
+      height:calc(100dvh - (var(--page-pad) * 2));
       padding-bottom:clamp(8px,1.4vh,18px);
       display:flex;
       flex-direction:column;
@@ -67,8 +68,8 @@
     }
     @supports (height: 100svh){
       .landing{
-        min-height:calc(100svh - clamp(24px,3.2vw,44px));
-        height:calc(100svh - clamp(24px,3.2vw,44px));
+        min-height:calc(100svh - (var(--page-pad) * 2));
+        height:calc(100svh - (var(--page-pad) * 2));
       }
     }
 
@@ -168,9 +169,9 @@
       left:50%;
       right:auto;
       transform:translateX(-50%);
-      width:min(1120px,80vw);
+      width:min(1060px,76vw);
       bottom:clamp(10px,1.8vh,24px);
-      height:clamp(150px,18vh,206px);
+      height:clamp(146px,17vh,192px);
       border-radius:32px;
       overflow:hidden;
       border:1px solid rgba(170,205,203,.24);
@@ -413,8 +414,8 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(66px,9.5vw,168px);
-      bottom:clamp(-10px,-1.2vh,-2px);
+      right:clamp(52px,8.2vw,142px);
+      bottom:clamp(-6px,-.4vh,2px);
       transform:none;
       transform-origin:50% 94%;
       z-index:5;
@@ -432,7 +433,7 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(180px,15.2vw,268px);
+      width:clamp(216px,18.8vw,334px);
       aspect-ratio:433/577;
     }
 
@@ -453,10 +454,11 @@
       display:block;
       position:absolute;
       max-width:none;
-      width:216%;
+      width:224%;
       height:auto;
-      left:-72%;
-      top:-15%;
+      left:-78%;
+      top:-19%;
+      filter:drop-shadow(0 18px 20px rgba(34,64,72,.20));
     }
 
     .phone-frame-photo{
@@ -941,8 +943,8 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(26px,6.8vw,98px);
-        bottom:clamp(-8px,-1.0vh,-1px);
+        right:clamp(20px,5.8vw,82px);
+        bottom:clamp(-6px,-.3vh,1px);
         transform:none;
       }
 
@@ -956,6 +958,10 @@
       .landing{
         min-height:auto;
         height:auto;
+      }
+      body{
+        overflow-x:hidden;
+        overflow-y:auto;
       }
 
       .site-header{
@@ -1027,9 +1033,9 @@
       }
 
       .phone-photo.use-complete .phone-photo-complete{
-        width:198%;
-        left:-64%;
-        top:-11%;
+        width:206%;
+        left:-68%;
+        top:-13%;
       }
 
       .blob.one{
@@ -1054,7 +1060,8 @@
 
     @media (max-width: 680px){
       body{
-        padding:12px;
+        --page-pad:12px;
+        padding:var(--page-pad);
       }
 
       .site-menu{
@@ -1117,9 +1124,9 @@
       }
 
       .phone-photo.use-complete .phone-photo-complete{
-        width:176%;
-        left:-50%;
-        top:-7%;
+        width:188%;
+        left:-56%;
+        top:-9%;
       }
 
       .iphone{
@@ -1208,7 +1215,7 @@
       <aside class="phone-wrap use-photo" aria-hidden="true">
         <div class="phone-shadow"></div>
         <div class="phone-photo">
-          <img class="phone-photo-complete" src="./assets/iphone-comlete.png" alt="" aria-hidden="true" />
+          <img class="phone-photo-complete" src="./assets/nieuwe-telefoon.png" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
           <div class="phone-photo-screen">
             <img class="phone-shot-fit" src="./assets/phone-screen-fit.png" alt="" aria-hidden="true" />
           </div>
@@ -1356,7 +1363,7 @@
           '#f3e9e2': 'neutral'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 5 : 7;
+        var blobCount = (vw < 900) ? 6 : 9;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1366,16 +1373,16 @@
           blobStyleProfile: 'uitgesproken',
           blobGradientChance: 0.08,
           blobCount: blobCount,
-          alphaBoost: 0.84,
-          sizeScale: 0.86,
+          alphaBoost: 0.80,
+          sizeScale: 0.82,
           sizeLimit: 1.45,
-          blobAlphaCap: 0.30,
+          blobAlphaCap: 0.28,
           blobAlphaCapDark: 0.22,
           baseWash: false,
           blobSpread: 'grid',
-          blobSpreadMargin: 0.19,
-          blobRadiusMin: 0.08,
-          blobRadiusMax: 0.18,
+          blobSpreadMargin: 0.23,
+          blobRadiusMin: 0.07,
+          blobRadiusMax: 0.17,
           blobIrregularity: 0.24,
           blobPointsMin: 8,
           blobPointsMax: 11,
