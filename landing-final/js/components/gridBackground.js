@@ -769,11 +769,11 @@
         // Iets lager dan de vorige IP zodat het rustiger kijkt.
         alpha = (lite ? 0.18 : 0.22) + rnd()*0.10;
       }else if(useUitgesprokenProfile){
-        // Uitgesproken profile ranges:
-        // teal 25-40%, neutral 30-35%, warm 12-20%
-        if(family === 'warm') alpha = 0.12 + rnd()*0.08;
-        else if(family === 'neutral') alpha = 0.30 + rnd()*0.05;
-        else alpha = 0.25 + rnd()*0.15;
+        // Uitgesproken light ranges:
+        // teal ~22%, neutral ~18%, warm 10-14%
+        if(family === 'warm') alpha = 0.10 + rnd()*0.04;
+        else if(family === 'neutral') alpha = 0.16 + rnd()*0.04;
+        else alpha = 0.20 + rnd()*0.04;
       }else{
         var alphaBase = warm ? (lite ? 0.15 : 0.19) : (lite ? 0.18 : 0.24);
         var alphaVar  = warm ? 0.06 : 0.10;
@@ -811,6 +811,11 @@
         if(kindRnd < 0.18) variant = 'circle';      // subtiele transparante cirkels
         else if(kindRnd < 0.43) variant = 'wave';   // brede golvende vormen
       }
+      if(!isDark && useUitgesprokenProfile && family === 'warm'){
+        // Warme accentkleur altijd klein/subtiel houden.
+        if(variant !== 'circle' && rnd() < 0.72) variant = 'circle';
+        rr *= 0.58;
+      }
       if(variant === 'circle'){
         // cirkels 8-15%
         alpha = 0.08 + rnd()*0.07;
@@ -820,9 +825,9 @@
       if(cap === null){
         if(!isDark && useUitgesprokenProfile){
           if(variant === 'circle') cap = 0.15;
-          else if(family === 'warm') cap = 0.20;
-          else if(family === 'neutral') cap = 0.35;
-          else cap = 0.40;
+          else if(family === 'warm') cap = 0.14;
+          else if(family === 'neutral') cap = 0.20;
+          else cap = 0.24;
         }else{
           cap = 0.6;
         }

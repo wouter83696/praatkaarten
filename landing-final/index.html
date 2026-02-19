@@ -11,17 +11,17 @@
 
   <style>
     :root{
-      --page-bg:#ffffff;
+      --page-bg:#F6F8F7;
       --ink:#211217;
       --mint:#cde6e4;
       --mint-deep:#c2dfdc;
       --mint-line:rgba(152,192,189,.24);
       --panel:#ffffff;
       --panel-line:rgba(33,18,23,.09);
-      --blob:rgba(127,207,201,.34);
-      --blob-soft:rgba(107,186,196,.30);
-      --blob-neutral:rgba(234,223,211,.32);
-      --blob-warm:rgba(230,130,58,.16);
+      --blob:rgba(127,207,201,.22);
+      --blob-soft:rgba(127,207,201,.18);
+      --blob-neutral:rgba(232,216,201,.18);
+      --blob-warm:rgba(229,122,68,.12);
       --shadow:0 12px 24px rgba(41,90,86,.08);
     }
 
@@ -69,8 +69,8 @@
 
     .download-link{
       text-decoration:none;
-      color:rgba(65,95,103,.84);
-      border:1px solid rgba(65,95,103,.26);
+      color:#2F5D62;
+      border:1px solid rgba(47,93,98,.26);
       border-radius:999px;
       padding:10px 28px;
       font-size:clamp(15px,1.08vw,24px);
@@ -78,6 +78,14 @@
       white-space:nowrap;
       background:rgba(252,255,255,.46);
       box-shadow:0 3px 10px rgba(46,92,99,.05);
+      transition:background-color .2s ease,border-color .2s ease,color .2s ease,transform .2s ease;
+    }
+
+    .download-link:hover{
+      background:rgba(229,122,68,.12);
+      border-color:rgba(229,122,68,.54);
+      color:#2F5D62;
+      transform:translateY(-1px);
     }
 
     .intro{
@@ -160,7 +168,7 @@
       height:150%;
       left:-8%;
       bottom:-74%;
-      background:rgba(95,168,178,.24);
+      background:rgba(127,207,201,.22);
       animation: swellLeft 22s ease-in-out infinite alternate;
     }
 
@@ -169,7 +177,7 @@
       height:35%;
       right:-16%;
       top:54%;
-      background:rgba(243,233,226,.23);
+      background:rgba(232,216,201,.18);
       animation: haloFloat 20s ease-in-out infinite alternate;
     }
 
@@ -191,7 +199,7 @@
       height:108px;
       left:41%;
       top:54%;
-      opacity:.34;
+      opacity:.22;
       animation: blobDriftA 24s ease-in-out infinite;
     }
 
@@ -200,19 +208,19 @@
       height:112px;
       right:10%;
       bottom:8%;
-      opacity:.30;
+      opacity:.18;
       background:linear-gradient(145deg,var(--blob-neutral),rgba(255,255,255,.13));
       animation: blobDriftB 20s ease-in-out infinite;
     }
 
     .blob.three{
-      width:154px;
-      height:74px;
-      right:28%;
-      bottom:7%;
+      width:88px;
+      height:88px;
+      right:24%;
+      bottom:10%;
       top:auto;
-      background:linear-gradient(145deg,var(--blob-warm),rgba(255,255,255,.08));
-      opacity:.17;
+      background:linear-gradient(145deg,var(--blob-warm),rgba(255,255,255,.10));
+      opacity:.12;
       animation: blobDriftC 26s ease-in-out infinite;
     }
 
@@ -289,10 +297,16 @@
     }
 
     .store-chip.web{
-      border-color:rgba(94,156,165,.28);
+      border-color:rgba(47,93,98,.28);
       flex:1.22 1 0;
       padding-right:32px;
       position:relative;
+      color:#2F5D62;
+    }
+
+    .store-chip.web:hover{
+      border-color:rgba(229,122,68,.44);
+      box-shadow:0 10px 18px rgba(47,93,98,.12);
     }
 
     .store-chip.web::after{
@@ -496,8 +510,9 @@
       inset:0;
       width:100%;
       height:100%;
-      object-fit:cover;
-      object-position:center top;
+      object-fit:contain;
+      object-position:center center;
+      background:#eef2f1;
       z-index:8;
       display:none;
     }
@@ -1135,7 +1150,7 @@
   </div>
 
   <script src="./js/core/net.js"></script>
-  <script src="./js/components/gridBackground.js?v=20260219-blobstyle"></script>
+  <script src="./js/components/gridBackground.js?v=20260219-blobstyle-light2"></script>
   <script>
     (function(){
       var shot = document.querySelector('.phone-shot');
@@ -1157,21 +1172,17 @@
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
         var palette = [
-          '#7FCFC9', '#EADFD3', '#6BBAC4', '#E6823A',
-          '#5FA8B2', '#F3E9E2', '#7FCFC9', '#6BBAC4',
-          '#EADFD3', '#5FA8B2', '#F29C7A', '#7FCFC9'
+          '#7FCFC9', '#7FCFC9', '#7FCFC9', '#7FCFC9', '#7FCFC9',
+          '#E8D8C9', '#E8D8C9', '#E8D8C9',
+          '#E57A44'
         ];
         var families = {
           '#7fcfc9': 'teal',
-          '#6bbac4': 'teal',
-          '#5fa8b2': 'teal',
-          '#e6823a': 'warm',
-          '#f29c7a': 'warm',
-          '#eadfd3': 'neutral',
-          '#f3e9e2': 'neutral'
+          '#e8d8c9': 'neutral',
+          '#e57a44': 'warm'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 8 : 11;
+        var blobCount = (vw < 900) ? 7 : 10;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1179,19 +1190,18 @@
           palette: palette,
           blobFamilies: families,
           blobStyleProfile: 'uitgesproken',
-          blobGradientChance: 0.18,
+          blobGradientChance: 0.10,
           blobCount: blobCount,
           alphaBoost: 1.0,
-          sizeScale: 1.08,
-          sizeLimit: 1.55,
-          blobWash: 0.10,
-          blobAlphaCap: 0.40,
+          sizeScale: 1.02,
+          sizeLimit: 1.44,
+          blobAlphaCap: 0.24,
           blobAlphaCapDark: 0.28,
           baseWash: false,
           blobSpread: 'grid',
           blobSpreadMargin: 0.12,
-          blobRadiusMin: 0.10,
-          blobRadiusMax: 0.21,
+          blobRadiusMin: 0.08,
+          blobRadiusMax: 0.18,
           blobIrregularity: 0.30,
           blobPointsMin: 8,
           blobPointsMax: 13,
