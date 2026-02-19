@@ -114,6 +114,19 @@
     return {h:h, s:s, l:l};
   }
 
+  function buildFamilyLookup(map){
+    var out = {};
+    if(!map || typeof map !== 'object') return out;
+    for(var k in map){
+      if(!map.hasOwnProperty(k)) continue;
+      var nk = normHex(k);
+      var key = (nk || String(k||'')).toLowerCase();
+      if(!key) continue;
+      out[key] = String(map[k] || '').toLowerCase();
+    }
+    return out;
+  }
+
   // Kies een neutrale basis voor de "wash" zodat warme/paarse kleuren (roze gloed)
   // niet de hele achtergrond gaan domineren.
   function pickNeutralBase(palette){
@@ -702,29 +715,52 @@
     if(spread === 'grid'){
       spreadPositions = buildGridPositions(blobCount, rnd, spreadMargin);
     }
+    var styleProfile = (!isDark && opts && opts.blobStyleProfile) ? String(opts.blobStyleProfile).toLowerCase() : '';
+    var useUitgesprokenProfile = (styleProfile === 'uitgesproken');
+    var familyLookup = (!isDark && opts) ? buildFamilyLookup(opts.blobFamilies) : {};
+    var blobGradientChance = (opts && typeof opts.blobGradientChance === 'number') ? opts.blobGradientChance : 0;
+    blobGradientChance = clamp(blobGradientChance, 0, 1);
+    var blobWash = (opts && typeof opts.blobWash === 'number') ? opts.blobWash : null;
+    if(blobWash !== null) blobWash = clamp(blobWash, 0, 0.95);
+    var blobAlphaCap = (opts && typeof opts.blobAlphaCap === 'number') ? opts.blobAlphaCap : null;
+    var blobAlphaCapDark = (opts && typeof opts.blobAlphaCapDark === 'number') ? opts.blobAlphaCapDark : null;
+    var blobAlphaFixed = (opts && typeof opts.blobAlphaFixed === 'number') ? opts.blobAlphaFixed : null;
+    if(blobAlphaCap !== null) blobAlphaCap = clamp(blobAlphaCap, 0.05, 1);
+    if(blobAlphaCapDark !== null) blobAlphaCapDark = clamp(blobAlphaCapDark, 0.05, 1);
+    if(blobAlphaFixed !== null) blobAlphaFixed = clamp(blobAlphaFixed, 0.02, 0.9);
 
     for(var i=0;i<blobCount;i++){
       var raw = isDark
         ? ((darkPalette && darkPalette.length) ? darkPalette[i % darkPalette.length] : neon[i % neon.length])
         : ((palette && palette.length) ? palette[i % palette.length] : base);
+      var rawNorm = normHex(raw);
+      var rawKey = rawNorm ? rawNorm.toLowerCase() : '';
 
       var rgb = hexToRgb(raw);
       var hsl = rgbToHsl(rgb.r,rgb.g,rgb.b);
       var h = hsl.h;
       var warm = (h >= 0 && h <= 70) || (h >= 290 && h <= 360);
+      var family = '';
+      if(!isDark){
+        family = familyLookup[rawKey] || '';
+        if(!family) family = warm ? 'warm' : 'teal';
+      }
 
       // Light: iets uitwassen zodat het achtergrond blijft.
       // Dark: neon iets temperen door te mengen met de vaste indigo-nachtbasis.
-      // Zo blijft de 80/90's vibe aanwezig, maar minder "poppend" en serieuzer.
-      var blobWash = (opts && typeof opts.blobWash === 'number') ? opts.blobWash : null;
-      if(blobWash !== null) blobWash = clamp(blobWash, 0, 0.95);
-      var blobAlphaCap = (opts && typeof opts.blobAlphaCap === 'number') ? opts.blobAlphaCap : null;
-      var blobAlphaCapDark = (opts && typeof opts.blobAlphaCapDark === 'number') ? opts.blobAlphaCapDark : null;
-      var blobAlphaFixed = (opts && typeof opts.blobAlphaFixed === 'number') ? opts.blobAlphaFixed : null;
-      if(blobAlphaCap !== null) blobAlphaCap = clamp(blobAlphaCap, 0.05, 1);
-      if(blobAlphaCapDark !== null) blobAlphaCapDark = clamp(blobAlphaCapDark, 0.05, 1);
-      if(blobAlphaFixed !== null) blobAlphaFixed = clamp(blobAlphaFixed, 0.02, 0.9);
-      var c = isDark ? mixHex(raw, '#18123c', darkMix) : ((blobWash !== null) ? mixWithWhite(raw, blobWash) : softenForBg(raw));
+      var c;
+      if(isDark){
+        c = mixHex(raw, '#18123c', darkMix);
+      }else if(useUitgesprokenProfile){
+        var washAmt;
+        if(blobWash !== null) washAmt = blobWash;
+        else if(family === 'warm') washAmt = 0.16;
+        else if(family === 'neutral') washAmt = 0.12;
+        else washAmt = 0.10;
+        c = mixWithWhite(raw, washAmt);
+      }else{
+        c = (blobWash !== null) ? mixWithWhite(raw, blobWash) : softenForBg(raw);
+      }
 
       // Alpha + size tuning
       var alpha;
@@ -732,6 +768,12 @@
         // Neon: contrastrijk, maar duidelijk achtergrond.
         // Iets lager dan de vorige IP zodat het rustiger kijkt.
         alpha = (lite ? 0.18 : 0.22) + rnd()*0.10;
+      }else if(useUitgesprokenProfile){
+        // Uitgesproken profile ranges:
+        // teal 25-40%, neutral 30-35%, warm 12-20%
+        if(family === 'warm') alpha = 0.12 + rnd()*0.08;
+        else if(family === 'neutral') alpha = 0.30 + rnd()*0.05;
+        else alpha = 0.25 + rnd()*0.15;
       }else{
         var alphaBase = warm ? (lite ? 0.15 : 0.19) : (lite ? 0.18 : 0.24);
         var alphaVar  = warm ? 0.06 : 0.10;
@@ -739,9 +781,6 @@
       }
       alpha = alpha * (isDark ? alphaBoostDark : alphaBoost);
       if(blobAlphaFixed !== null) alpha = blobAlphaFixed;
-      var cap = isDark ? blobAlphaCapDark : blobAlphaCap;
-      if(cap === null) cap = 0.6;
-      if(alpha > cap) alpha = cap;
 
       var radiusMin = isDark ? blobRadiusMinDark : blobRadiusMinLight;
       var radiusMax = isDark ? blobRadiusMaxDark : blobRadiusMaxLight;
@@ -766,9 +805,37 @@
         cy = info.h * 0.12;
       }
 
+      var variant = 'organic';
+      if(!isDark && useUitgesprokenProfile){
+        var kindRnd = rnd();
+        if(kindRnd < 0.18) variant = 'circle';      // subtiele transparante cirkels
+        else if(kindRnd < 0.43) variant = 'wave';   // brede golvende vormen
+      }
+      if(variant === 'circle'){
+        // cirkels 8-15%
+        alpha = 0.08 + rnd()*0.07;
+      }
+
+      var cap = isDark ? blobAlphaCapDark : blobAlphaCap;
+      if(cap === null){
+        if(!isDark && useUitgesprokenProfile){
+          if(variant === 'circle') cap = 0.15;
+          else if(family === 'warm') cap = 0.20;
+          else if(family === 'neutral') cap = 0.35;
+          else cap = 0.40;
+        }else{
+          cap = 0.6;
+        }
+      }
+      if(alpha > cap) alpha = cap;
+
+      if(!isDark && useUitgesprokenProfile){
+        if(variant === 'wave') rr *= 1.16;
+        else if(variant === 'circle') rr *= 0.75;
+      }
+
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = c;
       // Geen grijze filters; in dark mode geven we een subtiele "glow" via shadow.
       if('filter' in ctx) ctx.filter = 'none';
       if(isDark){
@@ -778,8 +845,39 @@
       }else{
         ctx.shadowBlur = 0;
       }
-      drawBlob(ctx, cx, cy, rr, rnd, shape);
-      ctx.fill();
+
+      if(!isDark && useUitgesprokenProfile && variant !== 'circle' && blobGradientChance > 0 && rnd() < blobGradientChance){
+        var grad;
+        if(variant === 'wave'){
+          grad = ctx.createLinearGradient(-rr, -rr*0.42, rr, rr*0.42);
+        }else{
+          grad = ctx.createLinearGradient(cx-rr, cy-rr, cx+rr, cy+rr);
+        }
+        grad.addColorStop(0, c);
+        grad.addColorStop(1, mixHex(c, '#ffffff', 0.24));
+        ctx.fillStyle = grad;
+      }else{
+        ctx.fillStyle = c;
+      }
+
+      if(variant === 'circle'){
+        ctx.beginPath();
+        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+        ctx.fill();
+      }else if(variant === 'wave'){
+        ctx.translate(cx, cy);
+        ctx.rotate((rnd()-0.5) * 0.40);
+        ctx.scale(1.44 + rnd()*0.28, 0.62 + rnd()*0.18);
+        drawBlob(ctx, 0, 0, rr, rnd, {
+          irr: clamp(shape.irr * 0.72, 0.08, 0.45),
+          minPts: Math.max(8, shape.minPts),
+          maxPts: Math.max(11, shape.maxPts)
+        });
+        ctx.fill();
+      }else{
+        drawBlob(ctx, cx, cy, rr, rnd, shape);
+        ctx.fill();
+      }
       ctx.restore();
     }
 
@@ -876,7 +974,10 @@
       var radiusMaxDarkKey = (opts && typeof opts.blobRadiusMaxDark === 'number') ? String(opts.blobRadiusMaxDark) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + radiusMinKey + '|' + radiusMaxKey + '|' + radiusMinDarkKey + '|' + radiusMaxDarkKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
+      var profileKey = (opts && opts.blobStyleProfile) ? String(opts.blobStyleProfile) : '';
+      var familiesKey = (opts && opts.blobFamilies && typeof opts.blobFamilies === 'object') ? JSON.stringify(opts.blobFamilies) : '';
+      var gradientChanceKey = (opts && typeof opts.blobGradientChance === 'number') ? String(opts.blobGradientChance) : '';
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + radiusMinKey + '|' + radiusMaxKey + '|' + radiusMinDarkKey + '|' + radiusMaxDarkKey + '|' + sizeLimitKey + '|' + alphaFixedKey + '|' + profileKey + '|' + familiesKey + '|' + gradientChanceKey;
 
       var token = ++lastToken;
 

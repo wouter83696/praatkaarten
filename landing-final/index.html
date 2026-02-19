@@ -18,9 +18,10 @@
       --mint-line:rgba(152,192,189,.24);
       --panel:#ffffff;
       --panel-line:rgba(33,18,23,.09);
-      --blob:rgba(220,238,238,.58);
-      --blob-soft:rgba(196,228,227,.52);
-      --blob-warm:rgba(239,230,216,.44);
+      --blob:rgba(127,207,201,.34);
+      --blob-soft:rgba(107,186,196,.30);
+      --blob-neutral:rgba(234,223,211,.32);
+      --blob-warm:rgba(230,130,58,.16);
       --shadow:0 12px 24px rgba(41,90,86,.08);
     }
 
@@ -179,7 +180,7 @@
       height:150%;
       left:-8%;
       bottom:-74%;
-      background:rgba(220,238,238,.32);
+      background:rgba(95,168,178,.28);
       animation: swellLeft 22s ease-in-out infinite alternate;
     }
 
@@ -188,7 +189,7 @@
       height:35%;
       right:-16%;
       top:54%;
-      background:rgba(196,228,227,.30);
+      background:rgba(243,233,226,.30);
       animation: haloFloat 20s ease-in-out infinite alternate;
     }
 
@@ -197,8 +198,8 @@
       z-index:1;
       border-radius:999px;
       pointer-events:none;
-      background:linear-gradient(145deg,var(--blob),rgba(255,255,255,.08));
-      border:1px solid rgba(227,244,241,.55);
+      background:linear-gradient(145deg,var(--blob),rgba(255,255,255,.18));
+      border:1px solid rgba(255,255,255,.46);
       backdrop-filter:blur(.8px);
       -webkit-backdrop-filter:blur(.8px);
       transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotate(var(--rot,0deg)) scale(var(--scale,1));
@@ -210,28 +211,28 @@
       height:108px;
       left:41%;
       top:54%;
-      opacity:.82;
+      opacity:.34;
       animation: blobDriftA 24s ease-in-out infinite;
     }
 
     .blob.two{
-      width:124px;
-      height:92px;
+      width:112px;
+      height:112px;
       right:10%;
       bottom:8%;
-      opacity:.76;
-      background:linear-gradient(145deg,var(--blob-soft),rgba(255,255,255,.08));
+      opacity:.30;
+      background:linear-gradient(145deg,var(--blob-neutral),rgba(255,255,255,.13));
       animation: blobDriftB 20s ease-in-out infinite;
     }
 
     .blob.three{
-      width:92px;
-      height:66px;
+      width:154px;
+      height:74px;
       right:28%;
       bottom:7%;
       top:auto;
-      background:linear-gradient(145deg,var(--blob-warm),rgba(255,255,255,.10));
-      opacity:.48;
+      background:linear-gradient(145deg,var(--blob-warm),rgba(255,255,255,.08));
+      opacity:.17;
       animation: blobDriftC 26s ease-in-out infinite;
     }
 
@@ -1148,7 +1149,7 @@
   </div>
 
   <script src="./js/core/net.js"></script>
-  <script src="./js/components/gridBackground.js?v=20260216"></script>
+  <script src="./js/components/gridBackground.js?v=20260219-blobstyle"></script>
   <script>
     (function(){
       var shot = document.querySelector('.phone-shot');
@@ -1169,26 +1170,45 @@
       function run(){
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
-        var palette = ['#DCEEEE', '#C4E4E3', '#A7D4D2', '#EFE6D8'];
+        var palette = [
+          '#7FCFC9', '#EADFD3', '#6BBAC4', '#E6823A',
+          '#5FA8B2', '#F3E9E2', '#7FCFC9', '#6BBAC4',
+          '#EADFD3', '#5FA8B2', '#F29C7A', '#7FCFC9'
+        ];
+        var families = {
+          '#7fcfc9': 'teal',
+          '#6bbac4': 'teal',
+          '#5fa8b2': 'teal',
+          '#e6823a': 'warm',
+          '#f29c7a': 'warm',
+          '#eadfd3': 'neutral',
+          '#f3e9e2': 'neutral'
+        };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 5 : 8;
+        var blobCount = (vw < 900) ? 8 : 11;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
           meta: null,
           palette: palette,
+          blobFamilies: families,
+          blobStyleProfile: 'uitgesproken',
+          blobGradientChance: 0.18,
           blobCount: blobCount,
-          alphaBoost: 1.18,
-          sizeScale: 1.16,
-          sizeLimit: 1.62,
-          blobWash: 0.08,
-          blobAlphaCap: 0.24,
+          alphaBoost: 1.0,
+          sizeScale: 1.08,
+          sizeLimit: 1.55,
+          blobWash: 0.10,
+          blobAlphaCap: 0.40,
           blobAlphaCapDark: 0.28,
           baseWash: false,
           blobSpread: 'grid',
-          blobSpreadMargin: 0.10,
+          blobSpreadMargin: 0.12,
           blobRadiusMin: 0.10,
-          blobRadiusMax: 0.19,
+          blobRadiusMax: 0.21,
+          blobIrregularity: 0.30,
+          blobPointsMin: 8,
+          blobPointsMax: 13,
           centerBlob: false,
           shapeEnabled: false
         });
