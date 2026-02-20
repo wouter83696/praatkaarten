@@ -174,8 +174,8 @@
       height:clamp(146px,17vh,192px);
       border-radius:32px;
       overflow:hidden;
-      border:1px solid rgba(170,205,203,.24);
-      background:rgba(200,228,226,.42);
+      border:1px solid rgba(178,213,210,.22);
+      background:rgba(210,235,233,.44);
       box-shadow:0 10px 18px rgba(56,102,108,.05);
       padding:clamp(12px,1.5vw,20px);
       display:flex;
@@ -273,23 +273,25 @@
       border-radius:0;
       padding:0;
       box-shadow:none;
-      width:min(860px,calc(100% - clamp(248px,26vw,360px)));
+      width:min(840px,calc(100% - clamp(296px,32vw,430px)));
       min-width:300px;
-      margin-left:clamp(24px,3.2vw,72px);
+      margin-left:auto;
+      margin-right:auto;
       backdrop-filter:none;
       -webkit-backdrop-filter:none;
     }
 
     .stores-row{
       display:flex;
-      gap:clamp(8px,1vw,14px);
+      gap:clamp(10px,1.2vw,18px);
       flex-wrap:nowrap;
       align-items:stretch;
-      justify-content:flex-start;
+      justify-content:center;
     }
 
     .store-chip{
-      flex:1 1 0;
+      flex:0 0 auto;
+      width:clamp(206px,14.7vw,262px);
       min-width:0;
       display:inline-flex;
       align-items:center;
@@ -339,7 +341,7 @@
 
     .store-chip.web{
       border-color:rgba(47,93,98,.28);
-      flex:1.22 1 0;
+      width:clamp(236px,16.8vw,302px);
       padding-right:32px;
       position:relative;
       color:#2F5D62;
@@ -414,51 +416,74 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(52px,8.2vw,142px);
-      bottom:clamp(-6px,-.4vh,2px);
+      right:clamp(20px,4.6vw,86px);
+      bottom:clamp(-18px,-1.4vh,-4px);
       transform:none;
       transform-origin:50% 94%;
-      z-index:5;
+      z-index:6;
       pointer-events:none;
-    }
-
-    .phone-wrap.use-photo .iphone{
-      display:none;
-    }
-
-    .phone-wrap.use-photo .phone-shadow{
-      display:none;
     }
 
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(216px,18.8vw,334px);
+      width:clamp(246px,22vw,404px);
       aspect-ratio:433/577;
     }
 
-    .phone-photo.use-complete .phone-photo-screen,
-    .phone-photo.use-complete .phone-frame-photo{
-      display:none;
-    }
-
     .phone-photo-complete{
-      display:none;
-      width:100%;
-      height:auto;
-      user-select:none;
-      -webkit-user-drag:none;
-    }
-
-    .phone-photo.use-complete .phone-photo-complete{
       display:block;
       position:absolute;
       max-width:none;
-      width:224%;
+      width:238%;
       height:auto;
-      left:-78%;
-      top:-19%;
-      filter:drop-shadow(0 18px 20px rgba(34,64,72,.20));
+      left:-86%;
+      top:-26%;
+      user-select:none;
+      -webkit-user-drag:none;
+      filter:drop-shadow(0 20px 22px rgba(34,64,72,.24));
+    }
+
+    .phone-static-blobs{
+      position:absolute;
+      right:clamp(84px,10.6vw,196px);
+      bottom:clamp(138px,18vh,252px);
+      width:clamp(250px,26vw,450px);
+      height:clamp(188px,24vh,320px);
+      pointer-events:none;
+      z-index:4;
+    }
+
+    .phone-static-blob{
+      position:absolute;
+      border-radius:999px;
+      pointer-events:none;
+      backdrop-filter:blur(.4px);
+      -webkit-backdrop-filter:blur(.4px);
+    }
+
+    .phone-static-blob.one{
+      width:92%;
+      height:84%;
+      right:0;
+      top:0;
+      background:radial-gradient(ellipse at 45% 46%, rgba(188,222,220,.30) 0%, rgba(188,222,220,.12) 62%, rgba(188,222,220,0) 100%);
+    }
+
+    .phone-static-blob.two{
+      width:82%;
+      height:60%;
+      left:-18%;
+      bottom:4%;
+      background:radial-gradient(ellipse at 52% 48%, rgba(162,209,205,.24) 0%, rgba(162,209,205,.10) 64%, rgba(162,209,205,0) 100%);
+    }
+
+    .phone-static-blob.three{
+      width:34%;
+      height:48%;
+      right:6%;
+      bottom:-6%;
+      background:radial-gradient(ellipse at 52% 48%, rgba(234,223,211,.20) 0%, rgba(234,223,211,.07) 66%, rgba(234,223,211,0) 100%);
     }
 
     .phone-frame-photo{
@@ -943,14 +968,20 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(20px,5.8vw,82px);
-        bottom:clamp(-6px,-.3vh,1px);
+        right:clamp(12px,4.2vw,48px);
+        bottom:clamp(-14px,-1.0vh,-2px);
         transform:none;
       }
 
       .panel{
-        width:min(740px,calc(100% - clamp(200px,23vw,286px)));
-        margin-left:clamp(10px,1.8vw,24px);
+        width:min(780px,calc(100% - clamp(252px,30vw,360px)));
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      .phone-static-blobs{
+        right:clamp(44px,7vw,128px);
+        width:clamp(220px,24vw,360px);
       }
     }
 
@@ -1017,6 +1048,7 @@
       .panel{
         width:min(760px,100%);
         margin-left:0;
+        margin-right:0;
       }
 
       .menu-section{
@@ -1032,10 +1064,14 @@
         margin-top:-24px;
       }
 
-      .phone-photo.use-complete .phone-photo-complete{
-        width:206%;
-        left:-68%;
-        top:-13%;
+      .phone-photo-complete{
+        width:212%;
+        left:-72%;
+        top:-16%;
+      }
+
+      .phone-static-blobs{
+        display:none;
       }
 
       .blob.one{
@@ -1123,10 +1159,10 @@
         transform:none;
       }
 
-      .phone-photo.use-complete .phone-photo-complete{
-        width:188%;
-        left:-56%;
-        top:-9%;
+      .phone-photo-complete{
+        width:192%;
+        left:-60%;
+        top:-12%;
       }
 
       .iphone{
@@ -1212,74 +1248,15 @@
         </article>
       </div>
 
-      <aside class="phone-wrap use-photo" aria-hidden="true">
-        <div class="phone-shadow"></div>
+      <div class="phone-static-blobs" aria-hidden="true">
+        <span class="phone-static-blob one"></span>
+        <span class="phone-static-blob two"></span>
+        <span class="phone-static-blob three"></span>
+      </div>
+
+      <aside class="phone-wrap" aria-hidden="true">
         <div class="phone-photo">
           <img class="phone-photo-complete" src="./assets/nieuwe-telefoon.png" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
-          <div class="phone-photo-screen">
-            <img class="phone-shot-fit" src="./assets/phone-screen-fit.png" alt="" aria-hidden="true" />
-          </div>
-          <img class="phone-frame-photo" src="./assets/iphone-frame-side.png" alt="" aria-hidden="true" />
-        </div>
-        <div class="iphone">
-          <span class="side-btn up"></span>
-          <span class="side-btn down"></span>
-          <span class="side-btn power"></span>
-
-          <div class="screen">
-            <div class="island"></div>
-            <div class="phone-ui">
-              <img class="phone-shot" src="./assets/phone-screen.png" alt="" aria-hidden="true" />
-              <div class="phone-status">
-                <span>00:32</span>
-                <span class="phone-status-icons">
-                  <i></i>
-                  <i></i>
-                  <b>21</b>
-                </span>
-              </div>
-
-              <div class="phone-head">
-                <div class="phone-brand">
-                  <span class="phone-brand-mark"></span>
-                  <span>
-                    <strong>Uitgesproken</strong>
-                    <em>BETA</em>
-                  </span>
-                </div>
-                <span class="phone-menu"><span></span></span>
-              </div>
-
-              <div class="phone-content">
-                <article class="phone-feature">
-                  <h4>Samen onderzoeken</h4>
-                  <p>Gesprekskaarten voor teams</p>
-                  <span class="orange"></span>
-                </article>
-
-                <div class="phone-dots" aria-hidden="true">
-                  <span class="active"></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-
-                <section class="phone-grid" aria-hidden="true">
-                  <div class="phone-tile hero-mini">
-                    <span class="mini-title">Samen onderzoeken</span>
-                    <span class="mini-sub">Gesprekskaarten voor teams</span>
-                    <span class="mini-orange"></span>
-                  </div>
-                  <div class="phone-tile blue"></div>
-                  <div class="phone-tile lilac"></div>
-                  <div class="phone-tile pink"></div>
-                  <div class="phone-tile beige"></div>
-                  <div class="phone-tile olive"></div>
-                </section>
-              </div>
-            </div>
-          </div>
         </div>
       </aside>
     </section>
@@ -1312,34 +1289,6 @@
   <script src="./js/components/gridBackground.js?v=20260219-blobstyle-guideline4"></script>
   <script>
     (function(){
-      var shot = document.querySelector('.phone-shot');
-      if(!shot) return;
-      function activateShot(){
-        if(!shot.naturalWidth) return;
-        var ui = shot.closest('.phone-ui');
-        var screen = shot.closest('.screen');
-        if(ui) ui.classList.add('has-shot');
-        if(screen) screen.classList.add('has-shot');
-      }
-      shot.addEventListener('load', activateShot);
-      if(shot.complete) activateShot();
-    })();
-  </script>
-  <script>
-    (function(){
-      var full = document.querySelector('.phone-photo-complete');
-      if(!full) return;
-      function useFull(){
-        if(!full.naturalWidth) return;
-        var wrap = full.closest('.phone-photo');
-        if(wrap) wrap.classList.add('use-complete');
-      }
-      full.addEventListener('load', useFull);
-      if(full.complete) useFull();
-    })();
-  </script>
-  <script>
-    (function(){
       function run(){
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
@@ -1363,7 +1312,7 @@
           '#f3e9e2': 'neutral'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 6 : 9;
+        var blobCount = (vw < 900) ? 7 : 11;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1373,16 +1322,16 @@
           blobStyleProfile: 'uitgesproken',
           blobGradientChance: 0.08,
           blobCount: blobCount,
-          alphaBoost: 0.80,
-          sizeScale: 0.82,
+          alphaBoost: 0.84,
+          sizeScale: 0.86,
           sizeLimit: 1.45,
-          blobAlphaCap: 0.28,
+          blobAlphaCap: 0.31,
           blobAlphaCapDark: 0.22,
           baseWash: false,
           blobSpread: 'grid',
-          blobSpreadMargin: 0.23,
+          blobSpreadMargin: 0.26,
           blobRadiusMin: 0.07,
-          blobRadiusMax: 0.17,
+          blobRadiusMax: 0.18,
           blobIrregularity: 0.24,
           blobPointsMin: 8,
           blobPointsMax: 11,
