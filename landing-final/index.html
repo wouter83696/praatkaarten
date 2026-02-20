@@ -179,7 +179,7 @@
       box-shadow:0 10px 18px rgba(56,102,108,.05);
       padding:clamp(12px,1.5vw,20px);
       display:flex;
-      align-items:flex-end;
+      align-items:center;
       justify-content:flex-start;
     }
 
@@ -273,7 +273,7 @@
       border-radius:0;
       padding:0;
       box-shadow:none;
-      width:min(840px,calc(100% - clamp(296px,32vw,430px)));
+      width:min(760px,calc(100% - clamp(342px,36vw,468px)));
       min-width:300px;
       margin-left:auto;
       margin-right:auto;
@@ -416,8 +416,8 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(20px,4.6vw,86px);
-      bottom:clamp(-18px,-1.4vh,-4px);
+      right:clamp(56px,7.2vw,128px);
+      bottom:clamp(-24px,-1.9vh,-8px);
       transform:none;
       transform-origin:50% 94%;
       z-index:6;
@@ -427,7 +427,7 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(246px,22vw,404px);
+      width:clamp(270px,24vw,432px);
       aspect-ratio:433/577;
     }
 
@@ -435,10 +435,10 @@
       display:block;
       position:absolute;
       max-width:none;
-      width:238%;
+      width:246%;
       height:auto;
-      left:-86%;
-      top:-26%;
+      left:-91%;
+      top:-31%;
       user-select:none;
       -webkit-user-drag:none;
       filter:drop-shadow(0 20px 22px rgba(34,64,72,.24));
@@ -446,10 +446,10 @@
 
     .phone-static-blobs{
       position:absolute;
-      right:clamp(84px,10.6vw,196px);
-      bottom:clamp(138px,18vh,252px);
-      width:clamp(250px,26vw,450px);
-      height:clamp(188px,24vh,320px);
+      right:clamp(82px,10.2vw,192px);
+      bottom:clamp(136px,17vh,244px);
+      width:clamp(272px,28vw,478px);
+      height:clamp(204px,25vh,340px);
       pointer-events:none;
       z-index:4;
     }
@@ -968,20 +968,20 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(12px,4.2vw,48px);
-        bottom:clamp(-14px,-1.0vh,-2px);
+        right:clamp(34px,5.4vw,86px);
+        bottom:clamp(-16px,-1.2vh,-4px);
         transform:none;
       }
 
       .panel{
-        width:min(780px,calc(100% - clamp(252px,30vw,360px)));
+        width:min(760px,calc(100% - clamp(320px,35vw,430px)));
         margin-left:auto;
         margin-right:auto;
       }
 
       .phone-static-blobs{
-        right:clamp(44px,7vw,128px);
-        width:clamp(220px,24vw,360px);
+        right:clamp(52px,7.2vw,132px);
+        width:clamp(236px,24vw,380px);
       }
     }
 
@@ -1042,7 +1042,7 @@
         width:100%;
         height:auto;
         min-height:336px;
-        align-items:flex-end;
+        align-items:center;
       }
 
       .panel{
@@ -1256,7 +1256,7 @@
 
       <aside class="phone-wrap" aria-hidden="true">
         <div class="phone-photo">
-          <img class="phone-photo-complete" src="./assets/nieuwe-telefoon.png" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
+          <img class="phone-photo-complete" src="./nieuw-telefoon.png" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
         </div>
       </aside>
     </section>
