@@ -273,9 +273,9 @@
       border-radius:0;
       padding:0;
       box-shadow:none;
-      width:min(700px,calc(100% - clamp(430px,44vw,560px)));
+      width:min(660px,calc(100% - clamp(500px,48vw,680px)));
       min-width:300px;
-      margin-left:clamp(14px,2.0vw,34px);
+      margin-left:clamp(12px,1.4vw,24px);
       margin-right:auto;
       backdrop-filter:none;
       -webkit-backdrop-filter:none;
@@ -416,8 +416,8 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(-24px,1.2vw,12px);
-      bottom:clamp(-18px,-1.2vh,-4px);
+      right:clamp(16px,2.8vw,56px);
+      bottom:clamp(10px,1.8vh,28px);
       transform:none;
       transform-origin:50% 94%;
       z-index:6;
@@ -427,21 +427,23 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(270px,24vw,432px);
+      width:clamp(292px,25.6vw,468px);
       aspect-ratio:433/577;
+      overflow:hidden;
     }
 
     .phone-photo-complete{
       display:block;
       position:absolute;
       max-width:none;
-      width:246%;
+      width:236%;
       height:auto;
-      left:-91%;
-      top:-31%;
+      left:-86%;
+      top:-28%;
       user-select:none;
       -webkit-user-drag:none;
-      filter:drop-shadow(0 14px 16px rgba(24,42,49,.24));
+      clip-path:inset(0 0 8.4% 0);
+      filter:none;
       mix-blend-mode:normal;
     }
 
@@ -927,14 +929,14 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(-12px,1.8vw,26px);
-        bottom:clamp(-16px,-1.2vh,-4px);
+        right:clamp(8px,2.3vw,36px);
+        bottom:clamp(4px,1.2vh,20px);
         transform:none;
       }
 
       .panel{
-        width:min(700px,calc(100% - clamp(380px,42vw,510px)));
-        margin-left:clamp(10px,1.8vw,24px);
+        width:min(620px,calc(100% - clamp(430px,44vw,590px)));
+        margin-left:clamp(8px,1.4vw,18px);
         margin-right:auto;
       }
 
@@ -1201,7 +1203,7 @@
 
       <aside class="phone-wrap" aria-hidden="true">
         <div class="phone-photo">
-          <img class="phone-photo-complete" src="./nieuw-telefoon-clean.png" onerror="this.onerror=null;this.src='./nieuw-telefoon-cutout.png';" alt="" aria-hidden="true" />
+          <img class="phone-photo-complete" src="./nieuw-telefoon.png" onerror="this.onerror=null;this.src='./nieuw-telefoon-clean.png';" alt="" aria-hidden="true" />
         </div>
       </aside>
     </section>
