@@ -273,7 +273,7 @@
       border-radius:0;
       padding:0;
       box-shadow:none;
-      width:min(760px,calc(100% - clamp(342px,36vw,468px)));
+      width:min(740px,calc(100% - clamp(368px,39vw,506px)));
       min-width:300px;
       margin-left:auto;
       margin-right:auto;
@@ -416,7 +416,7 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(56px,7.2vw,128px);
+      right:clamp(74px,8.8vw,168px);
       bottom:clamp(-24px,-1.9vh,-8px);
       transform:none;
       transform-origin:50% 94%;
@@ -442,48 +442,6 @@
       user-select:none;
       -webkit-user-drag:none;
       filter:drop-shadow(0 20px 22px rgba(34,64,72,.24));
-    }
-
-    .phone-static-blobs{
-      position:absolute;
-      right:clamp(82px,10.2vw,192px);
-      bottom:clamp(136px,17vh,244px);
-      width:clamp(272px,28vw,478px);
-      height:clamp(204px,25vh,340px);
-      pointer-events:none;
-      z-index:4;
-    }
-
-    .phone-static-blob{
-      position:absolute;
-      border-radius:999px;
-      pointer-events:none;
-      backdrop-filter:blur(.4px);
-      -webkit-backdrop-filter:blur(.4px);
-    }
-
-    .phone-static-blob.one{
-      width:92%;
-      height:84%;
-      right:0;
-      top:0;
-      background:radial-gradient(ellipse at 45% 46%, rgba(188,222,220,.30) 0%, rgba(188,222,220,.12) 62%, rgba(188,222,220,0) 100%);
-    }
-
-    .phone-static-blob.two{
-      width:82%;
-      height:60%;
-      left:-18%;
-      bottom:4%;
-      background:radial-gradient(ellipse at 52% 48%, rgba(162,209,205,.24) 0%, rgba(162,209,205,.10) 64%, rgba(162,209,205,0) 100%);
-    }
-
-    .phone-static-blob.three{
-      width:34%;
-      height:48%;
-      right:6%;
-      bottom:-6%;
-      background:radial-gradient(ellipse at 52% 48%, rgba(234,223,211,.20) 0%, rgba(234,223,211,.07) 66%, rgba(234,223,211,0) 100%);
     }
 
     .phone-frame-photo{
@@ -968,21 +926,17 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(34px,5.4vw,86px);
+        right:clamp(44px,6.2vw,106px);
         bottom:clamp(-16px,-1.2vh,-4px);
         transform:none;
       }
 
       .panel{
-        width:min(760px,calc(100% - clamp(320px,35vw,430px)));
+        width:min(730px,calc(100% - clamp(330px,37vw,450px)));
         margin-left:auto;
         margin-right:auto;
       }
 
-      .phone-static-blobs{
-        right:clamp(52px,7.2vw,132px);
-        width:clamp(236px,24vw,380px);
-      }
     }
 
     @media (max-width: 960px){
@@ -1068,10 +1022,6 @@
         width:212%;
         left:-72%;
         top:-16%;
-      }
-
-      .phone-static-blobs{
-        display:none;
       }
 
       .blob.one{
@@ -1248,15 +1198,9 @@
         </article>
       </div>
 
-      <div class="phone-static-blobs" aria-hidden="true">
-        <span class="phone-static-blob one"></span>
-        <span class="phone-static-blob two"></span>
-        <span class="phone-static-blob three"></span>
-      </div>
-
       <aside class="phone-wrap" aria-hidden="true">
         <div class="phone-photo">
-          <img class="phone-photo-complete" src="./nieuw-telefoon.png" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
+          <img class="phone-photo-complete" src="./nieuw-telefoon-cutout.png" onerror="this.onerror=null;this.src='./nieuw-telefoon.png';" alt="" aria-hidden="true" />
         </div>
       </aside>
     </section>
@@ -1293,12 +1237,15 @@
         if(!window.PK || !window.PK.gridBackground || !window.PK.gridBackground.render) return;
 
         var palette = [
-          '#7FCFC9', '#7FCFC9', '#7FCFC9',
-          '#6BBAC4', '#6BBAC4',
-          '#5FA8B2', '#5FA8B2',
-          '#DCEEEE', '#C4E4E3',
-          '#EADFD3', '#F3E9E2',
-          '#E6823A', '#F29C7A'
+          '#7FCFC9',
+          '#6BBAC4',
+          '#5FA8B2',
+          '#DCEEEE',
+          '#C4E4E3',
+          '#EADFD3',
+          '#F3E9E2',
+          '#E6823A',
+          '#F29C7A'
         ];
         var families = {
           '#7fcfc9': 'teal',
@@ -1312,7 +1259,7 @@
           '#f3e9e2': 'neutral'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 7 : 11;
+        var blobCount = (vw < 900) ? 9 : 13;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1320,6 +1267,7 @@
           palette: palette,
           blobFamilies: families,
           blobStyleProfile: 'uitgesproken',
+          ensurePaletteCoverage: true,
           blobGradientChance: 0.08,
           blobCount: blobCount,
           alphaBoost: 0.84,

@@ -668,7 +668,7 @@
     var blobCount = (lite ? 6 : 5) + Math.floor(rnd() * 3); // 5..7 / 6..8
     if(opts && typeof opts.blobCount === 'number'){
       blobCount = Math.max(3, Math.round(opts.blobCount));
-      if(lite && blobCount > 7) blobCount = 7;
+      if(lite && blobCount > 9) blobCount = 9;
       if(!lite && blobCount > 12) blobCount = 12;
     }
     var alphaBoost = (opts && typeof opts.alphaBoost === 'number') ? opts.alphaBoost : 1;
@@ -718,6 +718,8 @@
     var styleProfile = (!isDark && opts && opts.blobStyleProfile) ? String(opts.blobStyleProfile).toLowerCase() : '';
     var useUitgesprokenProfile = (styleProfile === 'uitgesproken');
     var familyLookup = (!isDark && opts) ? buildFamilyLookup(opts.blobFamilies) : {};
+    var ensurePaletteCoverage = (!isDark && opts && opts.ensurePaletteCoverage === true && palette && palette.length);
+    var coverageOffset = ensurePaletteCoverage ? Math.floor(rnd() * palette.length) : 0;
     var blobGradientChance = (opts && typeof opts.blobGradientChance === 'number') ? opts.blobGradientChance : 0;
     blobGradientChance = clamp(blobGradientChance, 0, 1);
     var blobWash = (opts && typeof opts.blobWash === 'number') ? opts.blobWash : null;
@@ -736,8 +738,13 @@
       if(isDark){
         raw = (darkPalette && darkPalette.length) ? darkPalette[i % darkPalette.length] : neon[i % neon.length];
       }else if(useUitgesprokenProfile && palette && palette.length){
-        // Houd ingestelde kleurverhouding ook bij lagere blob-counts.
-        raw = palette[Math.floor(rnd() * palette.length)];
+        if(ensurePaletteCoverage && i < palette.length){
+          // Zorg dat alle kleuren minimaal 1x zichtbaar zijn.
+          raw = palette[(i + coverageOffset) % palette.length];
+        }else{
+          // Houd ingestelde kleurverhouding ook bij hogere blob-counts.
+          raw = palette[Math.floor(rnd() * palette.length)];
+        }
       }else{
         raw = (palette && palette.length) ? palette[i % palette.length] : base;
       }
@@ -991,7 +998,8 @@
       var profileKey = (opts && opts.blobStyleProfile) ? String(opts.blobStyleProfile) : '';
       var familiesKey = (opts && opts.blobFamilies && typeof opts.blobFamilies === 'object') ? JSON.stringify(opts.blobFamilies) : '';
       var gradientChanceKey = (opts && typeof opts.blobGradientChance === 'number') ? String(opts.blobGradientChance) : '';
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + radiusMinKey + '|' + radiusMaxKey + '|' + radiusMinDarkKey + '|' + radiusMaxDarkKey + '|' + sizeLimitKey + '|' + alphaFixedKey + '|' + profileKey + '|' + familiesKey + '|' + gradientChanceKey;
+      var coverageKey = (opts && opts.ensurePaletteCoverage === true) ? '1' : '0';
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + radiusMinKey + '|' + radiusMaxKey + '|' + radiusMinDarkKey + '|' + radiusMaxDarkKey + '|' + sizeLimitKey + '|' + alphaFixedKey + '|' + profileKey + '|' + familiesKey + '|' + gradientChanceKey + '|' + coverageKey;
 
       var token = ++lastToken;
 
