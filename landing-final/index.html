@@ -424,6 +424,20 @@
       pointer-events:none;
     }
 
+    .phone-wrap::after{
+      content:"";
+      position:absolute;
+      left:18%;
+      right:10%;
+      bottom:-14px;
+      height:30px;
+      border-radius:999px;
+      background:radial-gradient(ellipse at center, rgba(35,52,60,.18) 0%, rgba(35,52,60,0) 72%);
+      filter:blur(8px);
+      z-index:0;
+      pointer-events:none;
+    }
+
     .phone-photo{
       position:relative;
       z-index:2;
@@ -445,13 +459,13 @@
 
     .phone-photo-screen{
       position:absolute;
-      left:17.6%;
-      top:5.2%;
-      width:62.1%;
-      height:84.4%;
+      left:17.3%;
+      top:2.7%;
+      width:62.6%;
+      height:87.2%;
       border-radius:34px;
       overflow:hidden;
-      clip-path:polygon(3.2% 0.4%, 99.4% 0.8%, 86.2% 99.4%, 0.4% 99%);
+      clip-path:polygon(3.2% 0.4%, 99.3% 0.9%, 86.6% 99.3%, 0.5% 98.9%);
       z-index:1;
     }
 
@@ -459,9 +473,10 @@
       display:block;
       width:100%;
       height:100%;
-      object-fit:cover;
+      object-fit:contain;
       object-position:center 0%;
-      transform:translate(-0.2%, -0.4%) scale(1.006);
+      transform:translate(0,0) scale(1.01);
+      background:#f6f8f7;
       user-select:none;
       -webkit-user-drag:none;
     }
