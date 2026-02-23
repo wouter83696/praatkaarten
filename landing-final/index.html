@@ -166,10 +166,10 @@
 
     .mint-field{
       position:absolute;
-      left:50%;
-      right:auto;
-      transform:translateX(-50%);
-      width:min(1060px,76vw);
+      left:clamp(148px,11vw,214px);
+      right:clamp(24px,3vw,58px);
+      transform:none;
+      width:auto;
       bottom:clamp(0px,.3vh,6px);
       height:clamp(146px,17vh,192px);
       border-radius:32px;
@@ -416,8 +416,8 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(150px,13vw,280px);
-      bottom:clamp(-86px,-7.5vh,-56px);
+      right:clamp(56px,5.6vw,116px);
+      bottom:clamp(-62px,-5.5vh,-34px);
       transform:none;
       transform-origin:50% 94%;
       z-index:6;
@@ -431,7 +431,7 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(348px,28.8vw,486px);
+      width:clamp(312px,24.8vw,418px);
       aspect-ratio:auto;
       overflow:visible;
     }
@@ -896,9 +896,14 @@
     }
 
     @media (max-width: 1140px){
+      .mint-field{
+        left:clamp(110px,8vw,162px);
+        right:clamp(18px,2.4vw,38px);
+      }
+
       .phone-wrap{
-        right:clamp(94px,10vw,172px);
-        bottom:clamp(-74px,-6.5vh,-44px);
+        right:clamp(34px,3.8vw,78px);
+        bottom:clamp(-56px,-5vh,-30px);
         transform:none;
       }
 
@@ -909,7 +914,7 @@
       }
 
       .phone-photo{
-        width:clamp(288px,33vw,408px);
+        width:clamp(278px,30vw,360px);
       }
 
     }
@@ -958,26 +963,44 @@
       }
 
       .hero-zone{
-        min-height:clamp(380px,54vh,620px);
-        display:grid;
+        min-height:unset;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
         gap:14px;
       }
 
       .mint-field{
+        order:2;
         position:relative;
         left:0;
         right:auto;
         transform:none;
         width:100%;
         height:auto;
-        min-height:336px;
+        min-height:220px;
         align-items:center;
       }
 
       .panel{
-        width:min(760px,100%);
+        width:100%;
         margin-left:0;
         margin-right:0;
+      }
+
+      .stores-row{
+        justify-content:center;
+        flex-wrap:wrap;
+        overflow:visible;
+        gap:10px;
+      }
+
+      .store-chip{
+        width:min(46%,260px);
+      }
+
+      .store-chip.web{
+        width:min(56%,290px);
       }
 
       .menu-section{
@@ -985,16 +1008,27 @@
       }
 
       .phone-wrap{
+        order:1;
         position:relative;
         right:auto;
         bottom:auto;
         transform:none;
-        justify-self:center;
-        margin-top:-2px;
+        justify-self:auto;
+        margin-top:0;
+        margin-bottom:4px;
       }
 
       .phone-photo{
-        width:min(44vw,258px);
+        width:min(52vw,232px);
+        aspect-ratio:0.64 / 1;
+        overflow:hidden;
+      }
+
+      .phone-frame-photo{
+        width:172%;
+        max-width:none;
+        margin-left:-36%;
+        margin-top:-6%;
       }
 
       .blob.one{
@@ -1034,7 +1068,7 @@
       }
 
       .mint-field{
-        min-height:322px;
+        min-height:210px;
         border-radius:24px;
         padding:14px;
       }
@@ -1045,16 +1079,21 @@
       }
 
       .stores-row{
-        gap:6px;
-        overflow-x:auto;
-        scrollbar-width:none;
+        gap:8px;
+        overflow:visible;
+        scrollbar-width:auto;
       }
 
       .store-chip{
+        width:min(48%,210px);
         min-height:56px;
         border-radius:15px;
         padding:9px 7px;
         gap:6px;
+      }
+
+      .store-chip.web{
+        width:min(62%,250px);
       }
 
       .store-chip .ico{
@@ -1078,12 +1117,12 @@
       }
 
       .phone-wrap{
-        margin-top:-10px;
+        margin-top:0;
         transform:none;
       }
 
       .phone-photo{
-        width:min(56vw,252px);
+        width:min(56vw,212px);
       }
 
       .iphone{
