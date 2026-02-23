@@ -416,8 +416,8 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(56px,7vw,190px);
-      bottom:clamp(-52px,-4.6vh,-22px);
+      right:clamp(66px,8vw,190px);
+      bottom:clamp(-8px,.5vh,10px);
       transform:none;
       transform-origin:50% 94%;
       z-index:6;
@@ -427,13 +427,13 @@
     .phone-wrap::after{
       content:"";
       position:absolute;
-      left:18%;
-      right:10%;
-      bottom:-14px;
-      height:30px;
+      left:22%;
+      right:18%;
+      bottom:2px;
+      height:24px;
       border-radius:999px;
-      background:radial-gradient(ellipse at center, rgba(35,52,60,.18) 0%, rgba(35,52,60,0) 72%);
-      filter:blur(8px);
+      background:radial-gradient(ellipse at center, rgba(35,52,60,.16) 0%, rgba(35,52,60,0) 76%);
+      filter:blur(7px);
       z-index:0;
       pointer-events:none;
     }
@@ -441,42 +441,17 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(312px,27.6vw,500px);
-      aspect-ratio:5332/8000;
+      width:clamp(232px,18.2vw,312px);
+      aspect-ratio:auto;
       overflow:visible;
     }
 
     .phone-frame-photo{
-      position:absolute;
-      inset:0;
+      position:relative;
       z-index:2;
       display:block;
       width:100%;
-      height:100%;
-      user-select:none;
-      -webkit-user-drag:none;
-    }
-
-    .phone-photo-screen{
-      position:absolute;
-      left:17.3%;
-      top:2.7%;
-      width:62.6%;
-      height:87.2%;
-      border-radius:34px;
-      overflow:hidden;
-      clip-path:polygon(3.2% 0.4%, 99.3% 0.9%, 86.6% 99.3%, 0.5% 98.9%);
-      z-index:1;
-    }
-
-    .phone-shot-fit{
-      display:block;
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      object-position:center 0%;
-      transform:translate(0,0) scale(1.01);
-      background:#f6f8f7;
+      height:auto;
       user-select:none;
       -webkit-user-drag:none;
     }
@@ -932,8 +907,8 @@
 
     @media (max-width: 1140px){
       .phone-wrap{
-        right:clamp(24px,4.6vw,86px);
-        bottom:clamp(-46px,-3.8vh,-18px);
+        right:clamp(26px,5.4vw,96px);
+        bottom:clamp(-10px,.2vh,8px);
         transform:none;
       }
 
@@ -944,7 +919,7 @@
       }
 
       .phone-photo{
-        width:clamp(290px,29.8vw,448px);
+        width:clamp(214px,22.2vw,292px);
       }
 
     }
@@ -1025,11 +1000,11 @@
         bottom:auto;
         transform:none;
         justify-self:center;
-        margin-top:-6px;
+        margin-top:-2px;
       }
 
       .phone-photo{
-        width:min(56vw,372px);
+        width:min(44vw,258px);
       }
 
       .blob.one{
@@ -1113,16 +1088,12 @@
       }
 
       .phone-wrap{
-        margin-top:-18px;
+        margin-top:-10px;
         transform:none;
       }
 
       .phone-photo{
-        width:min(66vw,316px);
-      }
-
-      .phone-photo-screen{
-        border-radius:24px;
+        width:min(56vw,252px);
       }
 
       .iphone{
@@ -1210,10 +1181,7 @@
 
       <aside class="phone-wrap" aria-hidden="true">
         <div class="phone-photo">
-          <img class="phone-frame-photo" src="./assets/telefoon-frame-exact.png" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
-          <div class="phone-photo-screen">
-            <img class="phone-shot-fit" src="./assets/phone-screen-fit.png" alt="" aria-hidden="true" />
-          </div>
+          <img class="phone-frame-photo" src="./iphone4.png" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
         </div>
       </aside>
     </section>
