@@ -166,10 +166,10 @@
 
     .mint-field{
       position:absolute;
-      left:clamp(148px,11vw,214px);
-      right:clamp(24px,3vw,58px);
-      transform:none;
-      width:auto;
+      left:50%;
+      right:auto;
+      transform:translateX(-50%);
+      width:min(1060px,76vw);
       bottom:clamp(0px,.3vh,6px);
       height:clamp(146px,17vh,192px);
       border-radius:32px;
@@ -416,8 +416,8 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(56px,5.6vw,116px);
-      bottom:clamp(-62px,-5.5vh,-34px);
+      right:clamp(150px,13vw,280px);
+      bottom:clamp(-86px,-7.5vh,-56px);
       transform:none;
       transform-origin:50% 94%;
       z-index:6;
@@ -431,7 +431,7 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(312px,24.8vw,418px);
+      width:clamp(348px,28.8vw,486px);
       aspect-ratio:auto;
       overflow:visible;
     }
@@ -896,14 +896,9 @@
     }
 
     @media (max-width: 1140px){
-      .mint-field{
-        left:clamp(110px,8vw,162px);
-        right:clamp(18px,2.4vw,38px);
-      }
-
       .phone-wrap{
-        right:clamp(34px,3.8vw,78px);
-        bottom:clamp(-56px,-5vh,-30px);
+        right:clamp(94px,10vw,172px);
+        bottom:clamp(-74px,-6.5vh,-44px);
         transform:none;
       }
 
@@ -914,7 +909,7 @@
       }
 
       .phone-photo{
-        width:clamp(278px,30vw,360px);
+        width:clamp(288px,33vw,408px);
       }
 
     }
