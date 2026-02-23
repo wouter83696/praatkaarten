@@ -166,8 +166,8 @@
 
     .mint-field{
       position:absolute;
-      left:clamp(148px,11vw,214px);
-      right:clamp(24px,3vw,58px);
+      left:clamp(170px,12.4vw,250px);
+      right:clamp(88px,8vw,164px);
       transform:none;
       width:auto;
       bottom:clamp(0px,.3vh,6px);
@@ -416,7 +416,7 @@
 
     .phone-wrap{
       position:absolute;
-      right:clamp(56px,5.6vw,116px);
+      right:clamp(112px,9.2vw,196px);
       bottom:clamp(-62px,-5.5vh,-34px);
       transform:none;
       transform-origin:50% 94%;
@@ -1269,7 +1269,7 @@
           '#f3e9e2': 'neutral'
         };
         var vw = (window.innerWidth || 0);
-        var blobCount = (vw < 900) ? 9 : 13;
+        var blobCount = (vw < 900) ? 11 : 17;
 
         window.PK.gridBackground.render({
           cardBase: './sets/kaartensets/cards/',
@@ -1278,16 +1278,16 @@
           blobFamilies: families,
           blobStyleProfile: 'uitgesproken',
           ensurePaletteCoverage: true,
-          blobGradientChance: 0.08,
+          blobGradientChance: 0.14,
           blobCount: blobCount,
-          alphaBoost: 0.84,
-          sizeScale: 0.86,
+          alphaBoost: 0.96,
+          sizeScale: 0.92,
           sizeLimit: 1.45,
-          blobAlphaCap: 0.31,
+          blobAlphaCap: 0.36,
           blobAlphaCapDark: 0.22,
           baseWash: false,
           blobSpread: 'grid',
-          blobSpreadMargin: 0.26,
+          blobSpreadMargin: 0.20,
           blobRadiusMin: 0.07,
           blobRadiusMax: 0.18,
           blobIrregularity: 0.24,
