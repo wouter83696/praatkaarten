@@ -794,6 +794,14 @@ if(PK.createMenuItem){
   var helpAutoExpanded = false;
   var helpTouchStartY = 0;
   var helpTouchStartX = 0;
+  var helpGestureStartY = 0;
+  var helpGestureLastY = 0;
+  var helpGestureLastT = 0;
+  var helpGestureVY = 0;
+  var helpGestureSheetDrag = false;
+  var sheetWheelSettleTimer = 0;
+  var sheetWheelVelocity = 0;
+  var helpLastDownSnapAt = 0;
   var hintDismissed = false;
 
   // Bottom sheet snap points (zichtbare hoogte als ratio van viewport)
@@ -803,6 +811,10 @@ if(PK.createMenuItem){
   var SNAP_RATIO_PREVIEW = 0.55;
   var SNAP_RATIO_HALF = 0.78;
   var SNAP_RATIO_MAX = 0.95;
+  var SNAP_VELOCITY_UP = -0.55;
+  var SNAP_VELOCITY_DOWN = 0.55;
+  var PREVIEW_CLOSE_VELOCITY = 0.9;
+  var PREVIEW_CLOSE_PULL_PX = 96;
   var sheetSnapState = SNAP_STATE_PREVIEW;
   var sheetSnapHeights = { preview: 420, half: 560, max: 680 };
 
@@ -905,6 +917,32 @@ if(PK.createMenuItem){
     return topGap;
   }
 
+  function getCenteredMainCardTopPx(){
+    try{
+      var main = w.document.getElementById('mainCarousel');
+      if(!main) return 0;
+      var slides = Array.prototype.slice.call(main.children || []);
+      if(!slides.length) return 0;
+      var cx = w.innerWidth / 2;
+      var best = null;
+      var bestDist = Infinity;
+      for(var i=0;i<slides.length;i++){
+        var sl = slides[i];
+        if(!sl || sl.nodeType !== 1 || !sl.getBoundingClientRect) continue;
+        var r = sl.getBoundingClientRect();
+        var mx = r.left + (r.width / 2);
+        var d = Math.abs(mx - cx);
+        if(d < bestDist){ bestDist = d; best = sl; }
+      }
+      var card = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
+      if(!card || !card.getBoundingClientRect) return 0;
+      var rc = card.getBoundingClientRect();
+      return Math.round(rc.top || 0);
+    }catch(_e){
+      return 0;
+    }
+  }
+
   function computeSnapHeights(){
     var vh = w.innerHeight || (w.document && w.document.documentElement ? w.document.documentElement.clientHeight : 0) || 0;
     if(!vh || vh < 320) vh = 760;
@@ -914,13 +952,29 @@ if(PK.createMenuItem){
     var maxH = Math.min(maxByTop, maxByRatio);
     if(maxH < 340) maxH = 340;
 
-    var previewH = Math.round(vh * SNAP_RATIO_PREVIEW);
-    var halfH = Math.round(vh * SNAP_RATIO_HALF);
-    if(previewH < 300) previewH = 300;
-    if(halfH < (previewH + 48)) halfH = previewH + 48;
-    if(halfH > (maxH - 40)) halfH = maxH - 40;
-    if(previewH > (halfH - 40)) previewH = Math.max(280, halfH - 40);
-    if(previewH > (maxH - 80)) previewH = Math.max(260, maxH - 80);
+    var basePreview = Math.round(vh * SNAP_RATIO_PREVIEW);
+    var baseHalf = Math.round(vh * SNAP_RATIO_HALF);
+    var neededForCover = 0;
+    // Zorg dat de preview-sheet altijd minimaal de centrale kaart op index bedekt.
+    // Daardoor "valt" de uitlegkaart weer netjes over de hoofdkaart.
+    var mainTop = getCenteredMainCardTopPx();
+    if(mainTop > 0){
+      neededForCover = Math.round(vh - mainTop + 34);
+    }
+
+    var previewH = Math.max(300, basePreview, neededForCover);
+    previewH = Math.min(previewH, Math.max(300, maxH - 20));
+
+    var halfH = Math.max(baseHalf, previewH + 44);
+    halfH = Math.min(halfH, Math.max(previewH + 8, maxH - 8));
+
+    // Zorg dat states altijd in logische volgorde blijven.
+    if(halfH <= previewH){
+      halfH = Math.min(maxH - 4, previewH + 8);
+    }
+    if(previewH >= halfH){
+      previewH = Math.max(280, halfH - 8);
+    }
 
     return {
       preview: previewH,
@@ -1017,6 +1071,55 @@ if(PK.createMenuItem){
   function markHelpAsScrolled(){
     hintDismissed = true;
     scheduleSheetScrollHint(0);
+  }
+
+  function settleSheetFromCurrent(opts){
+    opts = opts || {};
+    refreshSheetSnapHeights();
+    var currentH = getCurH();
+    if(currentH < sheetSnapHeights.preview) currentH = sheetSnapHeights.preview;
+    if(currentH > sheetSnapHeights.max) currentH = sheetSnapHeights.max;
+
+    var vY = (typeof opts.velocity === 'number') ? opts.velocity : 0;
+    var pullDelta = (typeof opts.pullDelta === 'number') ? opts.pullDelta : 0;
+    var allowCloseFromPreview = !!opts.allowCloseFromPreview;
+
+    var target = nearestSnapState(currentH);
+    if(vY <= SNAP_VELOCITY_UP){
+      target = SNAP_STATE_MAX;
+    }else if(vY >= SNAP_VELOCITY_DOWN){
+      var downThreshold = (sheetSnapHeights.preview + sheetSnapHeights.half) * 0.5;
+      target = (currentH <= downThreshold) ? SNAP_STATE_PREVIEW : SNAP_STATE_HALF;
+    }
+
+    if(
+      allowCloseFromPreview &&
+      target === SNAP_STATE_PREVIEW &&
+      currentH <= (sheetSnapHeights.preview + 14) &&
+      (vY >= PREVIEW_CLOSE_VELOCITY || pullDelta >= PREVIEW_CLOSE_PULL_PX)
+    ){
+      peekInfo();
+      return;
+    }
+
+    var canRestoreHint = !!(
+      target !== SNAP_STATE_MAX &&
+      hasSheetOverflow() &&
+      sheetViewport &&
+      (sheetViewport.scrollTop || 0) <= 2
+    );
+    applySheetSnap(target, {
+      animate: true,
+      force: true,
+      resetHint: canRestoreHint,
+      delayHint: canRestoreHint ? 320 : 80
+    });
+    if(target !== SNAP_STATE_MAX){
+      w.setTimeout(function(){
+        try{ alignInfoSheetToMainCard(); }catch(_eAlignSettle){}
+      }, 130);
+    }
+    setViewportTransition(true);
   }
 
   function ensureSheetScrollHint(){
@@ -1244,23 +1347,16 @@ if(PK.createMenuItem){
     if(sheetViewport && sheetViewport.getBoundingClientRect){
       var vp = sheetViewport.getBoundingClientRect();
       var pad = 12; // visuele marge boven/onder
-      var topLimit = vp.top + pad;
       var bottomLimit = vp.bottom - pad;
-
-      var topAfter = rInfo.top + shift;
       var bottomAfter = rInfo.bottom + shift;
-
-      if(topAfter < topLimit){
-        shift += (topLimit - topAfter);
-      }
       if(bottomAfter > bottomLimit){
         shift -= (bottomAfter - bottomLimit);
       }
     }
 
     // Extra clamp tegen extreme values bij rare metingen (iOS rotate / rubberband)
-    if(shift > 140) shift = 140;
-    if(shift < -140) shift = -140;
+    if(shift > 220) shift = 220;
+    if(shift < -220) shift = -220;
 
     try{ infoSheet.style.setProperty('--helpShift', shift + 'px'); }catch(_e){}
   }
@@ -2109,10 +2205,9 @@ function openInfo(){
     var raf = 0;
     var pendingH = 0;
     var dragMoved = false;
+    var dragTotalDy = 0;
     var suppressHandleClickUntil = 0;
     var DRAG_HEADER_ZONE_PX = 64;
-    var SWIPE_UP_VELOCITY = -0.55;
-    var SWIPE_DOWN_VELOCITY = 0.55;
 
     function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
 
@@ -2170,6 +2265,7 @@ function openInfo(){
       lastMoveY = startY;
       vY = 0;
       dragMoved = false;
+      dragTotalDy = 0;
 
       setViewportTransition(false);
       lockBackgroundScroll(true);
@@ -2191,6 +2287,7 @@ function openInfo(){
       var dy = (y - startY);
       var dx = (x - startX);
       if(Math.abs(dy) > 4) dragMoved = true;
+      dragTotalDy = dy;
 
       // Horizontale intent -> drag annuleren (carrousel voorrang).
       if(Math.abs(dx) > Math.abs(dy) * 1.2 && Math.abs(dx) > 8){
@@ -2230,36 +2327,16 @@ function openInfo(){
       w.removeEventListener('pointercancel', onUp);
 
       refreshSheetSnapHeights();
-      var currentH = clamp(getCurH(), sheetSnapHeights.preview, sheetSnapHeights.max);
-      var target = nearestSnapState(currentH);
-      if(vY <= SWIPE_UP_VELOCITY){
-        target = SNAP_STATE_MAX;
-      }else if(vY >= SWIPE_DOWN_VELOCITY){
-        var downThreshold = (sheetSnapHeights.preview + sheetSnapHeights.half) * 0.5;
-        target = (currentH <= downThreshold) ? SNAP_STATE_PREVIEW : SNAP_STATE_HALF;
-      }
-
-      var canRestoreHint = !!(
-        target !== SNAP_STATE_MAX &&
-        hasSheetOverflow() &&
-        sheetViewport &&
-        (sheetViewport.scrollTop || 0) <= 2
-      );
       if(dragMoved){
         suppressHandleClickUntil = Date.now() + 260;
       }
-      applySheetSnap(target, {
-        animate: true,
-        force: true,
-        resetHint: canRestoreHint,
-        delayHint: canRestoreHint ? 320 : 80
+      var startedNearPreview = Math.abs(startH - sheetSnapHeights.preview) <= 24;
+      var allowClose = startedNearPreview;
+      settleSheetFromCurrent({
+        velocity: vY,
+        pullDelta: dragTotalDy,
+        allowCloseFromPreview: allowClose
       });
-      if(target !== SNAP_STATE_MAX){
-        w.setTimeout(function(){
-          try{ alignInfoSheetToMainCard(); }catch(_eAlign){}
-        }, 140);
-      }
-      setViewportTransition(true);
     }
 
     var dragRoot = infoCard || handle;
@@ -2302,42 +2379,127 @@ function openInfo(){
     if(sheetViewport){
       sheetViewport.addEventListener('touchstart', function(ev){
         if(!ev || !ev.touches || !ev.touches.length) return;
-        helpTouchStartY = ev.touches[0].clientY || 0;
-        helpTouchStartX = ev.touches[0].clientX || 0;
+        var y = ev.touches[0].clientY || 0;
+        var x = ev.touches[0].clientX || 0;
+        helpTouchStartY = y;
+        helpTouchStartX = x;
+        helpGestureStartY = y;
+        helpGestureLastY = y;
+        helpGestureLastT = Date.now();
+        helpGestureVY = 0;
+        helpGestureSheetDrag = false;
       }, { passive:true });
       sheetViewport.addEventListener('touchmove', function(ev){
         if(!ev || !ev.touches || !ev.touches.length) return;
         if(sheetMode !== 'help' || !isInfoOpen()) return;
+
         var y = ev.touches[0].clientY || 0;
         var x = ev.touches[0].clientX || 0;
-        var dy = (helpTouchStartY - y); // >0 = user wil verder naar beneden in tekst
+        var deltaStepY = (y - helpTouchStartY); // + = vinger omlaag
+        var deltaFromStartY = (y - helpGestureStartY);
         var dx = Math.abs(x - helpTouchStartX);
-        if(dx > Math.abs(dy) * 1.2 && dx > 8) return;
+        if(dx > Math.abs(deltaStepY) * 1.2 && dx > 8) return;
 
-        // Belangrijk: als we nog niet op MAX staan, onderscheppen we de eerste
-        // echte "scroll-om-meer-te-zien" en laten we eerst de sheet naar MAX snappen.
-        if(shouldSnapHelpToMaxFromScroll(dy > 10)){
+        var now = Date.now();
+        var dt = now - helpGestureLastT;
+        if(dt > 0){
+          var instV = (y - helpGestureLastY) / dt; // + = omlaag
+          helpGestureVY = (helpGestureVY * 0.78) + (instV * 0.22);
+          helpGestureLastY = y;
+          helpGestureLastT = now;
+        }
+
+        var curH = getCurH();
+        var minH = sheetSnapHeights.preview;
+        var maxH = sheetSnapHeights.max;
+        var atTop = (sheetViewport.scrollTop || 0) <= 1;
+        var movingUp = deltaStepY < -0.6;   // vinger omhoog => sheet omhoog
+        var movingDown = deltaStepY > 0.6;  // vinger omlaag => sheet omlaag
+        var canDragUp = movingUp && curH < (maxH - 0.5);
+        var canDragDown = movingDown && atTop && curH > (minH + 0.5);
+
+        if(canDragUp || canDragDown){
+          // Evenredig meebewegen met je swipe.
+          var nextH = curH - deltaStepY;
+          if(nextH < minH) nextH = minH;
+          if(nextH > maxH) nextH = maxH;
+          setViewportTransition(false);
+          setCurH(nextH);
+          helpGestureSheetDrag = true;
           markHelpAsScrolled();
-          expandHelpForReading({ animate: true, force: true });
           helpTouchStartY = y;
           helpTouchStartX = x;
           if(ev.preventDefault) ev.preventDefault();
           return;
         }
 
-        if(Math.abs(dy) > 8){
+        // Vanuit PREVIEW kun je nog steeds wegvegen met een duidelijke omlaag-swipe.
+        if(
+          movingDown &&
+          atTop &&
+          curH <= (minH + 2) &&
+          deltaFromStartY > 56 &&
+          (now - helpLastDownSnapAt > 180)
+        ){
+          helpLastDownSnapAt = now;
+          peekInfo();
+          if(ev.preventDefault) ev.preventDefault();
+          return;
+        }
+
+        if(Math.abs(deltaStepY) > 8){
           markHelpAsScrolled();
-          helpTouchStartY = y;
-          helpTouchStartX = x;
         }
       }, { passive:false });
+      sheetViewport.addEventListener('touchend', function(){
+        if(sheetMode !== 'help' || !isInfoOpen()) return;
+        if(!helpGestureSheetDrag) return;
+        helpGestureSheetDrag = false;
+        settleSheetFromCurrent({
+          velocity: helpGestureVY,
+          pullDelta: (helpGestureLastY - helpGestureStartY),
+          allowCloseFromPreview: true
+        });
+      }, { passive:true });
+      sheetViewport.addEventListener('touchcancel', function(){
+        if(sheetMode !== 'help' || !isInfoOpen()) return;
+        if(!helpGestureSheetDrag) return;
+        helpGestureSheetDrag = false;
+        settleSheetFromCurrent({
+          velocity: helpGestureVY,
+          pullDelta: (helpGestureLastY - helpGestureStartY),
+          allowCloseFromPreview: true
+        });
+      }, { passive:true });
       sheetViewport.addEventListener('wheel', function(ev){
         if(!ev) return;
         if(sheetMode !== 'help' || !isInfoOpen()) return;
-        var dy = (ev.deltaY || 0);
-        if(shouldSnapHelpToMaxFromScroll(dy > 4)){
+        var dy = (ev.deltaY || 0); // + = naar beneden lezen
+        if(Math.abs(dy) < 0.8) return;
+        var curH = getCurH();
+        var minH = sheetSnapHeights.preview;
+        var maxH = sheetSnapHeights.max;
+        var atTop = (sheetViewport.scrollTop || 0) <= 1;
+        var canDragUp = dy > 0 && curH < (maxH - 0.5);
+        var canDragDown = dy < 0 && atTop && curH > (minH + 0.5);
+        if(canDragUp || canDragDown){
+          setViewportTransition(false);
+          var nextH = curH + dy;
+          if(nextH < minH) nextH = minH;
+          if(nextH > maxH) nextH = maxH;
+          setCurH(nextH);
           markHelpAsScrolled();
-          expandHelpForReading({ animate: true, force: true });
+          sheetWheelVelocity = (sheetWheelVelocity * 0.65) + ((dy / 16) * 0.35);
+          if(sheetWheelSettleTimer) w.clearTimeout(sheetWheelSettleTimer);
+          sheetWheelSettleTimer = w.setTimeout(function(){
+            sheetWheelSettleTimer = 0;
+            settleSheetFromCurrent({
+              velocity: sheetWheelVelocity,
+              pullDelta: 0,
+              allowCloseFromPreview: false
+            });
+            sheetWheelVelocity = 0;
+          }, 110);
           if(ev.preventDefault) ev.preventDefault();
           return;
         }
@@ -2346,20 +2508,10 @@ function openInfo(){
       sheetViewport.addEventListener('scroll', function(){
         if(sheetMode === 'help' && isInfoOpen()){
           var top = (sheetViewport.scrollTop || 0);
-          if(
-            sheetSnapState !== SNAP_STATE_MAX &&
-            hasSheetOverflow() &&
-            top > 0 &&
-            top < 10 &&
-            !hintDismissed
-          ){
-            // Fallback: eerste mini-scroll direct omzetten naar MAX-snap.
+          if(sheetSnapState !== SNAP_STATE_MAX && top > 0){
+            // Buiten MAX houden we de content-scroll dicht; sheet beweegt eerst.
             sheetViewport.scrollTop = 0;
-            markHelpAsScrolled();
-            expandHelpForReading({ animate: true, force: true });
-            return;
-          }
-          if(top > 2){
+          }else if(top > 2){
             markHelpAsScrolled();
           }
         }
