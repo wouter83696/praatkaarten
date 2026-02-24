@@ -364,11 +364,12 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 .menuList{
   display: grid;
   margin-top: -2px;
+  row-gap: 0;
 }
 
 .menuItem{
   text-align:left;
-  padding: 10px var(--menuRowPadX);
+  padding: 8px var(--menuRowPadX);
   border: 0;
   background: transparent;
   font-size: 14px;
@@ -397,7 +398,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 
 .menuFooter{
   border-top: 0;
-  padding: 8px 0 0;
+  padding: 2px 0 0;
   position: relative;
 }
 
@@ -432,6 +433,8 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   font-size: 13px;
   color: var(--menuFooterText);
   letter-spacing: 0.015em;
+  padding-top: 8px;
+  padding-bottom: 9px;
 }
 
 html[data-contrast="dark"] .menuItem:active,
