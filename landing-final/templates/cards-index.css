@@ -1,0 +1,7 @@
+/* Template: cards index (kaarten)
+   Adjust this background for the cards page.
+*/
+:root{
+  --bg-base-color: var(--pk-set-bg, var(--cardsPageBg, #FAFAF8));
+  --cardsPageBg: #FAFAF8;
+}
