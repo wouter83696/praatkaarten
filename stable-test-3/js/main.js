@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.75';
+  var ASSET_V = '0.76';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -30,6 +30,27 @@
     if(/^rgba?\(/i.test(v) || /^hsla?\(/i.test(v)) return v;
     if(/^\d+\s*,\s*\d+\s*,\s*\d+$/.test(v)) return 'rgb(' + v + ')';
     return '';
+  }
+
+  function toHexByte(v){
+    var n = Math.max(0, Math.min(255, parseInt(v, 10) || 0));
+    var s = n.toString(16);
+    return s.length < 2 ? ('0' + s) : s;
+  }
+
+  function coerceThemeColor(input, fallback){
+    var v = trimText(input);
+    if(!v) return fallback;
+    var m;
+    if(/^#([0-9a-f]{3})$/i.test(v)){
+      return '#' + v.charAt(1) + v.charAt(1) + v.charAt(2) + v.charAt(2) + v.charAt(3) + v.charAt(3);
+    }
+    if(/^#([0-9a-f]{6})$/i.test(v)) return v.toLowerCase();
+    m = v.match(/^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)/i);
+    if(m){
+      return '#' + toHexByte(m[1]) + toHexByte(m[2]) + toHexByte(m[3]);
+    }
+    return fallback;
   }
 
   function resolveThemeColor(contrast){
@@ -83,8 +104,11 @@
 
   function updateThemeChrome(mode){
     var contrast = (mode === 'dark') ? 'dark' : 'light';
-    var activeColor = resolveThemeColor(contrast);
-    var statusStyle = 'default';
+    var fallbackLight = '#f7f7f6';
+    var fallbackDark = '#18123c';
+    var fallbackColor = (contrast === 'dark') ? fallbackDark : fallbackLight;
+    var activeColor = coerceThemeColor(resolveThemeColor(contrast), fallbackColor);
+    var statusStyle = (contrast === 'dark') ? 'black-translucent' : 'default';
     var metas;
     var dynTheme;
     var dynStatus;
@@ -119,8 +143,13 @@
         metas = doc.querySelectorAll('meta[name="theme-color"]');
         for(i = 0; i < metas.length; i++){
           if(!metas[i]) continue;
-          metas[i].setAttribute('content', activeColor);
-          if(metas[i].hasAttribute('media')) metas[i].removeAttribute('media');
+          if(metas[i] !== dynTheme && metas[i].parentNode){
+            metas[i].parentNode.removeChild(metas[i]);
+          }
+        }
+        if(dynTheme){
+          dynTheme.setAttribute('content', activeColor);
+          if(dynTheme.hasAttribute('media')) dynTheme.removeAttribute('media');
         }
       }catch(_eTheme){}
 
@@ -137,9 +166,16 @@
 
     applyMetaValues();
     if(isIOSLike()){
-      w.requestAnimationFrame(function(){ applyMetaValues(); });
-      w.setTimeout(applyMetaValues, 120);
-      w.setTimeout(applyMetaValues, 260);
+      // Safari/iOS kan theme-color pas laat overnemen; forceer meerdere passes.
+      w.requestAnimationFrame(function(){
+        applyMetaValues();
+      });
+      w.setTimeout(function(){
+        applyMetaValues();
+      }, 120);
+      w.setTimeout(function(){
+        applyMetaValues();
+      }, 320);
     }
 
     try{
@@ -179,6 +215,8 @@
         updateThemeChrome(mode);
       });
       w.addEventListener('pageshow', syncThemeChromeFromDom);
+      w.addEventListener('focus', syncThemeChromeFromDom);
+      w.addEventListener('orientationchange', syncThemeChromeFromDom);
       doc.addEventListener('visibilitychange', function(){
         if(!doc.hidden) syncThemeChromeFromDom();
       });
