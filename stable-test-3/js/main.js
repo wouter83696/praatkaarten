@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.70';
+  var ASSET_V = '0.71';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -25,25 +25,40 @@
     var statusStyle = (contrast === 'dark') ? 'black-translucent' : 'default';
     var i;
     var metas;
-    var media;
+    var dynTheme;
+    var dynStatus;
+
+    function ensureDynamicMeta(name){
+      var el = null;
+      try{
+        el = doc.querySelector('meta[name="' + name + '"][data-pk-dynamic="1"]');
+        if(!el && doc.head){
+          el = doc.createElement('meta');
+          el.setAttribute('name', name);
+          el.setAttribute('data-pk-dynamic', '1');
+          doc.head.insertBefore(el, doc.head.firstChild || null);
+        }
+      }catch(_eMeta){ el = null; }
+      return el;
+    }
 
     try{
+      dynTheme = ensureDynamicMeta('theme-color');
+      if(dynTheme) dynTheme.setAttribute('content', activeColor);
       metas = doc.querySelectorAll('meta[name="theme-color"]');
       for(i = 0; i < metas.length; i++){
-        media = String((metas[i] && metas[i].getAttribute) ? (metas[i].getAttribute('media') || '') : '').toLowerCase();
-        if(media.indexOf('prefers-color-scheme: dark') !== -1){
-          metas[i].setAttribute('content', darkColor);
-        }else if(media.indexOf('prefers-color-scheme: light') !== -1){
-          metas[i].setAttribute('content', lightColor);
-        }else{
-          metas[i].setAttribute('content', activeColor);
-        }
+        if(!metas[i]) continue;
+        metas[i].setAttribute('content', activeColor);
+        if(metas[i].hasAttribute('media')) metas[i].setAttribute('media', 'all');
       }
     }catch(_eTheme){}
 
     try{
+      dynStatus = ensureDynamicMeta('apple-mobile-web-app-status-bar-style');
+      if(dynStatus) dynStatus.setAttribute('content', statusStyle);
       metas = doc.querySelectorAll('meta[name="apple-mobile-web-app-status-bar-style"]');
       for(i = 0; i < metas.length; i++){
+        if(!metas[i]) continue;
         metas[i].setAttribute('content', statusStyle);
       }
     }catch(_eStatus){}
