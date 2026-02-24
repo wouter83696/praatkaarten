@@ -657,6 +657,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .sheetStack{
@@ -668,7 +669,9 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 
 .sheetPage{
   width: 100%;
-  height: var(--sheetMaxH);
+  /* Laat lange uitleg doorgroeien; viewport regelt het daadwerkelijke scrollvenster. */
+  min-height: var(--sheetMaxH);
+  height: auto;
 }
 
 /* Alleen in uitleg-mode verschuiven we de inhoud een beetje,
@@ -746,6 +749,11 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   padding: 0 14px 18px;
   box-sizing: border-box;
   scroll-padding: 14px;
+}
+.infoCard[data-top="help"] .infoCarousel,
+.infoCard[data-mode="help"] .infoCarousel{
+  /* In uitleg-modus moet verticale lees-scroll altijd prioriteit krijgen. */
+  touch-action: auto;
 }
 /* Kaarten-carrousel (zelfde mechanics als infoCarousel) */
 .cardsCarousel{
@@ -1055,6 +1063,7 @@ html[data-contrast="dark"] .infoSlideText{
 
 .infoSlideText p{
   margin: 0 0 12px;
+  color: rgba(11,18,32,0.74);
 }
 
 .infoSlideText p:last-child{
@@ -1062,15 +1071,15 @@ html[data-contrast="dark"] .infoSlideText{
 }
 
 .infoSlideText .infoTextIntro{
-  font-weight: 500;
-  color: rgba(11,18,32,0.84);
+  font-weight: 400;
+  color: rgba(11,18,32,0.88);
 }
 
 .infoSlideText .infoTextSubhead,
 .infoSlideText .infoTextHeading{
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: 0.01em;
-  color: rgba(11,18,32,0.82);
+  color: rgba(11,18,32,0.68);
 }
 
 .infoSlideText .infoTextSubhead{
@@ -1086,13 +1095,17 @@ html[data-contrast="dark"] .infoSlideText{
   margin: 5px 0;
 }
 
+html[data-contrast="dark"] .infoSlideText p{
+  color: rgba(244,246,250,0.84);
+}
+
 html[data-contrast="dark"] .infoSlideText .infoTextIntro{
-  color: rgba(244,246,250,0.92);
+  color: rgba(244,246,250,0.95);
 }
 
 html[data-contrast="dark"] .infoSlideText .infoTextSubhead,
 html[data-contrast="dark"] .infoSlideText .infoTextHeading{
-  color: rgba(244,246,250,0.90);
+  color: rgba(244,246,250,0.76);
 }
 
 .sheetScrollHint{

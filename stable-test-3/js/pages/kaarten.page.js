@@ -790,6 +790,8 @@ if(PK.createMenuItem){
   var handle = infoSheet ? infoSheet.querySelector('.sheetHandle') : null;
   var topPage = 'cards';
   var sheetScrollHint = null;
+  var helpAutoExpanded = false;
+  var helpTouchStartY = 0;
 
   // ------------------------------------------------------------
   // Scroll-lock (Google Maps-achtig)
@@ -859,6 +861,39 @@ if(PK.createMenuItem){
     infoSheet.style.setProperty('--sheetCompactH', Math.max(220, px) + 'px');
     // Bij init: start altijd compact
     setCurH(px);
+  }
+
+  function resetSheetMaxHToDefault(){
+    if(!infoSheet) return;
+    try{ infoSheet.style.removeProperty('--sheetMaxH'); }catch(_e){}
+  }
+
+  function getExpandedHelpH(){
+    var vh = w.innerHeight || (w.document && w.document.documentElement ? w.document.documentElement.clientHeight : 0) || 0;
+    var topGap = 10;
+    try{
+      var topBar = w.document.querySelector ? w.document.querySelector('.topBar') : null;
+      if(topBar && topBar.getBoundingClientRect){
+        topGap = Math.max(10, Math.round(topBar.getBoundingClientRect().bottom + 10));
+      }
+    }catch(_e){}
+    var h = Math.round(vh - topGap);
+    if(h < 340) h = 340;
+    return h;
+  }
+
+  function expandHelpForReading(){
+    if(!infoSheet || sheetMode !== 'help' || !isInfoOpen() || helpAutoExpanded) return;
+    var targetH = getExpandedHelpH();
+    if(targetH <= (getCurH() + 6)){
+      helpAutoExpanded = true;
+      return;
+    }
+    infoSheet.style.setProperty('--sheetMaxH', targetH + 'px');
+    setCurH(targetH);
+    try{ infoSheet.style.setProperty('--helpShift','0px'); }catch(_eShift){}
+    helpAutoExpanded = true;
+    scheduleSheetScrollHint(60);
   }
 
   function ensureSheetScrollHint(){
@@ -940,12 +975,14 @@ if(PK.createMenuItem){
     var compactH = getCompactH();
     if(mode === 'help'){
       if(sheetViewport) sheetViewport.scrollTop = 0;
+      helpAutoExpanded = false;
       scheduleHelpMeasure();
       setTopPage('help');
       scheduleSheetScrollHint(120);
     }else{
       setCurH(compactH);
       setTopPage('cards');
+      helpAutoExpanded = false;
       setSheetScrollHintVisible(false);
     }
   }
@@ -1107,6 +1144,8 @@ function openInfo(){
     infoSheet.style.transform = '';
 
     // 1) Maak zichtbaar in 'closed' staat (translateY(100%)) zodat we eerst kunnen meten
+    resetSheetMaxHToDefault();
+    helpAutoExpanded = false;
     infoSheet.hidden = false;
     if(infoSheet.classList) infoSheet.classList.remove('open');
     if(infoOverlay){
@@ -1114,6 +1153,9 @@ function openInfo(){
       infoOverlay.style.pointerEvents = 'auto';
       if(infoOverlay.classList) infoOverlay.classList.remove('open');
     }
+    // Zodra de sheet opent, locken we de achtergrond zodat verticale swipes
+    // naar de uitleg gaan (en niet naar de pagina erachter).
+    lockBackgroundScroll(true);
 
     // 2) Zet meteen naar uitleg + cover, zodat DOM-sizes kloppen vóór de open-animatie
     try{ setSheetMode('help'); }catch(_e0){}
@@ -1219,6 +1261,9 @@ function openInfo(){
         flushList();
         continue;
       }
+      var lowLine = line.toLowerCase();
+      var lineIsSubhead = (lowLine === 'lees meer' || lowLine === 'nu lees meer');
+      var lineIsHeading = looksLikeInfoHeading(line);
       var bullet = line.match(/^(?:[-*]\s+)(.+)$/);
       if(bullet){
         flushPara();
@@ -1229,6 +1274,22 @@ function openInfo(){
         var li = w.document.createElement('li');
         li.textContent = String(bullet[1] || '').replace(/^\s+|\s+$/g,'');
         list.appendChild(li);
+        continue;
+      }
+      if(lineIsSubhead || lineIsHeading){
+        flushPara();
+        flushList();
+        var hp = w.document.createElement('p');
+        if(!introUsed){
+          hp.className = 'infoTextIntro';
+          introUsed = true;
+        }else if(lineIsSubhead){
+          hp.className = 'infoTextSubhead';
+        }else{
+          hp.className = 'infoTextHeading';
+        }
+        hp.textContent = line;
+        target.appendChild(hp);
         continue;
       }
       flushList();
@@ -2133,7 +2194,30 @@ function openInfo(){
     if(infoOverlay) infoOverlay.onclick = peekInfo;
     ensureSheetScrollHint();
     if(sheetViewport){
+      sheetViewport.addEventListener('touchstart', function(ev){
+        if(!ev || !ev.touches || !ev.touches.length) return;
+        helpTouchStartY = ev.touches[0].clientY || 0;
+      }, { passive:true });
+      sheetViewport.addEventListener('touchmove', function(ev){
+        if(!ev || !ev.touches || !ev.touches.length) return;
+        if(sheetMode !== 'help' || !isInfoOpen() || helpAutoExpanded) return;
+        var y = ev.touches[0].clientY || 0;
+        var dy = y - helpTouchStartY;
+        if(dy < -12){
+          expandHelpForReading();
+          helpTouchStartY = y;
+          if(ev.preventDefault) ev.preventDefault();
+        }
+      }, { passive:false });
+      sheetViewport.addEventListener('wheel', function(ev){
+        if(!ev) return;
+        if(sheetMode !== 'help' || !isInfoOpen() || helpAutoExpanded) return;
+        if((ev.deltaY || 0) > 4) expandHelpForReading();
+      }, { passive:true });
       sheetViewport.addEventListener('scroll', function(){
+        if(sheetMode === 'help' && isInfoOpen() && !helpAutoExpanded && sheetViewport.scrollTop > 6){
+          expandHelpForReading();
+        }
         updateSheetScrollHint();
       }, { passive:true });
     }
