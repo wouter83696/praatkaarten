@@ -53,37 +53,6 @@
   var CARDS_INDEX_PAGE_BG = null;
   var doc = w.document;
 
-  function resolveBuildVersion(){
-    var v = '';
-    try{ v = String(w.PK_ASSET_V || ''); }catch(_eV){}
-    if(v) return v;
-    try{
-      var scripts = doc.getElementsByTagName('script');
-      for(var i=0;i<scripts.length;i++){
-        var src = scripts[i] && scripts[i].getAttribute ? String(scripts[i].getAttribute('src') || '') : '';
-        if(src.indexOf('js/main.js') === -1) continue;
-        var m = src.match(/[?&]v=([^&]+)/);
-        if(m && m[1]) return decodeURIComponent(m[1]);
-      }
-    }catch(_eS){}
-    return '';
-  }
-
-  function renderBuildStamp(){
-    if(!doc || !doc.body) return;
-    if(!doc.body.getAttribute || doc.body.getAttribute('data-page') !== 'kaarten') return;
-    var el = doc.getElementById('pkBuildStamp');
-    if(!el){
-      el = doc.createElement('div');
-      el.id = 'pkBuildStamp';
-      el.className = 'pkBuildStamp';
-      el.setAttribute('aria-hidden', 'true');
-      doc.body.appendChild(el);
-    }
-    var v = resolveBuildVersion();
-    el.textContent = v ? ('build ' + v) : 'build ?';
-  }
-
   function parseHexToRgbCsv(input){
     var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
     if(hex.length === 3){
@@ -199,9 +168,7 @@
   }
 
   function renderIndexBackground(){
-    var bgApi = (PK && PK.cardsBackground && PK.cardsBackground.render)
-      ? PK.cardsBackground
-      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    var bgApi = (PK && PK.cardsBackground && PK.cardsBackground.render) ? PK.cardsBackground : null;
     if(!bgApi) return;
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
@@ -523,7 +490,7 @@ if(PK.createMenuItem){
       if(!Array.isArray(list) || !list.length) return Promise.reject(new Error('empty cards index'));
       var basePath = PK.pathForSet ? null : (PK.PATHS && PK.PATHS.setsDir ? PK.PATHS.setsDir : '.');
       var tasks = list.map(function(file){
-        var rel = 'cards_rect/' + String(file || '').replace(/^\\//,'');
+        var rel = 'cards_rect/' + String(file || '').replace(/^\//,'');
         var url = PK.pathForSet ? PK.pathForSet(setId, rel) : (basePath + '/' + encodeURIComponent(setId) + '/' + rel);
         return PK.loadJson(url).then(function(card){
           card = card || {};
@@ -666,7 +633,6 @@ if(PK.createMenuItem){
       if(w.console && w.console.error) w.console.error(e);
     });
 
-  renderBuildStamp();
   setThemePillText();
 
   // Menu wiring

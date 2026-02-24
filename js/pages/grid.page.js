@@ -35,6 +35,34 @@
   var menuApi = null;
   if(PK.createMenu){
     menuApi = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
+  }else if(menuEl){
+    var openMenuFallback = function(){
+      menuEl.hidden = false;
+      if(overlay) overlay.hidden = false;
+      if(pillBtn && pillBtn.setAttribute) pillBtn.setAttribute('aria-expanded', 'true');
+    };
+    var closeMenuFallback = function(){
+      menuEl.hidden = true;
+      if(overlay) overlay.hidden = true;
+      if(pillBtn && pillBtn.setAttribute) pillBtn.setAttribute('aria-expanded', 'false');
+    };
+    var toggleMenuFallback = function(){
+      if(menuEl.hidden) openMenuFallback(); else closeMenuFallback();
+    };
+    if(pillBtn && !pillBtn.__pkMenuFallbackBound){
+      pillBtn.__pkMenuFallbackBound = true;
+      pillBtn.addEventListener('click', toggleMenuFallback);
+    }
+    if(overlay && !overlay.__pkMenuFallbackBound){
+      overlay.__pkMenuFallbackBound = true;
+      overlay.addEventListener('click', closeMenuFallback);
+    }
+    menuApi = {
+      open: openMenuFallback,
+      close: closeMenuFallback,
+      toggle: toggleMenuFallback,
+      isOpen: function(){ return !menuEl.hidden; }
+    };
   }
 
   // Main-index kaartpalet (referentie uit ontwerp-SVG):
@@ -223,37 +251,6 @@
     return { layout: layout, showHero: showHero, showGrid: showGrid };
   }
 
-  function resolveBuildVersion(){
-    var v = '';
-    try{ v = String(w.PK_ASSET_V || ''); }catch(_eV){}
-    if(v) return v;
-    try{
-      var scripts = doc.getElementsByTagName('script');
-      for(var i=0;i<scripts.length;i++){
-        var src = scripts[i] && scripts[i].getAttribute ? String(scripts[i].getAttribute('src') || '') : '';
-        if(src.indexOf('js/main.js') === -1) continue;
-        var m = src.match(/[?&]v=([^&]+)/);
-        if(m && m[1]) return decodeURIComponent(m[1]);
-      }
-    }catch(_eS){}
-    return '';
-  }
-
-  function renderBuildStamp(){
-    if(!doc || !doc.body) return;
-    if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
-    var el = doc.getElementById('pkBuildStamp');
-    if(!el){
-      el = doc.createElement('div');
-      el.id = 'pkBuildStamp';
-      el.className = 'pkBuildStamp';
-      el.setAttribute('aria-hidden', 'true');
-      doc.body.appendChild(el);
-    }
-    var v = resolveBuildVersion();
-    el.textContent = v ? ('build ' + v) : 'build ?';
-  }
-
   function updateBackgroundBandsNow(){
     if(!doc || !doc.documentElement || !doc.body) return;
     if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
@@ -292,7 +289,7 @@
 
   function getCardsPage(){
     if(PK && PK.PATHS && PK.PATHS.cardsPage) return PK.PATHS.cardsPage;
-    return './kaarten.html';
+    return './kaarten/';
   }
 
   function getGridLimit(){
@@ -579,7 +576,7 @@
   function pickDefaultSet(idx){
     var sets = (idx && Array.isArray(idx.sets)) ? idx.sets : [];
 
-    // 1) laatste bezochte set (kaarten.html)
+    // 1) laatste bezochte set (kaarten route)
     var last = '';
     try{ last = trim(w.localStorage.getItem('pk_last_set') || ''); }catch(_eLast){}
     if(last){
@@ -819,9 +816,7 @@
   }
 
   function applyBackground(idx){
-    var bgApi = (PK && PK.gridBackground && PK.gridBackground.render)
-      ? PK.gridBackground
-      : (PK && PK.indexBackground && PK.indexBackground.render ? PK.indexBackground : null);
+    var bgApi = (PK && PK.gridBackground && PK.gridBackground.render) ? PK.gridBackground : null;
     if(!bgApi) return;
     var bg = (idx && idx.indexPage && idx.indexPage.background)
       ? idx.indexPage.background
@@ -857,8 +852,9 @@
     var blobAlphaCap = bg && typeof bg.blobAlphaCap === 'number' ? bg.blobAlphaCap : 0.26;
     var blobAlphaCapDark = bg && typeof bg.blobAlphaCapDark === 'number' ? bg.blobAlphaCapDark : 0.28;
     var shapeEnabled = bg && typeof bg.shapeEnabled === 'boolean' ? bg.shapeEnabled : false;
-    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : undefined;
-    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : undefined;
+    // Default: spreid blobs over het hele scherm (geen clusteren in één hoek).
+    var blobSpread = bg && typeof bg.blobSpread === 'string' ? bg.blobSpread : 'grid';
+    var blobSpreadMargin = bg && typeof bg.blobSpreadMargin === 'number' ? bg.blobSpreadMargin : 0.06;
     var sizeLimit = bg && typeof bg.sizeLimit === 'number' ? bg.sizeLimit : 1.9;
     // Geen vaste light-alpha als default; daardoor ontstaan natuurlijke verschillen.
     var blobAlphaFixed = bg && typeof bg.blobAlphaFixed === 'number' ? bg.blobAlphaFixed : undefined;
@@ -977,7 +973,6 @@
   }
 
   function init(){
-    renderBuildStamp();
     resetPositions();
     if(!PK.loadJson && !PK.getJson) return;
 

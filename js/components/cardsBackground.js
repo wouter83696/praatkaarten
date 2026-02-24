@@ -606,7 +606,7 @@
         cy = (rnd()*1.10 - 0.05) * info.h;
       }
 
-      if(i===1){
+      if(i===1 && !spreadPositions){
         rr *= 1.08;
         cx = info.w * 1.02;
         cy = info.h * 0.12;

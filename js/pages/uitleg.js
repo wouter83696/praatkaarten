@@ -103,7 +103,7 @@
       w.parent.postMessage({ type:'pk_close_help' }, '*');
       return;
     }
-    w.location.href = '../kaarten.html?set=' + encodeURIComponent(setName);
+    w.location.href = '../kaarten/?set=' + encodeURIComponent(setName);
   }
 
   function buildSlidesFromMeta(meta){

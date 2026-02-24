@@ -17,7 +17,7 @@
     setsDir: base + '/sets',
     assetsDir: base + '/assets',
     gridPage: base + '/index.html',
-    cardsPage: base + '/kaarten.html'
+    cardsPage: base + '/kaarten/'
   };
 
   PK.PATHS = PATHS;
