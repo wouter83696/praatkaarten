@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.68';
+  var ASSET_V = '0.69';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -15,6 +15,70 @@
     if(pathName.indexOf('/kaarten/') !== -1) page = 'kaarten';
     else if(pathName.indexOf('/uitleg/') !== -1) page = 'uitleg';
     else page = 'grid';
+  }
+
+  function updateThemeChrome(mode){
+    var contrast = (mode === 'dark') ? 'dark' : 'light';
+    var lightColor = '#f7f7f6';
+    var darkColor = '#18123c';
+    var activeColor = (contrast === 'dark') ? darkColor : lightColor;
+    var statusStyle = (contrast === 'dark') ? 'black-translucent' : 'default';
+    var i;
+    var metas;
+    var media;
+
+    try{
+      metas = doc.querySelectorAll('meta[name="theme-color"]');
+      for(i = 0; i < metas.length; i++){
+        media = String((metas[i] && metas[i].getAttribute) ? (metas[i].getAttribute('media') || '') : '').toLowerCase();
+        if(media.indexOf('prefers-color-scheme: dark') !== -1){
+          metas[i].setAttribute('content', darkColor);
+        }else if(media.indexOf('prefers-color-scheme: light') !== -1){
+          metas[i].setAttribute('content', lightColor);
+        }else{
+          metas[i].setAttribute('content', activeColor);
+        }
+      }
+    }catch(_eTheme){}
+
+    try{
+      metas = doc.querySelectorAll('meta[name="apple-mobile-web-app-status-bar-style"]');
+      for(i = 0; i < metas.length; i++){
+        metas[i].setAttribute('content', statusStyle);
+      }
+    }catch(_eStatus){}
+  }
+
+  function syncThemeChromeFromDom(){
+    var mode = 'light';
+    try{
+      mode = (doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark') ? 'dark' : 'light';
+    }catch(_eMode){ mode = 'light'; }
+    updateThemeChrome(mode);
+  }
+
+  function bindThemeChromeSync(){
+    syncThemeChromeFromDom();
+    try{
+      if(w.MutationObserver && doc.documentElement){
+        var obs = new w.MutationObserver(function(list){
+          var i;
+          for(i = 0; i < (list || []).length; i++){
+            if(list[i] && list[i].attributeName === 'data-contrast'){
+              syncThemeChromeFromDom();
+              break;
+            }
+          }
+        });
+        obs.observe(doc.documentElement, { attributes: true, attributeFilter: ['data-contrast'] });
+      }
+    }catch(_eObs){}
+    try{
+      w.addEventListener('pageshow', syncThemeChromeFromDom);
+      doc.addEventListener('visibilitychange', function(){
+        if(!doc.hidden) syncThemeChromeFromDom();
+      });
+    }catch(_eEvt){}
   }
 
   function basePath(){
@@ -327,6 +391,7 @@
     return [];
   }
 
+  bindThemeChromeSync();
   ensureFallbackCore();
 
   loadScript(p('js/core/paths.js')).then(function(res){
