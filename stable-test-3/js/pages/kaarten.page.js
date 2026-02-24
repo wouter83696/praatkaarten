@@ -959,7 +959,7 @@ if(PK.createMenuItem){
     // Daardoor "valt" de uitlegkaart weer netjes over de hoofdkaart.
     var mainTop = getCenteredMainCardTopPx();
     if(mainTop > 0){
-      neededForCover = Math.round(vh - mainTop + 34);
+      neededForCover = Math.round(vh - mainTop + 46);
     }
 
     var previewH = Math.max(300, basePreview, neededForCover);
@@ -1083,6 +1083,7 @@ if(PK.createMenuItem){
     var vY = (typeof opts.velocity === 'number') ? opts.velocity : 0;
     var pullDelta = (typeof opts.pullDelta === 'number') ? opts.pullDelta : 0;
     var allowCloseFromPreview = !!opts.allowCloseFromPreview;
+    var allowCloseFromMax = !!opts.allowCloseFromMax;
 
     var target = nearestSnapState(currentH);
     if(vY <= SNAP_VELOCITY_UP){
@@ -1097,6 +1098,16 @@ if(PK.createMenuItem){
       target === SNAP_STATE_PREVIEW &&
       currentH <= (sheetSnapHeights.preview + 14) &&
       (vY >= PREVIEW_CLOSE_VELOCITY || pullDelta >= PREVIEW_CLOSE_PULL_PX)
+    ){
+      peekInfo();
+      return;
+    }
+
+    // Extra: stevige neerwaartse "flick" vanuit hoog geopende sheet mag direct sluiten.
+    if(
+      allowCloseFromMax &&
+      vY >= 1.05 &&
+      pullDelta >= 170
     ){
       peekInfo();
       return;
@@ -1337,6 +1348,8 @@ if(PK.createMenuItem){
     var infoCardEl = bestI && bestI.querySelector ? bestI.querySelector('.infoSlideCard') : null;
     if(!infoCardEl) return;
     var rInfo = infoCardEl.getBoundingClientRect();
+    if(!rInfo || !rInfo.height || rInfo.height < 80) return;
+    if(!rMain || !rMain.height || rMain.height < 80) return;
 
     // Doel: bovenkant van uitleg-kaart uitlijnen op de centrale index-kaart.
     // shift (px) = gewensteTop - huidigeTop.
@@ -1347,16 +1360,21 @@ if(PK.createMenuItem){
     if(sheetViewport && sheetViewport.getBoundingClientRect){
       var vp = sheetViewport.getBoundingClientRect();
       var pad = 12; // visuele marge boven/onder
+      var topLimit = vp.top + pad;
       var bottomLimit = vp.bottom - pad;
+      var topAfter = rInfo.top + shift;
       var bottomAfter = rInfo.bottom + shift;
+      if(topAfter < topLimit){
+        shift += (topLimit - topAfter);
+      }
       if(bottomAfter > bottomLimit){
         shift -= (bottomAfter - bottomLimit);
       }
     }
 
     // Extra clamp tegen extreme values bij rare metingen (iOS rotate / rubberband)
-    if(shift > 220) shift = 220;
-    if(shift < -220) shift = -220;
+    if(shift > 180) shift = 180;
+    if(shift < -180) shift = -180;
 
     try{ infoSheet.style.setProperty('--helpShift', shift + 'px'); }catch(_e){}
   }
@@ -1607,6 +1625,13 @@ function openInfo(){
       var img = w.document.createElement('img');
       img.alt = s.isCover ? 'Voorkant' : (s.title || s.key);
       img.src = s.srcRect;
+      img.onload = function(){
+        if(sheetMode === 'help' && isInfoOpen() && sheetSnapState !== SNAP_STATE_MAX){
+          w.setTimeout(function(){
+            try{ alignInfoSheetToMainCard(); }catch(_eAlignImg){}
+          }, 40);
+        }
+      };
       img.onerror = function(){
         // fallback naar square
         if(this && this.dataset && this.dataset.fallback){
@@ -1868,6 +1893,11 @@ function openInfo(){
     w.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
     // Houd de sheet compact zolang alleen de kaart zichtbaar is.
     w.setTimeout(measureAndSetCompactH, 0);
+    if(sheetMode === 'help' && isInfoOpen() && sheetSnapState !== SNAP_STATE_MAX){
+      w.setTimeout(function(){
+        try{ alignInfoSheetToMainCard(); }catch(_eAlignAfterCards){}
+      }, 50);
+    }
   }
 
   // -----------------------------
@@ -2335,7 +2365,8 @@ function openInfo(){
       settleSheetFromCurrent({
         velocity: vY,
         pullDelta: dragTotalDy,
-        allowCloseFromPreview: allowClose
+        allowCloseFromPreview: allowClose,
+        allowCloseFromMax: true
       });
     }
 
@@ -2458,7 +2489,8 @@ function openInfo(){
         settleSheetFromCurrent({
           velocity: helpGestureVY,
           pullDelta: (helpGestureLastY - helpGestureStartY),
-          allowCloseFromPreview: true
+          allowCloseFromPreview: true,
+          allowCloseFromMax: true
         });
       }, { passive:true });
       sheetViewport.addEventListener('touchcancel', function(){
@@ -2468,7 +2500,8 @@ function openInfo(){
         settleSheetFromCurrent({
           velocity: helpGestureVY,
           pullDelta: (helpGestureLastY - helpGestureStartY),
-          allowCloseFromPreview: true
+          allowCloseFromPreview: true,
+          allowCloseFromMax: true
         });
       }, { passive:true });
       sheetViewport.addEventListener('wheel', function(ev){
