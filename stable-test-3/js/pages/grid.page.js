@@ -959,6 +959,12 @@
     if(doc && doc.documentElement){
       doc.documentElement.setAttribute('data-contrast', CONTRAST);
     }
+    try{
+      if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
+      if(w.dispatchEvent && w.CustomEvent){
+        w.dispatchEvent(new w.CustomEvent('pk:contrast', { detail: { mode: CONTRAST } }));
+      }
+    }catch(_eTheme){}
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
     if(changed && lastIndexConfig) applyBackground(lastIndexConfig);
   }

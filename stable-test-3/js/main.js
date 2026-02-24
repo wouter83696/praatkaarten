@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.69';
+  var ASSET_V = '0.70';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -47,6 +47,11 @@
         metas[i].setAttribute('content', statusStyle);
       }
     }catch(_eStatus){}
+
+    try{
+      if(doc.documentElement) doc.documentElement.style.colorScheme = contrast;
+      if(doc.body) doc.body.style.colorScheme = contrast;
+    }catch(_eScheme){}
   }
 
   function syncThemeChromeFromDom(){
@@ -59,6 +64,7 @@
 
   function bindThemeChromeSync(){
     syncThemeChromeFromDom();
+    PK.setThemeChrome = updateThemeChrome;
     try{
       if(w.MutationObserver && doc.documentElement){
         var obs = new w.MutationObserver(function(list){
@@ -74,6 +80,10 @@
       }
     }catch(_eObs){}
     try{
+      w.addEventListener('pk:contrast', function(ev){
+        var mode = (ev && ev.detail && ev.detail.mode === 'dark') ? 'dark' : 'light';
+        updateThemeChrome(mode);
+      });
       w.addEventListener('pageshow', syncThemeChromeFromDom);
       doc.addEventListener('visibilitychange', function(){
         if(!doc.hidden) syncThemeChromeFromDom();

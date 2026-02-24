@@ -676,6 +676,12 @@ if(PK.createMenuItem){
     if(w.document && w.document.documentElement){
       w.document.documentElement.setAttribute('data-contrast', CONTRAST);
     }
+    try{
+      if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
+      if(w.dispatchEvent && w.CustomEvent){
+        w.dispatchEvent(new w.CustomEvent('pk:contrast', { detail: { mode: CONTRAST } }));
+      }
+    }catch(_eTheme){}
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
 
     // Zorg dat tekstvlakken in de uitleg-carrousel altijd mee-updaten bij mode-switch.

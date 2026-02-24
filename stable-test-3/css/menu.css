@@ -554,8 +554,8 @@ html[data-contrast="dark"] #uiWarnings{
 html[data-contrast="dark"] .infoCard{
   border-top: 0.5px solid rgba(255,255,255,0.10);
   /* Dark mode: vaste indigo wereld (niet meekleuren). */
-  /* Uitleg-sheet: behoud vorige dark-transparantie voor leesbaarheid */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.38);
+  /* Donker: duidelijk minder transparant, zodat achterliggende kaarten niet doorlekken */
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.56);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
 }
@@ -1047,7 +1047,7 @@ html[data-contrast="dark"] .infoSlideInner{
 /* Dark help text overrides */
 html[data-contrast="dark"] .infoSlideText{
   /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.92);
   box-shadow: none;
   color: rgba(244,246,250,0.84);
 }
