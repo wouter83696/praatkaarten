@@ -614,6 +614,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 .infoSheet.open{ transform: translateY(0); }
 
 .infoCard{
+  position: relative;
   border-radius: 22px 22px 0 0;
   /* Glas-rand subtieler + dunner (hairline) */
   border-top: 0.5px solid rgba(0,0,0,0.05);
@@ -1050,6 +1051,81 @@ html[data-contrast="dark"] .infoSlideText{
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.92);
   box-shadow: none;
   color: rgba(244,246,250,0.84);
+}
+
+.infoSlideText p{
+  margin: 0 0 12px;
+}
+
+.infoSlideText p:last-child{
+  margin-bottom: 0;
+}
+
+.infoSlideText .infoTextIntro{
+  font-weight: 500;
+  color: rgba(11,18,32,0.84);
+}
+
+.infoSlideText .infoTextSubhead,
+.infoSlideText .infoTextHeading{
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(11,18,32,0.82);
+}
+
+.infoSlideText .infoTextSubhead{
+  margin-top: 2px;
+}
+
+.infoSlideText .infoTextList{
+  margin: 6px 0 14px 20px;
+  padding: 0;
+}
+
+.infoSlideText .infoTextList li{
+  margin: 5px 0;
+}
+
+html[data-contrast="dark"] .infoSlideText .infoTextIntro{
+  color: rgba(244,246,250,0.92);
+}
+
+html[data-contrast="dark"] .infoSlideText .infoTextSubhead,
+html[data-contrast="dark"] .infoSlideText .infoTextHeading{
+  color: rgba(244,246,250,0.90);
+}
+
+.sheetScrollHint{
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  transform: translate(-50%, 6px);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.05);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.90);
+  color: rgba(11,18,32,0.56);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ui-fast) var(--ui-ease), transform var(--ui-fast) var(--ui-ease);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.sheetScrollHint.is-visible{
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+html[data-contrast="dark"] .sheetScrollHint{
+  border-color: rgba(255,255,255,0.08);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.84);
+  color: rgba(244,246,250,0.72);
 }
 
 

@@ -789,6 +789,7 @@ if(PK.createMenuItem){
   var infoCard = infoSheet ? infoSheet.querySelector('.infoCard') : null;
   var handle = infoSheet ? infoSheet.querySelector('.sheetHandle') : null;
   var topPage = 'cards';
+  var sheetScrollHint = null;
 
   // ------------------------------------------------------------
   // Scroll-lock (Google Maps-achtig)
@@ -860,6 +861,43 @@ if(PK.createMenuItem){
     setCurH(px);
   }
 
+  function ensureSheetScrollHint(){
+    if(!infoCard || sheetScrollHint) return;
+    var hint = w.document.createElement('div');
+    hint.className = 'sheetScrollHint';
+    hint.setAttribute('aria-hidden', 'true');
+    hint.textContent = 'Scroll voor meer';
+    infoCard.appendChild(hint);
+    sheetScrollHint = hint;
+  }
+
+  function setSheetScrollHintVisible(on){
+    ensureSheetScrollHint();
+    if(!sheetScrollHint || !sheetScrollHint.classList) return;
+    if(on) sheetScrollHint.classList.add('is-visible');
+    else sheetScrollHint.classList.remove('is-visible');
+  }
+
+  function updateSheetScrollHint(){
+    if(!sheetViewport){
+      setSheetScrollHintVisible(false);
+      return;
+    }
+    var hasOverflow = (sheetViewport.scrollHeight - sheetViewport.clientHeight) > 6;
+    var nearBottom = (sheetViewport.scrollTop + sheetViewport.clientHeight) >= (sheetViewport.scrollHeight - 8);
+    var show = (sheetMode === 'help') && isInfoOpen() && hasOverflow && !nearBottom;
+    setSheetScrollHintVisible(show);
+  }
+
+  var sheetHintTimer = 0;
+  function scheduleSheetScrollHint(delay){
+    if(sheetHintTimer) w.clearTimeout(sheetHintTimer);
+    sheetHintTimer = w.setTimeout(function(){
+      sheetHintTimer = 0;
+      updateSheetScrollHint();
+    }, (typeof delay === 'number' && delay >= 0) ? delay : 80);
+  }
+
   var helpMeasureTimer = 0;
   function scheduleHelpMeasure(){
     if(!infoSheet) return;
@@ -867,6 +905,7 @@ if(PK.createMenuItem){
     helpMeasureTimer = w.setTimeout(function(){
       helpMeasureTimer = 0;
       setCurH(measureHelpH() || getMaxH());
+      scheduleSheetScrollHint(24);
     }, 60);
   }
 
@@ -900,11 +939,14 @@ if(PK.createMenuItem){
     //   -> voorkomt enorme lege ruimte boven de kaart en houdt de top mooi in lijn.
     var compactH = getCompactH();
     if(mode === 'help'){
+      if(sheetViewport) sheetViewport.scrollTop = 0;
       scheduleHelpMeasure();
       setTopPage('help');
+      scheduleSheetScrollHint(120);
     }else{
       setCurH(compactH);
       setTopPage('cards');
+      setSheetScrollHintVisible(false);
     }
   }
   try{ PK.setSheetMode = setSheetMode; }catch(_eSetMode){}
@@ -1076,6 +1118,7 @@ function openInfo(){
     // 2) Zet meteen naar uitleg + cover, zodat DOM-sizes kloppen vóór de open-animatie
     try{ setSheetMode('help'); }catch(_e0){}
     try{ resetInfoCarouselToCover(); }catch(_e3){}
+    try{ if(sheetViewport) sheetViewport.scrollTop = 0; }catch(_e3b){}
 
     // Force reflow zodat measureHelpH betrouwbare waarden geeft (ook op iOS)
     try{ infoSheet.offsetHeight; }catch(_eR){}
@@ -1100,6 +1143,7 @@ function openInfo(){
       // 5) Na het openen (transform=0) pas de optische align toe (zonder hoogte-wijziging)
       w.requestAnimationFrame(function(){
         try{ alignInfoSheetToMainCard(); }catch(_e2){}
+        scheduleSheetScrollHint(80);
       });
     });
   }
@@ -1118,6 +1162,7 @@ function openInfo(){
       infoSheet.style.transition = '';
       try{ infoSheet.style.setProperty('--helpShift','0px'); }catch(_e0){}
       lockBackgroundScroll(false);
+      setSheetScrollHintVisible(false);
     }, 220);
   }
   function isInfoOpen(){
@@ -1126,6 +1171,72 @@ function openInfo(){
 
   function safeText(v){
     return (v===null || v===undefined) ? '' : String(v);
+  }
+  function looksLikeInfoHeading(line){
+    var txt = String(line || '').replace(/^\s+|\s+$/g,'');
+    if(!txt) return false;
+    if(/[.!?]$/.test(txt)) return false;
+    if(txt.length > 54) return false;
+    return (txt.split(/\s+/).length <= 6);
+  }
+  function renderInfoText(target, rawText){
+    if(!target) return;
+    target.innerHTML = '';
+    var lines = String(rawText || '').replace(/\r\n?/g, '\n').split('\n');
+    var para = [];
+    var list = null;
+    var introUsed = false;
+
+    function flushPara(){
+      if(!para.length) return;
+      var txt = para.join(' ').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'');
+      para = [];
+      if(!txt) return;
+      var p = w.document.createElement('p');
+      var low = txt.toLowerCase();
+      if(!introUsed){
+        p.className = 'infoTextIntro';
+        introUsed = true;
+      }else if(low === 'lees meer' || low === 'nu lees meer'){
+        p.className = 'infoTextSubhead';
+      }else if(looksLikeInfoHeading(txt)){
+        p.className = 'infoTextHeading';
+      }
+      p.textContent = txt;
+      target.appendChild(p);
+    }
+    function flushList(){
+      if(list && list.children && list.children.length){
+        target.appendChild(list);
+      }
+      list = null;
+    }
+
+    for(var i=0;i<lines.length;i++){
+      var line = String(lines[i] || '').replace(/\u00a0/g,' ').replace(/^\s+|\s+$/g,'');
+      if(!line){
+        flushPara();
+        flushList();
+        continue;
+      }
+      var bullet = line.match(/^(?:[-*]\s+)(.+)$/);
+      if(bullet){
+        flushPara();
+        if(!list){
+          list = w.document.createElement('ul');
+          list.className = 'infoTextList';
+        }
+        var li = w.document.createElement('li');
+        li.textContent = String(bullet[1] || '').replace(/^\s+|\s+$/g,'');
+        list.appendChild(li);
+        continue;
+      }
+      flushList();
+      para.push(line);
+    }
+    flushPara();
+    flushList();
+    if(!target.childNodes.length) target.textContent = String(rawText || '');
   }
   function cardPathRect(setId, file){
     return pathForSet(setId, 'cards_rect/' + file);
@@ -1206,11 +1317,11 @@ function openInfo(){
 
       var text = w.document.createElement('div');
       text.className = 'infoSlideText';
-      text.textContent = s.text;
+      renderInfoText(text, s.text);
 
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       var baseTint = isDark
-        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)"
+        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.92)"
         : "rgba(255,255,255,0.96)";
       text.style.background = baseTint;
       inner.appendChild(card);
@@ -1221,13 +1332,14 @@ function openInfo(){
     }
     // Infinite loop (clone first/last)
     enableInfiniteCarousel(infoCarousel, 'infoSlide');
+    scheduleSheetScrollHint(80);
   }
 
   // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
   function retintInfoSlideTexts(){
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     var base = isDark
-      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)'
+      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.92)'
       : 'rgba(255,255,255,0.96)';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
@@ -2019,6 +2131,14 @@ function openInfo(){
     }, 260);
     // Overlay click = sluit volledig
     if(infoOverlay) infoOverlay.onclick = peekInfo;
+    ensureSheetScrollHint();
+    if(sheetViewport){
+      sheetViewport.addEventListener('scroll', function(){
+        updateSheetScrollHint();
+      }, { passive:true });
+    }
+    w.addEventListener('resize', function(){ scheduleSheetScrollHint(120); });
+    w.addEventListener('orientationchange', function(){ scheduleSheetScrollHint(140); });
     // Gestures activeren (Google Maps-achtig) zodra de sheet wordt geopend.
     // (We initialiseren hier alvast zodat de handle meteen werkt als de sheet open is.)
     try{ initDrag(); w.__pkInfoDragInited = true; }catch(_e){}
