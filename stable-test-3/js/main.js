@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.74';
+  var ASSET_V = '0.75';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -17,16 +17,78 @@
     else page = 'grid';
   }
 
+  function trimText(v){
+    return String(v === undefined || v === null ? '' : v).replace(/^\s+|\s+$/g, '');
+  }
+
+  function normalizeThemeColor(input){
+    var v = trimText(input);
+    if(!v) return '';
+    if(v === 'transparent') return '';
+    if(v === 'rgba(0, 0, 0, 0)' || v === 'rgba(0,0,0,0)') return '';
+    if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) return v;
+    if(/^rgba?\(/i.test(v) || /^hsla?\(/i.test(v)) return v;
+    if(/^\d+\s*,\s*\d+\s*,\s*\d+$/.test(v)) return 'rgb(' + v + ')';
+    return '';
+  }
+
+  function resolveThemeColor(contrast){
+    var fallback = (contrast === 'dark') ? '#18123c' : '#f7f7f6';
+    var rs = null;
+    var bs = null;
+    var candidates = [];
+    var i;
+    function push(v){
+      if(v === undefined || v === null) return;
+      if(String(v) === '') return;
+      candidates.push(v);
+    }
+
+    try{ rs = (w.getComputedStyle && doc.documentElement) ? w.getComputedStyle(doc.documentElement) : null; }catch(_eRs){ rs = null; }
+    try{ bs = (w.getComputedStyle && doc.body) ? w.getComputedStyle(doc.body) : null; }catch(_eBs){ bs = null; }
+
+    if(rs){
+      push(rs.getPropertyValue('--pageBg'));
+      push(rs.getPropertyValue('--setsBaseBg'));
+      push(rs.getPropertyValue('--setsHeroBg'));
+      push(rs.getPropertyValue('--pk-set-bg'));
+      push(rs.getPropertyValue('--bg-base-color'));
+      push(rs.getPropertyValue('--cardsPageBg'));
+      push(rs.getPropertyValue('--darkBaseRgb'));
+      push(rs.backgroundColor);
+    }
+    if(bs){
+      if(bs.getPropertyValue) push(bs.getPropertyValue('background-color'));
+      push(bs.backgroundColor);
+    }
+
+    for(i = 0; i < candidates.length; i++){
+      var c = normalizeThemeColor(candidates[i]);
+      if(c) return c;
+    }
+    return fallback;
+  }
+
+  function isIOSLike(){
+    var ua = '';
+    var platform = '';
+    var mtp = 0;
+    try{ ua = String((w.navigator && w.navigator.userAgent) || ''); }catch(_eUa){}
+    try{ platform = String((w.navigator && w.navigator.platform) || ''); }catch(_ePl){}
+    try{ mtp = (w.navigator && typeof w.navigator.maxTouchPoints === 'number') ? w.navigator.maxTouchPoints : 0; }catch(_eTp){}
+    if(/iPad|iPhone|iPod/i.test(ua)) return true;
+    if(platform === 'MacIntel' && mtp > 1) return true; // iPadOS desktop UA
+    return false;
+  }
+
   function updateThemeChrome(mode){
     var contrast = (mode === 'dark') ? 'dark' : 'light';
-    var lightColor = '#f7f7f6';
-    var darkColor = '#18123c';
-    var activeColor = (contrast === 'dark') ? darkColor : lightColor;
-    var statusStyle = (contrast === 'dark') ? 'black-translucent' : 'default';
-    var i;
+    var activeColor = resolveThemeColor(contrast);
+    var statusStyle = 'default';
     var metas;
     var dynTheme;
     var dynStatus;
+    var i;
 
     function ensureDynamicMeta(name){
       var el = null;
@@ -36,32 +98,49 @@
           el = doc.createElement('meta');
           el.setAttribute('name', name);
           el.setAttribute('data-pk-dynamic', '1');
+        }
+        if(el && doc.head && el.parentNode !== doc.head){
+          doc.head.insertBefore(el, doc.head.firstChild || null);
+        }
+        if(el && doc.head && doc.head.firstChild !== el){
           doc.head.insertBefore(el, doc.head.firstChild || null);
         }
       }catch(_eMeta){ el = null; }
       return el;
     }
 
-    try{
-      dynTheme = ensureDynamicMeta('theme-color');
-      if(dynTheme) dynTheme.setAttribute('content', activeColor);
-      metas = doc.querySelectorAll('meta[name="theme-color"]');
-      for(i = 0; i < metas.length; i++){
-        if(!metas[i]) continue;
-        metas[i].setAttribute('content', activeColor);
-        if(metas[i].hasAttribute('media')) metas[i].setAttribute('media', 'all');
-      }
-    }catch(_eTheme){}
+    function applyMetaValues(){
+      try{
+        dynTheme = ensureDynamicMeta('theme-color');
+        if(dynTheme){
+          dynTheme.setAttribute('content', activeColor);
+          if(dynTheme.hasAttribute('media')) dynTheme.removeAttribute('media');
+        }
+        metas = doc.querySelectorAll('meta[name="theme-color"]');
+        for(i = 0; i < metas.length; i++){
+          if(!metas[i]) continue;
+          metas[i].setAttribute('content', activeColor);
+          if(metas[i].hasAttribute('media')) metas[i].removeAttribute('media');
+        }
+      }catch(_eTheme){}
 
-    try{
-      dynStatus = ensureDynamicMeta('apple-mobile-web-app-status-bar-style');
-      if(dynStatus) dynStatus.setAttribute('content', statusStyle);
-      metas = doc.querySelectorAll('meta[name="apple-mobile-web-app-status-bar-style"]');
-      for(i = 0; i < metas.length; i++){
-        if(!metas[i]) continue;
-        metas[i].setAttribute('content', statusStyle);
-      }
-    }catch(_eStatus){}
+      try{
+        dynStatus = ensureDynamicMeta('apple-mobile-web-app-status-bar-style');
+        if(dynStatus) dynStatus.setAttribute('content', statusStyle);
+        metas = doc.querySelectorAll('meta[name="apple-mobile-web-app-status-bar-style"]');
+        for(i = 0; i < metas.length; i++){
+          if(!metas[i]) continue;
+          metas[i].setAttribute('content', statusStyle);
+        }
+      }catch(_eStatus){}
+    }
+
+    applyMetaValues();
+    if(isIOSLike()){
+      w.requestAnimationFrame(function(){ applyMetaValues(); });
+      w.setTimeout(applyMetaValues, 120);
+      w.setTimeout(applyMetaValues, 260);
+    }
 
     try{
       if(doc.documentElement) doc.documentElement.style.colorScheme = contrast;

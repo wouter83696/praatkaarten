@@ -173,18 +173,18 @@
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
     if(!bg){
-      // Stabiele default voor kaartenindex (geen shape-laag, rustige blobs).
+      // Kaartenindex defaults terug naar compacte "stable-1107" stijl:
+      // subtiele blobs, kleinere schaal, nog steeds speels verdeeld.
       bg = {
-        blobCount: 4,
-        blobAlphaFixed: 0.18,
-        blobWash: 0.45,
-        blobIrregularity: 0.45,
-        blobPointsMin: 7,
-        blobPointsMax: 11,
-        sizeScale: 1.5,
-        sizeLimit: 1.8,
+        blobCount: 5,
+        blobIrregularity: 0.35,
+        blobPointsMin: 8,
+        blobPointsMax: 12,
+        sizeScale: 1,
+        darkSizeScale: 1,
+        sizeLimit: 1.4,
         blobSpread: 'grid',
-        blobSpreadMargin: 0.18,
+        blobSpreadMargin: 0.08,
         baseWash: false,
         shapeEnabled: false
       };
