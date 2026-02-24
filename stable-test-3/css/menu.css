@@ -252,7 +252,7 @@ body[data-brand-icon="1"] .setCoverIcon{
   -webkit-backdrop-filter: blur(12px);
   box-shadow: none;
   overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: min(env(safe-area-inset-bottom, 0px), 10px);
 }
 
 /* Zachte fade onderaan menu verwijderd (master) */
@@ -362,7 +362,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 }
 
 .menuList{
-  display: grid;
+  display: block;
   margin-top: -2px;
   row-gap: 0;
 }
