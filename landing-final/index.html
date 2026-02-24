@@ -160,7 +160,7 @@
       line-height:1.12;
       letter-spacing:0;
       font-weight:400;
-      color:rgba(53,95,104,.70);
+      color:rgba(53,95,104,.80);
     }
 
     .hero-zone{
@@ -182,7 +182,7 @@
       overflow:hidden;
       border:1px solid rgba(178,213,210,.22);
       background:rgba(210,235,233,.44);
-      box-shadow:none;
+      box-shadow:0 4px 14px rgba(44,86,92,.04);
       padding:clamp(12px,1.5vw,20px);
       display:flex;
       align-items:center;
@@ -441,6 +441,20 @@
       width:clamp(350px,27.8vw,468px);
       aspect-ratio:auto;
       overflow:visible;
+    }
+
+    .phone-photo::after{
+      content:"";
+      position:absolute;
+      left:4%;
+      right:4%;
+      bottom:-2px;
+      height:15%;
+      border-radius:999px;
+      pointer-events:none;
+      z-index:3;
+      background:radial-gradient(ellipse at center, rgba(246,248,247,.72) 0%, rgba(246,248,247,0) 76%);
+      filter:blur(8px);
     }
 
     .phone-frame-photo{
@@ -1149,6 +1163,26 @@
         padding:18px;
       }
     }
+
+    .build-badge{
+      position:fixed;
+      right:max(12px, env(safe-area-inset-right));
+      bottom:max(12px, env(safe-area-inset-bottom));
+      z-index:50;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(47,93,98,.22);
+      background:rgba(255,255,255,.82);
+      color:rgba(53,95,104,.78);
+      font-size:12px;
+      line-height:1;
+      font-weight:600;
+      letter-spacing:.01em;
+      backdrop-filter:blur(3px);
+      -webkit-backdrop-filter:blur(3px);
+      pointer-events:none;
+      user-select:none;
+    }
   </style>
 </head>
 
@@ -1245,6 +1279,8 @@
       </div>
     </section>
   </div>
+
+  <div class="build-badge" aria-label="Build versie">build 0.6.2</div>
 
   <script src="./js/core/net.js"></script>
   <script src="./js/components/gridBackground.js?v=20260219-blobstyle-guideline4"></script>
