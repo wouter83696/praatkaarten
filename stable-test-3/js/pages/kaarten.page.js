@@ -639,12 +639,32 @@ if(PK.createMenuItem){
   var pillBtn = w.document.getElementById('themePill');
   var overlay = w.document.getElementById('themeMenuOverlay');
   var menuEl = w.document.getElementById('themeMenu');
+  function isTopBarHomeClick(ev){
+    if(!pillBtn || !ev) return false;
+    var t = ev.target || null;
+    if(!t || !t.closest) return false;
+    var main = t.closest('.themePillMain');
+    return !!(main && pillBtn.contains(main));
+  }
+  function goHomeFromTopBar(){
+    var target = '';
+    try{
+      target = (PK && PK.PATHS && PK.PATHS.gridPage) ? String(PK.PATHS.gridPage) : '';
+    }catch(_eHome){}
+    if(!target) target = '../index.html';
+    try{ w.location.href = target; }catch(_eNav){}
+  }
   if(PK.createMenu){
     sheetAPI = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(PK.createBottomSheet){
     sheetAPI = PK.createBottomSheet({ sheet: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(pillBtn){
-    pillBtn.onclick = function(){
+    pillBtn.onclick = function(ev){
+      if(isTopBarHomeClick(ev)){
+        if(ev && ev.preventDefault) ev.preventDefault();
+        goHomeFromTopBar();
+        return;
+      }
       var expanded = pillBtn.getAttribute('aria-expanded') === 'true';
       if(expanded) closeMenu(); else openMenu();
     };
@@ -792,16 +812,6 @@ if(PK.createMenuItem){
   var sheetScrollHint = null;
   var sheetHintHideTimer = 0;
   var helpAutoExpanded = false;
-  var helpTouchStartY = 0;
-  var helpTouchStartX = 0;
-  var helpGestureStartY = 0;
-  var helpGestureLastY = 0;
-  var helpGestureLastT = 0;
-  var helpGestureVY = 0;
-  var helpGestureSheetDrag = false;
-  var sheetWheelSettleTimer = 0;
-  var sheetWheelVelocity = 0;
-  var helpLastDownSnapAt = 0;
   var hintDismissed = false;
 
   // Bottom sheet snap points (zichtbare hoogte als ratio van viewport)
@@ -1051,23 +1061,6 @@ if(PK.createMenuItem){
     }
   }
 
-  function expandHelpForReading(opts){
-    opts = opts || {};
-    if(!infoSheet || sheetMode !== 'help' || !isInfoOpen()) return;
-    if(!hasSheetOverflow()) return;
-    if(sheetSnapState === SNAP_STATE_MAX && !opts.force) return;
-    applySheetSnap(SNAP_STATE_MAX, { animate: (opts.animate !== false), force: true });
-  }
-
-  function shouldSnapHelpToMaxFromScroll(intentDown){
-    if(!intentDown) return false;
-    if(!infoSheet || sheetMode !== 'help' || !isInfoOpen()) return false;
-    if(sheetSnapState === SNAP_STATE_MAX) return false;
-    if(!hasSheetOverflow()) return false;
-    if(sheetViewport && (sheetViewport.scrollTop || 0) > 2) return false;
-    return true;
-  }
-
   function markHelpAsScrolled(){
     hintDismissed = true;
     scheduleSheetScrollHint(0);
@@ -1307,76 +1300,8 @@ if(PK.createMenuItem){
   // Daarom verplaatsen we NIET de hele sheet (dat gaf soms een gap op iOS),
   // maar schuiven we alleen de uitleg-inhoud (CSS var --helpShift).
   function alignInfoSheetToMainCard(){
-    if(!infoSheet || !infoCarousel) return;
-
-    // Centrale kaart (index)
-    var main = w.document.getElementById('mainCarousel');
-    if(!main) return;
-    var mainSlides = Array.prototype.slice.call(main.children || []);
-    if(!mainSlides.length) return;
-
-    var cx = w.innerWidth / 2;
-    var best = null;
-    var bestDist = Infinity;
-    for(var i=0;i<mainSlides.length;i++){
-      var sl = mainSlides[i];
-      if(!sl || sl.nodeType !== 1) continue;
-      var r = sl.getBoundingClientRect();
-      var mx = r.left + r.width/2;
-      var d = Math.abs(mx - cx);
-      if(d < bestDist){ bestDist = d; best = sl; }
-    }
-    var mainCard = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
-    if(!mainCard) return;
-    var rMain = mainCard.getBoundingClientRect();
-
-    // Zichtbare kaart (uitleg)
-    var infoSlides = Array.prototype.slice.call(infoCarousel.children || []);
-    if(!infoSlides.length) return;
-    var bestI = null;
-    var bestIDist = Infinity;
-    for(var j=0;j<infoSlides.length;j++){
-      var isl = infoSlides[j];
-      if(!isl || isl.nodeType !== 1) continue;
-      var ir = isl.getBoundingClientRect();
-      var imx = ir.left + ir.width/2;
-      var id = Math.abs(imx - cx);
-      if(id < bestIDist){ bestIDist = id; bestI = isl; }
-    }
-    // Gebruik de kaart-container (niet het <img>) zodat de maat altijd gelijk is
-    // aan de index-kaart (aspect-ratio) en niet varieert per SVG.
-    var infoCardEl = bestI && bestI.querySelector ? bestI.querySelector('.infoSlideCard') : null;
-    if(!infoCardEl) return;
-    var rInfo = infoCardEl.getBoundingClientRect();
-    if(!rInfo || !rInfo.height || rInfo.height < 80) return;
-    if(!rMain || !rMain.height || rMain.height < 80) return;
-
-    // Doel: bovenkant van uitleg-kaart uitlijnen op de centrale index-kaart.
-    // shift (px) = gewensteTop - huidigeTop.
-    var shift = Math.round(rMain.top - rInfo.top);
-
-    // Guardrails: laat de kaart nooit uit de sheet-viewport 'knippen'.
-    // (Dit was de oorzaak van "alleen een strook" van de kaart zien.)
-    if(sheetViewport && sheetViewport.getBoundingClientRect){
-      var vp = sheetViewport.getBoundingClientRect();
-      var pad = 12; // visuele marge boven/onder
-      var topLimit = vp.top + pad;
-      var bottomLimit = vp.bottom - pad;
-      var topAfter = rInfo.top + shift;
-      var bottomAfter = rInfo.bottom + shift;
-      if(topAfter < topLimit){
-        shift += (topLimit - topAfter);
-      }
-      if(bottomAfter > bottomLimit){
-        shift -= (bottomAfter - bottomLimit);
-      }
-    }
-
-    // Extra clamp tegen extreme values bij rare metingen (iOS rotate / rubberband)
-    if(shift > 180) shift = 180;
-    if(shift < -180) shift = -180;
-
-    try{ infoSheet.style.setProperty('--helpShift', shift + 'px'); }catch(_e){}
+    if(!infoSheet) return;
+    try{ infoSheet.style.setProperty('--helpShift', '0px'); }catch(_e){}
   }
 
   // Zorg dat uitleg altijd op de voorkant start (voorspelbaar).
@@ -1410,7 +1335,7 @@ function openInfo(){
     resetSheetMaxHToDefault();
     helpAutoExpanded = false;
     hintDismissed = false;
-    sheetSnapState = SNAP_STATE_PREVIEW;
+    sheetSnapState = SNAP_STATE_HALF;
     infoSheet.hidden = false;
     if(infoSheet.classList) infoSheet.classList.remove('open');
     if(infoOverlay){
@@ -1428,7 +1353,7 @@ function openInfo(){
     try{ if(sheetViewport) sheetViewport.scrollTop = 0; }catch(_e3b){}
     try{ refreshSheetSnapHeights(); }catch(_eSnap){}
     try{
-      applySheetSnap(SNAP_STATE_PREVIEW, {
+      applySheetSnap(SNAP_STATE_HALF, {
         animate: false,
         force: true,
         resetHint: true,
@@ -1444,15 +1369,9 @@ function openInfo(){
       if(infoSheet.classList) infoSheet.classList.add('open');
       if(infoOverlay && infoOverlay.classList) infoOverlay.classList.add('open');
 
-      // Init gestures 1x
-      if(!w.__pkInfoDragInited){
-        try{ initDrag(); }catch(_e){}
-        w.__pkInfoDragInited = true;
-      }
-
-      // 4) Na het openen (transform=0) pas de optische align toe (zonder hoogte-wijziging)
+      // 4) Na het openen: simpele, stabiele positie zonder extra content-shift.
       w.requestAnimationFrame(function(){
-        try{ alignInfoSheetToMainCard(); }catch(_e2){}
+        try{ infoSheet.style.setProperty('--helpShift', '0px'); }catch(_e2){}
         scheduleSheetScrollHint(80);
       });
     });
@@ -2407,144 +2326,26 @@ function openInfo(){
     // Overlay click = sluit volledig
     if(infoOverlay) infoOverlay.onclick = peekInfo;
     ensureSheetScrollHint();
+    if(handle && !w.__pkSimpleHandleBound){
+      w.__pkSimpleHandleBound = true;
+      handle.addEventListener('click', function(){
+        if(!isInfoOpen() || sheetMode !== 'help') return;
+        var to = (sheetSnapState === SNAP_STATE_MAX) ? SNAP_STATE_HALF : SNAP_STATE_MAX;
+        applySheetSnap(to, {
+          animate: true,
+          force: true,
+          resetHint: (to !== SNAP_STATE_MAX),
+          delayHint: 120
+        });
+      });
+    }
     if(sheetViewport){
-      sheetViewport.addEventListener('touchstart', function(ev){
-        if(!ev || !ev.touches || !ev.touches.length) return;
-        var y = ev.touches[0].clientY || 0;
-        var x = ev.touches[0].clientX || 0;
-        helpTouchStartY = y;
-        helpTouchStartX = x;
-        helpGestureStartY = y;
-        helpGestureLastY = y;
-        helpGestureLastT = Date.now();
-        helpGestureVY = 0;
-        helpGestureSheetDrag = false;
-      }, { passive:true });
-      sheetViewport.addEventListener('touchmove', function(ev){
-        if(!ev || !ev.touches || !ev.touches.length) return;
-        if(sheetMode !== 'help' || !isInfoOpen()) return;
-
-        var y = ev.touches[0].clientY || 0;
-        var x = ev.touches[0].clientX || 0;
-        var deltaStepY = (y - helpTouchStartY); // + = vinger omlaag
-        var deltaFromStartY = (y - helpGestureStartY);
-        var dx = Math.abs(x - helpTouchStartX);
-        if(dx > Math.abs(deltaStepY) * 1.2 && dx > 8) return;
-
-        var now = Date.now();
-        var dt = now - helpGestureLastT;
-        if(dt > 0){
-          var instV = (y - helpGestureLastY) / dt; // + = omlaag
-          helpGestureVY = (helpGestureVY * 0.78) + (instV * 0.22);
-          helpGestureLastY = y;
-          helpGestureLastT = now;
-        }
-
-        var curH = getCurH();
-        var minH = sheetSnapHeights.preview;
-        var maxH = sheetSnapHeights.max;
-        var atTop = (sheetViewport.scrollTop || 0) <= 1;
-        var movingUp = deltaStepY < -0.6;   // vinger omhoog => sheet omhoog
-        var movingDown = deltaStepY > 0.6;  // vinger omlaag => sheet omlaag
-        var canDragUp = movingUp && curH < (maxH - 0.5);
-        var canDragDown = movingDown && atTop && curH > (minH + 0.5);
-
-        if(canDragUp || canDragDown){
-          // Evenredig meebewegen met je swipe.
-          var nextH = curH - deltaStepY;
-          if(nextH < minH) nextH = minH;
-          if(nextH > maxH) nextH = maxH;
-          setViewportTransition(false);
-          setCurH(nextH);
-          helpGestureSheetDrag = true;
-          markHelpAsScrolled();
-          helpTouchStartY = y;
-          helpTouchStartX = x;
-          if(ev.preventDefault) ev.preventDefault();
-          return;
-        }
-
-        // Vanuit PREVIEW kun je nog steeds wegvegen met een duidelijke omlaag-swipe.
-        if(
-          movingDown &&
-          atTop &&
-          curH <= (minH + 2) &&
-          deltaFromStartY > 56 &&
-          (now - helpLastDownSnapAt > 180)
-        ){
-          helpLastDownSnapAt = now;
-          peekInfo();
-          if(ev.preventDefault) ev.preventDefault();
-          return;
-        }
-
-        if(Math.abs(deltaStepY) > 8){
-          markHelpAsScrolled();
-        }
-      }, { passive:false });
-      sheetViewport.addEventListener('touchend', function(){
-        if(sheetMode !== 'help' || !isInfoOpen()) return;
-        if(!helpGestureSheetDrag) return;
-        helpGestureSheetDrag = false;
-        settleSheetFromCurrent({
-          velocity: helpGestureVY,
-          pullDelta: (helpGestureLastY - helpGestureStartY),
-          allowCloseFromPreview: true,
-          allowCloseFromMax: true
-        });
-      }, { passive:true });
-      sheetViewport.addEventListener('touchcancel', function(){
-        if(sheetMode !== 'help' || !isInfoOpen()) return;
-        if(!helpGestureSheetDrag) return;
-        helpGestureSheetDrag = false;
-        settleSheetFromCurrent({
-          velocity: helpGestureVY,
-          pullDelta: (helpGestureLastY - helpGestureStartY),
-          allowCloseFromPreview: true,
-          allowCloseFromMax: true
-        });
-      }, { passive:true });
-      sheetViewport.addEventListener('wheel', function(ev){
-        if(!ev) return;
-        if(sheetMode !== 'help' || !isInfoOpen()) return;
-        var dy = (ev.deltaY || 0); // + = naar beneden lezen
-        if(Math.abs(dy) < 0.8) return;
-        var curH = getCurH();
-        var minH = sheetSnapHeights.preview;
-        var maxH = sheetSnapHeights.max;
-        var atTop = (sheetViewport.scrollTop || 0) <= 1;
-        var canDragUp = dy > 0 && curH < (maxH - 0.5);
-        var canDragDown = dy < 0 && atTop && curH > (minH + 0.5);
-        if(canDragUp || canDragDown){
-          setViewportTransition(false);
-          var nextH = curH + dy;
-          if(nextH < minH) nextH = minH;
-          if(nextH > maxH) nextH = maxH;
-          setCurH(nextH);
-          markHelpAsScrolled();
-          sheetWheelVelocity = (sheetWheelVelocity * 0.65) + ((dy / 16) * 0.35);
-          if(sheetWheelSettleTimer) w.clearTimeout(sheetWheelSettleTimer);
-          sheetWheelSettleTimer = w.setTimeout(function(){
-            sheetWheelSettleTimer = 0;
-            settleSheetFromCurrent({
-              velocity: sheetWheelVelocity,
-              pullDelta: 0,
-              allowCloseFromPreview: false
-            });
-            sheetWheelVelocity = 0;
-          }, 110);
-          if(ev.preventDefault) ev.preventDefault();
-          return;
-        }
-        if(Math.abs(dy) > 2) markHelpAsScrolled();
-      }, { passive:false });
+      // Native scroll-gedrag: geen custom touch/wheel intercept.
+      // Dit voorkomt springerig gedrag en maakt iOS scrollen stabieler.
       sheetViewport.addEventListener('scroll', function(){
         if(sheetMode === 'help' && isInfoOpen()){
           var top = (sheetViewport.scrollTop || 0);
-          if(sheetSnapState !== SNAP_STATE_MAX && top > 0){
-            // Buiten MAX houden we de content-scroll dicht; sheet beweegt eerst.
-            sheetViewport.scrollTop = 0;
-          }else if(top > 2){
+          if(top > 2){
             markHelpAsScrolled();
           }
         }
@@ -2560,8 +2361,5 @@ function openInfo(){
     }
     w.addEventListener('resize', function(){ syncSheetOnViewportChange(120); });
     w.addEventListener('orientationchange', function(){ syncSheetOnViewportChange(160); });
-    // Gestures activeren (Google Maps-achtig) zodra de sheet wordt geopend.
-    // (We initialiseren hier alvast zodat de handle meteen werkt als de sheet open is.)
-    try{ initDrag(); w.__pkInfoDragInited = true; }catch(_e){}
   }
 })(window);

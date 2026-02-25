@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.81';
+  var ASSET_V = '0.85';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -104,10 +104,10 @@
 
   function updateThemeChrome(mode){
     var contrast = (mode === 'dark') ? 'dark' : 'light';
+    var iosLike = isIOSLike();
     var fallbackLight = '#f7f7f6';
     var fallbackDark = '#18123c';
     var fallbackColor = (contrast === 'dark') ? fallbackDark : fallbackLight;
-    var activeColor = coerceThemeColor(resolveThemeColor(contrast), fallbackColor);
     var statusStyle = (contrast === 'dark') ? 'black-translucent' : 'default';
     var metas;
     var dynTheme;
@@ -134,6 +134,7 @@
     }
 
     function applyMetaValues(){
+      var activeColor = coerceThemeColor(resolveThemeColor(contrast), fallbackColor);
       try{
         dynTheme = ensureDynamicMeta('theme-color');
         if(dynTheme){
@@ -162,13 +163,27 @@
           metas[i].setAttribute('content', statusStyle);
         }
       }catch(_eStatus){}
+
+      try{
+        if(doc.documentElement && doc.documentElement.style){
+          doc.documentElement.style.setProperty('--pkStatusBg', activeColor);
+        }
+        if(doc.body && doc.body.style){
+          doc.body.style.setProperty('--pkStatusBg', activeColor);
+        }
+      }catch(_eStatusBg){}
     }
 
     applyMetaValues();
-    if(isIOSLike()){
+    if(iosLike){
       // Safari/iOS kan theme-color pas laat overnemen; forceer meerdere passes.
       w.requestAnimationFrame(function(){
         applyMetaValues();
+      });
+      w.requestAnimationFrame(function(){
+        w.requestAnimationFrame(function(){
+          applyMetaValues();
+        });
       });
       w.setTimeout(function(){
         applyMetaValues();
@@ -176,6 +191,9 @@
       w.setTimeout(function(){
         applyMetaValues();
       }, 320);
+      w.setTimeout(function(){
+        applyMetaValues();
+      }, 720);
     }
 
     try{
@@ -430,6 +448,22 @@
     target.innerHTML = '<div role="status" aria-live="polite" aria-atomic="true" style="padding:20px;font-family:system-ui;color:#4b5963;">' + txt + '</div>';
   }
 
+  function mountBuildBadge(){
+    var el = null;
+    if(!doc || !doc.body) return;
+    try{
+      el = doc.getElementById('pkBuildBadge');
+      if(!el){
+        el = doc.createElement('div');
+        el.id = 'pkBuildBadge';
+        el.className = 'pkBuildBadge';
+        el.setAttribute('aria-hidden', 'true');
+        doc.body.appendChild(el);
+      }
+      el.textContent = 'build ' + ASSET_V;
+    }catch(_eBadge){}
+  }
+
   function bindStaticMenuFallback(force){
     var pill = doc.getElementById('themePill');
     var menu = doc.getElementById('themeMenu');
@@ -535,6 +569,7 @@
 
   bindThemeChromeSync();
   ensureFallbackCore();
+  mountBuildBadge();
 
   loadScript(p('js/core/paths.js')).then(function(res){
     if(res && res.ok) return res;

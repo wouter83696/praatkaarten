@@ -33,6 +33,21 @@
   var overlay = doc.getElementById('themeMenuOverlay');
   var menuEl = doc.getElementById('themeMenu');
   var menuApi = null;
+  function isTopBarHomeClick(ev){
+    if(!pillBtn || !ev) return false;
+    var t = ev.target || null;
+    if(!t || !t.closest) return false;
+    var main = t.closest('.themePillMain');
+    return !!(main && pillBtn.contains(main));
+  }
+  function goHomeFromTopBar(){
+    var target = '';
+    try{
+      target = (PK && PK.PATHS && PK.PATHS.gridPage) ? String(PK.PATHS.gridPage) : '';
+    }catch(_eHome){}
+    if(!target) target = './index.html';
+    try{ w.location.href = target; }catch(_eNav){}
+  }
   if(PK.createMenu){
     menuApi = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(menuEl){
@@ -46,7 +61,12 @@
       if(overlay) overlay.hidden = true;
       if(pillBtn && pillBtn.setAttribute) pillBtn.setAttribute('aria-expanded', 'false');
     };
-    var toggleMenuFallback = function(){
+    var toggleMenuFallback = function(ev){
+      if(isTopBarHomeClick(ev)){
+        if(ev && ev.preventDefault) ev.preventDefault();
+        goHomeFromTopBar();
+        return;
+      }
       if(menuEl.hidden) openMenuFallback(); else closeMenuFallback();
     };
     if(pillBtn && !pillBtn.__pkMenuFallbackBound){
