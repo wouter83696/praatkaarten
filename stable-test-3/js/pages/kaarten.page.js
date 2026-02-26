@@ -639,32 +639,12 @@ if(PK.createMenuItem){
   var pillBtn = w.document.getElementById('themePill');
   var overlay = w.document.getElementById('themeMenuOverlay');
   var menuEl = w.document.getElementById('themeMenu');
-  function isTopBarHomeClick(ev){
-    if(!pillBtn || !ev) return false;
-    var t = ev.target || null;
-    if(!t || !t.closest) return false;
-    var main = t.closest('.themePillMain');
-    return !!(main && pillBtn.contains(main));
-  }
-  function goHomeFromTopBar(){
-    var target = '';
-    try{
-      target = (PK && PK.PATHS && PK.PATHS.gridPage) ? String(PK.PATHS.gridPage) : '';
-    }catch(_eHome){}
-    if(!target) target = '../index.html';
-    try{ w.location.href = target; }catch(_eNav){}
-  }
   if(PK.createMenu){
     sheetAPI = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(PK.createBottomSheet){
     sheetAPI = PK.createBottomSheet({ sheet: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(pillBtn){
-    pillBtn.onclick = function(ev){
-      if(isTopBarHomeClick(ev)){
-        if(ev && ev.preventDefault) ev.preventDefault();
-        goHomeFromTopBar();
-        return;
-      }
+    pillBtn.onclick = function(){
       var expanded = pillBtn.getAttribute('aria-expanded') === 'true';
       if(expanded) closeMenu(); else openMenu();
     };
@@ -809,32 +789,6 @@ if(PK.createMenuItem){
   var infoCard = infoSheet ? infoSheet.querySelector('.infoCard') : null;
   var handle = infoSheet ? infoSheet.querySelector('.sheetHandle') : null;
   var topPage = 'cards';
-  var sheetScrollHint = null;
-  var sheetHintHideTimer = 0;
-  var helpAutoExpanded = false;
-  var hintDismissed = false;
-
-  // Bottom sheet snap points (zichtbare hoogte als ratio van viewport)
-  var SNAP_STATE_PREVIEW = 'preview';
-  var SNAP_STATE_HALF = 'half';
-  var SNAP_STATE_MAX = 'max';
-  var SNAP_RATIO_PREVIEW = 0.55;
-  var SNAP_RATIO_HALF = 0.78;
-  var SNAP_RATIO_MAX = 0.95;
-  var SNAP_VELOCITY_UP = -0.55;
-  var SNAP_VELOCITY_DOWN = 0.55;
-  var PREVIEW_CLOSE_VELOCITY = 0.9;
-  var PREVIEW_CLOSE_PULL_PX = 96;
-  var sheetSnapState = SNAP_STATE_PREVIEW;
-  var sheetSnapHeights = { preview: 420, half: 560, max: 680 };
-
-  function prefersReducedMotion(){
-    try{
-      return !!(w.matchMedia && w.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    }catch(_e){
-      return false;
-    }
-  }
 
   // ------------------------------------------------------------
   // Scroll-lock (Google Maps-achtig)
@@ -906,297 +860,13 @@ if(PK.createMenuItem){
     setCurH(px);
   }
 
-  function resetSheetMaxHToDefault(){
-    if(!infoSheet) return;
-    try{ infoSheet.style.removeProperty('--sheetMaxH'); }catch(_e){}
-  }
-
-  function hasSheetOverflow(){
-    if(!sheetViewport) return false;
-    return (sheetViewport.scrollHeight - sheetViewport.clientHeight) > 6;
-  }
-
-  function getSnapTopLimitPx(){
-    var topGap = 10;
-    try{
-      var topBar = w.document.querySelector ? w.document.querySelector('.topBar') : null;
-      if(topBar && topBar.getBoundingClientRect){
-        topGap = Math.max(10, Math.round(topBar.getBoundingClientRect().bottom + 10));
-      }
-    }catch(_e){}
-    return topGap;
-  }
-
-  function getCenteredMainCardTopPx(){
-    try{
-      var main = w.document.getElementById('mainCarousel');
-      if(!main) return 0;
-      var slides = Array.prototype.slice.call(main.children || []);
-      if(!slides.length) return 0;
-      var cx = w.innerWidth / 2;
-      var best = null;
-      var bestDist = Infinity;
-      for(var i=0;i<slides.length;i++){
-        var sl = slides[i];
-        if(!sl || sl.nodeType !== 1 || !sl.getBoundingClientRect) continue;
-        var r = sl.getBoundingClientRect();
-        var mx = r.left + (r.width / 2);
-        var d = Math.abs(mx - cx);
-        if(d < bestDist){ bestDist = d; best = sl; }
-      }
-      var card = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
-      if(!card || !card.getBoundingClientRect) return 0;
-      var rc = card.getBoundingClientRect();
-      return Math.round(rc.top || 0);
-    }catch(_e){
-      return 0;
-    }
-  }
-
-  function computeSnapHeights(){
-    var vh = w.innerHeight || (w.document && w.document.documentElement ? w.document.documentElement.clientHeight : 0) || 0;
-    if(!vh || vh < 320) vh = 760;
-    var topLimit = getSnapTopLimitPx();
-    var maxByTop = Math.max(340, Math.round(vh - topLimit));
-    var maxByRatio = Math.round(vh * SNAP_RATIO_MAX);
-    var maxH = Math.min(maxByTop, maxByRatio);
-    if(maxH < 340) maxH = 340;
-
-    var basePreview = Math.round(vh * SNAP_RATIO_PREVIEW);
-    var baseHalf = Math.round(vh * SNAP_RATIO_HALF);
-    var neededForCover = 0;
-    // Zorg dat de preview-sheet altijd minimaal de centrale kaart op index bedekt.
-    // Daardoor "valt" de uitlegkaart weer netjes over de hoofdkaart.
-    var mainTop = getCenteredMainCardTopPx();
-    if(mainTop > 0){
-      neededForCover = Math.round(vh - mainTop + 46);
-    }
-
-    var previewH = Math.max(300, basePreview, neededForCover);
-    previewH = Math.min(previewH, Math.max(300, maxH - 20));
-
-    var halfH = Math.max(baseHalf, previewH + 44);
-    halfH = Math.min(halfH, Math.max(previewH + 8, maxH - 8));
-
-    // Zorg dat states altijd in logische volgorde blijven.
-    if(halfH <= previewH){
-      halfH = Math.min(maxH - 4, previewH + 8);
-    }
-    if(previewH >= halfH){
-      previewH = Math.max(280, halfH - 8);
-    }
-
-    return {
-      preview: previewH,
-      half: halfH,
-      max: maxH
-    };
-  }
-
-  function refreshSheetSnapHeights(){
-    sheetSnapHeights = computeSnapHeights();
-    if(infoSheet){
-      infoSheet.style.setProperty('--sheetMaxH', sheetSnapHeights.max + 'px');
-    }
-  }
-
-  function nearestSnapState(px){
-    var p = sheetSnapHeights.preview;
-    var h = sheetSnapHeights.half;
-    var m = sheetSnapHeights.max;
-    var dp = Math.abs(px - p);
-    var dh = Math.abs(px - h);
-    var dm = Math.abs(px - m);
-    if(dp <= dh && dp <= dm) return SNAP_STATE_PREVIEW;
-    if(dh <= dp && dh <= dm) return SNAP_STATE_HALF;
-    return SNAP_STATE_MAX;
-  }
-
-  function setViewportTransition(enabled){
-    if(!sheetViewport) return;
-    if(enabled){
-      if(prefersReducedMotion()){
-        sheetViewport.style.transition = 'height 120ms linear, max-height 120ms linear';
-      }else{
-        sheetViewport.style.transition = '';
-      }
-    }else{
-      sheetViewport.style.transition = 'none';
-    }
-  }
-
-  function applySheetSnap(state, opts){
-    if(!infoSheet) return;
-    opts = opts || {};
-    var animate = (opts.animate !== false);
-    var force = !!opts.force;
-    var delayHint = (typeof opts.delayHint === 'number') ? opts.delayHint : 0;
-    state = (state === SNAP_STATE_HALF || state === SNAP_STATE_MAX) ? state : SNAP_STATE_PREVIEW;
-    refreshSheetSnapHeights();
-    if(!force && state === sheetSnapState){
-      scheduleSheetScrollHint(32);
-      return;
-    }
-    sheetSnapState = state;
-    helpAutoExpanded = (state === SNAP_STATE_MAX);
-
-    if(state === SNAP_STATE_MAX){
-      try{ infoSheet.style.setProperty('--helpShift', '0px'); }catch(_eShift0){}
-      hintDismissed = true;
-    }else if(opts.resetHint){
-      hintDismissed = false;
-    }
-
-    setViewportTransition(animate);
-    setCurH(sheetSnapHeights[state]);
-    if(!animate && sheetViewport){
-      try{ sheetViewport.offsetHeight; }catch(_eReflow){}
-      setViewportTransition(true);
-    }
-
-    if(delayHint > 0){
-      scheduleSheetScrollHint(delayHint);
-    }else{
-      scheduleSheetScrollHint(32);
-    }
-  }
-
-  function markHelpAsScrolled(){
-    hintDismissed = true;
-    scheduleSheetScrollHint(0);
-  }
-
-  function settleSheetFromCurrent(opts){
-    opts = opts || {};
-    refreshSheetSnapHeights();
-    var currentH = getCurH();
-    if(currentH < sheetSnapHeights.preview) currentH = sheetSnapHeights.preview;
-    if(currentH > sheetSnapHeights.max) currentH = sheetSnapHeights.max;
-
-    var vY = (typeof opts.velocity === 'number') ? opts.velocity : 0;
-    var pullDelta = (typeof opts.pullDelta === 'number') ? opts.pullDelta : 0;
-    var allowCloseFromPreview = !!opts.allowCloseFromPreview;
-    var allowCloseFromMax = !!opts.allowCloseFromMax;
-
-    var target = nearestSnapState(currentH);
-    if(vY <= SNAP_VELOCITY_UP){
-      target = SNAP_STATE_MAX;
-    }else if(vY >= SNAP_VELOCITY_DOWN){
-      var downThreshold = (sheetSnapHeights.preview + sheetSnapHeights.half) * 0.5;
-      target = (currentH <= downThreshold) ? SNAP_STATE_PREVIEW : SNAP_STATE_HALF;
-    }
-
-    if(
-      allowCloseFromPreview &&
-      target === SNAP_STATE_PREVIEW &&
-      currentH <= (sheetSnapHeights.preview + 14) &&
-      (vY >= PREVIEW_CLOSE_VELOCITY || pullDelta >= PREVIEW_CLOSE_PULL_PX)
-    ){
-      peekInfo();
-      return;
-    }
-
-    // Extra: stevige neerwaartse "flick" vanuit hoog geopende sheet mag direct sluiten.
-    if(
-      allowCloseFromMax &&
-      vY >= 1.05 &&
-      pullDelta >= 170
-    ){
-      peekInfo();
-      return;
-    }
-
-    var canRestoreHint = !!(
-      target !== SNAP_STATE_MAX &&
-      hasSheetOverflow() &&
-      sheetViewport &&
-      (sheetViewport.scrollTop || 0) <= 2
-    );
-    applySheetSnap(target, {
-      animate: true,
-      force: true,
-      resetHint: canRestoreHint,
-      delayHint: canRestoreHint ? 320 : 80
-    });
-    if(target !== SNAP_STATE_MAX){
-      w.setTimeout(function(){
-        try{ alignInfoSheetToMainCard(); }catch(_eAlignSettle){}
-      }, 130);
-    }
-    setViewportTransition(true);
-  }
-
-  function ensureSheetScrollHint(){
-    if(!infoCard || sheetScrollHint) return;
-    var hint = w.document.createElement('div');
-    hint.className = 'sheetScrollHint';
-    hint.setAttribute('aria-hidden', 'true');
-    hint.textContent = 'Scroll voor meer';
-    hint.style.display = 'none';
-    infoCard.appendChild(hint);
-    sheetScrollHint = hint;
-  }
-
-  function setSheetScrollHintVisible(on){
-    ensureSheetScrollHint();
-    if(!sheetScrollHint || !sheetScrollHint.classList) return;
-    if(on){
-      if(sheetHintHideTimer){
-        w.clearTimeout(sheetHintHideTimer);
-        sheetHintHideTimer = 0;
-      }
-      sheetScrollHint.style.display = '';
-      w.requestAnimationFrame(function(){
-        if(sheetScrollHint) sheetScrollHint.classList.add('is-visible');
-      });
-    }else{
-      sheetScrollHint.classList.remove('is-visible');
-      if(sheetHintHideTimer) w.clearTimeout(sheetHintHideTimer);
-      sheetHintHideTimer = w.setTimeout(function(){
-        sheetHintHideTimer = 0;
-        if(sheetScrollHint && !sheetScrollHint.classList.contains('is-visible')){
-          sheetScrollHint.style.display = 'none';
-        }
-      }, prefersReducedMotion() ? 30 : 170);
-    }
-  }
-
-  function updateSheetScrollHint(){
-    if(!sheetViewport){
-      setSheetScrollHintVisible(false);
-      return;
-    }
-    var hasOverflow = hasSheetOverflow();
-    var nearBottom = (sheetViewport.scrollTop + sheetViewport.clientHeight) >= (sheetViewport.scrollHeight - 8);
-    var show = (sheetMode === 'help') &&
-      isInfoOpen() &&
-      hasOverflow &&
-      !nearBottom &&
-      !hintDismissed &&
-      (sheetSnapState !== SNAP_STATE_MAX);
-    setSheetScrollHintVisible(show);
-  }
-
-  var sheetHintTimer = 0;
-  function scheduleSheetScrollHint(delay){
-    if(sheetHintTimer) w.clearTimeout(sheetHintTimer);
-    sheetHintTimer = w.setTimeout(function(){
-      sheetHintTimer = 0;
-      updateSheetScrollHint();
-    }, (typeof delay === 'number' && delay >= 0) ? delay : 80);
-  }
-
   var helpMeasureTimer = 0;
   function scheduleHelpMeasure(){
     if(!infoSheet) return;
     if(helpMeasureTimer) w.clearTimeout(helpMeasureTimer);
     helpMeasureTimer = w.setTimeout(function(){
       helpMeasureTimer = 0;
-      refreshSheetSnapHeights();
-      if(sheetMode === 'help' && isInfoOpen()){
-        applySheetSnap(sheetSnapState, { animate: false, force: true });
-      }
-      scheduleSheetScrollHint(24);
+      setCurH(measureHelpH() || getMaxH());
     }, 60);
   }
 
@@ -1230,16 +900,11 @@ if(PK.createMenuItem){
     //   -> voorkomt enorme lege ruimte boven de kaart en houdt de top mooi in lijn.
     var compactH = getCompactH();
     if(mode === 'help'){
-      if(sheetViewport) sheetViewport.scrollTop = 0;
-      helpAutoExpanded = false;
       scheduleHelpMeasure();
       setTopPage('help');
-      scheduleSheetScrollHint(120);
     }else{
       setCurH(compactH);
       setTopPage('cards');
-      helpAutoExpanded = false;
-      setSheetScrollHintVisible(false);
     }
   }
   try{ PK.setSheetMode = setSheetMode; }catch(_eSetMode){}
@@ -1300,8 +965,76 @@ if(PK.createMenuItem){
   // Daarom verplaatsen we NIET de hele sheet (dat gaf soms een gap op iOS),
   // maar schuiven we alleen de uitleg-inhoud (CSS var --helpShift).
   function alignInfoSheetToMainCard(){
-    if(!infoSheet) return;
-    try{ infoSheet.style.setProperty('--helpShift', '0px'); }catch(_e){}
+    if(!infoSheet || !infoCarousel) return;
+
+    // Centrale kaart (index)
+    var main = w.document.getElementById('mainCarousel');
+    if(!main) return;
+    var mainSlides = Array.prototype.slice.call(main.children || []);
+    if(!mainSlides.length) return;
+
+    var cx = w.innerWidth / 2;
+    var best = null;
+    var bestDist = Infinity;
+    for(var i=0;i<mainSlides.length;i++){
+      var sl = mainSlides[i];
+      if(!sl || sl.nodeType !== 1) continue;
+      var r = sl.getBoundingClientRect();
+      var mx = r.left + r.width/2;
+      var d = Math.abs(mx - cx);
+      if(d < bestDist){ bestDist = d; best = sl; }
+    }
+    var mainCard = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
+    if(!mainCard) return;
+    var rMain = mainCard.getBoundingClientRect();
+
+    // Zichtbare kaart (uitleg)
+    var infoSlides = Array.prototype.slice.call(infoCarousel.children || []);
+    if(!infoSlides.length) return;
+    var bestI = null;
+    var bestIDist = Infinity;
+    for(var j=0;j<infoSlides.length;j++){
+      var isl = infoSlides[j];
+      if(!isl || isl.nodeType !== 1) continue;
+      var ir = isl.getBoundingClientRect();
+      var imx = ir.left + ir.width/2;
+      var id = Math.abs(imx - cx);
+      if(id < bestIDist){ bestIDist = id; bestI = isl; }
+    }
+    // Gebruik de kaart-container (niet het <img>) zodat de maat altijd gelijk is
+    // aan de index-kaart (aspect-ratio) en niet varieert per SVG.
+    var infoCardEl = bestI && bestI.querySelector ? bestI.querySelector('.infoSlideCard') : null;
+    if(!infoCardEl) return;
+    var rInfo = infoCardEl.getBoundingClientRect();
+
+    // Doel: bovenkant van uitleg-kaart uitlijnen op de centrale index-kaart.
+    // shift (px) = gewensteTop - huidigeTop.
+    var shift = Math.round(rMain.top - rInfo.top);
+
+    // Guardrails: laat de kaart nooit uit de sheet-viewport 'knippen'.
+    // (Dit was de oorzaak van "alleen een strook" van de kaart zien.)
+    if(sheetViewport && sheetViewport.getBoundingClientRect){
+      var vp = sheetViewport.getBoundingClientRect();
+      var pad = 12; // visuele marge boven/onder
+      var topLimit = vp.top + pad;
+      var bottomLimit = vp.bottom - pad;
+
+      var topAfter = rInfo.top + shift;
+      var bottomAfter = rInfo.bottom + shift;
+
+      if(topAfter < topLimit){
+        shift += (topLimit - topAfter);
+      }
+      if(bottomAfter > bottomLimit){
+        shift -= (bottomAfter - bottomLimit);
+      }
+    }
+
+    // Extra clamp tegen extreme values bij rare metingen (iOS rotate / rubberband)
+    if(shift > 140) shift = 140;
+    if(shift < -140) shift = -140;
+
+    try{ infoSheet.style.setProperty('--helpShift', shift + 'px'); }catch(_e){}
   }
 
   // Zorg dat uitleg altijd op de voorkant start (voorspelbaar).
@@ -1332,10 +1065,6 @@ function openInfo(){
     infoSheet.style.transform = '';
 
     // 1) Maak zichtbaar in 'closed' staat (translateY(100%)) zodat we eerst kunnen meten
-    resetSheetMaxHToDefault();
-    helpAutoExpanded = false;
-    hintDismissed = false;
-    sheetSnapState = SNAP_STATE_HALF;
     infoSheet.hidden = false;
     if(infoSheet.classList) infoSheet.classList.remove('open');
     if(infoOverlay){
@@ -1343,36 +1072,34 @@ function openInfo(){
       infoOverlay.style.pointerEvents = 'auto';
       if(infoOverlay.classList) infoOverlay.classList.remove('open');
     }
-    // Zodra de sheet opent, locken we de achtergrond zodat verticale swipes
-    // naar de uitleg gaan (en niet naar de pagina erachter).
-    lockBackgroundScroll(true);
 
     // 2) Zet meteen naar uitleg + cover, zodat DOM-sizes kloppen vóór de open-animatie
     try{ setSheetMode('help'); }catch(_e0){}
     try{ resetInfoCarouselToCover(); }catch(_e3){}
-    try{ if(sheetViewport) sheetViewport.scrollTop = 0; }catch(_e3b){}
-    try{ refreshSheetSnapHeights(); }catch(_eSnap){}
-    try{
-      applySheetSnap(SNAP_STATE_HALF, {
-        animate: false,
-        force: true,
-        resetHint: true,
-        delayHint: 120
-      });
-    }catch(_eSnapApply){}
 
-    // Force reflow zodat align op iOS stabiel is
+    // Force reflow zodat measureHelpH betrouwbare waarden geeft (ook op iOS)
     try{ infoSheet.offsetHeight; }catch(_eR){}
 
-    // 3) Open van onder naar boven (altijd bottom-up)
+    // 3) Bepaal de definitieve sheet hoogte vóór het openen (voorkomt 'top-down' krimp)
+    try{
+      var h = measureHelpH();
+      if(h) setCurH(h);
+    }catch(_eH){}
+
+    // 4) Open van onder naar boven (altijd bottom-up)
     w.requestAnimationFrame(function(){
       if(infoSheet.classList) infoSheet.classList.add('open');
       if(infoOverlay && infoOverlay.classList) infoOverlay.classList.add('open');
 
-      // 4) Na het openen: simpele, stabiele positie zonder extra content-shift.
+      // Init gestures 1x
+      if(!w.__pkInfoDragInited){
+        try{ initDrag(); }catch(_e){}
+        w.__pkInfoDragInited = true;
+      }
+
+      // 5) Na het openen (transform=0) pas de optische align toe (zonder hoogte-wijziging)
       w.requestAnimationFrame(function(){
-        try{ infoSheet.style.setProperty('--helpShift', '0px'); }catch(_e2){}
-        scheduleSheetScrollHint(80);
+        try{ alignInfoSheetToMainCard(); }catch(_e2){}
       });
     });
   }
@@ -1391,7 +1118,6 @@ function openInfo(){
       infoSheet.style.transition = '';
       try{ infoSheet.style.setProperty('--helpShift','0px'); }catch(_e0){}
       lockBackgroundScroll(false);
-      setSheetScrollHintVisible(false);
     }, 220);
   }
   function isInfoOpen(){
@@ -1400,91 +1126,6 @@ function openInfo(){
 
   function safeText(v){
     return (v===null || v===undefined) ? '' : String(v);
-  }
-  function looksLikeInfoHeading(line){
-    var txt = String(line || '').replace(/^\s+|\s+$/g,'');
-    if(!txt) return false;
-    if(/[.!?]$/.test(txt)) return false;
-    if(txt.length > 54) return false;
-    return (txt.split(/\s+/).length <= 6);
-  }
-  function renderInfoText(target, rawText){
-    if(!target) return;
-    target.innerHTML = '';
-    var lines = String(rawText || '').replace(/\r\n?/g, '\n').split('\n');
-    var para = [];
-    var list = null;
-    var introUsed = false;
-
-    function flushPara(){
-      if(!para.length) return;
-      var txt = para.join(' ').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'');
-      para = [];
-      if(!txt) return;
-      var p = w.document.createElement('p');
-      var low = txt.toLowerCase();
-      if(!introUsed){
-        p.className = 'infoTextIntro';
-        introUsed = true;
-      }else if(low === 'lees meer' || low === 'nu lees meer'){
-        p.className = 'infoTextSubhead';
-      }else if(looksLikeInfoHeading(txt)){
-        p.className = 'infoTextHeading';
-      }
-      p.textContent = txt;
-      target.appendChild(p);
-    }
-    function flushList(){
-      if(list && list.children && list.children.length){
-        target.appendChild(list);
-      }
-      list = null;
-    }
-
-    for(var i=0;i<lines.length;i++){
-      var line = String(lines[i] || '').replace(/\u00a0/g,' ').replace(/^\s+|\s+$/g,'');
-      if(!line){
-        flushPara();
-        flushList();
-        continue;
-      }
-      var lowLine = line.toLowerCase();
-      var lineIsSubhead = (lowLine === 'lees meer' || lowLine === 'nu lees meer');
-      var lineIsHeading = looksLikeInfoHeading(line);
-      var bullet = line.match(/^(?:[-*]\s+)(.+)$/);
-      if(bullet){
-        flushPara();
-        if(!list){
-          list = w.document.createElement('ul');
-          list.className = 'infoTextList';
-        }
-        var li = w.document.createElement('li');
-        li.textContent = String(bullet[1] || '').replace(/^\s+|\s+$/g,'');
-        list.appendChild(li);
-        continue;
-      }
-      if(lineIsSubhead || lineIsHeading){
-        flushPara();
-        flushList();
-        var hp = w.document.createElement('p');
-        if(!introUsed){
-          hp.className = 'infoTextIntro';
-          introUsed = true;
-        }else if(lineIsSubhead){
-          hp.className = 'infoTextSubhead';
-        }else{
-          hp.className = 'infoTextHeading';
-        }
-        hp.textContent = line;
-        target.appendChild(hp);
-        continue;
-      }
-      flushList();
-      para.push(line);
-    }
-    flushPara();
-    flushList();
-    if(!target.childNodes.length) target.textContent = String(rawText || '');
   }
   function cardPathRect(setId, file){
     return pathForSet(setId, 'cards_rect/' + file);
@@ -1544,13 +1185,6 @@ function openInfo(){
       var img = w.document.createElement('img');
       img.alt = s.isCover ? 'Voorkant' : (s.title || s.key);
       img.src = s.srcRect;
-      img.onload = function(){
-        if(sheetMode === 'help' && isInfoOpen() && sheetSnapState !== SNAP_STATE_MAX){
-          w.setTimeout(function(){
-            try{ alignInfoSheetToMainCard(); }catch(_eAlignImg){}
-          }, 40);
-        }
-      };
       img.onerror = function(){
         // fallback naar square
         if(this && this.dataset && this.dataset.fallback){
@@ -1572,12 +1206,12 @@ function openInfo(){
 
       var text = w.document.createElement('div');
       text.className = 'infoSlideText';
-      renderInfoText(text, s.text);
+      text.textContent = s.text;
 
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       var baseTint = isDark
-        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.92)"
-        : "rgba(255,255,255,0.96)";
+        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)"
+        : "#F9FAF9";
       text.style.background = baseTint;
       inner.appendChild(card);
       inner.appendChild(text);
@@ -1587,15 +1221,14 @@ function openInfo(){
     }
     // Infinite loop (clone first/last)
     enableInfiniteCarousel(infoCarousel, 'infoSlide');
-    scheduleSheetScrollHint(80);
   }
 
   // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
   function retintInfoSlideTexts(){
     var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     var base = isDark
-      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.92)'
-      : 'rgba(255,255,255,0.96)';
+      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.78)'
+      : '#F9FAF9';
     var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];
@@ -1812,11 +1445,6 @@ function openInfo(){
     w.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
     // Houd de sheet compact zolang alleen de kaart zichtbaar is.
     w.setTimeout(measureAndSetCompactH, 0);
-    if(sheetMode === 'help' && isInfoOpen() && sheetSnapState !== SNAP_STATE_MAX){
-      w.setTimeout(function(){
-        try{ alignInfoSheetToMainCard(); }catch(_eAlignAfterCards){}
-      }, 50);
-    }
   }
 
   // -----------------------------
@@ -2138,94 +1766,134 @@ function openInfo(){
 
 
 
-  // Drag handle (Google Maps-achtig): hoogte slepen + snap naar preview/half/max.
+  // Drag handle (Google Maps-achtig): omhoog = open, omlaag = peek
   function initDrag(){
-    if(!handle || !infoSheet || w.__pkInfoDragBound) return;
-    w.__pkInfoDragBound = true;
+    if(!handle || !infoSheet) return;
 
     var dragging = false;
-    var cancelled = false;
     var startY = 0;
     var startX = 0;
-    var startH = 0;
+    var dy = 0;
+    var dx = 0;
+    var raf = 0;
+    var startTime = 0;
+    var baseSheetY = 0;
+    var baseStackY = 0;
+    var baseCurH = 0;
     var lastMoveT = 0;
     var lastMoveY = 0;
-    var vY = 0; // px/ms
-    var raf = 0;
-    var pendingH = 0;
-    var dragMoved = false;
-    var dragTotalDy = 0;
-    var suppressHandleClickUntil = 0;
-    var DRAG_HEADER_ZONE_PX = 64;
+    var vY = 0; // gesmoothde eindsnelheid (px/ms)
+    var cancelled = false;
 
-    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    // In dit ontwerp is 'peek' gelijk aan volledig dicht (translateY(100%)).
+    function getPeekPx(){ return 0; }
 
     function getY(ev){
       if(!ev) return 0;
-      if(ev.touches && ev.touches.length) return ev.touches[0].clientY || 0;
+      if(ev.touches && ev.touches.length) return ev.touches[0].clientY;
       if(typeof ev.clientY === 'number') return ev.clientY;
       return 0;
     }
 
     function getX(ev){
       if(!ev) return 0;
-      if(ev.touches && ev.touches.length) return ev.touches[0].clientX || 0;
+      if(ev.touches && ev.touches.length) return ev.touches[0].clientX;
       if(typeof ev.clientX === 'number') return ev.clientX;
       return 0;
     }
 
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+    // iOS-achtige weerstand bij overdrag
     function rubberBand(dist){
-      var c = 180;
+      var c = 160;
       var d = Math.abs(dist);
       var r = (c * d) / (c + d);
       return (dist < 0) ? -r : r;
     }
 
-    function inHeaderDragZone(ev){
-      var t = ev && ev.target;
-      if(t && t.closest && t.closest('.sheetHandle')) return true;
-      if(!infoCard || !infoCard.getBoundingClientRect) return false;
-      var y = getY(ev);
-      if(!y) return false;
-      var r = infoCard.getBoundingClientRect();
-      return (y >= r.top && y <= (r.top + DRAG_HEADER_ZONE_PX));
+    function currentTranslateY(el){
+      try{
+        var st = w.getComputedStyle(el);
+        var tr = st.transform || st.webkitTransform || 'none';
+        if(!tr || tr === 'none') return 0;
+        // matrix(a,b,c,d,tx,ty)
+        var m = tr.match(/matrix\(([^)]+)\)/);
+        if(m && m[1]){
+          var parts = m[1].split(',');
+          var ty = parseFloat(parts[5] || '0');
+          return isNaN(ty) ? 0 : ty;
+        }
+        var m3 = tr.match(/matrix3d\(([^)]+)\)/);
+        if(m3 && m3[1]){
+          var p3 = m3[1].split(',');
+          var ty3 = parseFloat(p3[13] || '0');
+          return isNaN(ty3) ? 0 : ty3;
+        }
+      }catch(_e){}
+      return 0;
     }
 
-    function applyDragHeight(px){
-      pendingH = px;
-      if(raf) return;
-      raf = w.requestAnimationFrame(function(){
-        raf = 0;
-        setCurH(pendingH);
-      });
+    function applySheet(y){
+      infoSheet.style.transform = 'translate3d(0,' + y + 'px,0)';
+    }
+
+    function applyCurH(h){
+      setSheetCurH(h);
+    }
+
+    function applyStack(y){
+      if(!sheetStack) return;
+      sheetStack.style.transform = 'translate3d(0,' + y + 'px,0)';
+    }
+
+    function pageH(){
+      // Pagina's zijn altijd --sheetMaxH hoog (stabiel), viewport kan kleiner zijn.
+      return getSheetMaxH();
+    }
+
+    function setInteractiveByStack(stackY){
+      // stackY == 0 => cards boven, stackY == -pageH => help boven
+      var h = pageH();
+      var which = (stackY <= -h * 0.5) ? 'help' : 'cards';
+      setTopPage(which);
     }
 
     function onDown(ev){
-      if(!isInfoOpen() || sheetMode !== 'help') return;
-      if(!inHeaderDragZone(ev)) return;
+      var t = ev && ev.target;
+      var inCarousel = !!(t && t.closest && (t.closest('.infoCarousel') || t.closest('.cardsCarousel')));
+      var inHandle = !!(t && t.closest && t.closest('.sheetHandle'));
+      if(inCarousel && !inHandle) return;
 
       dragging = true;
       cancelled = false;
       startX = getX(ev);
       startY = getY(ev);
-      refreshSheetSnapHeights();
-      startH = sheetSnapHeights[sheetSnapState] || getCurH();
-      lastMoveT = Date.now();
+      dy = 0;
+      dx = 0;
+      startTime = Date.now();
+      lastMoveT = startTime;
       lastMoveY = startY;
       vY = 0;
-      dragMoved = false;
-      dragTotalDy = 0;
 
-      setViewportTransition(false);
+      // base positions
+      baseSheetY = currentTranslateY(infoSheet);
+      baseStackY = sheetStack ? currentTranslateY(sheetStack) : 0;
+      baseCurH = getSheetCurH();
+
+      // kill transitions during drag
+      infoSheet.style.transition = 'none';
+      if(sheetStack) sheetStack.style.transition = 'none';
+
+      // Tijdens drag: altijd achtergrond locken, anders krijg je "dubbel scroll".
       lockBackgroundScroll(true);
+
       if(ev && ev.preventDefault) ev.preventDefault();
 
       w.addEventListener('touchmove', onMove, { passive:false });
       w.addEventListener('touchend', onUp, { passive:true });
-      w.addEventListener('touchcancel', onUp, { passive:true });
       w.addEventListener('pointermove', onMove);
       w.addEventListener('pointerup', onUp);
-      w.addEventListener('pointercancel', onUp);
     }
 
     function onMove(ev){
@@ -2233,82 +1901,108 @@ function openInfo(){
 
       var y = getY(ev);
       var x = getX(ev);
-      var dy = (y - startY);
-      var dx = (x - startX);
-      if(Math.abs(dy) > 4) dragMoved = true;
-      dragTotalDy = dy;
+      dy = (y - startY);
+      dx = (x - startX);
 
-      // Horizontale intent -> drag annuleren (carrousel voorrang).
-      if(Math.abs(dx) > Math.abs(dy) * 1.2 && Math.abs(dx) > 8){
+      // horizontaal? laat de carrousel doen
+      if(Math.abs(dx) > Math.abs(dy) * 1.15){
         cancelled = true;
         onUp();
         return;
       }
 
-      var minH = sheetSnapHeights.preview;
-      var maxH = sheetSnapHeights.max;
-      var nextH = startH - dy;
-      if(nextH < minH) nextH = minH + rubberBand(nextH - minH);
-      if(nextH > maxH) nextH = maxH + rubberBand(nextH - maxH);
+      var sheetH = infoSheet.getBoundingClientRect ? infoSheet.getBoundingClientRect().height : 520;
+      var peekY = Math.max(0, sheetH - getPeekPx());
+      var openY = 0;
 
+      // Alleen sheet drag (geen pagina-wissel via drag)
+      var targetY = baseSheetY + dy;
+      if(targetY < openY){
+        targetY = openY + rubberBand(targetY - openY);
+        infoCard && infoCard.classList && infoCard.classList.add('pkOverTop');
+      }else{
+        infoCard && infoCard.classList && infoCard.classList.remove('pkOverTop');
+      }
+      if(targetY > peekY){
+        targetY = peekY + rubberBand(targetY - peekY);
+        infoCard && infoCard.classList && infoCard.classList.add('pkOverBottom');
+      }else{
+        infoCard && infoCard.classList && infoCard.classList.remove('pkOverBottom');
+      }
+
+      // velocity tracking (smooth)
       var now = Date.now();
       var dtv = now - lastMoveT;
       if(dtv > 0){
         var inst = (y - lastMoveY) / dtv;
-        vY = (vY * 0.78) + (inst * 0.22);
+        vY = (vY * 0.8) + (inst * 0.2);
         lastMoveY = y;
         lastMoveT = now;
       }
 
-      applyDragHeight(nextH);
       if(ev && ev.preventDefault) ev.preventDefault();
+
+      if(!raf){
+        raf = w.requestAnimationFrame(function(){
+          raf = 0;
+          applySheet(targetY);
+        });
+      }
     }
 
     function onUp(){
       if(!dragging) return;
       dragging = false;
 
+      // cleanup listeners
       w.removeEventListener('touchmove', onMove);
       w.removeEventListener('touchend', onUp);
-      w.removeEventListener('touchcancel', onUp);
       w.removeEventListener('pointermove', onMove);
       w.removeEventListener('pointerup', onUp);
-      w.removeEventListener('pointercancel', onUp);
 
-      refreshSheetSnapHeights();
-      if(dragMoved){
-        suppressHandleClickUntil = Date.now() + 260;
+      // Google Maps-achtig rubber-band gedrag:
+      // - omhoog trekken geeft alleen weerstand en veert altijd terug naar open
+      // - omlaag trekken kan sluiten (threshold of snelle swipe)
+      var sheetH = infoSheet.getBoundingClientRect ? infoSheet.getBoundingClientRect().height : 520;
+      var peekY = Math.max(0, sheetH - getPeekPx());
+      var openY = 0;
+
+      var sheetY = currentTranslateY(infoSheet);
+      var v = vY; // px/ms
+
+      var closeThreshold = 90; // px omlaag voordat we sluiten
+      var sheetTargetY = openY;
+      if(sheetY > closeThreshold || v > 0.85){
+        sheetTargetY = peekY;
       }
-      var startedNearPreview = Math.abs(startH - sheetSnapHeights.preview) <= 24;
-      var allowClose = startedNearPreview;
-      settleSheetFromCurrent({
-        velocity: vY,
-        pullDelta: dragTotalDy,
-        allowCloseFromPreview: allowClose,
-        allowCloseFromMax: true
-      });
+
+      infoSheet.style.transition = 'transform 280ms cubic-bezier(0.2, 0.85, 0.2, 1)';
+      applySheet(sheetTargetY);
+
+      w.setTimeout(function(){
+        infoSheet.style.transition = '';
+        infoSheet.style.transform = '';
+        if(infoCard && infoCard.classList){
+          infoCard.classList.remove('pkOverTop');
+          infoCard.classList.remove('pkOverBottom');
+        }
+        // Als we open blijven: niets resetten/alignen (voorkomt 'jump').
+        // Als we sluiten: normale close-flow.
+        if(sheetTargetY === peekY) peekInfo();
+      }, 320);
     }
 
-    var dragRoot = infoCard || handle;
-    dragRoot.addEventListener('touchstart', onDown, { passive:false });
-    dragRoot.addEventListener('pointerdown', onDown);
+    // Drag op handle en op hele card (behalve horizontale carrousel)
+    handle.addEventListener('touchstart', onDown, { passive:false });
+    handle.addEventListener('pointerdown', onDown);
+    if(infoCard){
+      infoCard.addEventListener('touchstart', onDown, { passive:false });
+      infoCard.addEventListener('pointerdown', onDown);
+    }
 
-    // Tap op handle: wissel tussen preview en max.
+    // Tap op handle toggles open/peek
     handle.addEventListener('click', function(){
-      if(!isInfoOpen()) return;
-      if(Date.now() < suppressHandleClickUntil) return;
-      var target = (sheetSnapState === SNAP_STATE_MAX) ? SNAP_STATE_PREVIEW : SNAP_STATE_MAX;
-      applySheetSnap(target, {
-        animate: true,
-        force: true,
-        resetHint: (target !== SNAP_STATE_MAX),
-        delayHint: 180
-      });
-      if(target !== SNAP_STATE_MAX){
-        w.setTimeout(function(){
-          try{ alignInfoSheetToMainCard(); }catch(_eAlign2){}
-        }, 120);
-      }
+      if(isInfoOpen()) peekInfo(); else openInfo();
     });
   }
   // Init: content laden. Sheet is standaard volledig dicht en opent alleen via info-knop.
@@ -2325,41 +2019,8 @@ function openInfo(){
     }, 260);
     // Overlay click = sluit volledig
     if(infoOverlay) infoOverlay.onclick = peekInfo;
-    ensureSheetScrollHint();
-    if(handle && !w.__pkSimpleHandleBound){
-      w.__pkSimpleHandleBound = true;
-      handle.addEventListener('click', function(){
-        if(!isInfoOpen() || sheetMode !== 'help') return;
-        var to = (sheetSnapState === SNAP_STATE_MAX) ? SNAP_STATE_HALF : SNAP_STATE_MAX;
-        applySheetSnap(to, {
-          animate: true,
-          force: true,
-          resetHint: (to !== SNAP_STATE_MAX),
-          delayHint: 120
-        });
-      });
-    }
-    if(sheetViewport){
-      // Native scroll-gedrag: geen custom touch/wheel intercept.
-      // Dit voorkomt springerig gedrag en maakt iOS scrollen stabieler.
-      sheetViewport.addEventListener('scroll', function(){
-        if(sheetMode === 'help' && isInfoOpen()){
-          var top = (sheetViewport.scrollTop || 0);
-          if(top > 2){
-            markHelpAsScrolled();
-          }
-        }
-        updateSheetScrollHint();
-      }, { passive:true });
-    }
-    function syncSheetOnViewportChange(delay){
-      refreshSheetSnapHeights();
-      if(sheetMode === 'help' && isInfoOpen()){
-        applySheetSnap(sheetSnapState, { animate: false, force: true });
-      }
-      scheduleSheetScrollHint(delay);
-    }
-    w.addEventListener('resize', function(){ syncSheetOnViewportChange(120); });
-    w.addEventListener('orientationchange', function(){ syncSheetOnViewportChange(160); });
+    // Gestures activeren (Google Maps-achtig) zodra de sheet wordt geopend.
+    // (We initialiseren hier alvast zodat de handle meteen werkt als de sheet open is.)
+    try{ initDrag(); w.__pkInfoDragInited = true; }catch(_e){}
   }
 })(window);
