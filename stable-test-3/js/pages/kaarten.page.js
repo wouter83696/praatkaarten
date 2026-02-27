@@ -1141,7 +1141,7 @@ function openInfo(){
     if(!txt) return '';
     txt = txt.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     if(opts && opts.boldLead){
-      var m = txt.match(/^([^–—-:]{1,90})\s*[–—-]\s*(.+)$/);
+      var m = txt.match(/^([^\n]{1,90}?)\s*(?:-|–|—)\s*(.+)$/);
       if(m){
         txt = '<strong>' + m[1].replace(/^\s+|\s+$/g, '') + '</strong> - ' + m[2].replace(/^\s+|\s+$/g, '');
       }
@@ -1168,17 +1168,30 @@ function openInfo(){
 
     function flushParagraph(){
       if(!para.length) return;
-      var joined = para.join(' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+      var lineParts = [];
+      var k;
+      for(k = 0; k < para.length; k++){
+        var part = String(para[k] || '').replace(/^\s+|\s+$/g, '');
+        if(part) lineParts.push(part);
+      }
+      var joined = lineParts.join('\n').replace(/^\s+|\s+$/g, '');
       para = [];
       if(!joined) return;
       var cls = '';
-      var body = formatInlineInfoText(joined);
-      if(isInfoHeadingLine(joined)){
+      var body = '';
+      if(lineParts.length === 1 && isInfoHeadingLine(lineParts[0])){
         cls = ' class="infoTextSubhead"';
-        body = '<strong>' + formatInlineInfoText(joined) + '</strong>';
+        body = '<strong>' + formatInlineInfoText(lineParts[0]) + '</strong>';
       }else if(!introAssigned){
         cls = ' class="infoTextIntro"';
         introAssigned = true;
+      }
+      if(!body){
+        var rendered = [];
+        for(k = 0; k < lineParts.length; k++){
+          rendered.push(formatInlineInfoText(lineParts[k]));
+        }
+        body = rendered.join('<br>');
       }
       html.push('<p' + cls + '>' + body + '</p>');
     }

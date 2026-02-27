@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.87';
+  var ASSET_V = '0.90';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -69,13 +69,15 @@
     try{ bs = (w.getComputedStyle && doc.body) ? w.getComputedStyle(doc.body) : null; }catch(_eBs){ bs = null; }
 
     if(rs){
+      // Primair: expliciete statusbar-kleur variabele (per contrast mode).
+      push(rs.getPropertyValue('--pkStatusBg'));
       push(rs.getPropertyValue('--pageBg'));
       push(rs.getPropertyValue('--setsBaseBg'));
       push(rs.getPropertyValue('--setsHeroBg'));
       push(rs.getPropertyValue('--pk-set-bg'));
       push(rs.getPropertyValue('--bg-base-color'));
       push(rs.getPropertyValue('--cardsPageBg'));
-      push(rs.getPropertyValue('--darkBaseRgb'));
+      if(contrast === 'dark') push(rs.getPropertyValue('--darkBaseRgb'));
       push(rs.backgroundColor);
     }
     if(bs){
@@ -134,6 +136,7 @@
     }
 
     function applyMetaValues(){
+      // Gebruik voorspelbare fallback per mode; Safari/iOS houdt niet van twijfelwaarden.
       var activeColor = coerceThemeColor(resolveThemeColor(contrast), fallbackColor);
       try{
         dynTheme = ensureDynamicMeta('theme-color');
@@ -172,6 +175,19 @@
           doc.body.style.setProperty('--pkStatusBg', activeColor);
         }
       }catch(_eStatusBg){}
+
+      // iOS Safari/Web-app: statusbar-tint volgt betrouwbaarder als html/body
+      // achtergrond ook meteen dezelfde kleur krijgt.
+      if(iosLike){
+        try{
+          if(doc.documentElement && doc.documentElement.style){
+            doc.documentElement.style.backgroundColor = activeColor;
+          }
+          if(doc.body && doc.body.style){
+            doc.body.style.backgroundColor = activeColor;
+          }
+        }catch(_eIosBg){}
+      }
     }
 
     applyMetaValues();

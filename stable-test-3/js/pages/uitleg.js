@@ -49,6 +49,108 @@
     return v.replace(/^\s+|\s+$/g,'');
   }
 
+  function escapeHtml(v){
+    var s = String(v == null ? '' : v);
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatInlineInfoText(raw, opts){
+    var txt = escapeHtml(raw).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    if(!txt) return '';
+    txt = txt.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    if(opts && opts.boldLead){
+      var m = txt.match(/^([^\n]{1,90}?)\s*(?:-|–|—)\s*(.+)$/);
+      if(m){
+        txt = '<strong>' + m[1].replace(/^\s+|\s+$/g, '') + '</strong> - ' + m[2].replace(/^\s+|\s+$/g, '');
+      }
+    }
+    return txt;
+  }
+
+  function isInfoHeadingLine(line){
+    var t = String(line || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    return (
+      t === 'Systemisch werken' ||
+      t === 'Rollen van Belbin' ||
+      t === 'In beweging' ||
+      t === 'Waarom werkwoorden?' ||
+      t === 'Samen onderzoeken'
+    );
+  }
+
+  function setDescContent(el, raw){
+    if(!el) return;
+    var text = String(raw == null ? '' : raw).replace(/\r\n?/g, '\n');
+    var lines = text.split('\n');
+    var html = [];
+    var para = [];
+    var introAssigned = false;
+
+    function flushParagraph(){
+      if(!para.length) return;
+      var lineParts = [];
+      var k;
+      for(k = 0; k < para.length; k++){
+        var part = String(para[k] || '').replace(/^\s+|\s+$/g, '');
+        if(part) lineParts.push(part);
+      }
+      var joined = lineParts.join('\n').replace(/^\s+|\s+$/g, '');
+      para = [];
+      if(!joined) return;
+      var cls = '';
+      var body = '';
+      if(lineParts.length === 1 && isInfoHeadingLine(lineParts[0])){
+        cls = ' class="infoTextSubhead"';
+        body = '<strong>' + formatInlineInfoText(lineParts[0]) + '</strong>';
+      }else if(!introAssigned){
+        cls = ' class="infoTextIntro"';
+        introAssigned = true;
+      }
+      if(!body){
+        var rendered = [];
+        for(k = 0; k < lineParts.length; k++){
+          rendered.push(formatInlineInfoText(lineParts[k]));
+        }
+        body = rendered.join('<br>');
+      }
+      html.push('<p' + cls + '>' + body + '</p>');
+    }
+
+    var i = 0;
+    while(i < lines.length){
+      var line = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
+      if(!line){
+        flushParagraph();
+        i += 1;
+        continue;
+      }
+      if(/^[*•-]\s+/.test(line)){
+        flushParagraph();
+        var items = [];
+        while(i < lines.length){
+          var liLine = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
+          if(!/^[*•-]\s+/.test(liLine)) break;
+          liLine = liLine.replace(/^[*•-]\s+/, '');
+          items.push('<li>' + formatInlineInfoText(liLine, { boldLead: true }) + '</li>');
+          i += 1;
+        }
+        if(items.length){
+          html.push('<ul class="infoTextList">' + items.join('') + '</ul>');
+        }
+        continue;
+      }
+      para.push(line);
+      i += 1;
+    }
+    flushParagraph();
+    el.innerHTML = html.join('');
+  }
+
   function applyDominantTint(svgUrl){
     if(!uitlegTextEl) return;
     var isDark = false;
@@ -74,7 +176,7 @@
       };
     }
     imgEl.alt = s.alt;
-    descEl.textContent = getDesc(s.key);
+    setDescContent(descEl, getDesc(s.key));
     applyDominantTint(s.src);
     // update sheet hoogte (in embed)
     try{ w.setTimeout(reportHeight, 0); }catch(_e){}

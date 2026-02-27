@@ -44,8 +44,16 @@
     (function(){
       try{
         var m = sessionStorage.getItem('pk_contrast_session');
-        if(m === 'dark') document.documentElement.setAttribute('data-contrast','dark');
-        else document.documentElement.setAttribute('data-contrast','light');
+        var dark = (m === 'dark');
+        var mode = dark ? 'dark' : 'light';
+        var themeColor = dark ? '#18123c' : '#f7f7f6';
+        document.documentElement.setAttribute('data-contrast', mode);
+        document.documentElement.style.setProperty('--pkStatusBg', themeColor);
+        document.documentElement.style.backgroundColor = themeColor;
+        var metaTheme = document.querySelector('meta[name="theme-color"]');
+        if(metaTheme) metaTheme.setAttribute('content', themeColor);
+        var metaStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if(metaStatus) metaStatus.setAttribute('content', dark ? 'black-translucent' : 'default');
         try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(_e2){}
       }catch(_e){
         document.documentElement.setAttribute('data-contrast','light');
@@ -127,6 +135,6 @@
     </section>
   </main>
 
-  <script src="./js/main.js?v=0.87" defer></script>
+  <script src="./js/main.js?v=0.90" defer></script>
 </body>
 </html>
