@@ -173,18 +173,18 @@
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
     if(!bg){
-      // Stabiele default voor kaartenindex (geen shape-laag, rustige blobs).
+      // Kaartenindex defaults terug naar compacte "stable-1107" stijl:
+      // subtiele blobs, kleinere schaal, nog steeds speels verdeeld.
       bg = {
-        blobCount: 4,
-        blobAlphaFixed: 0.18,
-        blobWash: 0.45,
-        blobIrregularity: 0.45,
-        blobPointsMin: 7,
-        blobPointsMax: 11,
-        sizeScale: 1.5,
-        sizeLimit: 1.8,
+        blobCount: 5,
+        blobIrregularity: 0.35,
+        blobPointsMin: 8,
+        blobPointsMax: 12,
+        sizeScale: 1,
+        darkSizeScale: 1,
+        sizeLimit: 1.4,
         blobSpread: 'grid',
-        blobSpreadMargin: 0.18,
+        blobSpreadMargin: 0.08,
         baseWash: false,
         shapeEnabled: false
       };
@@ -676,6 +676,12 @@ if(PK.createMenuItem){
     if(w.document && w.document.documentElement){
       w.document.documentElement.setAttribute('data-contrast', CONTRAST);
     }
+    try{
+      if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
+      if(w.dispatchEvent && w.CustomEvent){
+        w.dispatchEvent(new w.CustomEvent('pk:contrast', { detail: { mode: CONTRAST } }));
+      }
+    }catch(_eTheme){}
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
 
     // Zorg dat tekstvlakken in de uitleg-carrousel altijd mee-updaten bij mode-switch.
@@ -1121,6 +1127,107 @@ function openInfo(){
   function safeText(v){
     return (v===null || v===undefined) ? '' : String(v);
   }
+  function escapeHtml(v){
+    var s = safeText(v);
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  function formatInlineInfoText(raw, opts){
+    var txt = escapeHtml(raw).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    if(!txt) return '';
+    txt = txt.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    if(opts && opts.boldLead){
+      var m = txt.match(/^([^–—-:]{1,90})\s*[–—-]\s*(.+)$/);
+      if(m){
+        txt = '<strong>' + m[1].replace(/^\s+|\s+$/g, '') + '</strong> - ' + m[2].replace(/^\s+|\s+$/g, '');
+      }
+    }
+    return txt;
+  }
+  function isInfoHeadingLine(line){
+    var t = String(line || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    return (
+      t === 'Systemisch werken' ||
+      t === 'Rollen van Belbin' ||
+      t === 'In beweging' ||
+      t === 'Waarom werkwoorden?' ||
+      t === 'Samen onderzoeken'
+    );
+  }
+  function setInfoTextContent(el, raw){
+    if(!el) return;
+    var text = safeText(raw).replace(/\r\n?/g, '\n');
+    var lines = text.split('\n');
+    var html = [];
+    var para = [];
+    var introAssigned = false;
+
+    function flushParagraph(){
+      if(!para.length) return;
+      var lineParts = [];
+      var k;
+      for(k = 0; k < para.length; k++){
+        var part = String(para[k] || '').replace(/^\s+|\s+$/g, '');
+        if(part) lineParts.push(part);
+      }
+      var joined = lineParts.join('\n').replace(/^\s+|\s+$/g, '');
+      para = [];
+      if(!joined) return;
+      var cls = '';
+      var body = '';
+      if(lineParts.length === 1 && isInfoHeadingLine(lineParts[0])){
+        cls = ' class="infoTextSubhead"';
+        body = '<strong>' + formatInlineInfoText(lineParts[0]) + '</strong>';
+      }else if(!introAssigned){
+        cls = ' class="infoTextIntro"';
+        introAssigned = true;
+      }
+      if(!body){
+        var rendered = [];
+        for(k = 0; k < lineParts.length; k++){
+          rendered.push(formatInlineInfoText(lineParts[k]));
+        }
+        body = rendered.join('<br>');
+      }
+      html.push('<p' + cls + '>' + body + '</p>');
+    }
+
+    var i = 0;
+    while(i < lines.length){
+      var line = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
+      if(!line){
+        flushParagraph();
+        i += 1;
+        continue;
+      }
+
+      if(/^[*•-]\s+/.test(line)){
+        flushParagraph();
+        var items = [];
+        while(i < lines.length){
+          var liLine = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
+          if(!/^[*•-]\s+/.test(liLine)) break;
+          liLine = liLine.replace(/^[*•-]\s+/, '');
+          items.push('<li>' + formatInlineInfoText(liLine, { boldLead: true }) + '</li>');
+          i += 1;
+        }
+        if(items.length){
+          html.push('<ul class="infoTextList">' + items.join('') + '</ul>');
+        }
+        continue;
+      }
+
+      para.push(line);
+      i += 1;
+    }
+    flushParagraph();
+
+    el.innerHTML = html.join('');
+  }
   function cardPathRect(setId, file){
     return pathForSet(setId, 'cards_rect/' + file);
   }
@@ -1200,7 +1307,7 @@ function openInfo(){
 
       var text = w.document.createElement('div');
       text.className = 'infoSlideText';
-      text.textContent = s.text;
+      setInfoTextContent(text, s.text);
 
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       var baseTint = isDark

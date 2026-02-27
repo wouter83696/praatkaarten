@@ -29,6 +29,7 @@
   --topBarAccentColor: #4F8E9E;
   --topBarMenuTap: 36px;
   --topBarMenuSize: 24px;
+  --pkStatusBg: #f7f7f6;
   /* Align header action icons with menu card thumbnails */
   --menuRowPadX: 12px;
   --menuThumbOffset: 4px;
@@ -37,6 +38,7 @@
 }
 
 html[data-contrast="dark"]{
+  --pkStatusBg: #18123c;
   --menuHeaderText: rgba(245,250,255,0.72);
   --menuText: rgba(245,250,255,0.86);
   --menuTextMuted: rgba(245,250,255,0.72);
@@ -44,6 +46,19 @@ html[data-contrast="dark"]{
   --menuIcon: rgba(245,250,255,0.62);
   --menuLine: rgba(255,255,255,0.10);
 }
+
+body::before{
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--pkStatusBg, #f7f7f6);
+  pointer-events: none;
+  z-index: calc(var(--z-topbar, 30) - 2);
+}
+
 .topBar{
   position: fixed;
   top: 0;
@@ -83,6 +98,7 @@ html[data-contrast="dark"]{
   display: flex;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
 }
 
 .themePillBrand{
@@ -252,7 +268,7 @@ body[data-brand-icon="1"] .setCoverIcon{
   -webkit-backdrop-filter: blur(12px);
   box-shadow: none;
   overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: min(env(safe-area-inset-bottom, 0px), 10px);
 }
 
 /* Zachte fade onderaan menu verwijderd (master) */
@@ -362,13 +378,15 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 }
 
 .menuList{
-  display: grid;
+  display: block;
   margin-top: -2px;
+  row-gap: 0;
 }
 
 .menuItem{
   text-align:left;
-  padding: 10px var(--menuRowPadX);
+  width: 100%;
+  padding: 8px var(--menuRowPadX);
   border: 0;
   background: transparent;
   font-size: 14px;
@@ -388,16 +406,18 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   text-align: left;
 }
 .miThumbRight{
-  flex: 0 0 auto;
+  flex: 0 0 var(--menuThumbSize, 56px);
+  width: var(--menuThumbSize, 56px);
   display:flex;
   align-items:center;
+  justify-content: flex-end;
   margin-left: auto;
-  margin-right: var(--menuThumbOffset);
+  margin-right: 0;
 }
 
 .menuFooter{
   border-top: 0;
-  padding: 8px 0 0;
+  padding: 2px 0 0;
   position: relative;
 }
 
@@ -432,6 +452,8 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   font-size: 13px;
   color: var(--menuFooterText);
   letter-spacing: 0.015em;
+  padding-top: 8px;
+  padding-bottom: 9px;
 }
 
 html[data-contrast="dark"] .menuItem:active,
@@ -548,10 +570,10 @@ html[data-contrast="dark"] #uiWarnings{
 html[data-contrast="dark"] .infoCard{
   border-top: 0.5px solid rgba(255,255,255,0.10);
   /* Dark mode: vaste indigo wereld (niet meekleuren). */
-  /* Uitleg-sheet: veel transparanter, zodat vooral kaart + tekstvak zichtbaar blijven */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.42);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* Donker: duidelijk minder transparant, zodat achterliggende kaarten niet doorlekken */
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.56);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 html[data-contrast="dark"] .sheetHandle::before{
@@ -608,6 +630,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 .infoSheet.open{ transform: translateY(0); }
 
 .infoCard{
+  position: relative;
   border-radius: 22px 22px 0 0;
   /* Glas-rand subtieler + dunner (hairline) */
   border-top: 0.5px solid rgba(0,0,0,0.05);
@@ -615,9 +638,9 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   border-right: 0;
   border-bottom: 0;
   /* Light mode: veel transparanter sheet-oppervlak */
-  background: rgba(var(--menuSurface, 255, 255, 255), 0.52);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.34);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   overflow: hidden;
   overscroll-behavior: contain;
   /* iOS: zorg dat de sheet altijd netjes op de onderrand blijft liggen */
@@ -650,6 +673,7 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .sheetStack{
@@ -661,7 +685,9 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 
 .sheetPage{
   width: 100%;
-  height: var(--sheetMaxH);
+  /* Laat lange uitleg doorgroeien; viewport regelt het daadwerkelijke scrollvenster. */
+  min-height: var(--sheetMaxH);
+  height: auto;
 }
 
 /* Alleen in uitleg-mode verschuiven we de inhoud een beetje,
@@ -739,6 +765,11 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   padding: 0 14px 18px;
   box-sizing: border-box;
   scroll-padding: 14px;
+}
+.infoCard[data-top="help"] .infoCarousel,
+.infoCard[data-mode="help"] .infoCarousel{
+  /* In uitleg-modus moet verticale lees-scroll altijd prioriteit krijgen. */
+  touch-action: auto;
 }
 /* Kaarten-carrousel (zelfde mechanics als infoCarousel) */
 .cardsCarousel{
@@ -1030,10 +1061,10 @@ html[data-contrast="dark"] .infoSlideInner{
   border-radius: 0;
   border: 0;
   /* Lichte doorkijk zonder dominante kaartkleur; tekst blijft stabiel leesbaar. */
-  background: var(--pkTextBg, #F9FAF9);
+  background: var(--pkTextBg, rgba(255,255,255,0.96));
   box-shadow: none;
   /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
-  color: rgba(11,18,32,.68);
+  color: rgba(11,18,32,.74);
   line-height: 1.55;
   font-size: 15px;
 }
@@ -1041,9 +1072,89 @@ html[data-contrast="dark"] .infoSlideInner{
 /* Dark help text overrides */
 html[data-contrast="dark"] .infoSlideText{
   /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.92);
   box-shadow: none;
   color: rgba(244,246,250,0.84);
+}
+
+.infoSlideText p{
+  margin: 0 0 12px;
+  color: rgba(11,18,32,0.74);
+}
+
+.infoSlideText p:last-child{
+  margin-bottom: 0;
+}
+
+.infoSlideText .infoTextIntro{
+  font-weight: 400;
+  color: rgba(11,18,32,0.88);
+}
+
+.infoSlideText .infoTextSubhead,
+.infoSlideText .infoTextHeading{
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: rgba(11,18,32,0.68);
+}
+
+.infoSlideText .infoTextSubhead{
+  margin-top: 2px;
+}
+
+.infoSlideText .infoTextList{
+  margin: 6px 0 14px 20px;
+  padding: 0;
+}
+
+.infoSlideText .infoTextList li{
+  margin: 5px 0;
+}
+
+html[data-contrast="dark"] .infoSlideText p{
+  color: rgba(244,246,250,0.84);
+}
+
+html[data-contrast="dark"] .infoSlideText .infoTextIntro{
+  color: rgba(244,246,250,0.95);
+}
+
+html[data-contrast="dark"] .infoSlideText .infoTextSubhead,
+html[data-contrast="dark"] .infoSlideText .infoTextHeading{
+  color: rgba(244,246,250,0.76);
+}
+
+.sheetScrollHint{
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  transform: translate(-50%, 6px);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.05);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.90);
+  color: rgba(11,18,32,0.56);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ui-fast) var(--ui-ease), transform var(--ui-fast) var(--ui-ease);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.sheetScrollHint.is-visible{
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+html[data-contrast="dark"] .sheetScrollHint{
+  border-color: rgba(255,255,255,0.08);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.84);
+  color: rgba(244,246,250,0.72);
 }
 
 

@@ -4,6 +4,41 @@
   'use strict';
   var PK = w.PK = w.PK || {};
 
+  function goHome(){
+    var target = '';
+    try{
+      if(PK && PK.PATHS && PK.PATHS.gridPage){
+        target = String(PK.PATHS.gridPage || '');
+      }
+    }catch(_ePath){}
+    if(!target){
+      var p = '';
+      try{ p = String((w.location && w.location.pathname) || ''); }catch(_eLoc){ p = ''; }
+      target = (p.indexOf('/kaarten/') !== -1 || p.indexOf('/uitleg/') !== -1) ? '../index.html' : './index.html';
+    }
+    try{ w.location.href = target; }catch(_eNav){}
+  }
+
+  function isHomeAreaClick(trigger, ev){
+    if(!trigger || !ev) return false;
+    var t = ev.target || null;
+    if(!t || !t.closest) return false;
+    var main = t.closest('.themePillMain');
+    return !!(main && trigger.contains(main));
+  }
+
+  function bindTopBarHome(trigger){
+    if(!trigger || trigger.__pkTopBarHomeBound) return;
+    trigger.__pkTopBarHomeBound = true;
+    trigger.addEventListener('click', function(ev){
+      if(!isHomeAreaClick(trigger, ev)) return;
+      if(ev && ev.preventDefault) ev.preventDefault();
+      if(ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+      else if(ev && ev.stopPropagation) ev.stopPropagation();
+      goHome();
+    }, true);
+  }
+
   PK.createMenu = function(options){
     options = options || {};
     var menu = options.menu || w.document.getElementById('themeMenu');
@@ -17,6 +52,7 @@
     }
 
     if(PK.createBottomSheet){
+      bindTopBarHome(trigger);
       return PK.createBottomSheet({ sheet: menu, overlay: overlay, trigger: trigger });
     }
 
@@ -41,7 +77,13 @@
     }
 
     if(trigger){
-      trigger.onclick = function(){ toggle(); };
+      trigger.onclick = function(ev){
+        if(isHomeAreaClick(trigger, ev)){
+          goHome();
+          return;
+        }
+        toggle();
+      };
     }
     if(overlay){
       overlay.onclick = close;

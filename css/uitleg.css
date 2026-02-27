@@ -88,6 +88,32 @@ body.uitlegPage.embed .wrap{
   overflow-wrap: anywhere;
 }
 
+.uitlegPage .desc p{
+  margin: 0 0 12px;
+}
+
+.uitlegPage .desc p:last-child{
+  margin-bottom: 0;
+}
+
+.uitlegPage .desc .infoTextIntro{
+  color: rgba(11, 18, 32, 0.88);
+}
+
+.uitlegPage .desc .infoTextSubhead{
+  margin-top: 2px;
+  color: rgba(11, 18, 32, 0.68);
+}
+
+.uitlegPage .desc .infoTextList{
+  margin: 6px 0 14px 20px;
+  padding: 0;
+}
+
+.uitlegPage .desc .infoTextList li{
+  margin: 5px 0;
+}
+
 /* Thema-titel op de uitleg-kaartjes: exact dezelfde blauw als index-kaarten */
 .kaartThema{
   color: var(--textBlue);
@@ -96,6 +122,14 @@ body.uitlegPage.embed .wrap{
 /* Nachtmodus: koeler grijs, zelfde familie als menu (niet te fel) */
 html[data-contrast="dark"] .uitlegPage .desc{
   color: rgba(232, 235, 240, 0.78);
+}
+
+html[data-contrast="dark"] .uitlegPage .desc .infoTextIntro{
+  color: rgba(244, 246, 250, 0.95);
+}
+
+html[data-contrast="dark"] .uitlegPage .desc .infoTextSubhead{
+  color: rgba(244, 246, 250, 0.76);
 }
 
 /* (Onderbalk verwijderd) */
