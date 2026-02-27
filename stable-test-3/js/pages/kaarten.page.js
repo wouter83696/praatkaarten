@@ -1127,6 +1127,94 @@ function openInfo(){
   function safeText(v){
     return (v===null || v===undefined) ? '' : String(v);
   }
+  function escapeHtml(v){
+    var s = safeText(v);
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  function formatInlineInfoText(raw, opts){
+    var txt = escapeHtml(raw).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    if(!txt) return '';
+    txt = txt.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    if(opts && opts.boldLead){
+      var m = txt.match(/^([^–—-:]{1,90})\s*[–—-]\s*(.+)$/);
+      if(m){
+        txt = '<strong>' + m[1].replace(/^\s+|\s+$/g, '') + '</strong> - ' + m[2].replace(/^\s+|\s+$/g, '');
+      }
+    }
+    return txt;
+  }
+  function isInfoHeadingLine(line){
+    var t = String(line || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    return (
+      t === 'Systemisch werken' ||
+      t === 'Rollen van Belbin' ||
+      t === 'In beweging' ||
+      t === 'Waarom werkwoorden?' ||
+      t === 'Samen onderzoeken'
+    );
+  }
+  function setInfoTextContent(el, raw){
+    if(!el) return;
+    var text = safeText(raw).replace(/\r\n?/g, '\n');
+    var lines = text.split('\n');
+    var html = [];
+    var para = [];
+    var introAssigned = false;
+
+    function flushParagraph(){
+      if(!para.length) return;
+      var joined = para.join(' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+      para = [];
+      if(!joined) return;
+      var cls = '';
+      var body = formatInlineInfoText(joined);
+      if(isInfoHeadingLine(joined)){
+        cls = ' class="infoTextSubhead"';
+        body = '<strong>' + formatInlineInfoText(joined) + '</strong>';
+      }else if(!introAssigned){
+        cls = ' class="infoTextIntro"';
+        introAssigned = true;
+      }
+      html.push('<p' + cls + '>' + body + '</p>');
+    }
+
+    var i = 0;
+    while(i < lines.length){
+      var line = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
+      if(!line){
+        flushParagraph();
+        i += 1;
+        continue;
+      }
+
+      if(/^[*•-]\s+/.test(line)){
+        flushParagraph();
+        var items = [];
+        while(i < lines.length){
+          var liLine = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
+          if(!/^[*•-]\s+/.test(liLine)) break;
+          liLine = liLine.replace(/^[*•-]\s+/, '');
+          items.push('<li>' + formatInlineInfoText(liLine, { boldLead: true }) + '</li>');
+          i += 1;
+        }
+        if(items.length){
+          html.push('<ul class="infoTextList">' + items.join('') + '</ul>');
+        }
+        continue;
+      }
+
+      para.push(line);
+      i += 1;
+    }
+    flushParagraph();
+
+    el.innerHTML = html.join('');
+  }
   function cardPathRect(setId, file){
     return pathForSet(setId, 'cards_rect/' + file);
   }
@@ -1206,7 +1294,7 @@ function openInfo(){
 
       var text = w.document.createElement('div');
       text.className = 'infoSlideText';
-      text.textContent = s.text;
+      setInfoTextContent(text, s.text);
 
       var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       var baseTint = isDark
