@@ -988,7 +988,6 @@
       }
     }catch(_eTheme){}
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
-    if(changed && lastIndexConfig) applyBackground(lastIndexConfig);
     w.requestAnimationFrame(function(){
       try{
         if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);

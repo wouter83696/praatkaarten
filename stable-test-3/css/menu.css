@@ -105,10 +105,10 @@ html[data-contrast="dark"]{
 .themePillBrand::after{
   content: "BETA";
   display: inline-block;
-  margin-left: 5px;
+  margin-left: 2px;
   font-size: 0.46em;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgba(94, 156, 165, 0.76);
   transform: translateY(-0.54em);
@@ -230,10 +230,10 @@ body[data-brand-icon="1"] .setCoverIcon{
   /* sluit visueel aan op de topbar (lichte overlap) */
   top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 0px) + var(--topBarHeight, 64px) + 8px);
   left: auto;
-  right: calc(env(safe-area-inset-right, 0px) + 8px);
+  right: max(16px, env(safe-area-inset-right, 0px));
   z-index: var(--z-menu);
   /* iets compacter zodat het menu minder 'blok' voelt */
-  width: min(320px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 16px));
+  width: min(320px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 32px));
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity var(--ui-med) var(--ui-ease), transform var(--ui-med) var(--ui-ease);
@@ -247,14 +247,14 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 .menuCard{
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.012);
-  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.06));
+  border: 1px solid rgba(0,0,0,0.02);
+  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.045));
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
-  background: rgba(var(--menuSurface, 255, 255, 255), var(--menuSheetAlpha));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: none;
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(11,18,32,0.04);
   overflow: hidden;
   padding-bottom: min(env(safe-area-inset-bottom, 0px), 10px);
 }
@@ -303,11 +303,11 @@ body[data-brand-icon="1"] .setCoverIcon{
   padding: 1px var(--menuToolsPadX);
   border-radius: 999px;
   /* Subtiel pill-vlak dat wegvalt in het menu */
-  border: 1px solid rgba(11,18,32,0.02);
+  border: 1px solid rgba(11,18,32,0.03);
   /* Light mode: wittere tool-strip voor betere leesbaarheid */
-  background: rgba(var(--menuSurface, 255, 255, 255), var(--menuHeaderToolsAlpha, 0.69));
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background: rgba(var(--menuSurface, 255, 255, 255), 0.54);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   box-shadow: none;
 }
 
@@ -473,20 +473,20 @@ html[data-contrast="dark"] .themePillBrand::after{
 }
 
 html[data-contrast="dark"] .menuHeaderTools{
-  border: 1px solid rgba(255,255,255,0.05);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--menuHeaderToolsAlpha, 0.67));
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.46);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   box-shadow: none;
 }
 
 html[data-contrast="dark"] .menuCard{
-  border: 0.5px solid rgba(255,255,255,0.10);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.86) !important;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78) !important;
   background-image: none !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: none;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.10);
 }
 
 html[data-contrast="dark"] .menuHeaderRow{
