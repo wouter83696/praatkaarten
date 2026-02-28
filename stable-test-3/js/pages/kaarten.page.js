@@ -173,18 +173,17 @@
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
     if(!bg){
-      // Stabiele default voor kaartenindex (geen shape-laag, rustige blobs).
+      // Compacte stable-1107 default voor kaartenindex.
       bg = {
-        blobCount: 4,
-        blobAlphaFixed: 0.18,
-        blobWash: 0.45,
-        blobIrregularity: 0.45,
-        blobPointsMin: 7,
-        blobPointsMax: 11,
-        sizeScale: 1.5,
-        sizeLimit: 1.8,
+        blobCount: 7,
+        alphaBoost: 1.05,
+        blobIrregularity: 0.35,
+        blobPointsMin: 8,
+        blobPointsMax: 12,
+        sizeScale: 0.85,
         blobSpread: 'grid',
-        blobSpreadMargin: 0.18,
+        blobSpreadMargin: 0.08,
+        sizeLimit: 1.4,
         baseWash: false,
         shapeEnabled: false
       };
@@ -681,13 +680,8 @@ if(PK.createMenuItem){
     // Zorg dat tekstvlakken in de uitleg-carrousel altijd mee-updaten bij mode-switch.
     // (Anders kan de bestaande DOM een oude tint houden tot de set opnieuw gerenderd wordt.)
     try{ retintInfoSlideTexts && retintInfoSlideTexts(); }catch(_e0){}
-    // Re-apply tint voor de actieve kaart, zodat donker/licht echt anders voelt.
-    // Let op: setActiveTintByIndex heeft een idx-guard (performance). Bij mode-switch
-    // willen we echter ALTIJD opnieuw toepassen, ook als de index gelijk blijft.
-    try{ __lastTintIdx = -1; }catch(_eX){}
-    try{ setActiveTintByIndex && setActiveTintByIndex(getActiveCardIndex ? getActiveCardIndex() : 0); }catch(_e2){}
+    try{ refreshActiveTintForContrast(); }catch(_eTint){}
     if(changed){
-      // Herteken blobs alleen als mode echt wisselt.
       try{ renderIndexBackground(); }catch(_e3){}
     }
   }
@@ -1685,6 +1679,50 @@ function openInfo(){
     return {r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255)};
   }
 
+  function tintFromDominantRgb(rgb, mode){
+    if(!rgb) return null;
+    var out;
+    if((mode || 'light') === 'dark'){
+      var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      var s = Math.max(0.34, Math.min(0.70, hsl.s * 1.10));
+      var l = Math.max(0.28, Math.min(0.36, hsl.l * 0.50 + 0.14));
+      out = hslToRgb(hsl.h, s, l);
+    }else{
+      var k = 0.82;
+      out = {
+        r: Math.round(rgb.r * (1-k) + 255 * k),
+        g: Math.round(rgb.g * (1-k) + 255 * k),
+        b: Math.round(rgb.b * (1-k) + 255 * k)
+      };
+    }
+    return {
+      bgCsv: out.r + ', ' + out.g + ', ' + out.b,
+      hueCsv: rgb.r + ', ' + rgb.g + ', ' + rgb.b
+    };
+  }
+
+  function refreshActiveTintForContrast(){
+    var idx = getActiveCardIndex ? getActiveCardIndex() : 0;
+    var it = (ITEMS && ITEMS[idx]) ? ITEMS[idx] : null;
+    if(!it || !it.bg) return;
+    var url = PK.withV ? PK.withV(it.bg) : it.bg;
+    var raw = __tintRgbCache[url];
+    if(raw){
+      var tint = tintFromDominantRgb(raw, CONTRAST);
+      if(tint) setCssTint(tint.bgCsv, tint.hueCsv);
+      return;
+    }
+    var cacheKey = url + '|' + ((CONTRAST === 'dark') ? 'dark' : 'light');
+    var cached = __tintCache[cacheKey];
+    if(!cached) return;
+    if(String(cached).indexOf('|') > -1){
+      var parts = String(cached).split('|');
+      setCssTint(parts[0], parts[1] || parts[0]);
+    }else{
+      setCssTint(cached, cached);
+    }
+  }
+
   function setActiveTintByIndex(idx){
     idx = Math.max(0, idx|0);
     if(idx === __lastTintIdx) return;
@@ -1738,29 +1776,10 @@ function openInfo(){
         dom2 = fallback[th] || null;
         if(!dom2) return;
       }
-      var out;
-      // Alleen toepassen als dit nog de laatste aanvraag is.
-      if(reqId !== __tintReqId) return;
-      if((contrastAtCall || 'light') === 'dark'){
-        // Donker maar kleurig: behoud hue, zet lichtheid omhoog t.o.v. zwart.
-        var hsl = rgbToHsl(dom2.r, dom2.g, dom2.b);
-        // Houd s minimaal zodat het niet grauw wordt
-        var s = Math.max(0.34, Math.min(0.70, hsl.s * 1.10));
-        // "Schemer" i.p.v. zwart: iets minder donker dan voorheen, maar duidelijk donkerder dan licht.
-        var l = Math.max(0.28, Math.min(0.36, hsl.l * 0.50 + 0.14));
-        out = hslToRgb(hsl.h, s, l);
-      }else{
-        // Licht: geen grijze waas, maar echt een zachte kleurtint.
-        // Meer "papier" (witter) zodat blobs/kaarten het kleur-contrast geven.
-        var k = 0.82; // aandeel wit (lager = meer kleur)
-        out = {
-          r: Math.round(dom2.r*(1-k) + 255*k),
-          g: Math.round(dom2.g*(1-k) + 255*k),
-          b: Math.round(dom2.b*(1-k) + 255*k)
-        };
-      }
-      var bgCsv = out.r + ', ' + out.g + ', ' + out.b;
-      var hueCsv = dom2.r + ', ' + dom2.g + ', ' + dom2.b;
+      var tint = tintFromDominantRgb(dom2, contrastAtCall);
+      if(!tint) return;
+      var bgCsv = tint.bgCsv;
+      var hueCsv = tint.hueCsv;
       __tintCache[cacheKey] = bgCsv + '|' + hueCsv;
       // Nogmaals checken: voorkom dat een late promise de huidige modus overschrijft.
       if(reqId !== __tintReqId) return;
