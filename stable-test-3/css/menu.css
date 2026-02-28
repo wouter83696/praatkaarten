@@ -1061,7 +1061,7 @@ html[data-contrast="dark"] .infoSlideInner{
   border-radius: 0;
   border: 0;
   /* Lichte doorkijk zonder dominante kaartkleur; tekst blijft stabiel leesbaar. */
-  background: var(--pkTextBg, rgba(255,255,255,0.96));
+  background: var(--pkTextBg, rgba(255,255,255,0.975));
   box-shadow: none;
   /* Zelfde grijsfamilie als menu-typografie (rustiger dan blauw) */
   color: rgba(11,18,32,.74);
@@ -1072,7 +1072,7 @@ html[data-contrast="dark"] .infoSlideInner{
 /* Dark help text overrides */
 html[data-contrast="dark"] .infoSlideText{
   /* Vaste (niet-set) basis, net als light modus: rustig en consistent */
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.92);
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.86);
   box-shadow: none;
   color: rgba(244,246,250,0.84);
 }

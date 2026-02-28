@@ -846,7 +846,9 @@
     var palette = bg && Array.isArray(bg.palette) ? bg.palette : [
       '#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'
     ];
-    var darkPalette = bg && Array.isArray(bg.darkPalette) ? bg.darkPalette : null;
+    var darkPalette = bg && Array.isArray(bg.darkPalette) ? bg.darkPalette : [
+      '#67C5BB', '#74CEC4', '#7FD1C8', '#8AD8D0', '#93DCD4'
+    ];
     var isDark = false;
     try{
       isDark = (doc && doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark');
@@ -860,8 +862,8 @@
     var alphaBoost = bg && typeof bg.alphaBoost === 'number' ? bg.alphaBoost : 1.12;
     var sizeScale = bg && typeof bg.sizeScale === 'number' ? bg.sizeScale : 1.34;
     var darkSizeScale = bg && typeof bg.darkSizeScale === 'number' ? bg.darkSizeScale : 1.25;
-    var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : 0.9;
-    var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : undefined;
+    var darkAlphaBoost = bg && typeof bg.darkAlphaBoost === 'number' ? bg.darkAlphaBoost : 1.02;
+    var darkMix = bg && typeof bg.darkMix === 'number' ? bg.darkMix : 0.12;
     var blobIrregularity = bg && typeof bg.blobIrregularity === 'number' ? bg.blobIrregularity : undefined;
     var blobPointsMin = bg && typeof bg.blobPointsMin === 'number' ? bg.blobPointsMin : undefined;
     var blobPointsMax = bg && typeof bg.blobPointsMax === 'number' ? bg.blobPointsMax : undefined;

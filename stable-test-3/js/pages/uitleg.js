@@ -72,15 +72,26 @@
     return txt;
   }
 
-  function isInfoHeadingLine(line){
+  function getInfoHeadingText(line){
     var t = String(line || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
-    return (
+    var m = t.match(/^\*\*(.+?)\*\*$/);
+    if(m && m[1]){
+      t = String(m[1]).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+    }
+    if(
       t === 'Systemisch werken' ||
       t === 'Rollen van Belbin' ||
       t === 'In beweging' ||
       t === 'Waarom werkwoorden?' ||
       t === 'Samen onderzoeken'
-    );
+    ){
+      return t;
+    }
+    return '';
+  }
+
+  function isInfoHeadingLine(line){
+    return !!getInfoHeadingText(line);
   }
 
   function setDescContent(el, raw){
@@ -104,9 +115,10 @@
       if(!joined) return;
       var cls = '';
       var body = '';
-      if(lineParts.length === 1 && isInfoHeadingLine(lineParts[0])){
+      var heading = (lineParts.length === 1) ? getInfoHeadingText(lineParts[0]) : '';
+      if(heading){
         cls = ' class="infoTextSubhead"';
-        body = '<strong>' + formatInlineInfoText(lineParts[0]) + '</strong>';
+        body = '<strong>' + escapeHtml(heading) + '</strong>';
       }else if(!introAssigned){
         cls = ' class="infoTextIntro"';
         introAssigned = true;
@@ -126,6 +138,13 @@
       var line = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
       if(!line){
         flushParagraph();
+        i += 1;
+        continue;
+      }
+      var headingLine = getInfoHeadingText(line);
+      if(headingLine){
+        flushParagraph();
+        html.push('<p class="infoTextSubhead"><strong>' + escapeHtml(headingLine) + '</strong></p>');
         i += 1;
         continue;
       }
@@ -158,8 +177,8 @@
       isDark = !!(w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_eDark){}
     uitlegTextEl.style.background = isDark
-      ? 'rgba(23, 22, 50, 0.78)'
-      : '#F9FAF9';
+      ? 'rgba(23, 22, 50, 0.86)'
+      : 'rgba(255, 255, 255, 0.975)';
   }
 
   function render(){
