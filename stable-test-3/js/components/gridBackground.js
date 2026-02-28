@@ -802,20 +802,8 @@
         if(token !== lastToken) return;
         var svg = ensureSvgLayer(canvas);
         var rnd = mulberry32(seed);
-        // Teken eerst offscreen en zet daarna pas in 1 stap op de zichtbare canvas.
-        // Zo voorkom je zwart/wit flashes tijdens contrastwissels op iPhone/Safari.
-        var buffer = w.document.createElement('canvas');
-        buffer.getBoundingClientRect = function(){
-          return canvas.getBoundingClientRect();
-        };
-        var info = renderCanvas(buffer, assets.palette, rnd, lite, opts);
-        if(info && canvas.width !== buffer.width) canvas.width = buffer.width;
-        if(info && canvas.height !== buffer.height) canvas.height = buffer.height;
-        var visibleCtx = canvas.getContext('2d');
-        if(visibleCtx){
-          visibleCtx.clearRect(0, 0, canvas.width, canvas.height);
-          visibleCtx.drawImage(buffer, 0, 0);
-        }
+        // onthoud de canvas/viewport maat van de eerste echte render.
+        var info = renderCanvas(canvas, assets.palette, rnd, lite, opts);
         if(cache){
           cache._lastCssW = info && info.cssW ? info.cssW : cache._lastCssW;
           cache._lastCssH = info && info.cssH ? info.cssH : cache._lastCssH;
@@ -831,15 +819,19 @@
         renderSvgLayer(svg, assets.shapes, assets.palette, rnd2, lite, opts);
       }
 
-      if(cache && cache.key===key && cache.assets && cache.seed){
-        doRender(cache.assets, cache.seed);
-        return;
+      function ensureCache(){
+        if(cache && cache.key===key && cache.assets && cache.seed){
+          return Promise.resolve(cache);
+        }
+        var seed = (Date.now() ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
+        return buildAssets(opts).then(function(assets){
+          cache = { key:key, seed:seed, assets:assets, lite:lite };
+          return cache;
+        });
       }
 
-      var seed = (Date.now() ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
-      buildAssets(opts).then(function(assets){
-        cache = { key:key, seed:seed, assets:assets, lite:lite };
-        doRender(assets, seed);
+      ensureCache().then(function(c){
+        doRender(c.assets, c.seed);
       });
 
       // Achtergrond blijft statisch na eerste render.
