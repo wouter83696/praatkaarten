@@ -696,6 +696,16 @@ if(PK.createMenuItem){
       // Herteken blobs alleen als mode echt wisselt.
       try{ renderIndexBackground(); }catch(_e3){}
     }
+    w.requestAnimationFrame(function(){
+      try{
+        if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
+      }catch(_e4){}
+    });
+    w.setTimeout(function(){
+      try{
+        if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
+      }catch(_e5){}
+    }, 140);
   }
   if(contrastBtn){
     var savedC = 'light';

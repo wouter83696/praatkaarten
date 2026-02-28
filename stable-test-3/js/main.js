@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.93';
+  var ASSET_V = '0.94';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -114,6 +114,83 @@
     return false;
   }
 
+  function ensureStatusFill(){
+    var el = null;
+    try{
+      el = doc.getElementById('pkStatusFill');
+      if(!el && doc.body){
+        el = doc.createElement('div');
+        el.id = 'pkStatusFill';
+        el.setAttribute('aria-hidden', 'true');
+        el.style.position = 'fixed';
+        el.style.top = '0';
+        el.style.left = '0';
+        el.style.right = '0';
+        el.style.height = 'env(safe-area-inset-top, 0px)';
+        el.style.pointerEvents = 'none';
+        el.style.zIndex = '28';
+        el.style.background = 'var(--pkStatusBg, #f7f7f6)';
+        el.style.transform = 'translateZ(0)';
+        el.style.willChange = 'background-color';
+        doc.body.insertBefore(el, doc.body.firstChild || null);
+      }
+    }catch(_eFill){ el = null; }
+    return el;
+  }
+
+  function replaceMeta(name, content){
+    var el = null;
+    var metas = [];
+    var i;
+    try{
+      if(!doc.head) return null;
+      metas = doc.querySelectorAll('meta[name="' + name + '"]');
+      el = doc.createElement('meta');
+      el.setAttribute('name', name);
+      el.setAttribute('content', content);
+      el.setAttribute('data-pk-dynamic', '1');
+      doc.head.insertBefore(el, doc.head.firstChild || null);
+      for(i = 0; i < metas.length; i++){
+        if(metas[i] && metas[i] !== el && metas[i].parentNode){
+          metas[i].parentNode.removeChild(metas[i]);
+        }
+      }
+    }catch(_eMeta){ el = null; }
+    return el;
+  }
+
+  function forceIOSChromeRefresh(activeColor){
+    var docEl = null;
+    var body = null;
+    var fill = null;
+    var y = 0;
+    var maxY = 0;
+    var targetY = 0;
+    if(!isIOSLike()) return;
+    try{
+      docEl = doc.documentElement;
+      body = doc.body;
+      fill = ensureStatusFill();
+      if(fill) fill.style.backgroundColor = activeColor;
+      if(docEl && docEl.style) docEl.style.backgroundColor = activeColor;
+      if(body && body.style) body.style.backgroundColor = activeColor;
+      if(fill && fill.offsetHeight >= 0){}
+      if(docEl && docEl.offsetHeight >= 0){}
+      if(body && body.offsetHeight >= 0){}
+    }catch(_eReflow){}
+    try{
+      y = w.pageYOffset || (docEl && docEl.scrollTop) || (body && body.scrollTop) || 0;
+      maxY = Math.max(0, ((docEl && docEl.scrollHeight) || 0) - (w.innerHeight || 0));
+      targetY = Math.min(y + 1, maxY);
+      if(targetY !== y){
+        w.scrollTo(0, targetY);
+        w.requestAnimationFrame(function(){
+          try{ w.scrollTo(0, y); }catch(_eBack){}
+        });
+      }
+    }catch(_eScroll){}
+  }
+
   function updateThemeChrome(mode){
     var contrast = (mode === 'dark') ? 'dark' : 'light';
     var iosLike = isIOSLike();
@@ -128,55 +205,16 @@
 
     syncLegacyContrastClasses(contrast);
 
-    function ensureDynamicMeta(name){
-      var el = null;
-      try{
-        el = doc.querySelector('meta[name="' + name + '"][data-pk-dynamic="1"]');
-        if(!el && doc.head){
-          el = doc.createElement('meta');
-          el.setAttribute('name', name);
-          el.setAttribute('data-pk-dynamic', '1');
-        }
-        if(el && doc.head && el.parentNode !== doc.head){
-          doc.head.insertBefore(el, doc.head.firstChild || null);
-        }
-        if(el && doc.head && doc.head.firstChild !== el){
-          doc.head.insertBefore(el, doc.head.firstChild || null);
-        }
-      }catch(_eMeta){ el = null; }
-      return el;
-    }
-
     function applyMetaValues(){
       // Gebruik voorspelbare fallback per mode; Safari/iOS houdt niet van twijfelwaarden.
       var activeColor = coerceThemeColor(resolveThemeColor(contrast), fallbackColor);
       try{
-        dynTheme = ensureDynamicMeta('theme-color');
-        if(dynTheme){
-          dynTheme.setAttribute('content', activeColor);
-          if(dynTheme.hasAttribute('media')) dynTheme.removeAttribute('media');
-        }
-        metas = doc.querySelectorAll('meta[name="theme-color"]');
-        for(i = 0; i < metas.length; i++){
-          if(!metas[i]) continue;
-          if(metas[i] !== dynTheme && metas[i].parentNode){
-            metas[i].parentNode.removeChild(metas[i]);
-          }
-        }
-        if(dynTheme){
-          dynTheme.setAttribute('content', activeColor);
-          if(dynTheme.hasAttribute('media')) dynTheme.removeAttribute('media');
-        }
+        dynTheme = replaceMeta('theme-color', activeColor);
+        if(dynTheme && dynTheme.hasAttribute('media')) dynTheme.removeAttribute('media');
       }catch(_eTheme){}
 
       try{
-        dynStatus = ensureDynamicMeta('apple-mobile-web-app-status-bar-style');
-        if(dynStatus) dynStatus.setAttribute('content', statusStyle);
-        metas = doc.querySelectorAll('meta[name="apple-mobile-web-app-status-bar-style"]');
-        for(i = 0; i < metas.length; i++){
-          if(!metas[i]) continue;
-          metas[i].setAttribute('content', statusStyle);
-        }
+        dynStatus = replaceMeta('apple-mobile-web-app-status-bar-style', statusStyle);
       }catch(_eStatus){}
 
       try{
@@ -198,29 +236,32 @@
           if(doc.body && doc.body.style){
             doc.body.style.backgroundColor = activeColor;
           }
+          ensureStatusFill();
         }catch(_eIosBg){}
       }
+      return activeColor;
     }
 
-    applyMetaValues();
+    var appliedColor = applyMetaValues();
+    if(iosLike) forceIOSChromeRefresh(appliedColor);
     if(iosLike){
       // Safari/iOS kan theme-color pas laat overnemen; forceer meerdere passes.
       w.requestAnimationFrame(function(){
-        applyMetaValues();
+        forceIOSChromeRefresh(applyMetaValues());
       });
       w.requestAnimationFrame(function(){
         w.requestAnimationFrame(function(){
-          applyMetaValues();
+          forceIOSChromeRefresh(applyMetaValues());
         });
       });
       w.setTimeout(function(){
-        applyMetaValues();
+        forceIOSChromeRefresh(applyMetaValues());
       }, 120);
       w.setTimeout(function(){
-        applyMetaValues();
+        forceIOSChromeRefresh(applyMetaValues());
       }, 320);
       w.setTimeout(function(){
-        applyMetaValues();
+        forceIOSChromeRefresh(applyMetaValues());
       }, 720);
     }
 
@@ -241,6 +282,7 @@
 
   function bindThemeChromeSync(){
     syncThemeChromeFromDom();
+    ensureStatusFill();
     PK.setThemeChrome = updateThemeChrome;
     try{
       if(w.MutationObserver && doc.documentElement){
