@@ -66,7 +66,7 @@ html[data-contrast="dark"]{
   height: var(--topBarHeight, 64px);
   padding: 0 max(var(--topBarPadX, 16px), 16px) 0 var(--topBarPadX, 16px);
   border-radius: var(--topBarRadius, 20px);
-  border: 1px solid rgba(0,0,0,0.045);
+  border: 1px solid rgba(0,0,0,0.065);
   border-top: 1px solid rgba(255,255,255,0.35);
   background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
   backdrop-filter: blur(10px);
@@ -452,7 +452,7 @@ html[data-contrast="dark"] .menuLink:active{
 /* ===== Donkere modus (aparte wereld, rustig maar leesbaar) ===== */
 html[data-contrast="dark"] .themePill{
   /* Knoppen moeten in de taakbalk "vallen" (niet als losse schijven erbovenop) */
-  border: 0.5px solid rgba(255,255,255,0.12);
+  border: 0.5px solid rgba(255,255,255,0.16);
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
