@@ -666,21 +666,10 @@ if(PK.createMenuItem){
   // Contrast (licht/donker) – icon-only toggle in het menu
   var contrastBtn = w.document.getElementById('menuContrastToggle');
   var CONTRAST = 'light';
-  var __contrastSwitchTimer = 0;
-  function markContrastSwitching(){
-    var body = w.document && w.document.body;
-    if(!body || !body.classList) return;
-    try{ w.clearTimeout(__contrastSwitchTimer); }catch(_e){}
-    body.classList.add('is-contrast-switching');
-    __contrastSwitchTimer = w.setTimeout(function(){
-      try{ body.classList.remove('is-contrast-switching'); }catch(_e2){}
-    }, 240);
-  }
   function applyContrast(mode){
     var nextContrast = (mode === 'dark') ? 'dark' : 'light';
     var changed = (nextContrast !== CONTRAST);
     CONTRAST = nextContrast;
-    markContrastSwitching();
     // Session-only: default altijd LIGHT bij een nieuwe sessie,
     // maar na klikken mag DARK de rest van de sessie blijven.
     try{ w.sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}

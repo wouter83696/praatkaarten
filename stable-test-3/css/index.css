@@ -169,14 +169,7 @@ body[data-page="kaarten"] .indexTint{
 }
 body[data-page="kaarten"] .indexSoftBlob{
   display: block !important;
-}
-
-body[data-page="kaarten"].is-contrast-switching .indexBg,
-body[data-page="kaarten"].is-contrast-switching .indexBgSvg,
-body[data-page="kaarten"].is-contrast-switching .indexTint,
-body[data-page="kaarten"].is-contrast-switching .indexSoftBlob{
   transition: none !important;
-  animation: none !important;
 }
 
 
@@ -241,6 +234,7 @@ html[data-contrast="light"] body[data-page="kaarten"] .indexSoftBlob{
     rgba(var(--activeHueRgb, 120, 160, 190), 0.022) 0%,
     rgba(var(--activeHueRgb, 120, 160, 190), 0) 66%
   ) !important;
+  transition: none !important;
 }
 
 html[data-contrast="dark"] .indexSoftBlob{
@@ -269,6 +263,10 @@ html[data-contrast="dark"] .indexSoftBlob{
     transparent 90%,
     transparent 100%
   );
+}
+
+html[data-contrast="dark"] body[data-page="kaarten"] .indexSoftBlob{
+  transition: none !important;
 }
 
 /* Light mode: geen extra sluier rond de kaart.
