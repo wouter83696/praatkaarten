@@ -27,13 +27,14 @@
   --topBarBrandWeight: 400;
   --topBarBrandColor: #5e9ca5;
   --topBarAccentColor: #4F8E9E;
-  --topBarMenuTap: 36px;
+  --topBarMenuTap: 42px;
   --topBarMenuSize: 24px;
   --pkStatusBg: #f7f7f6;
   /* Align header action icons with menu card thumbnails */
   --menuRowPadX: 12px;
-  --menuThumbOffset: 4px;
-  --menuToolsPadX: 2px;
+  --menuThumbSize: 64px;
+  --menuThumbOffset: 6px;
+  --menuToolsPadX: 0px;
   --menuRightAlign: calc(var(--menuRowPadX) + var(--menuThumbOffset));
 }
 
@@ -64,7 +65,7 @@ html[data-contrast="dark"]{
 .themePill{
   width: 100%;
   height: var(--topBarHeight, 64px);
-  padding: 0 max(var(--topBarPadX, 16px), 16px) 0 var(--topBarPadX, 16px);
+  padding: 0 calc(max(var(--topBarPadX, 16px), 16px) - 1px) 0 var(--topBarPadX, 16px);
   border-radius: var(--topBarRadius, 20px);
   border: 1px solid rgba(0,0,0,0.042);
   border-top: 1px solid rgba(0,0,0,0.052);
@@ -118,6 +119,7 @@ html[data-contrast="dark"]{
 .themePillMenuIcon{
   width: var(--topBarMenuTap, 36px);
   height: var(--topBarMenuTap, 36px);
+  flex: 0 0 var(--topBarMenuTap, 36px);
   display: inline-grid;
   place-items: center;
   color: rgba(11,18,32,0.36);
@@ -173,7 +175,7 @@ body[data-brand-icon="1"] .setCoverIcon{
     --topBarLogoSize: 36px;
     --topBarBrandSize: 14.56px;
     --topBarBrandWeight: 400;
-    --topBarMenuTap: 34px;
+    --topBarMenuTap: 36px;
     --topBarMenuSize: 21.6px;
   }
 }
@@ -267,7 +269,7 @@ body[data-brand-icon="1"] .setCoverIcon{
   align-items:center;
   justify-content: flex-start;
   /* gelijkere top/bottom padding zodat titel en tool-pill optisch netjes uitlijnen */
-  padding: 10px calc(var(--menuRightAlign) - var(--menuToolsPadX)) 10px var(--menuRowPadX);
+  padding: 10px var(--menuRightAlign) 10px var(--menuRowPadX);
   gap: 10px;
 
   /* geen afscheidingslijn of gradient */
@@ -394,13 +396,13 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   text-align: left;
 }
 .miThumbRight{
-  flex: 0 0 var(--menuThumbSize, 56px);
-  width: var(--menuThumbSize, 56px);
+  flex: 0 0 var(--menuThumbSize, 64px);
+  width: var(--menuThumbSize, 64px);
   display:flex;
   align-items:center;
   justify-content: flex-end;
   margin-left: auto;
-  margin-right: 0;
+  margin-right: var(--menuThumbOffset, 0px);
 }
 
 .menuFooter{
@@ -1203,7 +1205,7 @@ html[data-contrast="dark"] .sheetScrollHint{
 .menu-thumb,
 .menuThumb,
 .menu-item-thumb {
-  width: 64px;
+  width: var(--menuThumbSize, 64px);
   aspect-ratio: 85 / 55;
   border-radius: 12px;
   overflow: hidden;
