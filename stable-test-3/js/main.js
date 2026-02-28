@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '1.21';
+  var ASSET_V = '1.22';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -123,11 +123,20 @@
     try{
       if(!doc.head) return null;
       metas = doc.querySelectorAll('meta[name="' + name + '"]');
-      el = doc.createElement('meta');
+      for(i = 0; i < metas.length; i++){
+        if(metas[i] && metas[i].getAttribute('data-pk-dynamic') === '1'){
+          el = metas[i];
+          break;
+        }
+      }
+      if(!el && metas.length) el = metas[0];
+      if(!el){
+        el = doc.createElement('meta');
+        doc.head.insertBefore(el, doc.head.firstChild || null);
+      }
       el.setAttribute('name', name);
       el.setAttribute('content', content);
       el.setAttribute('data-pk-dynamic', '1');
-      doc.head.insertBefore(el, doc.head.firstChild || null);
       for(i = 0; i < metas.length; i++){
         if(metas[i] && metas[i] !== el && metas[i].parentNode){
           metas[i].parentNode.removeChild(metas[i]);
@@ -204,24 +213,11 @@
     var appliedColor = applyMetaValues();
     if(iosLike) forceIOSChromeRefresh(appliedColor);
     if(iosLike){
-      // Safari/iOS kan theme-color pas laat overnemen; forceer meerdere passes.
+      // Houd iOS/Safari rustig: geen serie meta-rewrites meer, alleen 1 nudge
+      // nadat de nieuwe contrast-classes/layout zijn toegepast.
       w.requestAnimationFrame(function(){
-        forceIOSChromeRefresh(applyMetaValues());
+        forceIOSChromeRefresh(appliedColor);
       });
-      w.requestAnimationFrame(function(){
-        w.requestAnimationFrame(function(){
-          forceIOSChromeRefresh(applyMetaValues());
-        });
-      });
-      w.setTimeout(function(){
-        forceIOSChromeRefresh(applyMetaValues());
-      }, 120);
-      w.setTimeout(function(){
-        forceIOSChromeRefresh(applyMetaValues());
-      }, 320);
-      w.setTimeout(function(){
-        forceIOSChromeRefresh(applyMetaValues());
-      }, 720);
     }
 
     try{
