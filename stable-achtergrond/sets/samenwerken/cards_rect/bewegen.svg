@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" id="Laag_1" version="1.1" viewBox="0 0 240.94 155.91">
+  
+  <ns0:defs>
+    <ns0:style>
+      .st0 {
+        isolation: isolate;
+        opacity: .69;
+      }
+
+      .st0, .st1 {
+        fill: #f4e2a5;
+      }
+
+      .st2 {
+        fill: #f8f9f9;
+      }
+    </ns0:style>
+  </ns0:defs>
+  <ns0:rect class="st2" y="0" width="240.94" height="155.91" rx="0" ry="0" />
+  <ns0:circle class="st1" cx="198.84" cy="173.29" r="68.03" />
+  <ns0:path class="st0" d="M-58.49,43.03H-1.81c31.31,0,56.69,14.33,56.69,32.01h0c0,17.68-25.38,32.01-56.69,32.01h-56.69c-31.31,0-56.69-14.33-56.69-32.01h0c0-17.68,25.38-32.01,56.69-32.01,0,0,0,0,.01,0Z" />
+</ns0:svg>
