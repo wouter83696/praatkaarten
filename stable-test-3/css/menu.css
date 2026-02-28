@@ -33,9 +33,9 @@
   /* Align header action icons with menu card thumbnails */
   --menuRowPadX: 12px;
   --menuThumbSize: 64px;
-  --menuThumbOffset: 6px;
+  --menuThumbOffset: 1px;
   --menuToolsPadX: 0px;
-  --menuRightAlign: calc(var(--menuRowPadX) + var(--menuThumbOffset));
+  --menuRightAlign: 18px;
 }
 
 html[data-contrast="dark"]{
