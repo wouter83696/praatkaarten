@@ -8,8 +8,29 @@
   <meta http-equiv="Expires" content="0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#f7f7f6">
+  <script>
+    (function(){
+      try{
+        var m = sessionStorage.getItem('pk_contrast_session');
+        var dark = (m === 'dark');
+        var mode = dark ? 'dark' : 'light';
+        var themeColor = dark ? '#18123c' : '#f7f7f6';
+        document.documentElement.setAttribute('data-contrast', mode);
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.classList.toggle('light', !dark);
+        document.documentElement.style.setProperty('--pkStatusBg', themeColor);
+        document.documentElement.style.backgroundColor = themeColor;
+        document.write('<meta name="apple-mobile-web-app-status-bar-style" content="' + (dark ? 'black-translucent' : 'default') + '">');
+        document.write('<meta name="theme-color" content="' + themeColor + '">');
+      }catch(_e){
+        document.documentElement.setAttribute('data-contrast','light');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        document.write('<meta name="apple-mobile-web-app-status-bar-style" content="default">');
+        document.write('<meta name="theme-color" content="#f7f7f6">');
+      }
+    })();
+  </script>
   <title>Uitgesproken</title>
   <script>
     (function(){
@@ -42,26 +63,7 @@
   <!-- Zet contrast-modus vroeg (SESSION), om flash te voorkomen -->
   <script>
     (function(){
-      try{
-        var m = sessionStorage.getItem('pk_contrast_session');
-        var dark = (m === 'dark');
-        var mode = dark ? 'dark' : 'light';
-        var themeColor = dark ? '#18123c' : '#f7f7f6';
-        document.documentElement.setAttribute('data-contrast', mode);
-        document.documentElement.classList.toggle('dark', dark);
-        document.documentElement.classList.toggle('light', !dark);
-        document.documentElement.style.setProperty('--pkStatusBg', themeColor);
-        document.documentElement.style.backgroundColor = themeColor;
-        var metaTheme = document.querySelector('meta[name="theme-color"]');
-        if(metaTheme) metaTheme.setAttribute('content', themeColor);
-        var metaStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if(metaStatus) metaStatus.setAttribute('content', dark ? 'black-translucent' : 'default');
-        try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(_e2){}
-      }catch(_e){
-        document.documentElement.setAttribute('data-contrast','light');
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
-      }
+      try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(_e2){}
     })();
   </script>
 
@@ -139,6 +141,6 @@
     </section>
   </main>
 
-  <script src="./js/main.js?v=0.91" defer></script>
+  <script src="./js/main.js?v=0.92" defer></script>
 </body>
 </html>
