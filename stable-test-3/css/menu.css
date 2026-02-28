@@ -247,8 +247,8 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 .menuCard{
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.03);
-  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.052));
+  border: 1px solid rgba(0,0,0,0.024);
+  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.042));
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
   background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
@@ -490,8 +490,8 @@ html[data-contrast="dark"] .menuHeaderTools{
 }
 
 html[data-contrast="dark"] .menuCard{
-  border: 0.5px solid rgba(255,255,255,0.07);
-  border-top: 0.5px solid rgba(255,255,255,0.12);
+  border: 0.5px solid rgba(255,255,255,0.055);
+  border-top: 0.5px solid rgba(255,255,255,0.095);
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78) !important;
   background-image: none !important;
   backdrop-filter: blur(14px);
