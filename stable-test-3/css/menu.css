@@ -66,8 +66,8 @@ html[data-contrast="dark"]{
   height: var(--topBarHeight, 64px);
   padding: 0 max(var(--topBarPadX, 16px), 16px) 0 var(--topBarPadX, 16px);
   border-radius: var(--topBarRadius, 20px);
-  border: 1px solid rgba(0,0,0,0.052);
-  border-top: 1px solid rgba(0,0,0,0.062);
+  border: 1px solid rgba(0,0,0,0.042);
+  border-top: 1px solid rgba(0,0,0,0.052);
   background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -247,8 +247,8 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 .menuCard{
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.024);
-  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.042));
+  border: 1px solid rgba(0,0,0,0.020);
+  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.034));
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
   background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
@@ -452,8 +452,8 @@ html[data-contrast="dark"] .menuLink:active{
 /* ===== Donkere modus (aparte wereld, rustig maar leesbaar) ===== */
 html[data-contrast="dark"] .themePill{
   /* Knoppen moeten in de taakbalk "vallen" (niet als losse schijven erbovenop) */
-  border: 0.5px solid rgba(255,255,255,0.13);
-  border-top: 0.5px solid rgba(255,255,255,0.17);
+  border: 0.5px solid rgba(255,255,255,0.10);
+  border-top: 0.5px solid rgba(255,255,255,0.13);
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -490,8 +490,8 @@ html[data-contrast="dark"] .menuHeaderTools{
 }
 
 html[data-contrast="dark"] .menuCard{
-  border: 0.5px solid rgba(255,255,255,0.055);
-  border-top: 0.5px solid rgba(255,255,255,0.095);
+  border: 0.5px solid rgba(255,255,255,0.045);
+  border-top: 0.5px solid rgba(255,255,255,0.075);
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78) !important;
   background-image: none !important;
   backdrop-filter: blur(14px);

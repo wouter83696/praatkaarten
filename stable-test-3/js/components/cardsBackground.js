@@ -485,9 +485,9 @@
   }
 
 
-  function renderCanvas(canvas, palette, rnd, lite, opts, fixedInfo){
+  function renderCanvas(canvas, palette, rnd, lite, opts){
     rnd = rnd || Math.random;
-    var info = fixedInfo || resizeCanvasToCSS(canvas);
+    var info = resizeCanvasToCSS(canvas);
     var ctx = canvas.getContext('2d');
     if(!ctx) return;
 
@@ -731,27 +731,9 @@
       function doRender(assets, seed){
         if(token !== lastToken) return;
         var svg = ensureSvgLayer(canvas);
-        var info = resizeCanvasToCSS(canvas);
-        var buffer = w.document.createElement('canvas');
-        buffer.width = info.w;
-        buffer.height = info.h;
-        var bufferInfo = {
-          w: info.w,
-          h: info.h,
-          dpr: info.dpr,
-          cssW: info.cssW,
-          cssH: info.cssH
-        };
         var rnd = mulberry32(seed);
-        // Render eerst offscreen zodat de zichtbare canvas niet leeg flitst.
-        renderCanvas(buffer, assets.palette, rnd, lite, opts, bufferInfo);
-        var ctx = canvas.getContext('2d');
-        if(ctx){
-          ctx.save();
-          ctx.globalCompositeOperation = 'copy';
-          ctx.drawImage(buffer, 0, 0);
-          ctx.restore();
-        }
+        // onthoud de canvas/viewport maat van de eerste echte render.
+        var info = renderCanvas(canvas, assets.palette, rnd, lite, opts);
         if(cache){
           cache._lastCssW = info && info.cssW ? info.cssW : cache._lastCssW;
           cache._lastCssH = info && info.cssH ? info.cssH : cache._lastCssH;

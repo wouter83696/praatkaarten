@@ -173,18 +173,18 @@
     var opts = { cardBase: CARD_BASE };
     var bg = getIndexBackgroundConfig();
     if(!bg){
-      // Kaartenindex defaults terug naar compacte "stable-1107" stijl:
-      // subtiele blobs, kleinere schaal, nog steeds speels verdeeld.
+      // Stabiele default voor kaartenindex (geen shape-laag, rustige blobs).
       bg = {
-        blobCount: 5,
-        blobIrregularity: 0.35,
-        blobPointsMin: 8,
-        blobPointsMax: 12,
-        sizeScale: 1,
-        darkSizeScale: 1,
-        sizeLimit: 1.4,
+        blobCount: 4,
+        blobAlphaFixed: 0.18,
+        blobWash: 0.45,
+        blobIrregularity: 0.45,
+        blobPointsMin: 7,
+        blobPointsMax: 11,
+        sizeScale: 1.5,
+        sizeLimit: 1.8,
         blobSpread: 'grid',
-        blobSpreadMargin: 0.08,
+        blobSpreadMargin: 0.18,
         baseWash: false,
         shapeEnabled: false
       };
@@ -676,12 +676,6 @@ if(PK.createMenuItem){
     if(w.document && w.document.documentElement){
       w.document.documentElement.setAttribute('data-contrast', CONTRAST);
     }
-    try{
-      if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
-      if(w.dispatchEvent && w.CustomEvent){
-        w.dispatchEvent(new w.CustomEvent('pk:contrast', { detail: { mode: CONTRAST } }));
-      }
-    }catch(_eTheme){}
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
 
     // Zorg dat tekstvlakken in de uitleg-carrousel altijd mee-updaten bij mode-switch.
@@ -693,18 +687,9 @@ if(PK.createMenuItem){
     try{ __lastTintIdx = -1; }catch(_eX){}
     try{ setActiveTintByIndex && setActiveTintByIndex(getActiveCardIndex ? getActiveCardIndex() : 0); }catch(_e2){}
     if(changed){
+      // Herteken blobs alleen als mode echt wisselt.
       try{ renderIndexBackground(); }catch(_e3){}
     }
-    w.requestAnimationFrame(function(){
-      try{
-        if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
-      }catch(_e4){}
-    });
-    w.setTimeout(function(){
-      try{
-        if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
-      }catch(_e5){}
-    }, 140);
   }
   if(contrastBtn){
     var savedC = 'light';
