@@ -676,15 +676,25 @@ if(PK.createMenuItem){
       w.document.documentElement.setAttribute('data-contrast', CONTRAST);
     }
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
-
-    // Zorg dat tekstvlakken in de uitleg-carrousel altijd mee-updaten bij mode-switch.
-    // (Anders kan de bestaande DOM een oude tint houden tot de set opnieuw gerenderd wordt.)
-    try{ retintInfoSlideTexts && retintInfoSlideTexts(); }catch(_e0){}
-    try{ refreshActiveTintForContrast(); }catch(_eTint){}
     if(changed){
-      // Herteken blobs alleen als mode echt wisselt.
+      // Volg stable-1107: eerst alleen contrast + achtergrond opnieuw zetten.
+      // Een directe tint-refresh VOOR de background render geeft op iOS soms
+      // een zichtbare paars/wit-flits terwijl alle content al in beeld blijft.
       try{ renderIndexBackground(); }catch(_e3){}
+      try{
+        w.requestAnimationFrame(function(){
+          try{ refreshActiveTintForContrast(); }catch(_eTint){}
+          try{ retintInfoSlideTexts && retintInfoSlideTexts(); }catch(_e0){}
+        });
+      }catch(_eRaf){
+        try{ refreshActiveTintForContrast(); }catch(_eTint2){}
+        try{ retintInfoSlideTexts && retintInfoSlideTexts(); }catch(_e02){}
+      }
+      return;
     }
+    // Geen echte mode-wissel: gewone sync update is prima.
+    try{ refreshActiveTintForContrast(); }catch(_eTint3){}
+    try{ retintInfoSlideTexts && retintInfoSlideTexts(); }catch(_e03){}
   }
   if(contrastBtn){
     var savedC = 'light';
