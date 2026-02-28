@@ -853,7 +853,6 @@
     try{
       isDark = (doc && doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_e){ isDark = false; }
-    var paletteUse = (isDark && darkPalette && darkPalette.length) ? darkPalette : palette;
     // Main index default: 5-6 grote blobs met zichtbare intensiteitsverschillen.
     // (Alleen fallback; per set kan dit nog steeds via index.json overschreven worden.)
     var blobCount = bg && typeof bg.blobCount === 'number'
@@ -944,7 +943,7 @@
       : ((PK.PATHS && PK.PATHS.setsDir ? PK.PATHS.setsDir : '.') + '/' + encodeURIComponent(baseId) + '/cards_rect/'));
     bgApi.render({
       cardBase: cardBase,
-      palette: paletteUse,
+      palette: palette,
       darkPalette: darkPalette,
       blobCount: blobCount,
       alphaBoost: alphaBoost,
@@ -988,6 +987,7 @@
       }
     }catch(_eTheme){}
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
+    if(changed && lastIndexConfig) applyBackground(lastIndexConfig);
     w.requestAnimationFrame(function(){
       try{
         if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);

@@ -692,6 +692,9 @@ if(PK.createMenuItem){
     // willen we echter ALTIJD opnieuw toepassen, ook als de index gelijk blijft.
     try{ __lastTintIdx = -1; }catch(_eX){}
     try{ setActiveTintByIndex && setActiveTintByIndex(getActiveCardIndex ? getActiveCardIndex() : 0); }catch(_e2){}
+    if(changed){
+      try{ renderIndexBackground(); }catch(_e3){}
+    }
     w.requestAnimationFrame(function(){
       try{
         if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
