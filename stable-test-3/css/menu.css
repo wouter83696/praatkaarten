@@ -18,9 +18,9 @@
   --menuBtnAlpha: 0.86;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
-  --topBarInset: 0px;
+  --topBarInset: 16px;
   --topBarHeight: 64px;
-  --topBarRadius: 0px;
+  --topBarRadius: 18px;
   --topBarPadX: 18px;
   --topBarLogoSize: 42px;
   --topBarBrandSize: 15.6px;
@@ -47,23 +47,11 @@ html[data-contrast="dark"]{
   --menuLine: rgba(255,255,255,0.10);
 }
 
-body::before{
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top, 0px);
-  background: var(--pkStatusBg, #f7f7f6);
-  pointer-events: none;
-  z-index: calc(var(--z-topbar, 30) - 2);
-}
-
 .topBar{
   position: fixed;
-  top: 0;
-  left: env(safe-area-inset-left, 0px);
-  right: env(safe-area-inset-right, 0px);
+  top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 16px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
   z-index: var(--z-topbar);
   display:flex;
   align-items:center;
@@ -76,7 +64,7 @@ body::before{
 .themePill{
   width: 100%;
   height: var(--topBarHeight, 64px);
-  padding: env(safe-area-inset-top, 0px) max(var(--topBarPadX, 16px), 16px) 0 var(--topBarPadX, 16px);
+  padding: 0 max(var(--topBarPadX, 16px), 16px) 0 var(--topBarPadX, 16px);
   border-radius: var(--topBarRadius, 20px);
   border: 0;
   border-bottom: 1px solid rgba(0,0,0,0.05);
@@ -178,9 +166,9 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 @media (max-width: 680px){
   :root{
-    --topBarInset: 0px;
+    --topBarInset: 16px;
     --topBarHeight: 56px;
-    --topBarRadius: 0px;
+    --topBarRadius: 18px;
     --topBarPadX: 16px;
     --topBarLogoSize: 36px;
     --topBarBrandSize: 14.56px;
@@ -242,10 +230,10 @@ body[data-brand-icon="1"] .setCoverIcon{
   /* sluit visueel aan op de topbar (lichte overlap) */
   top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 0px) + var(--topBarHeight, 64px) + 8px);
   left: auto;
-  right: calc(env(safe-area-inset-right, 0px) + 8px);
+  right: max(16px, env(safe-area-inset-right, 0px));
   z-index: var(--z-menu);
   /* iets compacter zodat het menu minder 'blok' voelt */
-  width: min(320px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 16px));
+  width: min(320px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 32px));
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity var(--ui-med) var(--ui-ease), transform var(--ui-med) var(--ui-ease);

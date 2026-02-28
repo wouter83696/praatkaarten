@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.96';
+  var ASSET_V = '0.97';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -114,29 +114,7 @@
     return false;
   }
 
-  function ensureStatusFill(){
-    var el = null;
-    try{
-      el = doc.getElementById('pkStatusFill');
-      if(!el && doc.body){
-        el = doc.createElement('div');
-        el.id = 'pkStatusFill';
-        el.setAttribute('aria-hidden', 'true');
-        el.style.position = 'fixed';
-        el.style.top = '0';
-        el.style.left = '0';
-        el.style.right = '0';
-        el.style.height = 'env(safe-area-inset-top, 0px)';
-        el.style.pointerEvents = 'none';
-        el.style.zIndex = '28';
-        el.style.background = 'var(--pkStatusBg, #f7f7f6)';
-        el.style.transform = 'translateZ(0)';
-        el.style.willChange = 'background-color';
-        doc.body.insertBefore(el, doc.body.firstChild || null);
-      }
-    }catch(_eFill){ el = null; }
-    return el;
-  }
+  function ensureStatusFill(){ return null; }
 
   function replaceMeta(name, content){
     var el = null;
@@ -162,62 +140,15 @@
   function forceIOSChromeRefresh(activeColor){
     var docEl = null;
     var body = null;
-    var fill = null;
-    var y = 0;
-    var maxY = 0;
-    var targetY = 0;
     if(!isIOSLike()) return;
     try{
       docEl = doc.documentElement;
       body = doc.body;
-      fill = ensureStatusFill();
-      if(fill) fill.style.backgroundColor = activeColor;
       if(docEl && docEl.style) docEl.style.backgroundColor = activeColor;
       if(body && body.style) body.style.backgroundColor = activeColor;
-      if(fill && fill.offsetHeight >= 0){}
       if(docEl && docEl.offsetHeight >= 0){}
       if(body && body.offsetHeight >= 0){}
     }catch(_eReflow){}
-    try{
-      if(docEl && body && body.style.position !== 'fixed'){
-        var prevPos = body.style.position;
-        var prevTop = body.style.top;
-        var prevLeft = body.style.left;
-        var prevRight = body.style.right;
-        var prevWidth = body.style.width;
-        var prevOverflow = docEl.style.overflow;
-        y = w.pageYOffset || docEl.scrollTop || body.scrollTop || 0;
-        body.style.position = 'fixed';
-        body.style.top = (-y) + 'px';
-        body.style.left = '0';
-        body.style.right = '0';
-        body.style.width = '100%';
-        docEl.style.overflow = 'hidden';
-        if(body.offsetHeight >= 0){}
-        w.requestAnimationFrame(function(){
-          try{
-            body.style.position = prevPos;
-            body.style.top = prevTop;
-            body.style.left = prevLeft;
-            body.style.right = prevRight;
-            body.style.width = prevWidth;
-            docEl.style.overflow = prevOverflow;
-            w.scrollTo(0, y || 0);
-          }catch(_eRestore){}
-        });
-      }
-    }catch(_ePulse){}
-    try{
-      y = w.pageYOffset || (docEl && docEl.scrollTop) || (body && body.scrollTop) || 0;
-      maxY = Math.max(0, ((docEl && docEl.scrollHeight) || 0) - (w.innerHeight || 0));
-      targetY = Math.min(y + 1, maxY);
-      if(targetY !== y){
-        w.scrollTo(0, targetY);
-        w.requestAnimationFrame(function(){
-          try{ w.scrollTo(0, y); }catch(_eBack){}
-        });
-      }
-    }catch(_eScroll){}
   }
 
   function updateThemeChrome(mode){
@@ -265,7 +196,6 @@
           if(doc.body && doc.body.style){
             doc.body.style.backgroundColor = activeColor;
           }
-          ensureStatusFill();
         }catch(_eIosBg){}
       }
       return activeColor;
@@ -311,7 +241,6 @@
 
   function bindThemeChromeSync(){
     syncThemeChromeFromDom();
-    ensureStatusFill();
     PK.setThemeChrome = updateThemeChrome;
     try{
       if(w.MutationObserver && doc.documentElement){
