@@ -171,6 +171,14 @@ body[data-page="kaarten"] .indexSoftBlob{
   display: block !important;
 }
 
+body[data-page="kaarten"].is-contrast-switching .indexBg,
+body[data-page="kaarten"].is-contrast-switching .indexBgSvg,
+body[data-page="kaarten"].is-contrast-switching .indexTint,
+body[data-page="kaarten"].is-contrast-switching .indexSoftBlob{
+  transition: none !important;
+  animation: none !important;
+}
+
 
 /* --- Overrides (auto-generated) --- */
 .card + .card-text,
