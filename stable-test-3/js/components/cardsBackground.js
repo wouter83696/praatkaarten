@@ -749,19 +749,15 @@
         renderSvgLayer(svg, assets.shapes, assets.palette, rnd2, lite, opts);
       }
 
-      function ensureCache(){
-        if(cache && cache.key===key && cache.assets && cache.seed){
-          return Promise.resolve(cache);
-        }
-        var seed = (Date.now() ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
-        return buildAssets(opts).then(function(assets){
-          cache = { key:key, seed:seed, assets:assets, lite:lite };
-          return cache;
-        });
+      if(cache && cache.key===key && cache.assets && cache.seed){
+        doRender(cache.assets, cache.seed);
+        return;
       }
 
-      ensureCache().then(function(c){
-        doRender(c.assets, c.seed);
+      var seed = (Date.now() ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
+      buildAssets(opts).then(function(assets){
+        cache = { key:key, seed:seed, assets:assets, lite:lite };
+        doRender(assets, seed);
       });
 
       // Achtergrond blijft statisch na eerste render.
