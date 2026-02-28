@@ -1093,9 +1093,13 @@ html[data-contrast="dark"] .infoSlideText{
 
 .infoSlideText .infoTextSubhead,
 .infoSlideText .infoTextHeading{
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.01em;
   color: rgba(11,18,32,0.68);
+}
+
+.infoSlideText strong{
+  font-weight: 500;
 }
 
 .infoSlideText .infoTextSubhead{
@@ -1122,6 +1126,10 @@ html[data-contrast="dark"] .infoSlideText .infoTextIntro{
 html[data-contrast="dark"] .infoSlideText .infoTextSubhead,
 html[data-contrast="dark"] .infoSlideText .infoTextHeading{
   color: rgba(244,246,250,0.76);
+}
+
+html[data-contrast="dark"] .infoSlideText strong{
+  font-weight: 500;
 }
 
 .sheetScrollHint{
