@@ -18,9 +18,9 @@
   --menuBtnAlpha: 0.86;
   --focusRing: rgba(127,207,201,0.45);
   --focusRingDark: rgba(127,207,201,0.55);
-  --topBarInset: 16px;
+  --topBarInset: 0px;
   --topBarHeight: 64px;
-  --topBarRadius: 18px;
+  --topBarRadius: 0px;
   --topBarPadX: 18px;
   --topBarLogoSize: 42px;
   --topBarBrandSize: 15.6px;
@@ -49,9 +49,9 @@ html[data-contrast="dark"]{
 
 .topBar{
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 16px));
-  left: max(16px, env(safe-area-inset-left, 0px));
-  right: max(16px, env(safe-area-inset-right, 0px));
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: var(--z-topbar);
   display:flex;
   align-items:center;
@@ -64,7 +64,11 @@ html[data-contrast="dark"]{
 .themePill{
   width: 100%;
   height: var(--topBarHeight, 64px);
-  padding: 0 max(var(--topBarPadX, 16px), 16px) 0 var(--topBarPadX, 16px);
+  padding:
+    env(safe-area-inset-top, 0px)
+    max(calc(var(--topBarPadX, 16px) + env(safe-area-inset-right, 0px)), 16px)
+    0
+    max(calc(var(--topBarPadX, 16px) + env(safe-area-inset-left, 0px)), 16px);
   border-radius: var(--topBarRadius, 20px);
   border: 0;
   border-bottom: 1px solid rgba(0,0,0,0.05);
@@ -166,9 +170,9 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 @media (max-width: 680px){
   :root{
-    --topBarInset: 16px;
+    --topBarInset: 0px;
     --topBarHeight: 56px;
-    --topBarRadius: 18px;
+    --topBarRadius: 0px;
     --topBarPadX: 16px;
     --topBarLogoSize: 36px;
     --topBarBrandSize: 14.56px;
