@@ -66,8 +66,8 @@ html[data-contrast="dark"]{
   height: var(--topBarHeight, 64px);
   padding: 0 max(var(--topBarPadX, 16px), 16px) 0 var(--topBarPadX, 16px);
   border-radius: var(--topBarRadius, 20px);
-  border: 1px solid rgba(0,0,0,0.065);
-  border-top: 1px solid rgba(0,0,0,0.075);
+  border: 1px solid rgba(0,0,0,0.052);
+  border-top: 1px solid rgba(0,0,0,0.062);
   background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -247,14 +247,14 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 .menuCard{
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.02);
-  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.045));
+  border: 1px solid rgba(0,0,0,0.03);
+  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.052));
   /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
   /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
   background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 24px rgba(11,18,32,0.04);
+  box-shadow: none;
   overflow: hidden;
   padding-bottom: min(env(safe-area-inset-bottom, 0px), 10px);
 }
@@ -452,8 +452,8 @@ html[data-contrast="dark"] .menuLink:active{
 /* ===== Donkere modus (aparte wereld, rustig maar leesbaar) ===== */
 html[data-contrast="dark"] .themePill{
   /* Knoppen moeten in de taakbalk "vallen" (niet als losse schijven erbovenop) */
-  border: 0.5px solid rgba(255,255,255,0.16);
-  border-top: 0.5px solid rgba(255,255,255,0.20);
+  border: 0.5px solid rgba(255,255,255,0.13);
+  border-top: 0.5px solid rgba(255,255,255,0.17);
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -490,12 +490,13 @@ html[data-contrast="dark"] .menuHeaderTools{
 }
 
 html[data-contrast="dark"] .menuCard{
-  border: 0.5px solid rgba(255,255,255,0.08);
+  border: 0.5px solid rgba(255,255,255,0.07);
+  border-top: 0.5px solid rgba(255,255,255,0.12);
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78) !important;
   background-image: none !important;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+  box-shadow: none;
 }
 
 html[data-contrast="dark"] .menuHeaderRow{
