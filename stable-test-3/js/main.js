@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.95';
+  var ASSET_V = '0.96';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -178,6 +178,35 @@
       if(docEl && docEl.offsetHeight >= 0){}
       if(body && body.offsetHeight >= 0){}
     }catch(_eReflow){}
+    try{
+      if(docEl && body && body.style.position !== 'fixed'){
+        var prevPos = body.style.position;
+        var prevTop = body.style.top;
+        var prevLeft = body.style.left;
+        var prevRight = body.style.right;
+        var prevWidth = body.style.width;
+        var prevOverflow = docEl.style.overflow;
+        y = w.pageYOffset || docEl.scrollTop || body.scrollTop || 0;
+        body.style.position = 'fixed';
+        body.style.top = (-y) + 'px';
+        body.style.left = '0';
+        body.style.right = '0';
+        body.style.width = '100%';
+        docEl.style.overflow = 'hidden';
+        if(body.offsetHeight >= 0){}
+        w.requestAnimationFrame(function(){
+          try{
+            body.style.position = prevPos;
+            body.style.top = prevTop;
+            body.style.left = prevLeft;
+            body.style.right = prevRight;
+            body.style.width = prevWidth;
+            docEl.style.overflow = prevOverflow;
+            w.scrollTo(0, y || 0);
+          }catch(_eRestore){}
+        });
+      }
+    }catch(_ePulse){}
     try{
       y = w.pageYOffset || (docEl && docEl.scrollTop) || (body && body.scrollTop) || 0;
       maxY = Math.max(0, ((docEl && docEl.scrollHeight) || 0) - (w.innerHeight || 0));
