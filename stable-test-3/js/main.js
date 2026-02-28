@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '0.90';
+  var ASSET_V = '0.91';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -56,7 +56,6 @@
   function resolveThemeColor(contrast){
     var fallback = (contrast === 'dark') ? '#18123c' : '#f7f7f6';
     var rs = null;
-    var bs = null;
     var candidates = [];
     var i;
     function push(v){
@@ -66,23 +65,20 @@
     }
 
     try{ rs = (w.getComputedStyle && doc.documentElement) ? w.getComputedStyle(doc.documentElement) : null; }catch(_eRs){ rs = null; }
-    try{ bs = (w.getComputedStyle && doc.body) ? w.getComputedStyle(doc.body) : null; }catch(_eBs){ bs = null; }
 
     if(rs){
-      // Primair: expliciete statusbar-kleur variabele (per contrast mode).
-      push(rs.getPropertyValue('--pkStatusBg'));
+      // Belangrijk: hier NIET --pkStatusBg of huidige backgroundColor teruglezen.
+      // Dat geeft op iOS/Safari een feedback-loop waarbij een oude lichte waarde
+      // de nieuwe donkere statusbar blijft "overschrijven".
+      if(contrast === 'dark'){
+        push(rs.getPropertyValue('--darkBaseRgb'));
+      }
       push(rs.getPropertyValue('--pageBg'));
+      push(rs.getPropertyValue('--cardsPageBg'));
       push(rs.getPropertyValue('--setsBaseBg'));
       push(rs.getPropertyValue('--setsHeroBg'));
       push(rs.getPropertyValue('--pk-set-bg'));
       push(rs.getPropertyValue('--bg-base-color'));
-      push(rs.getPropertyValue('--cardsPageBg'));
-      if(contrast === 'dark') push(rs.getPropertyValue('--darkBaseRgb'));
-      push(rs.backgroundColor);
-    }
-    if(bs){
-      if(bs.getPropertyValue) push(bs.getPropertyValue('background-color'));
-      push(bs.backgroundColor);
     }
 
     for(i = 0; i < candidates.length; i++){
@@ -90,6 +86,20 @@
       if(c) return c;
     }
     return fallback;
+  }
+
+  function syncLegacyContrastClasses(mode){
+    var isDark = (mode === 'dark');
+    try{
+      if(doc.documentElement && doc.documentElement.classList){
+        doc.documentElement.classList.toggle('dark', isDark);
+        doc.documentElement.classList.toggle('light', !isDark);
+      }
+      if(doc.body && doc.body.classList){
+        doc.body.classList.toggle('dark', isDark);
+        doc.body.classList.toggle('light', !isDark);
+      }
+    }catch(_eLegacy){}
   }
 
   function isIOSLike(){
@@ -115,6 +125,8 @@
     var dynTheme;
     var dynStatus;
     var i;
+
+    syncLegacyContrastClasses(contrast);
 
     function ensureDynamicMeta(name){
       var el = null;
@@ -223,6 +235,7 @@
     try{
       mode = (doc.documentElement && doc.documentElement.getAttribute('data-contrast') === 'dark') ? 'dark' : 'light';
     }catch(_eMode){ mode = 'light'; }
+    syncLegacyContrastClasses(mode);
     updateThemeChrome(mode);
   }
 

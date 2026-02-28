@@ -48,6 +48,8 @@
         var mode = dark ? 'dark' : 'light';
         var themeColor = dark ? '#18123c' : '#f7f7f6';
         document.documentElement.setAttribute('data-contrast', mode);
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.classList.toggle('light', !dark);
         document.documentElement.style.setProperty('--pkStatusBg', themeColor);
         document.documentElement.style.backgroundColor = themeColor;
         var metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -57,6 +59,8 @@
         try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(_e2){}
       }catch(_e){
         document.documentElement.setAttribute('data-contrast','light');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
       }
     })();
   </script>
@@ -135,6 +139,6 @@
     </section>
   </main>
 
-  <script src="./js/main.js?v=0.90" defer></script>
+  <script src="./js/main.js?v=0.91" defer></script>
 </body>
 </html>
