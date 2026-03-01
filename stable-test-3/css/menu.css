@@ -403,7 +403,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   align-items:center;
   justify-content: flex-end;
   margin-left: auto;
-  margin-right: var(--menuThumbOffset, 0px);
+  margin-right: calc(var(--menuRightAlign, 18px) - var(--menuRowPadX, 12px) + var(--menuThumbOffset, 0px));
 }
 
 .menuFooter{
