@@ -8,8 +8,29 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="theme-color" content="#f7f7f6" />
+  <script>
+    (function(){
+      try{
+        var m = sessionStorage.getItem('pk_contrast_session');
+        var dark = (m === 'dark');
+        var mode = dark ? 'dark' : 'light';
+        var themeColor = dark ? '#18123c' : '#f7f7f6';
+        document.documentElement.setAttribute('data-contrast', mode);
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.classList.toggle('light', !dark);
+        document.documentElement.style.setProperty('--pkStatusBg', themeColor);
+        document.documentElement.style.backgroundColor = themeColor;
+        document.write('<meta name="apple-mobile-web-app-status-bar-style" content="' + (dark ? 'black-translucent' : 'default') + '" />');
+        document.write('<meta name="theme-color" content="' + themeColor + '" />');
+      }catch(_e){
+        document.documentElement.setAttribute('data-contrast','light');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        document.write('<meta name="apple-mobile-web-app-status-bar-style" content="default" />');
+        document.write('<meta name="theme-color" content="#f7f7f6" />');
+      }
+    })();
+  </script>
   <title>Uitgesproken</title>
   <link rel="icon" type="image/png" href="../assets/logo-icons/favicon/favicon-tab-32x32.png?v=icon-36" />
   <link rel="icon" type="image/png" sizes="16x16" href="../assets/logo-icons/favicon/favicon-squircle-16x16.png?v=icon-36" />
@@ -28,20 +49,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
 
-  <script>
-    (function(){
-      try{
-        var m = sessionStorage.getItem('pk_contrast_session');
-        if(m === 'dark') document.documentElement.setAttribute('data-contrast','dark');
-        else document.documentElement.setAttribute('data-contrast','light');
-      }catch(_e){
-        document.documentElement.setAttribute('data-contrast','light');
-      }
-    })();
-  </script>
-
   <link rel="stylesheet" href="../css/cards.css?v=3.7.1.120" />
-  <link rel="stylesheet" href="../css/uitleg.css?v=3.7.1.80" />
+  <link rel="stylesheet" href="../css/uitleg.css?v=3.7.1.81" />
 </head>
 <body data-page="uitleg" class="uitlegPage">
   <main class="wrap">
@@ -63,6 +72,6 @@
     </section>
   </main>
 
-  <script src="../js/main.js?v=0.81" defer></script>
+  <script src="../js/main.js?v=1.25" defer></script>
 </body>
 </html>
