@@ -321,10 +321,10 @@ body[data-brand-icon="1"] .setCoverIcon{
   align-items:center;
   justify-content:center;
   margin-left: auto;
-  gap: 8px;
+  gap: 10px;
   margin-right: 0;
-  min-height: 40px;
-  padding: 0 8px;
+  min-height: 32px;
+  padding: 1px 0;
   border-radius: 999px;
   border: 1px solid rgba(11,18,32,0.03);
   background: rgba(var(--menuSurface, 255, 255, 255), 0.54);
@@ -335,10 +335,10 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 /* Mini icon buttons (zonder eigen "bol" — de container is de knopgroep) */
 .menuMiniBtn{
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  min-height: 40px;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  min-height: 30px;
   border: 0;
   padding: 0;
   border-radius: 999px;
@@ -352,13 +352,13 @@ body[data-brand-icon="1"] .setCoverIcon{
 }
 
 .menuMiniBtn .gmIcon{
-  width: 19px;
-  height: 19px;
-  stroke-width: 1.75;
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.6;
 }
 
 #menuInfoBtn .gmIcon{
-  transform: translateY(0.5px);
+  transform: none;
 }
 
 .menuMiniBtn:active{
@@ -391,12 +391,12 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   font-weight: 500;
   color: var(--menuHeaderText);
   font-size: 14px;
-  height: 40px;
+  height: 30px;
   display: flex;
   align-items: center;
   margin-left: 0;
   text-align: left;
-  margin-top: 0;
+  margin-top: 2px;
 }
 
 .menuList{
@@ -434,7 +434,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   align-items:center;
   justify-content: flex-end;
   margin-left: auto;
-  margin-right: 0;
+  margin-right: 2px;
 }
 
 .menuFooter{
