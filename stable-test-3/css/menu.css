@@ -57,7 +57,7 @@ html[data-contrast="dark"]{
   --surfaceTopBorder: rgba(255,255,255,0.13);
   --surfaceBgAlpha: 0.78;
   --surfaceBlur: 14px;
-  --surfaceInnerHighlight: rgba(255,255,255,0.10);
+  --surfaceInnerHighlight: rgba(255,255,255,0.03);
   --surfaceInnerFade: rgba(255,255,255,0.00);
 }
 
