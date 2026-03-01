@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '1.29';
+  var ASSET_V = '1.31';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
