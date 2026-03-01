@@ -44,6 +44,9 @@
     var menu = options.menu || w.document.getElementById('themeMenu');
     var overlay = options.overlay || w.document.getElementById('themeMenuOverlay');
     var trigger = options.trigger || w.document.getElementById('themePill');
+    var api = null;
+
+    if(menu && menu.__pkMenuApi) return menu.__pkMenuApi;
 
     if(!menu){
       return {
@@ -51,14 +54,9 @@
       };
     }
 
-    if(PK.createBottomSheet){
-      bindTopBarHome(trigger);
-      return PK.createBottomSheet({ sheet: menu, overlay: overlay, trigger: trigger });
-    }
-
     function open(){
       menu.hidden = false;
-      if(overlay) overlay.hidden = false;
+      if(overlay) overlay.hidden = true;
       if(trigger) trigger.setAttribute('aria-expanded','true');
     }
 
@@ -76,19 +74,60 @@
       if(isOpen()) close(); else open();
     }
 
-    if(trigger){
-      trigger.onclick = function(ev){
-        if(isHomeAreaClick(trigger, ev)){
-          goHome();
-          return;
-        }
-        toggle();
-      };
-    }
-    if(overlay){
-      overlay.onclick = close;
+    function onTriggerClick(ev){
+      if(isHomeAreaClick(trigger, ev)){
+        close();
+        goHome();
+        return;
+      }
+      toggle();
     }
 
-    return { open: open, close: close, toggle: toggle, isOpen: isOpen };
+    function onDocPointerDown(ev){
+      var t = ev && ev.target ? ev.target : null;
+      if(!isOpen() || !t) return;
+      if(menu.contains(t)) return;
+      if(trigger && trigger.contains(t)) return;
+      close();
+    }
+
+    function onDocClick(ev){
+      var t = ev && ev.target ? ev.target : null;
+      if(!t) return;
+      if(!isOpen()) return;
+      if(menu.contains(t)) return;
+      if(trigger && trigger.contains(t)) return;
+      close();
+    }
+
+    function onKeyDown(ev){
+      ev = ev || w.event;
+      if(ev && ev.key === 'Escape') close();
+    }
+
+    bindTopBarHome(trigger);
+    if(trigger) trigger.addEventListener('click', onTriggerClick);
+    if(overlay){
+      overlay.hidden = true;
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+    w.document.addEventListener('pointerdown', onDocPointerDown, true);
+    w.document.addEventListener('click', onDocClick, true);
+    w.document.addEventListener('keydown', onKeyDown);
+
+    api = {
+      open: open,
+      close: close,
+      toggle: toggle,
+      isOpen: isOpen,
+      destroy: function(){
+        if(trigger) trigger.removeEventListener('click', onTriggerClick);
+        w.document.removeEventListener('pointerdown', onDocPointerDown, true);
+        w.document.removeEventListener('click', onDocClick, true);
+        w.document.removeEventListener('keydown', onKeyDown);
+      }
+    };
+    menu.__pkMenuApi = api;
+    return api;
   };
 })(window);

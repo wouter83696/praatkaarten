@@ -4,7 +4,7 @@
   var w = window;
   var doc = document;
   var PK = w.PK = w.PK || {};
-  var ASSET_V = '1.24';
+  var ASSET_V = '1.25';
   var page = (doc.body && doc.body.getAttribute) ? (doc.body.getAttribute('data-page') || '') : '';
   var pathName = '';
   var lastRuntimeError = '';
@@ -500,7 +500,7 @@
 
     function openMenu(){
       menu.hidden = false;
-      overlay.hidden = false;
+      overlay.hidden = true;
       pill.setAttribute('aria-expanded', 'true');
     }
     function closeMenu(){
@@ -508,13 +508,41 @@
       overlay.hidden = true;
       pill.setAttribute('aria-expanded', 'false');
     }
+    function isHomeAreaClick(ev){
+      var t = ev && ev.target ? ev.target : null;
+      var main = (t && t.closest) ? t.closest('.themePillMain') : null;
+      return !!(main && pill.contains(main));
+    }
+    function goHome(){
+      var target = '';
+      try{ target = (PK && PK.PATHS && PK.PATHS.gridPage) ? String(PK.PATHS.gridPage) : ''; }catch(_eHome){}
+      if(!target){
+        target = (page === 'kaarten' || page === 'uitleg') ? '../index.html' : './index.html';
+      }
+      try{ w.location.href = target; }catch(_eNav){}
+    }
     function toggleMenu(){
       if(menu.hidden) openMenu();
       else closeMenu();
     }
+    function onPillClick(ev){
+      if(isHomeAreaClick(ev)){
+        if(ev && ev.preventDefault) ev.preventDefault();
+        closeMenu();
+        goHome();
+        return;
+      }
+      toggleMenu();
+    }
+    function onDocPointerDown(ev){
+      var t = ev && ev.target ? ev.target : null;
+      if(menu.hidden || !t) return;
+      if(menu.contains(t) || pill.contains(t)) return;
+      closeMenu();
+    }
 
-    pill.addEventListener('click', toggleMenu);
-    overlay.addEventListener('click', closeMenu);
+    pill.addEventListener('click', onPillClick);
+    doc.addEventListener('pointerdown', onDocPointerDown, true);
   }
 
   function initCurrentPage(){
