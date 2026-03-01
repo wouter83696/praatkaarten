@@ -36,6 +36,13 @@
   --menuThumbOffset: 1px;
   --menuToolsPadX: 0px;
   --menuRightAlign: 18px;
+  --surfaceRadius: 18px;
+  --surfaceBorder: rgba(0,0,0,0.042);
+  --surfaceTopBorder: rgba(0,0,0,0.052);
+  --surfaceBgAlpha: 0.76;
+  --surfaceBlur: 10px;
+  --surfaceInnerHighlight: rgba(255,255,255,0.08);
+  --surfaceInnerFade: rgba(255,255,255,0.00);
 }
 
 html[data-contrast="dark"]{
@@ -46,6 +53,12 @@ html[data-contrast="dark"]{
   --menuFooterText: rgba(245,250,255,0.60);
   --menuIcon: rgba(245,250,255,0.62);
   --menuLine: rgba(255,255,255,0.10);
+  --surfaceBorder: rgba(255,255,255,0.10);
+  --surfaceTopBorder: rgba(255,255,255,0.13);
+  --surfaceBgAlpha: 0.78;
+  --surfaceBlur: 14px;
+  --surfaceInnerHighlight: rgba(255,255,255,0.10);
+  --surfaceInnerFade: rgba(255,255,255,0.00);
 }
 
 .topBar{
@@ -62,17 +75,36 @@ html[data-contrast="dark"]{
 .topBar > *{ pointer-events: auto; }
 
 /* Context-anker: set cover */
+.glassSurface{
+  position: relative;
+  border-radius: var(--surfaceRadius, 18px);
+  border: 1px solid var(--surfaceBorder);
+  border-top: 1px solid var(--surfaceTopBorder);
+  background: rgba(var(--menuSurface, 255, 255, 255), var(--surfaceBgAlpha, 0.76));
+  backdrop-filter: blur(var(--surfaceBlur, 10px));
+  -webkit-backdrop-filter: blur(var(--surfaceBlur, 10px));
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.glassSurface::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--surfaceInnerHighlight) 0,
+    rgba(255,255,255,0.04) 18%,
+    var(--surfaceInnerFade) 42%
+  );
+}
+
 .themePill{
   width: 100%;
   height: var(--topBarHeight, 64px);
   padding: 0 calc(max(var(--topBarPadX, 16px), 16px) - 1px) 0 var(--topBarPadX, 16px);
-  border-radius: var(--topBarRadius, 20px);
-  border: 1px solid rgba(0,0,0,0.042);
-  border-top: 1px solid rgba(0,0,0,0.052);
-  background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -132,7 +164,7 @@ html[data-contrast="dark"]{
 }
 
 body[data-brand-icon="1"] .themePill{
-  background: rgba(255,255,255,0.75);
+  background: rgba(var(--menuSurface, 255, 255, 255), var(--surfaceBgAlpha, 0.76));
 }
 
 .setCoverWrap{
@@ -249,16 +281,6 @@ body[data-brand-icon="1"] .setCoverIcon{
 }
 
 .menuCard{
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.020);
-  border-top: 1px solid var(--menuTopBorderColor, rgba(0,0,0,0.034));
-  /* Transparanter/glassy (zoals je screenshot met milde doorkijk) */
-  /* Genoeg body zodat tekst in light mode niet 'wegvalt' door de blobs */
-  background: rgba(var(--menuSurface, 255, 255, 255), 0.76);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: none;
-  overflow: hidden;
   padding-bottom: min(env(safe-area-inset-bottom, 0px), 10px);
 }
 
@@ -269,8 +291,7 @@ body[data-brand-icon="1"] .setCoverIcon{
   display:flex;
   align-items:center;
   justify-content: flex-start;
-  /* gelijkere top/bottom padding zodat titel en tool-pill optisch netjes uitlijnen */
-  padding: 10px var(--menuRightAlign) 10px var(--menuRowPadX);
+  padding: 10px var(--topBarPadX, 18px);
   gap: 10px;
 
   /* geen afscheidingslijn of gradient */
@@ -296,18 +317,16 @@ body[data-brand-icon="1"] .setCoverIcon{
 }
 
 .menuHeaderTools{
-  /* 1 container zoals in je screenshot (subtiele "pill" met 3 knoppen erin) */
-  display:flex;
+  display:inline-flex;
   align-items:center;
+  justify-content:center;
   margin-left: auto;
-  /* compacter + subtieler */
-  gap: 10px;
+  gap: 8px;
   margin-right: 0;
-  padding: 1px var(--menuToolsPadX);
+  min-height: 40px;
+  padding: 0 8px;
   border-radius: 999px;
-  /* Subtiel pill-vlak dat wegvalt in het menu */
   border: 1px solid rgba(11,18,32,0.03);
-  /* Light mode: wittere tool-strip voor betere leesbaarheid */
   background: rgba(var(--menuSurface, 255, 255, 255), 0.54);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
@@ -316,17 +335,30 @@ body[data-brand-icon="1"] .setCoverIcon{
 
 /* Mini icon buttons (zonder eigen "bol" — de container is de knopgroep) */
 .menuMiniBtn{
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   border: 0;
   padding: 0;
   border-radius: 999px;
   background: transparent;
   color: rgba(11,18,32,var(--menuMiniIconAlpha, 0.51));
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+.menuMiniBtn .gmIcon{
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.75;
+}
+
+#menuInfoBtn .gmIcon{
+  transform: translateY(0.5px);
 }
 
 .menuMiniBtn:active{
@@ -359,13 +391,12 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   font-weight: 500;
   color: var(--menuHeaderText);
   font-size: 14px;
-  /* optische uitlijning met de tool-pill (die ~34px hoog is) */
-  height: 30px;
+  height: 40px;
   display: flex;
   align-items: center;
   margin-left: 0;
   text-align: left;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .menuList{
@@ -377,7 +408,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 .menuItem{
   text-align:left;
   width: 100%;
-  padding: 8px var(--menuRowPadX);
+  padding: 8px var(--topBarPadX, 18px);
   border: 0;
   background: transparent;
   font-size: 14px;
@@ -403,7 +434,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   align-items:center;
   justify-content: flex-end;
   margin-left: auto;
-  margin-right: calc(var(--menuRightAlign, 18px) + 6px);
+  margin-right: 0;
 }
 
 .menuFooter{
@@ -454,13 +485,6 @@ html[data-contrast="dark"] .menuLink:active{
 
 /* ===== Donkere modus (aparte wereld, rustig maar leesbaar) ===== */
 html[data-contrast="dark"] .themePill{
-  /* Knoppen moeten in de taakbalk "vallen" (niet als losse schijven erbovenop) */
-  border: 0.5px solid rgba(255,255,255,0.10);
-  border-top: 0.5px solid rgba(255,255,255,0.13);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: none;
   color: rgba(245,250,255,.84);
 }
 
@@ -493,12 +517,8 @@ html[data-contrast="dark"] .menuHeaderTools{
 }
 
 html[data-contrast="dark"] .menuCard{
-  border: 0.5px solid rgba(255,255,255,0.045);
-  border-top: 0.5px solid rgba(255,255,255,0.075);
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.78) !important;
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), var(--surfaceBgAlpha, 0.78)) !important;
   background-image: none !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   box-shadow: none;
 }
 
