@@ -57,7 +57,7 @@ html[data-contrast="dark"]{
   --surfaceTopBorder: rgba(255,255,255,0.13);
   --surfaceBgAlpha: 0.78;
   --surfaceBlur: 14px;
-  --surfaceInnerHighlight: rgba(255,255,255,0.03);
+  --surfaceInnerHighlight: rgba(255,255,255,0.00);
   --surfaceInnerFade: rgba(255,255,255,0.00);
 }
 
@@ -99,6 +99,10 @@ html[data-contrast="dark"]{
     rgba(255,255,255,0.04) 18%,
     var(--surfaceInnerFade) 42%
   );
+}
+
+html[data-contrast="dark"] .glassSurface::before{
+  content: none;
 }
 
 .themePill{
