@@ -219,8 +219,9 @@ html[data-contrast="dark"] .cardInner{
 
 .menuThumbCard .bg,
 .menuThumbCard img{
-  width:100%;
-  height:100%;
+  width:calc(100% + 2px);
+  height:calc(100% + 2px);
+  max-width:none;
   display:block;
   object-fit: cover;
   object-position: var(--menuThumbImgPos, var(--cardImgPos, center));
@@ -228,6 +229,7 @@ html[data-contrast="dark"] .cardInner{
   filter: none;
   border:0;
   background: var(--pk-set-card, #FAFAF8);
+  margin:-1px;
   transform: none;
 }
 
