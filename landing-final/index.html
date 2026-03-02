@@ -131,16 +131,50 @@
       transform:translateY(-1px);
     }
 
+    .hero-zone{
+      position:relative;
+      flex:1 1 auto;
+      min-height:clamp(540px,74vh,760px);
+      overflow:visible;
+    }
+
+    .hero-inner{
+      position:relative;
+      max-width:1200px;
+      min-height:100%;
+      margin:0 auto;
+      padding:
+        clamp(52px,7vh,96px)
+        56px
+        clamp(8px,1.2vh,14px);
+      display:grid;
+      grid-template-columns:minmax(0,760px) minmax(220px,1fr);
+      column-gap:clamp(22px,3.6vw,58px);
+      row-gap:0;
+      align-items:end;
+      overflow:visible;
+    }
+
+    .hero-content{
+      width:100%;
+      max-width:760px;
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      align-self:stretch;
+    }
+
     .intro{
-      min-height:clamp(170px,24vh,260px);
-      width:min(600px,50vw);
-      padding-top:clamp(52px,7vh,96px);
+      min-height:0;
+      width:100%;
+      padding-top:0;
       display:flex;
       flex-direction:column;
       align-items:flex-start;
       justify-content:flex-start;
       gap:clamp(8px,1.2vh,14px);
-      margin-left:clamp(132px,12vw,246px);
+      margin:0;
       padding-left:0;
     }
 
@@ -156,7 +190,6 @@
 
     .intro-sub{
       margin:0;
-      margin-left:clamp(2px,.16vw,4px);
       font-family:"IBM Plex Sans",system-ui,sans-serif;
       font-size:clamp(16px,1.45vw,27px);
       line-height:1.12;
@@ -165,20 +198,16 @@
       color:rgba(89,148,157,.78);
     }
 
-    .hero-zone{
-      position:relative;
-      flex:1 1 auto;
-      min-height:clamp(320px,42vh,480px);
-      padding-bottom:clamp(8px,1.2vh,14px);
-    }
-
     .mint-field{
-      position:absolute;
-      left:clamp(198px,14.4vw,286px);
-      right:clamp(198px,14.4vw,286px);
+      position:relative;
+      left:auto;
+      right:auto;
       transform:none;
-      width:auto;
-      bottom:clamp(0px,.3vh,6px);
+      width:100%;
+      max-width:760px;
+      margin-top:auto;
+      margin-left:0;
+      margin-right:0;
       height:clamp(146px,17vh,192px);
       border-radius:32px;
       overflow:hidden;
@@ -281,10 +310,10 @@
       border-radius:0;
       padding:0;
       box-shadow:none;
-      width:min(660px,calc(100% - clamp(500px,48vw,680px)));
-      min-width:300px;
-      margin-left:clamp(12px,1.4vw,24px);
-      margin-right:auto;
+      width:100%;
+      max-width:760px;
+      min-width:0;
+      margin:0;
       backdrop-filter:none;
       -webkit-backdrop-filter:none;
     }
@@ -424,10 +453,11 @@
     }
 
     .phone-wrap{
-      position:absolute;
-      right:clamp(118px,9.2vw,194px);
-      bottom:clamp(-77px,-6.8vh,-49px);
-      transform:none;
+      position:relative;
+      justify-self:end;
+      align-self:end;
+      margin-bottom:clamp(-78px,-6.9vh,-50px);
+      transform:translateX(clamp(14px,1.4vw,24px));
       transform-origin:50% 94%;
       z-index:6;
       pointer-events:none;
@@ -919,25 +949,29 @@
     }
 
     @media (max-width: 1140px){
+      .hero-inner{
+        grid-template-columns:minmax(0,720px) minmax(220px,1fr);
+        column-gap:clamp(18px,2.8vw,40px);
+        padding-left:40px;
+        padding-right:40px;
+      }
+
+      .hero-content{
+        max-width:720px;
+      }
+
       .mint-field{
-        left:clamp(128px,9.6vw,186px);
-        right:clamp(128px,9.6vw,186px);
+        width:100%;
+        max-width:720px;
       }
 
       .phone-wrap{
-        right:clamp(74px,6.8vw,126px);
-        bottom:clamp(-71px,-6.3vh,-45px);
-        transform:none;
-      }
-
-      .panel{
-        width:min(620px,calc(100% - clamp(430px,44vw,590px)));
-        margin-left:clamp(8px,1.4vw,18px);
-        margin-right:auto;
+        margin-bottom:clamp(-72px,-6.2vh,-44px);
+        transform:translateX(clamp(8px,1vw,18px));
       }
 
       .phone-photo{
-        width:clamp(312px,33.6vw,403px);
+        width:clamp(312px,30vw,403px);
       }
 
     }
@@ -973,8 +1007,7 @@
         width:100%;
         min-height:unset;
         padding-top:10px;
-        margin-bottom:10px;
-        margin-left:0;
+        margin-bottom:0;
       }
 
       .intro h1{
@@ -987,26 +1020,37 @@
 
       .hero-zone{
         min-height:unset;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        gap:14px;
+      }
+
+      .hero-inner{
+        grid-template-columns:1fr;
+        padding:
+          10px
+          24px
+          0;
+        gap:18px;
+        align-items:start;
+      }
+
+      .hero-content{
+        display:contents;
       }
 
       .mint-field{
-        order:2;
+        order:3;
         position:relative;
-        left:0;
-        right:auto;
         transform:none;
         width:100%;
+        max-width:none;
         height:auto;
         min-height:220px;
+        margin-top:0;
         align-items:center;
       }
 
       .panel{
         width:100%;
+        max-width:none;
         margin-left:0;
         margin-right:0;
       }
@@ -1031,27 +1075,25 @@
       }
 
       .phone-wrap{
-        order:1;
+        order:2;
         position:relative;
-        right:auto;
-        bottom:auto;
+        justify-self:center;
+        align-self:start;
         transform:none;
-        justify-self:auto;
-        margin-top:0;
-        margin-bottom:4px;
+        margin:2px auto 0;
       }
 
       .phone-photo{
         width:min(52vw,232px);
-        aspect-ratio:0.64 / 1;
-        overflow:hidden;
+        aspect-ratio:auto;
+        overflow:visible;
       }
 
       .phone-frame-photo{
-        width:172%;
+        width:100%;
         max-width:none;
-        margin-left:-36%;
-        margin-top:-6%;
+        margin-left:0;
+        margin-top:0;
       }
 
       .blob.one{
@@ -1078,6 +1120,12 @@
       body{
         --page-pad:12px;
         padding:var(--page-pad);
+      }
+
+      .hero-inner{
+        padding-left:24px;
+        padding-right:24px;
+        gap:16px;
       }
 
       .site-menu{
@@ -1200,62 +1248,66 @@
       <a class="download-link" href="#ctaRow">Download App</a>
     </header>
 
-    <header class="intro" aria-label="Introductie">
-      <h1>Uitgesproken</h1>
-      <p class="intro-sub">Ruimte om te verkennen</p>
-    </header>
-
     <section class="hero-zone" aria-label="Hero">
-      <div class="mint-field">
-        <span class="blob one" aria-hidden="true"></span>
-        <span class="blob two" aria-hidden="true"></span>
-        <span class="blob three" aria-hidden="true"></span>
+      <div class="hero-inner">
+        <div class="hero-content">
+          <header class="intro" aria-label="Introductie">
+            <h1>Uitgesproken</h1>
+            <p class="intro-sub">Ruimte om te verkennen</p>
+          </header>
 
-        <article class="panel" id="ctaRow" aria-label="Platform knoppen">
-          <div class="stores-row" aria-label="App platformen">
-            <a class="store-chip disabled" href="#" aria-label="App Store binnenkort">
-              <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
-                <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
-              </svg>
-              <span>
-                <small>Binnenkort</small>
-                <strong>App Store</strong>
-              </span>
-            </a>
+          <div class="mint-field">
+            <span class="blob one" aria-hidden="true"></span>
+            <span class="blob two" aria-hidden="true"></span>
+            <span class="blob three" aria-hidden="true"></span>
 
-            <a class="store-chip disabled" href="#" aria-label="Google Play binnenkort">
-              <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
-                <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
-                <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
-                <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
-              </svg>
-              <span>
-                <small>Binnenkort</small>
-                <strong>Google Play</strong>
-              </span>
-            </a>
+            <article class="panel" id="ctaRow" aria-label="Platform knoppen">
+              <div class="stores-row" aria-label="App platformen">
+                <a class="store-chip disabled" href="#" aria-label="App Store binnenkort">
+                  <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M16.7 13.2c0-2 1.6-3 1.7-3.1-1-1.5-2.5-1.7-3-1.7-1.3-.1-2.5.8-3.1.8-.6 0-1.6-.8-2.6-.8-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 5.9 1 7.9.7 1 1.5 2.1 2.6 2.1 1 0 1.4-.7 2.7-.7 1.2 0 1.6.7 2.7.7 1.1 0 1.9-1 2.6-2 .8-1.2 1.1-2.3 1.1-2.4-.1 0-2.4-.9-2.4-3.8z"/>
+                    <path d="M14.7 6.7c.6-.7 1-1.7.9-2.7-.9.1-2 .6-2.6 1.3-.6.7-1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/>
+                  </svg>
+                  <span>
+                    <small>Binnenkort</small>
+                    <strong>App Store</strong>
+                  </span>
+                </a>
 
-            <a class="store-chip web" href="./app.html" aria-label="Open web-app">
-              <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="8.6" stroke="currentColor" stroke-width="1.8"/>
-                <ellipse cx="12" cy="12" rx="3.2" ry="8.1" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M3.8 12h16.4M5.4 7.6h13.2M5.4 16.4h13.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
-              <span>
-                <strong>Web-app</strong>
-              </span>
-            </a>
+                <a class="store-chip disabled" href="#" aria-label="Google Play binnenkort">
+                  <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M3.7 2.6c-.4.4-.7 1-.7 1.9v15c0 .9.3 1.5.7 1.9l9-9.4-9-9.4z"/>
+                    <path d="M14 12l2.9-3-10.4-5.9L14 12z" opacity=".92"/>
+                    <path d="M14 12l-7.5 8.9 10.4-5.9L14 12z" opacity=".92"/>
+                    <path d="M17.5 9.5l2.9 1.7c.8.5.8 1.2 0 1.7l-2.9 1.7-2.7-2.6 2.7-2.5z"/>
+                  </svg>
+                  <span>
+                    <small>Binnenkort</small>
+                    <strong>Google Play</strong>
+                  </span>
+                </a>
+
+                <a class="store-chip web" href="./app.html" aria-label="Open web-app">
+                  <svg class="ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="8.6" stroke="currentColor" stroke-width="1.8"/>
+                    <ellipse cx="12" cy="12" rx="3.2" ry="8.1" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M3.8 12h16.4M5.4 7.6h13.2M5.4 16.4h13.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                  </svg>
+                  <span>
+                    <strong>Web-app</strong>
+                  </span>
+                </a>
+              </div>
+            </article>
           </div>
-        </article>
-      </div>
-
-      <aside class="phone-wrap" aria-hidden="true">
-        <div class="phone-photo">
-          <img class="phone-frame-photo" src="./iphone-final.png?v=20260223-1" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
         </div>
-      </aside>
+
+        <aside class="phone-wrap" aria-hidden="true">
+          <div class="phone-photo">
+            <img class="phone-frame-photo" src="./iphone-final.png?v=20260223-1" onerror="this.onerror=null;this.src='./assets/iphone-comlete.png';" alt="" aria-hidden="true" />
+          </div>
+        </aside>
+      </div>
     </section>
   </main>
 
