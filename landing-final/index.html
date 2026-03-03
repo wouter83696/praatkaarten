@@ -148,26 +148,20 @@
         56px
         clamp(8px,1.2vh,14px);
       display:grid;
-      grid-template-columns:minmax(0,760px) minmax(220px,1fr);
-      column-gap:clamp(22px,3.6vw,58px);
+      grid-template-columns:minmax(0,1fr);
+      grid-template-rows:auto 1fr auto;
       row-gap:0;
-      align-items:end;
+      align-items:stretch;
       overflow:visible;
     }
 
     .hero-content{
-      width:100%;
-      max-width:760px;
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      align-self:stretch;
+      display:contents;
     }
 
     .intro{
       min-height:0;
-      width:100%;
+      width:min(760px,100%);
       padding-top:0;
       display:flex;
       flex-direction:column;
@@ -176,6 +170,10 @@
       gap:clamp(8px,1.2vh,14px);
       margin:0;
       padding-left:0;
+      grid-row:1;
+      align-self:start;
+      position:relative;
+      z-index:2;
     }
 
     .intro h1{
@@ -204,10 +202,8 @@
       right:auto;
       transform:none;
       width:100%;
-      max-width:760px;
-      margin-top:auto;
-      margin-left:0;
-      margin-right:0;
+      max-width:none;
+      margin:0;
       height:clamp(146px,17vh,192px);
       border-radius:32px;
       overflow:hidden;
@@ -218,6 +214,8 @@
       display:flex;
       align-items:center;
       justify-content:flex-start;
+      grid-row:3;
+      align-self:end;
     }
 
     #indexBg{
@@ -453,11 +451,13 @@
     }
 
     .phone-wrap{
-      position:relative;
-      justify-self:end;
-      align-self:end;
-      margin-bottom:clamp(-78px,-6.9vh,-50px);
-      transform:translateX(clamp(14px,1.4vw,24px));
+      position:absolute;
+      right:clamp(102px,8.4vw,154px);
+      bottom:clamp(14px,1.6vh,24px);
+      justify-self:auto;
+      align-self:auto;
+      margin:0;
+      transform:none;
       transform-origin:50% 94%;
       z-index:6;
       pointer-events:none;
@@ -470,7 +470,7 @@
     .phone-photo{
       position:relative;
       z-index:2;
-      width:clamp(350px,27.8vw,468px);
+      width:clamp(272px,22vw,332px);
       aspect-ratio:auto;
       overflow:visible;
     }
@@ -950,28 +950,17 @@
 
     @media (max-width: 1140px){
       .hero-inner{
-        grid-template-columns:minmax(0,720px) minmax(220px,1fr);
-        column-gap:clamp(18px,2.8vw,40px);
         padding-left:40px;
         padding-right:40px;
       }
 
-      .hero-content{
-        max-width:720px;
-      }
-
-      .mint-field{
-        width:100%;
-        max-width:720px;
-      }
-
       .phone-wrap{
-        margin-bottom:clamp(-72px,-6.2vh,-44px);
-        transform:translateX(clamp(8px,1vw,18px));
+        right:clamp(74px,6.8vw,116px);
+        bottom:clamp(10px,1.2vh,18px);
       }
 
       .phone-photo{
-        width:clamp(312px,30vw,403px);
+        width:clamp(248px,23vw,298px);
       }
 
     }
