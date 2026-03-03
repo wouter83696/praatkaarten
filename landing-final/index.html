@@ -139,8 +139,9 @@
     }
 
     .hero-inner{
-      --desktop-phone-width:clamp(322px,20.8vw,388px);
-      --desktop-phone-right:clamp(72px,5.9vw,108px);
+      --desktop-phone-width:clamp(356px,22.8vw,424px);
+      --desktop-phone-right:clamp(96px,6.9vw,124px);
+      --desktop-stage-trim:clamp(44px,3.5vw,62px);
       position:relative;
       max-width:1200px;
       min-height:100%;
@@ -196,16 +197,17 @@
     .hero-stage{
       position:relative;
       width:100%;
-      min-height:clamp(286px,31vh,344px);
-      margin-top:clamp(34px,4.4vh,56px);
+      min-height:clamp(186px,20.8vh,228px);
+      margin-top:clamp(6px,1vh,12px);
     }
 
     .mint-field{
       position:absolute;
       left:0;
-      right:0;
+      right:auto;
+      width:calc(100% - var(--desktop-stage-trim));
       margin:0;
-      height:clamp(156px,16.8vh,184px);
+      height:clamp(134px,13.8vh,152px);
       border-radius:32px;
       overflow:hidden;
       border:1px solid rgba(178,213,210,.22);
@@ -453,7 +455,7 @@
     .phone-wrap{
       position:absolute;
       right:var(--desktop-phone-right);
-      bottom:clamp(-52px,-3.8vh,-28px);
+      bottom:clamp(-118px,-8.8vh,-84px);
       margin:0;
       transform:none;
       transform-origin:50% 94%;
@@ -948,19 +950,20 @@
 
     @media (max-width: 1140px){
       .hero-inner{
-        --desktop-phone-width:clamp(286px,22vw,342px);
-        --desktop-phone-right:clamp(58px,5vw,88px);
+        --desktop-phone-width:clamp(318px,23.4vw,374px);
+        --desktop-phone-right:clamp(72px,5.5vw,98px);
+        --desktop-stage-trim:clamp(28px,2.9vw,42px);
         padding-left:40px;
         padding-right:40px;
       }
 
       .hero-stage{
-        min-height:clamp(270px,29vh,326px);
-        margin-top:clamp(30px,4vh,48px);
+        min-height:clamp(176px,20vh,214px);
+        margin-top:clamp(6px,1vh,12px);
       }
 
       .phone-wrap{
-        bottom:clamp(-40px,-3vh,-18px);
+        bottom:clamp(-108px,-8.2vh,-74px);
       }
 
     }
