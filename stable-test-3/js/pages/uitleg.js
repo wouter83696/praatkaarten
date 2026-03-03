@@ -115,8 +115,8 @@
       if(!joined) return;
       var cls = '';
       var body = '';
-      var heading = (lineParts.length === 1) ? getInfoHeadingText(lineParts[0]) : '';
-      if(heading){
+      var heading = getInfoHeadingText(lineParts[0]);
+      if(heading && lineParts.length === 1){
         cls = ' class="infoTextSubhead"';
         body = '<strong>' + escapeHtml(heading) + '</strong>';
       }else if(!introAssigned){
@@ -125,10 +125,17 @@
       }
       if(!body){
         var rendered = [];
-        for(k = 0; k < lineParts.length; k++){
+        var startIdx = 0;
+        if(heading && lineParts.length > 1){
+          startIdx = 1;
+        }
+        for(k = startIdx; k < lineParts.length; k++){
           rendered.push(formatInlineInfoText(lineParts[k]));
         }
         body = rendered.join('<br>');
+        if(heading && lineParts.length > 1){
+          body = '<strong class="infoTextHeading">' + escapeHtml(heading) + '</strong><br>' + body;
+        }
       }
       html.push('<p' + cls + '>' + body + '</p>');
     }
@@ -144,7 +151,7 @@
       var headingLine = getInfoHeadingText(line);
       if(headingLine){
         flushParagraph();
-        html.push('<p class="infoTextSubhead"><strong>' + escapeHtml(headingLine) + '</strong></p>');
+        para.push('**' + headingLine + '**');
         i += 1;
         continue;
       }

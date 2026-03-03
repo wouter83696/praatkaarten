@@ -1188,8 +1188,8 @@ function openInfo(){
       if(!joined) return;
       var cls = '';
       var body = '';
-      var heading = (lineParts.length === 1) ? getInfoHeadingText(lineParts[0]) : '';
-      if(heading){
+      var heading = getInfoHeadingText(lineParts[0]);
+      if(heading && lineParts.length === 1){
         cls = ' class="infoTextSubhead"';
         body = '<strong>' + escapeHtml(heading) + '</strong>';
       }else if(!introAssigned){
@@ -1198,10 +1198,17 @@ function openInfo(){
       }
       if(!body){
         var rendered = [];
-        for(k = 0; k < lineParts.length; k++){
+        var startIdx = 0;
+        if(heading && lineParts.length > 1){
+          startIdx = 1;
+        }
+        for(k = startIdx; k < lineParts.length; k++){
           rendered.push(formatInlineInfoText(lineParts[k]));
         }
         body = rendered.join('<br>');
+        if(heading && lineParts.length > 1){
+          body = '<strong class="infoTextHeading">' + escapeHtml(heading) + '</strong><br>' + body;
+        }
       }
       html.push('<p' + cls + '>' + body + '</p>');
     }
@@ -1218,7 +1225,7 @@ function openInfo(){
       var headingLine = getInfoHeadingText(line);
       if(headingLine){
         flushParagraph();
-        html.push('<p class="infoTextSubhead"><strong>' + escapeHtml(headingLine) + '</strong></p>');
+        para.push('**' + headingLine + '**');
         i += 1;
         continue;
       }
@@ -1375,6 +1382,7 @@ function openInfo(){
   // -----------------------------
 
   var __flipHandlersBound = false;
+  var __activeCarouselIdx = 0;
   function setFlipState(cardEl, on){
     if(!cardEl) return;
     if(on) cardEl.classList.add('is-flipped');
@@ -1394,6 +1402,17 @@ function openInfo(){
     if(!cardEl) return;
     var on = cardEl.classList.contains('is-flipped');
     setFlipState(cardEl, !on);
+  }
+
+  function resetAllFlippedCards(){
+    if(!cardsCarousel || !cardsCarousel.querySelectorAll) return;
+    try{
+      var flipped = cardsCarousel.querySelectorAll('.cardsSlideCard.is-flipped');
+      var i;
+      for(i = 0; i < flipped.length; i++){
+        setFlipState(flipped[i], false);
+      }
+    }catch(_e){}
   }
 
   function ensureFlipHandlers(){
@@ -1560,6 +1579,8 @@ function openInfo(){
     // Infinite loop (clone first/last)
     enableInfiniteCarousel(cardsCarousel, 'cardsSlide');
     ensureFlipHandlers();
+    __activeCarouselIdx = 0;
+    resetAllFlippedCards();
     // Tint direct laten meekleuren met de eerste kaart.
     w.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
     // Houd de sheet compact zolang alleen de kaart zichtbaar is.
@@ -1855,6 +1876,10 @@ function openInfo(){
       __tintRaf = w.requestAnimationFrame(function(){
         __tintRaf = 0;
         var idx = getActiveCardIndex();
+        if(idx !== __activeCarouselIdx){
+          __activeCarouselIdx = idx;
+          resetAllFlippedCards();
+        }
         setActiveTintByIndex(idx);
         // Belangrijk: NIET continu de uitleg-sheet 'her-uitlijnen' tijdens horizontaal swipen.
         // Dat gaf op iOS soms een zichtbaar 'spring'-effect (inhoud schiet omhoog/omlaag).
