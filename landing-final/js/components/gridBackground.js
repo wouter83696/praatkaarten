@@ -114,6 +114,19 @@
     return {h:h, s:s, l:l};
   }
 
+  function buildFamilyLookup(map){
+    var out = {};
+    if(!map || typeof map !== 'object') return out;
+    for(var k in map){
+      if(!map.hasOwnProperty(k)) continue;
+      var nk = normHex(k);
+      var key = (nk || String(k||'')).toLowerCase();
+      if(!key) continue;
+      out[key] = String(map[k] || '').toLowerCase();
+    }
+    return out;
+  }
+
   // Kies een neutrale basis voor de "wash" zodat warme/paarse kleuren (roze gloed)
   // niet de hele achtergrond gaan domineren.
   function pickNeutralBase(palette){
@@ -313,22 +326,44 @@
   }
 
   
+  function pinSvgLayer(svg){
+    if(!svg || !svg.style) return svg;
+    svg.style.position = 'fixed';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.right = 'auto';
+    svg.style.bottom = 'auto';
+    svg.style.width = '100vw';
+    svg.style.height = '100vh';
+    if(w.CSS && typeof w.CSS.supports === 'function'){
+      if(w.CSS.supports('height', '100dvh')) svg.style.height = '100dvh';
+      if(w.CSS.supports('height', '100svh')) svg.style.height = '100svh';
+    }
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '0';
+    svg.style.display = 'block';
+    return svg;
+  }
+
   function ensureSvgLayer(canvas){
     var parent = canvas && canvas.parentNode;
     if(!parent) return null;
     var existing = parent.querySelector && parent.querySelector('#indexBgSvg');
-    if(existing) return existing;
+    if(existing) return pinSvgLayer(existing);
     var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('id','indexBgSvg');
     svg.setAttribute('class','indexBgSvg');
     svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('focusable','false');
     svg.setAttribute('preserveAspectRatio','none');
+    svg.setAttribute('width','100%');
+    svg.setAttribute('height','100%');
     // fixed coord space, easier for random placement
     svg.setAttribute('viewBox','0 0 1000 1000');
     // insert directly after canvas so it sits above it
     if(canvas.nextSibling) parent.insertBefore(svg, canvas.nextSibling);
     else parent.appendChild(svg);
-    return svg;
+    return pinSvgLayer(svg);
   }
 
   function parseViewBox(root){
@@ -378,15 +413,41 @@
     return rgbToHex(r,g,b2);
   }
 
+  function hasClassToken(className, token){
+    if(!className) return false;
+    var normalized = (' ' + String(className).replace(/\s+/g, ' ') + ' ').toLowerCase();
+    return normalized.indexOf(' ' + String(token).toLowerCase() + ' ') !== -1;
+  }
+
+  function isTextLikeNode(el, root){
+    var cur = el;
+    while(cur && cur !== root){
+      if(cur.nodeType !== 1){
+        cur = cur.parentNode;
+        continue;
+      }
+      var tag = cur.tagName ? String(cur.tagName).toLowerCase() : '';
+      if(tag === 'text') return true;
+      var cls = cur.getAttribute ? cur.getAttribute('class') : '';
+      if(hasClassToken(cls, 'st2')) return true;
+      var isolation = cur.getAttribute ? cur.getAttribute('isolation') : '';
+      if(isolation && String(isolation).toLowerCase() === 'isolate') return true;
+      var style = cur.getAttribute ? cur.getAttribute('style') : '';
+      if(style && /isolation\s*:\s*isolate/i.test(String(style))) return true;
+      cur = cur.parentNode;
+    }
+    return false;
+  }
 
   function collectShapesFromSvgText(svgText){
-    var out = [];
-    if(!svgText) return out;
+    var filtered = [];
+    var all = [];
+    if(!svgText) return filtered;
     try{
       var dp = new DOMParser();
       var doc = dp.parseFromString(svgText, 'image/svg+xml');
       var root = doc && doc.documentElement;
-      if(!root) return out;
+      if(!root) return filtered;
       var vb = parseViewBox(root);
       // pick basic shape elements
       var nodes = root.querySelectorAll ? root.querySelectorAll('path,circle,rect,ellipse,polygon,polyline') : [];
@@ -438,12 +499,17 @@
         var tf = el.getAttribute('transform');
         if(tf) attrs._t = tf;
 
-        out.push({tag:tag, attrs:attrs, vb:vb});
+        var shapeItem = {tag:tag, attrs:attrs, vb:vb};
+        all.push(shapeItem);
+        if(!isTextLikeNode(el, root)){
+          filtered.push(shapeItem);
+        }
       }
     }catch(e){
       // ignore parse errors
     }
-    return out;
+    if(filtered.length) return filtered;
+    return all;
   }
 
   function svgEl(tag){
@@ -602,7 +668,7 @@
     var blobCount = (lite ? 6 : 5) + Math.floor(rnd() * 3); // 5..7 / 6..8
     if(opts && typeof opts.blobCount === 'number'){
       blobCount = Math.max(3, Math.round(opts.blobCount));
-      if(lite && blobCount > 7) blobCount = 7;
+      if(lite && blobCount > 9) blobCount = 9;
       if(!lite && blobCount > 12) blobCount = 12;
     }
     var alphaBoost = (opts && typeof opts.alphaBoost === 'number') ? opts.alphaBoost : 1;
@@ -623,6 +689,24 @@
     };
     var darkPalette = (opts && Array.isArray(opts.darkPalette)) ? opts.darkPalette : null;
     var darkMix = (opts && typeof opts.darkMix === 'number') ? opts.darkMix : 0.25;
+    var blobRadiusMinLight = (opts && typeof opts.blobRadiusMin === 'number') ? opts.blobRadiusMin : 0.10;
+    var blobRadiusMaxLight = (opts && typeof opts.blobRadiusMax === 'number') ? opts.blobRadiusMax : 0.28;
+    var blobRadiusMinDark = (opts && typeof opts.blobRadiusMinDark === 'number') ? opts.blobRadiusMinDark : 0.11;
+    var blobRadiusMaxDark = (opts && typeof opts.blobRadiusMaxDark === 'number') ? opts.blobRadiusMaxDark : 0.31;
+    blobRadiusMinLight = clamp(blobRadiusMinLight, 0.04, 0.45);
+    blobRadiusMaxLight = clamp(blobRadiusMaxLight, 0.05, 0.55);
+    blobRadiusMinDark = clamp(blobRadiusMinDark, 0.04, 0.45);
+    blobRadiusMaxDark = clamp(blobRadiusMaxDark, 0.05, 0.55);
+    if(blobRadiusMaxLight < blobRadiusMinLight){
+      var tLight = blobRadiusMinLight;
+      blobRadiusMinLight = blobRadiusMaxLight;
+      blobRadiusMaxLight = tLight;
+    }
+    if(blobRadiusMaxDark < blobRadiusMinDark){
+      var tDark = blobRadiusMinDark;
+      blobRadiusMinDark = blobRadiusMaxDark;
+      blobRadiusMaxDark = tDark;
+    }
     // Dark mode: vaste neon palette (80/90's vibe), elke blob eigen kleur.
     var neon = ['#ff2bd6','#00e5ff','#a855f7','#ffe600','#ff7a00','#2aff8f','#ff4d4d'];
     var spread = (opts && opts.blobSpread) ? String(opts.blobSpread) : '';
@@ -631,29 +715,67 @@
     if(spread === 'grid'){
       spreadPositions = buildGridPositions(blobCount, rnd, spreadMargin);
     }
+    var styleProfile = (!isDark && opts && opts.blobStyleProfile) ? String(opts.blobStyleProfile).toLowerCase() : '';
+    var useUitgesprokenProfile = (styleProfile === 'uitgesproken');
+    var familyLookup = (!isDark && opts) ? buildFamilyLookup(opts.blobFamilies) : {};
+    var ensurePaletteCoverage = (!isDark && opts && opts.ensurePaletteCoverage === true && palette && palette.length);
+    var coverageOffset = ensurePaletteCoverage ? Math.floor(rnd() * palette.length) : 0;
+    var blobGradientChance = (opts && typeof opts.blobGradientChance === 'number') ? opts.blobGradientChance : 0;
+    blobGradientChance = clamp(blobGradientChance, 0, 1);
+    var blobWash = (opts && typeof opts.blobWash === 'number') ? opts.blobWash : null;
+    if(blobWash !== null) blobWash = clamp(blobWash, 0, 0.95);
+    var blobAlphaCap = (opts && typeof opts.blobAlphaCap === 'number') ? opts.blobAlphaCap : null;
+    var blobAlphaCapDark = (opts && typeof opts.blobAlphaCapDark === 'number') ? opts.blobAlphaCapDark : null;
+    var blobAlphaFixed = (opts && typeof opts.blobAlphaFixed === 'number') ? opts.blobAlphaFixed : null;
+    if(blobAlphaCap !== null) blobAlphaCap = clamp(blobAlphaCap, 0.05, 1);
+    if(blobAlphaCapDark !== null) blobAlphaCapDark = clamp(blobAlphaCapDark, 0.05, 1);
+    if(blobAlphaFixed !== null) blobAlphaFixed = clamp(blobAlphaFixed, 0.02, 0.9);
 
+    var gradientBudgetUsed = 0;
+    var gradientBudgetMax = (!isDark && useUitgesprokenProfile) ? 2 : 999;
     for(var i=0;i<blobCount;i++){
-      var raw = isDark
-        ? ((darkPalette && darkPalette.length) ? darkPalette[i % darkPalette.length] : neon[i % neon.length])
-        : ((palette && palette.length) ? palette[i % palette.length] : base);
+      var raw;
+      if(isDark){
+        raw = (darkPalette && darkPalette.length) ? darkPalette[i % darkPalette.length] : neon[i % neon.length];
+      }else if(useUitgesprokenProfile && palette && palette.length){
+        if(ensurePaletteCoverage && i < palette.length){
+          // Zorg dat alle kleuren minimaal 1x zichtbaar zijn.
+          raw = palette[(i + coverageOffset) % palette.length];
+        }else{
+          // Houd ingestelde kleurverhouding ook bij hogere blob-counts.
+          raw = palette[Math.floor(rnd() * palette.length)];
+        }
+      }else{
+        raw = (palette && palette.length) ? palette[i % palette.length] : base;
+      }
+      var rawNorm = normHex(raw);
+      var rawKey = rawNorm ? rawNorm.toLowerCase() : '';
 
       var rgb = hexToRgb(raw);
       var hsl = rgbToHsl(rgb.r,rgb.g,rgb.b);
       var h = hsl.h;
       var warm = (h >= 0 && h <= 70) || (h >= 290 && h <= 360);
+      var family = '';
+      if(!isDark){
+        family = familyLookup[rawKey] || '';
+        if(!family) family = warm ? 'warm' : 'teal';
+      }
 
       // Light: iets uitwassen zodat het achtergrond blijft.
       // Dark: neon iets temperen door te mengen met de vaste indigo-nachtbasis.
-      // Zo blijft de 80/90's vibe aanwezig, maar minder "poppend" en serieuzer.
-      var blobWash = (opts && typeof opts.blobWash === 'number') ? opts.blobWash : null;
-      if(blobWash !== null) blobWash = clamp(blobWash, 0, 0.95);
-      var blobAlphaCap = (opts && typeof opts.blobAlphaCap === 'number') ? opts.blobAlphaCap : null;
-      var blobAlphaCapDark = (opts && typeof opts.blobAlphaCapDark === 'number') ? opts.blobAlphaCapDark : null;
-      var blobAlphaFixed = (opts && typeof opts.blobAlphaFixed === 'number') ? opts.blobAlphaFixed : null;
-      if(blobAlphaCap !== null) blobAlphaCap = clamp(blobAlphaCap, 0.05, 1);
-      if(blobAlphaCapDark !== null) blobAlphaCapDark = clamp(blobAlphaCapDark, 0.05, 1);
-      if(blobAlphaFixed !== null) blobAlphaFixed = clamp(blobAlphaFixed, 0.02, 0.9);
-      var c = isDark ? mixHex(raw, '#18123c', darkMix) : ((blobWash !== null) ? mixWithWhite(raw, blobWash) : softenForBg(raw));
+      var c;
+      if(isDark){
+        c = mixHex(raw, '#18123c', darkMix);
+      }else if(useUitgesprokenProfile){
+        var washAmt;
+        if(blobWash !== null) washAmt = blobWash;
+        else if(family === 'warm') washAmt = 0.11;
+        else if(family === 'neutral') washAmt = 0.08;
+        else washAmt = 0.06;
+        c = mixWithWhite(raw, washAmt);
+      }else{
+        c = (blobWash !== null) ? mixWithWhite(raw, blobWash) : softenForBg(raw);
+      }
 
       // Alpha + size tuning
       var alpha;
@@ -661,6 +783,12 @@
         // Neon: contrastrijk, maar duidelijk achtergrond.
         // Iets lager dan de vorige IP zodat het rustiger kijkt.
         alpha = (lite ? 0.18 : 0.22) + rnd()*0.10;
+      }else if(useUitgesprokenProfile){
+        // Richtlijn Uitgesproken:
+        // teal 25-40%, neutral 30-35%, warm 12-20%
+        if(family === 'warm') alpha = 0.12 + rnd()*0.08;
+        else if(family === 'neutral') alpha = 0.30 + rnd()*0.05;
+        else alpha = 0.25 + rnd()*0.15;
       }else{
         var alphaBase = warm ? (lite ? 0.15 : 0.19) : (lite ? 0.18 : 0.24);
         var alphaVar  = warm ? 0.06 : 0.10;
@@ -668,11 +796,10 @@
       }
       alpha = alpha * (isDark ? alphaBoostDark : alphaBoost);
       if(blobAlphaFixed !== null) alpha = blobAlphaFixed;
-      var cap = isDark ? blobAlphaCapDark : blobAlphaCap;
-      if(cap === null) cap = 0.6;
-      if(alpha > cap) alpha = cap;
 
-      var rr = (Math.min(info.w, info.h) * (isDark ? (0.11 + rnd()*0.20) : (0.10 + rnd()*0.18)));
+      var radiusMin = isDark ? blobRadiusMinDark : blobRadiusMinLight;
+      var radiusMax = isDark ? blobRadiusMaxDark : blobRadiusMaxLight;
+      var rr = (Math.min(info.w, info.h) * (radiusMin + rnd() * (radiusMax - radiusMin)));
       rr = rr * (isDark ? sizeScaleDark : sizeScale);
       var cx, cy;
       if(spreadPositions && spreadPositions[i]){
@@ -683,15 +810,52 @@
         cy = (rnd()*1.10 - 0.05) * info.h;
       }
 
-      if(i===1 && !spreadPositions){
+      if(opts && opts.centerBlob === true && i===1){
+        rr *= 1.05;
+        cx = info.w * (0.50 + (rnd()-0.5) * 0.08);
+        cy = info.h * (0.50 + (rnd()-0.5) * 0.10);
+      }else if(i===1){
         rr *= 1.08;
         cx = info.w * 1.02;
         cy = info.h * 0.12;
       }
 
+      var variant = 'organic';
+      if(!isDark && useUitgesprokenProfile){
+        var kindRnd = rnd();
+        if(kindRnd < 0.22) variant = 'circle';      // subtiele transparante cirkels
+        else if(kindRnd < 0.52) variant = 'wave';   // brede golvende vormen
+      }
+      if(!isDark && useUitgesprokenProfile && family === 'warm'){
+        // Warme accentkleur altijd klein/subtiel houden.
+        if(variant !== 'circle' && rnd() < 0.58) variant = 'circle';
+        rr *= 0.74;
+      }
+      if(variant === 'circle'){
+        // Circles: 8-15%
+        alpha = 0.08 + rnd()*0.07;
+      }
+
+      var cap = isDark ? blobAlphaCapDark : blobAlphaCap;
+      if(cap === null){
+        if(!isDark && useUitgesprokenProfile){
+          if(variant === 'circle') cap = 0.15;
+          else if(family === 'warm') cap = 0.20;
+          else if(family === 'neutral') cap = 0.35;
+          else cap = 0.40;
+        }else{
+          cap = 0.6;
+        }
+      }
+      if(alpha > cap) alpha = cap;
+
+      if(!isDark && useUitgesprokenProfile){
+        if(variant === 'wave') rr *= 1.20;
+        else if(variant === 'circle') rr *= 0.68;
+      }
+
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = c;
       // Geen grijze filters; in dark mode geven we een subtiele "glow" via shadow.
       if('filter' in ctx) ctx.filter = 'none';
       if(isDark){
@@ -701,8 +865,40 @@
       }else{
         ctx.shadowBlur = 0;
       }
-      drawBlob(ctx, cx, cy, rr, rnd, shape);
-      ctx.fill();
+
+      if(!isDark && useUitgesprokenProfile && variant !== 'circle' && gradientBudgetUsed < gradientBudgetMax && blobGradientChance > 0 && rnd() < blobGradientChance){
+        var grad;
+        if(variant === 'wave'){
+          grad = ctx.createLinearGradient(-rr, -rr*0.42, rr, rr*0.42);
+        }else{
+          grad = ctx.createLinearGradient(cx-rr, cy-rr, cx+rr, cy+rr);
+        }
+        grad.addColorStop(0, c);
+        grad.addColorStop(1, mixHex(c, '#ffffff', 0.24));
+        ctx.fillStyle = grad;
+        gradientBudgetUsed++;
+      }else{
+        ctx.fillStyle = c;
+      }
+
+      if(variant === 'circle'){
+        ctx.beginPath();
+        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+        ctx.fill();
+      }else if(variant === 'wave'){
+        ctx.translate(cx, cy);
+        ctx.rotate((rnd()-0.5) * 0.40);
+        ctx.scale(1.44 + rnd()*0.28, 0.62 + rnd()*0.18);
+        drawBlob(ctx, 0, 0, rr, rnd, {
+          irr: clamp(shape.irr * 0.72, 0.08, 0.45),
+          minPts: Math.max(8, shape.minPts),
+          maxPts: Math.max(11, shape.maxPts)
+        });
+        ctx.fill();
+      }else{
+        drawBlob(ctx, cx, cy, rr, rnd, shape);
+        ctx.fill();
+      }
       ctx.restore();
     }
 
@@ -776,6 +972,7 @@
     render: function(opts){
       var canvas = w.document.getElementById('indexBg');
       if(!canvas) return;
+      var shapeEnabled = !!(opts && opts.shapeEnabled === true);
 
       // 1x genereren per tab/page load: assets + seed cachen.
       // Bij resize opnieuw tekenen met dezelfde seed (dus geen nieuwe random).
@@ -789,18 +986,32 @@
       var shapeAlphaKey = (opts && typeof opts.shapeAlphaBoost === 'number') ? String(opts.shapeAlphaBoost) : '';
       var capKey = (opts && typeof opts.blobAlphaCap === 'number') ? String(opts.blobAlphaCap) : '';
       var capDarkKey = (opts && typeof opts.blobAlphaCapDark === 'number') ? String(opts.blobAlphaCapDark) : '';
-      var shapeEnabledKey = (opts && opts.shapeEnabled === false) ? '0' : '1';
+      var shapeEnabledKey = shapeEnabled ? '1' : '0';
       var spreadKey = (opts && opts.blobSpread) ? String(opts.blobSpread) : '';
       var spreadMarginKey = (opts && typeof opts.blobSpreadMargin === 'number') ? String(opts.blobSpreadMargin) : '';
+      var radiusMinKey = (opts && typeof opts.blobRadiusMin === 'number') ? String(opts.blobRadiusMin) : '';
+      var radiusMaxKey = (opts && typeof opts.blobRadiusMax === 'number') ? String(opts.blobRadiusMax) : '';
+      var radiusMinDarkKey = (opts && typeof opts.blobRadiusMinDark === 'number') ? String(opts.blobRadiusMinDark) : '';
+      var radiusMaxDarkKey = (opts && typeof opts.blobRadiusMaxDark === 'number') ? String(opts.blobRadiusMaxDark) : '';
       var sizeLimitKey = (opts && typeof opts.sizeLimit === 'number') ? String(opts.sizeLimit) : '';
       var alphaFixedKey = (opts && typeof opts.blobAlphaFixed === 'number') ? String(opts.blobAlphaFixed) : '';
-      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + sizeLimitKey + '|' + alphaFixedKey;
+      var profileKey = (opts && opts.blobStyleProfile) ? String(opts.blobStyleProfile) : '';
+      var familiesKey = (opts && opts.blobFamilies && typeof opts.blobFamilies === 'object') ? JSON.stringify(opts.blobFamilies) : '';
+      var gradientChanceKey = (opts && typeof opts.blobGradientChance === 'number') ? String(opts.blobGradientChance) : '';
+      var coverageKey = (opts && opts.ensurePaletteCoverage === true) ? '1' : '0';
+      var key = String((opts && opts.cardBase) || '') + '|' + (lite ? 'lite' : 'full') + '|' + palKey + '|' + blobKey + '|' + alphaKey + '|' + sizeKey + '|' + washKey + '|' + shapeKey + '|' + shapeAlphaKey + '|' + capKey + '|' + capDarkKey + '|' + shapeEnabledKey + '|' + spreadKey + '|' + spreadMarginKey + '|' + radiusMinKey + '|' + radiusMaxKey + '|' + radiusMinDarkKey + '|' + radiusMaxDarkKey + '|' + sizeLimitKey + '|' + alphaFixedKey + '|' + profileKey + '|' + familiesKey + '|' + gradientChanceKey + '|' + coverageKey;
 
       var token = ++lastToken;
 
       function doRender(assets, seed){
         if(token !== lastToken) return;
-        var svg = ensureSvgLayer(canvas);
+        var parent = canvas && canvas.parentNode;
+        var svg = null;
+        if(shapeEnabled){
+          svg = ensureSvgLayer(canvas);
+        }else{
+          svg = parent && parent.querySelector ? parent.querySelector('#indexBgSvg') : null;
+        }
         var rnd = mulberry32(seed);
         // onthoud de canvas/viewport maat van de eerste echte render.
         var info = renderCanvas(canvas, assets.palette, rnd, lite, opts);
@@ -808,9 +1019,9 @@
           cache._lastCssW = info && info.cssW ? info.cssW : cache._lastCssW;
           cache._lastCssH = info && info.cssH ? info.cssH : cache._lastCssH;
         }
-        if(opts && opts.shapeEnabled === false){
-          if(svg){
-            while(svg.firstChild) svg.removeChild(svg.firstChild);
+        if(!shapeEnabled){
+          if(svg && svg.parentNode){
+            svg.parentNode.removeChild(svg);
           }
           return;
         }
@@ -824,6 +1035,18 @@
           return Promise.resolve(cache);
         }
         var seed = (Date.now() ^ ((Math.random()*0xffffffff)>>>0)) >>> 0;
+        if(!shapeEnabled){
+          var pal = [];
+          if(opts && Array.isArray(opts.palette)){
+            for(var i=0;i<opts.palette.length;i++){
+              var nh = normHex(opts.palette[i]);
+              if(nh) pal.push(nh);
+            }
+          }
+          if(!pal.length) pal = ['#67C5BB', '#7FD1C8', '#93DCD4', '#B1E8E1'];
+          cache = { key:key, seed:seed, assets:{ palette: pal, shapes: [] }, lite:lite };
+          return Promise.resolve(cache);
+        }
         return buildAssets(opts).then(function(assets){
           cache = { key:key, seed:seed, assets:assets, lite:lite };
           return cache;
@@ -834,8 +1057,42 @@
         doRender(c.assets, c.seed);
       });
 
-      // Achtergrond blijft statisch na eerste render.
-      // Geen re-render op resize om zichtbare "beweging" te voorkomen.
+      // re-render on resize (debounced) – zónder nieuwe random
+      var t = 0;
+      function onResize(){
+        if(t) w.clearTimeout(t);
+        t = w.setTimeout(function(){
+          if(!cache || cache.key!==key) return;
+          // Op sommige browsers triggert scroll (address bar / layout) een resize.
+          // De gebruiker wil: eenmaal geladen = niet meer veranderen bij scroll.
+          // Daarom negeren we 'resize' events die alleen (klein) de hoogte aanpassen.
+          var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+          if(!rect){
+            doRender(cache.assets, cache.seed);
+            return;
+          }
+          var cw = rect.width || 0;
+          var ch = rect.height || 0;
+          var lastW = cache._lastCssW || 0;
+          var lastH = cache._lastCssH || 0;
+
+          var dw = Math.abs(cw - lastW);
+          var dh = Math.abs(ch - lastH);
+
+          // Redraw alleen bij:
+          // - duidelijke breedte verandering (desktop resize / rotatie)
+          // - of grote hoogte verandering (rotatie)
+          // Kleine hoogte-shifts door scroll → overslaan.
+          if(dw >= 2 || dh >= 140){
+            doRender(cache.assets, cache.seed);
+          }
+        }, 120);
+      }
+
+      if(!canvas._pkBgBound){
+        canvas._pkBgBound = true;
+        w.addEventListener('resize', onResize, { passive:true });
+      }
     }
   };
 })(window);
