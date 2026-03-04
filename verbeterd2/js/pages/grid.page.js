@@ -1188,4 +1188,6 @@ export function initGrid() {
       applyBackground(fb.idx);
     });
   }
+
+  init();
 }

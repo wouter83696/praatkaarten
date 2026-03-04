@@ -7,7 +7,7 @@ import { initShell } from './shell/initShell.js';
 import { setThemeChrome, syncLegacyContrastClasses, bindThemeChromeSync } from './core/theme.js';
 
 // Asset versie (voor build-badge)
-const ASSET_V = '1.38';
+const ASSET_V = '1.39';
 
 // Paginatype bepalen
 const _pathName = (window.location && window.location.pathname) ? String(window.location.pathname) : '';
