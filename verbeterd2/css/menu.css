@@ -438,6 +438,23 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   flex: 1 1 auto;
   text-align: left;
 }
+
+.menuThumbCard{
+  width: var(--menuThumbSize, 64px);
+  aspect-ratio: 85 / 55;
+  border-radius: 10px;
+  overflow: hidden;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.menuThumbCard img{
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
 .miThumbRight{
   flex: 0 0 var(--menuThumbSize, 64px);
   width: var(--menuThumbSize, 64px);
@@ -455,16 +472,11 @@ html[data-contrast="dark"] .menuLink:focus-visible{
 }
 
 .menuLink{
-  color: var(--menuTextMuted);
-  font-weight: 500;
-}
-
-.menuLink{
-  display:block;
-  width:100%;
-  text-align:left;
+  display: block;
+  width: 100%;
+  text-align: left;
   padding: 10px 12px;
-  border:0;
+  border: 0;
   background: transparent;
   font-size: 14px;
   font-weight: 400;
@@ -1232,44 +1244,8 @@ html[data-contrast="dark"] .sheetScrollHint{
 /* (verwijderd) dubbele dark overrides – 1 bron van waarheid hierboven */
 
 
-
-/* --- Release fix: menu thumbnails match index cards (full-bleed, same aspect) --- */
-.menuItemThumb,
-.menu-thumb,
-.menuThumb,
-.menu-item-thumb {
-  width: var(--menuThumbSize, 64px);
-  aspect-ratio: 85 / 55;
-  border-radius: 12px;
-  overflow: hidden;
-  background: transparent;
-}
-
-.menuItemThumb img,
-.menu-thumb img,
-.menuThumb img,
-.menu-item-thumb img,
-.menuItemThumb svg,
-.menu-thumb svg,
-.menuThumb svg,
-.menu-item-thumb svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-}
+/* menu thumbnail → zie .menuThumbCard */
 /* If thumbnails are set as background-image on a div */
-.menuItemThumb,
-.menu-thumb,
-.menuThumb,
-.menu-item-thumb {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-
-
 /* ---- landing tuning (v2) ---- */
 .qr{ bottom: calc(env(safe-area-inset-bottom, 0px) + 56px) !important; }
 .qr img{

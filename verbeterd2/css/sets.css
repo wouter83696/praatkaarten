@@ -149,9 +149,6 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 .setsHeroCard{
   width: 100%;
   margin: 0;
-}
-
-.setsHeroCard{
   position: relative;
   display: block;
   text-decoration: none;
