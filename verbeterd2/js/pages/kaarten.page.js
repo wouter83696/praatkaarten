@@ -74,7 +74,6 @@ export function initKaarten() {
   var infoAPI = null;
   var UI_DEFAULTS = {};
   var CARDS_INDEX_PAGE_BG = null;
-  var doc = document;
 
   // Kleurconversie helper: elke CSS-kleurstring → 'r, g, b' CSV string voor --menuSurface etc.
   // Hergebruikt PK.dominantColorFromSvgText intern parseerhulp, maar met directe conversie.

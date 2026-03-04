@@ -7,7 +7,7 @@ import { initShell } from './shell/initShell.js';
 import { setThemeChrome, syncLegacyContrastClasses, bindThemeChromeSync } from './core/theme.js';
 
 // Asset versie (voor build-badge)
-const ASSET_V = '1.39';
+const ASSET_V = '1.40';
 
 // Paginatype bepalen
 const _pathName = (window.location && window.location.pathname) ? String(window.location.pathname) : '';
@@ -18,41 +18,6 @@ if (!page) {
   else page = 'grid';
 }
 
-// ─── Static menu fallback (wanneer JS-componenten nog niet geladen zijn) ───────
-
-function bindStaticMenuFallback(force = false) {
-  const pill    = document.getElementById('themePill');
-  const menu    = document.getElementById('themeMenu');
-  const overlay = document.getElementById('themeMenuOverlay');
-  if (!pill || !menu || !overlay) return;
-  if (!force && (typeof window.__pkMenuComponentReady !== 'undefined')) return;
-  if (pill.__pkStaticMenuBound) return;
-  pill.__pkStaticMenuBound = true;
-
-  const base = (_pathName.indexOf('/kaarten/') !== -1 || _pathName.indexOf('/uitleg/') !== -1)
-    ? '../index.html' : './index.html';
-
-  function openMenu()  { menu.hidden = false; pill.setAttribute('aria-expanded', 'true'); }
-  function closeMenu() { menu.hidden = true;  pill.setAttribute('aria-expanded', 'false'); }
-  function isHomeAreaClick(ev) {
-    const t = ev && ev.target;
-    const main = t && t.closest && t.closest('.themePillMain');
-    return !!(main && pill.contains(main));
-  }
-  function toggleMenu() { menu.hidden ? openMenu() : closeMenu(); }
-  function onPillClick(ev) {
-    if (isHomeAreaClick(ev)) { ev.preventDefault(); closeMenu(); window.location.href = base; return; }
-    toggleMenu();
-  }
-  function onDocPointerDown(ev) {
-    const t = ev && ev.target;
-    if (menu.hidden || !t) return;
-    if (menu.contains(t) || pill.contains(t)) return;
-    closeMenu();
-  }
-  pill.addEventListener('click', onPillClick);
-  document.addEventListener('pointerdown', onDocPointerDown, true);
-}
 
 // ─── Build badge ──────────────────────────────────────────────────────────────
 
@@ -100,7 +65,6 @@ window.addEventListener('unhandledrejection', ev => {
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
 bindThemeChromeSync();
-bindStaticMenuFallback();
 mountBuildBadge();
 initShell();
 
@@ -116,9 +80,7 @@ async function boot() {
       const { initUitleg } = await import('./pages/uitleg.js');
       initUitleg();
     }
-    window.__pkMenuComponentReady = true;
-  } catch (e) {
-    bindStaticMenuFallback(true);
+    } catch (e) {
     showBootError('Initialisatie mislukte.', e && e.message ? e.message : '');
   }
 }
