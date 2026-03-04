@@ -1,0 +1,16 @@
+{
+  "id": "kaartensets",
+  "name": "Kaartensets",
+  "title": "Kaartensets",
+  "cover": "voorkant.svg",
+  "viewerTemplate": "classic",
+  "cssVars": {
+    "--pk-set-accent": "#F3D7A3",
+    "--pk-set-bg": "#FFFFFF",
+    "--pk-set-card": "rgba(255,255,255,1)"
+  },
+  "themes": [],
+  "ui": {
+    "themeCss": "theme.css"
+  }
+}
