@@ -11,8 +11,8 @@
   --muted: rgba(11,18,32,.62);
   --cardBorderDark: rgba(120, 96, 190, 0.38);
   --menuTintRgb: 127, 207, 201;
-  --focusRing: rgba(127,207,201,0.45);
-  --focusRingDark: rgba(127,207,201,0.55);
+  --focusRing: rgba(103,197,187,0.75);
+  --focusRingDark: rgba(127,207,201,0.80);
   /* Default image alignment for cards (override per page if needed) */
   --cardImgPos: center;
 

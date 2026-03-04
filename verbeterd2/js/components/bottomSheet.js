@@ -1,60 +1,105 @@
-// Praatkaartjes – BottomSheet component
-// Herbruikbare sheet/overlay met open/close/toggle + ESC + klik op overlay.
+// Praatkaartjes – BottomSheet component (ES5)
+// Doel: één herbruikbare sheet/overlay met open/close/toggle + ESC + klik op overlay.
+// Later uitbreidbaar met: drag handle, swipe links/rechts, snap points.
 
-export function createBottomSheet(options = {}) {
-  const { sheet, overlay, trigger, onOpen, onClose } = options;
+(function(w){
+  'use strict';
+  var PK = w.PK = w.PK || {};
 
-  if (!sheet) return { open() {}, close() {}, toggle() {}, isOpen() { return false; }, destroy() {} };
+  function on(el, type, fn){
+    if(el && el.addEventListener) el.addEventListener(type, fn);
+  }
+  function off(el, type, fn){
+    if(el && el.removeEventListener) el.removeEventListener(type, fn);
+  }
 
-  function setAria(expanded) {
-    if (trigger && trigger.setAttribute) {
-      trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  PK.createBottomSheet = function(options){
+    options = options || {};
+    var sheet = options.sheet;
+    var overlay = options.overlay;
+    var trigger = options.trigger;
+    var onOpen = options.onOpen;
+    var onClose = options.onClose;
+
+    if(!sheet){
+      return {
+        open: function(){}, close: function(){}, toggle: function(){}, isOpen: function(){ return false; }, destroy: function(){}
+      };
     }
-  }
 
-  function show() {
-    sheet.hidden = false;
-    if (overlay) overlay.hidden = false;
-    sheet.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
-    try { sheet.offsetHeight; } catch {} // force reflow
-    requestAnimationFrame(() => {
-      sheet.classList.add('open');
-      if (overlay) overlay.classList.add('open');
-      setAria(true);
-      if (typeof onOpen === 'function') onOpen();
-    });
-  }
+    // Default state: respect current hidden attribute
+    function setAria(expanded){
+      if(trigger && trigger.setAttribute){
+        trigger.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      }
+    }
 
-  function hide() {
-    sheet.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
-    const delay = typeof options.hideDelay === 'number' ? options.hideDelay : 200;
-    setTimeout(() => {
-      sheet.hidden = true;
-      if (overlay) overlay.hidden = true;
-    }, delay);
-    setAria(false);
-    if (typeof onClose === 'function') onClose();
-  }
+    function show(){
+      // Zorg voor nette CSS-transitions: eerst unhide, dan in volgende frame 'open'.
+      sheet.hidden = false;
+      if(overlay) overlay.hidden = false;
 
-  const isOpen  = () => !sheet.hidden;
-  const toggle  = () => isOpen() ? hide() : show();
+      if(sheet.classList) sheet.classList.remove('open');
+      if(overlay && overlay.classList) overlay.classList.remove('open');
 
-  const onOverlayClick = () => hide();
-  const onTriggerClick = () => toggle();
-  const onKeyDown = ev => { if ((ev || window.event) && (ev || window.event).key === 'Escape') hide(); };
+      // force reflow zodat de browser de startstaat pakt
+      try{ sheet.offsetHeight; }catch(_e){}
 
-  if (trigger) trigger.addEventListener('click', onTriggerClick);
-  if (overlay) overlay.addEventListener('click', onOverlayClick);
-  document.addEventListener('keydown', onKeyDown);
+      w.requestAnimationFrame(function(){
+        if(sheet.classList) sheet.classList.add('open');
+        if(overlay && overlay.classList) overlay.classList.add('open');
+        setAria(true);
+        if(typeof onOpen === 'function') onOpen();
+      });
+    }
 
-  return {
-    open: show, close: hide, toggle, isOpen,
-    destroy() {
-      if (trigger) trigger.removeEventListener('click', onTriggerClick);
-      if (overlay) overlay.removeEventListener('click', onOverlayClick);
-      document.removeEventListener('keydown', onKeyDown);
-    },
+    function hide(){
+      if(sheet.classList) sheet.classList.remove('open');
+      if(overlay && overlay.classList) overlay.classList.remove('open');
+
+      // Wacht kort zodat eventuele CSS-transitions kunnen uitlopen.
+      // Fallback: direct hide als transitions niet bestaan.
+      var delay = options && typeof options.hideDelay === 'number' ? options.hideDelay : 200;
+      w.setTimeout(function(){
+        sheet.hidden = true;
+        if(overlay) overlay.hidden = true;
+      }, delay);
+
+      setAria(false);
+      if(typeof onClose === 'function') onClose();
+    }
+
+    function isOpen(){
+      return !sheet.hidden;
+    }
+
+    function toggle(){
+      if(isOpen()) hide(); else show();
+    }
+
+    // Wiring
+    var onOverlayClick = function(){ hide(); };
+    var onTriggerClick = function(){ toggle(); };
+    var onKeyDown = function(ev){
+      ev = ev || w.event;
+      if(ev && ev.key === 'Escape') hide();
+    };
+
+    if(trigger) on(trigger, 'click', onTriggerClick);
+    if(overlay) on(overlay, 'click', onOverlayClick);
+    on(w.document, 'keydown', onKeyDown);
+
+    // public API
+    return {
+      open: show,
+      close: hide,
+      toggle: toggle,
+      isOpen: isOpen,
+      destroy: function(){
+        if(trigger) off(trigger, 'click', onTriggerClick);
+        if(overlay) off(overlay, 'click', onOverlayClick);
+        off(w.document, 'keydown', onKeyDown);
+      }
+    };
   };
-}
+})(window);

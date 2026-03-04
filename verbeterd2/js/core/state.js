@@ -1,15 +1,19 @@
-// Praatkaartjes – eenvoudige state
-// Één bron van waarheid voor actieve set/thema.
+// Praatkaartjes – eenvoudige state (ES5)
+// Doel: één bron van waarheid voor actieve set/thema, zodat links en pagina's consistent zijn.
+(function(w){
+  'use strict';
+  var PK = w.PK = w.PK || {};
 
-export const state = {
-  activeSet: '',
-  activeTheme: '',
-};
+  PK.state = PK.state || {
+    activeSet: '',
+    activeTheme: ''
+  };
 
-export function setActiveSet(setId) {
-  state.activeSet = String(setId || '').trim();
-}
+  PK.setActiveSet = function(setId){
+    PK.state.activeSet = String(setId || '').replace(/^\s+|\s+$/g,'');
+  };
 
-export function setActiveTheme(themeKey) {
-  state.activeTheme = String(themeKey || '').trim();
-}
+  PK.setActiveTheme = function(themeKey){
+    PK.state.activeTheme = String(themeKey || '').replace(/^\s+|\s+$/g,'');
+  };
+})(window);

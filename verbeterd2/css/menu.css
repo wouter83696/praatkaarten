@@ -16,8 +16,8 @@
   --menuSurfaceAlpha: 0.82;
   --menuSheetAlpha: 0.82;
   --menuBtnAlpha: 0.86;
-  --focusRing: rgba(127,207,201,0.45);
-  --focusRingDark: rgba(127,207,201,0.55);
+  --focusRing: rgba(103,197,187,0.75);
+  --focusRingDark: rgba(127,207,201,0.80);
   --topBarInset: 16px;
   --topBarHeight: 64px;
   --topBarRadius: 18px;
@@ -381,7 +381,9 @@ body[data-brand-icon="1"] .setCoverIcon{
   box-shadow: none;
 }
 
-.themePill:focus-visible,
+.themePill:focus,.themePill:focus-visible{
+  outline: none;
+}
 .menuMiniBtn:focus-visible,
 .menuItem:focus-visible,
 .menuLink:focus-visible{
@@ -389,7 +391,6 @@ body[data-brand-icon="1"] .setCoverIcon{
   outline-offset: 2px;
 }
 
-html[data-contrast="dark"] .themePill:focus-visible,
 html[data-contrast="dark"] .menuMiniBtn:focus-visible,
 html[data-contrast="dark"] .menuItem:focus-visible,
 html[data-contrast="dark"] .menuLink:focus-visible{

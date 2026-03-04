@@ -1,43 +1,20 @@
-// Praatkaartjes – kaarten pagina
-import { getText, getJson, loadJson } from '../core/net.js';
-import { PATHS, withV, pathForSet, DEBUG } from '../core/paths.js';
-import { getQueryParam, getActiveSet, prettyName } from '../core/query.js';
-import { state, setActiveSet, setActiveTheme } from '../core/state.js';
-import { applyUiConfig, UI_ACTIVE } from '../core/ui.js';
-import { applyCssVars, initShell } from '../shell/initShell.js';
-import { createMenu } from '../components/menu.js';
-import { createBottomSheet } from '../components/bottomSheet.js';
-import { createMenuItem, applyDominantTint } from '../components/cardRenderer.js';
-import { dominantColorFromSvgText, lighten } from '../core/color.js';
-import { cardsBackground } from '../components/cardsBackground.js';
+// Praatkaartjes – index pagina (ES5)
+(function(w){
+  'use strict';
+  var PK = w.PK = w.PK || {};
+  PK.pages = PK.pages || {};
+  if(!PK.pages.initKaarten){
+    PK.pages.initKaarten = function(){ /* kaarten pagina init gebeurt in dit bestand */ };
+  }
+  var DEBUG_BUILD = '';
 
-export function initKaarten() {
-  // Lokale w/PK alias zodat interne code ongewijzigd werkt
-  const w  = window;
-  const doc = document;
-  const PK = {
-    get DEBUG()     { return DEBUG; },
-    get PATHS()     { return PATHS; },
-    get UI_ACTIVE() { return UI_ACTIVE; },
-    withV, pathForSet, getText, getJson, loadJson,
-    getQueryParam, getActiveSet, prettyName,
-    setActiveSet, setActiveTheme,
-    dominantColorFromSvgText, lighten,
-    applyDominantTint,
-    applyUiConfig,
-    createMenu, createBottomSheet, createMenuItem,
-    cardsBackground,
-    shell: { applyCssVars },
-    pages: {},
-    state,
-  };
   // Desktop/iPad landing: app niet initialiseren
   try{
-    var dl = document && document.documentElement && document.documentElement.getAttribute('data-layout');
+    var dl = w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-layout');
     if(dl === 'landing') return;
   }catch(_e){}
 
-  var mainCarousel = document.getElementById('mainCarousel');
+  var mainCarousel = w.document.getElementById('mainCarousel');
   if(!mainCarousel) return;
 
   // debug badge removed
@@ -74,37 +51,39 @@ export function initKaarten() {
   var infoAPI = null;
   var UI_DEFAULTS = {};
   var CARDS_INDEX_PAGE_BG = null;
+  var doc = w.document;
 
-  // Kleurconversie helper: elke CSS-kleurstring → 'r, g, b' CSV string voor --menuSurface etc.
-  // Hergebruikt PK.dominantColorFromSvgText intern parseerhulp, maar met directe conversie.
+  function parseHexToRgbCsv(input){
+    var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
+    if(hex.length === 3){
+      hex = hex.charAt(0)+hex.charAt(0)+hex.charAt(1)+hex.charAt(1)+hex.charAt(2)+hex.charAt(2);
+    }
+    if(hex.length !== 6) return '';
+    var r = parseInt(hex.slice(0,2),16);
+    var g = parseInt(hex.slice(2,4),16);
+    var b = parseInt(hex.slice(4,6),16);
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return r + ', ' + g + ', ' + b;
+  }
+
+  function parseRgbFuncToCsv(input){
+    var m = String(input || '').match(/rgba?\(([^)]+)\)/i);
+    if(!m || !m[1]) return '';
+    var p = m[1].split(',');
+    if(p.length < 3) return '';
+    var r = Math.max(0, Math.min(255, parseFloat(String(p[0]).replace(/^\s+|\s+$/g,''))));
+    var g = Math.max(0, Math.min(255, parseFloat(String(p[1]).replace(/^\s+|\s+$/g,''))));
+    var b = Math.max(0, Math.min(255, parseFloat(String(p[2]).replace(/^\s+|\s+$/g,''))));
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return Math.round(r) + ', ' + Math.round(g) + ', ' + Math.round(b);
+  }
+
   function colorToRgbCsv(input){
     var raw = String(input || '').replace(/^\s+|\s+$/g,'');
     if(!raw) return '';
-    var r, g, b, hex, m, p;
-    // Al in csv-formaat (bijv. "255, 128, 64")
+    if(raw.charAt(0) === '#') return parseHexToRgbCsv(raw);
+    if(/^rgba?\(/i.test(raw)) return parseRgbFuncToCsv(raw);
     if(/^\d+\s*,\s*\d+\s*,\s*\d+/.test(raw)) return raw.replace(/\s+/g,'');
-    // Hex (#rgb of #rrggbb)
-    if(raw.charAt(0) === '#'){
-      hex = raw.replace('#','').replace(/^\s+|\s+$/g,'');
-      if(hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-      if(hex.length !== 6) return '';
-      r = parseInt(hex.slice(0,2),16);
-      g = parseInt(hex.slice(2,4),16);
-      b = parseInt(hex.slice(4,6),16);
-      if(!isFinite(r)||!isFinite(g)||!isFinite(b)) return '';
-      return r + ', ' + g + ', ' + b;
-    }
-    // rgb()/rgba()
-    m = raw.match(/rgba?\(([^)]+)\)/i);
-    if(m && m[1]){
-      p = m[1].split(',');
-      if(p.length < 3) return '';
-      r = Math.max(0,Math.min(255,parseFloat(p[0])));
-      g = Math.max(0,Math.min(255,parseFloat(p[1])));
-      b = Math.max(0,Math.min(255,parseFloat(p[2])));
-      if(!isFinite(r)||!isFinite(g)||!isFinite(b)) return '';
-      return Math.round(r)+', '+Math.round(g)+', '+Math.round(b);
-    }
     return '';
   }
 
@@ -131,7 +110,7 @@ export function initKaarten() {
       }
     }catch(_eBg){}
     try{
-      var rs = getComputedStyle ? getComputedStyle(document.documentElement) : null;
+      var rs = w.getComputedStyle ? w.getComputedStyle(w.document.documentElement) : null;
       if(rs){
         candidates.push(rs.getPropertyValue('--pk-set-bg'));
         candidates.push(rs.getPropertyValue('--bg-base-color'));
@@ -147,7 +126,7 @@ export function initKaarten() {
   }
 
   function applyMenuSurfaceTint(meta){
-    var root = document && document.documentElement;
+    var root = w.document && w.document.documentElement;
     if(!root || !root.style || !root.style.setProperty) return;
     var rgb = resolveMenuBaseRgb(meta);
     try{
@@ -163,13 +142,13 @@ export function initKaarten() {
     var id = String(setId || '').replace(/^\s+|\s+$/g,'');
     if(!id) return;
     try{
-      var raw = localStorage.getItem('pk_set_counts') || '';
+      var raw = w.localStorage.getItem('pk_set_counts') || '';
       var data = raw ? JSON.parse(raw) : {};
       if(!data || typeof data !== 'object') data = {};
       var cur = parseInt(data[id], 10);
       if(!isFinite(cur)) cur = 0;
       data[id] = cur + 1;
-      localStorage.setItem('pk_set_counts', JSON.stringify(data));
+      w.localStorage.setItem('pk_set_counts', JSON.stringify(data));
     }catch(_e){}
   }
 
@@ -274,7 +253,7 @@ export function initKaarten() {
     }
 
     // Start op eerste echte slide
-    requestAnimationFrame(function(){
+    w.requestAnimationFrame(function(){
       var w1 = slideWidth();
       if(w1) container.scrollLeft = w1;
     });
@@ -293,14 +272,14 @@ export function initKaarten() {
       if(left <= sw * 0.25){
         jumping = true;
         container.scrollLeft = sw * nReal;
-        requestAnimationFrame(function(){ jumping = false; });
+        w.requestAnimationFrame(function(){ jumping = false; });
         return;
       }
       // dicht bij clone rechts
       if(left >= sw * (nReal + 1 - 0.25)){
         jumping = true;
         container.scrollLeft = sw;
-        requestAnimationFrame(function(){ jumping = false; });
+        w.requestAnimationFrame(function(){ jumping = false; });
       }
     }, { passive:true });
 
@@ -316,20 +295,20 @@ export function initKaarten() {
     if(cardsCarousel && cardsCarousel.children && cardsCarousel.children.length){
       renderCards(ITEMS);
       // terug naar eerste kaart (voorspelbaar)
-      setTimeout(function(){ goToCardIndex(0); }, 30);
+      w.setTimeout(function(){ goToCardIndex(0); }, 30);
     }
   }
 
   function setThemePillText(txt){
-    var pillText = document.getElementById('themePillText');
+    var pillText = w.document.getElementById('themePillText');
     if(pillText) pillText.textContent = (txt || PK.prettyName(PK.getActiveSet()));
   }
 
   function openMenu(){
   if(sheetAPI && sheetAPI.open){ sheetAPI.open(); return; }
-  var menu = document.getElementById('themeMenu');
-  var overlay = document.getElementById('themeMenuOverlay');
-  var pill = document.getElementById('themePill');
+  var menu = w.document.getElementById('themeMenu');
+  var overlay = w.document.getElementById('themeMenuOverlay');
+  var pill = w.document.getElementById('themePill');
   if(menu) menu.hidden = false;
   if(overlay) overlay.hidden = false;
   if(pill) pill.setAttribute('aria-expanded','true');
@@ -337,9 +316,9 @@ export function initKaarten() {
 
 function closeMenu(){
   if(sheetAPI && sheetAPI.close){ sheetAPI.close(); return; }
-  var menu = document.getElementById('themeMenu');
-  var overlay = document.getElementById('themeMenuOverlay');
-  var pill = document.getElementById('themePill');
+  var menu = w.document.getElementById('themeMenu');
+  var overlay = w.document.getElementById('themeMenuOverlay');
+  var pill = w.document.getElementById('themePill');
   if(menu) menu.hidden = true;
   if(overlay) overlay.hidden = true;
   if(pill) pill.setAttribute('aria-expanded','false');
@@ -348,7 +327,7 @@ function closeMenu(){
 
   function parseInlineQuestions(){
     try{
-      var el = document.getElementById('questions-json');
+      var el = w.document.getElementById('questions-json');
       if(el && el.textContent && el.textContent.replace(/\s+/g,'').length) return JSON.parse(el.textContent);
     }catch(e){}
     return null;
@@ -381,22 +360,22 @@ function closeMenu(){
     CURRENT_COVER = (meta && meta.cover) ? meta.cover : 'voorkant.svg';
     CURRENT_BACK_MODE = normalizeBackMode(meta && meta.backMode);
     CARD_BASE = pathForSet(setId, 'cards_rect/');
-    try{ localStorage.setItem('pk_last_set', String(setId || '').replace(/^\s+|\s+$/g,'')); }catch(_eStore){}
+    try{ w.localStorage.setItem('pk_last_set', String(setId || '').replace(/^\s+|\s+$/g,'')); }catch(_eStore){}
 
-    var icon = document.getElementById('setCoverIcon');
+    var icon = w.document.getElementById('setCoverIcon');
     var brandIcon = false;
     try{
-      brandIcon = !!(document && document.body && document.body.getAttribute('data-brand-icon') === '1');
+      brandIcon = !!(w.document && w.document.body && w.document.body.getAttribute('data-brand-icon') === '1');
     }catch(_e0){}
     if(icon && !brandIcon){
       icon.setAttribute('src', CARD_BASE + CURRENT_COVER);
     }
 
-    var pill = document.getElementById('themePill');
+    var pill = w.document.getElementById('themePill');
     if(pill){ pill.setAttribute('aria-label', (meta && meta.name) ? meta.name : setId); }
 
     // Menu titel: kaartenset naam (ipv "Thema's")
-    var menuTitle = document.getElementById('menuSetTitle');
+    var menuTitle = w.document.getElementById('menuSetTitle');
     if(menuTitle){
       menuTitle.textContent = (meta && meta.name) ? meta.name : PK.prettyName(setId);
     }
@@ -412,15 +391,15 @@ function closeMenu(){
 
     // Viewer template hint (voor CSS)
     try{
-      if(meta && meta.viewerTemplate && document && document.body){
-        document.body.setAttribute('data-viewer-template', String(meta.viewerTemplate));
+      if(meta && meta.viewerTemplate && w.document && w.document.body){
+        w.document.body.setAttribute('data-viewer-template', String(meta.viewerTemplate));
       }
     }catch(_eTpl){}
 
     try{
-      if(PK.DEBUG && console && console.log){
-        console.log('[DEBUG] active set', setId);
-        console.log('[DEBUG] viewer template', (meta && meta.viewerTemplate) ? meta.viewerTemplate : 'classic');
+      if(PK.DEBUG && w.console && w.console.log){
+        w.console.log('[DEBUG] active set', setId);
+        w.console.log('[DEBUG] viewer template', (meta && meta.viewerTemplate) ? meta.viewerTemplate : 'classic');
       }
     }catch(_eDbg){}
 
@@ -437,7 +416,7 @@ function closeMenu(){
       }
     }
 
-    var menuList = document.getElementById('menuList');
+    var menuList = w.document.getElementById('menuList');
     if(menuList){
       menuList.innerHTML = '';
       if(meta && Array.isArray(meta.themes)){
@@ -449,23 +428,23 @@ var cardFile = th.card || (key + '.svg');
 if(PK.createMenuItem){
   menuList.appendChild(PK.createMenuItem({ setId: setId, key: key, label: (th.label || key), cardFile: cardFile, cover: CURRENT_COVER }));
 }else{
-  var btn = document.createElement('button');
+  var btn = w.document.createElement('button');
   btn.className = 'menuItem themeItem';
   btn.type = 'button';
   btn.setAttribute('data-set', key);
 
-  var lab = document.createElement('span');
+  var lab = w.document.createElement('span');
   lab.className = 'miLabel';
   lab.textContent = (th.label || key);
 
-  var thumb = document.createElement('span');
+  var thumb = w.document.createElement('span');
   thumb.className = 'miThumbRight';
   thumb.setAttribute('aria-hidden','true');
 
-  var mini = document.createElement('div');
+  var mini = w.document.createElement('div');
   mini.className = 'menuThumbCard';
 
-  var miniImg = document.createElement('img');
+  var miniImg = w.document.createElement('img');
   miniImg.className = 'bg';
   var miniSrc = pathForSet(setId, 'cards_rect/' + cardFile);
   miniImg.src = PK.withV ? PK.withV(miniSrc) : miniSrc;
@@ -613,7 +592,7 @@ if(PK.createMenuItem){
       if((ITEMS[i]||{}).theme === themeKey){ idx = i; break; }
     }
     if(idx >= 0){
-      setTimeout(function(){ goToCardIndex(idx); }, 40);
+      w.setTimeout(function(){ goToCardIndex(idx); }, 40);
     }
   }
 
@@ -650,15 +629,15 @@ if(PK.createMenuItem){
     })
     .catch(function(e){
       showError('Fout bij laden.');
-      if(console && console.error) console.error(e);
+      if(w.console && w.console.error) w.console.error(e);
     });
 
   setThemePillText();
 
   // Menu wiring
-  var pillBtn = document.getElementById('themePill');
-  var overlay = document.getElementById('themeMenuOverlay');
-  var menuEl = document.getElementById('themeMenu');
+  var pillBtn = w.document.getElementById('themePill');
+  var overlay = w.document.getElementById('themeMenuOverlay');
+  var menuEl = w.document.getElementById('themeMenu');
   if(PK.createMenu){
     sheetAPI = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(PK.createBottomSheet){
@@ -672,7 +651,7 @@ if(PK.createMenuItem){
   }
 
   // Menu acties: info (open sheet in uitleg) + shuffle toggle (alleen state/UI)
-  var menuInfoBtn = document.getElementById('menuInfoBtn');
+  var menuInfoBtn = w.document.getElementById('menuInfoBtn');
   if(menuInfoBtn){
     menuInfoBtn.onclick = function(ev){
       if(ev && ev.preventDefault) ev.preventDefault();
@@ -684,7 +663,7 @@ if(PK.createMenuItem){
   }
 
   // Contrast (licht/donker) – icon-only toggle in het menu
-  var contrastBtn = document.getElementById('menuContrastToggle');
+  var contrastBtn = w.document.getElementById('menuContrastToggle');
   var CONTRAST = 'light';
   function applyContrast(mode){
     var nextContrast = (mode === 'dark') ? 'dark' : 'light';
@@ -692,9 +671,9 @@ if(PK.createMenuItem){
     CONTRAST = nextContrast;
     // Session-only: default altijd LIGHT bij een nieuwe sessie,
     // maar na klikken mag DARK de rest van de sessie blijven.
-    try{ sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
-    if(document && document.documentElement){
-      document.documentElement.setAttribute('data-contrast', CONTRAST);
+    try{ w.sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
+    if(w.document && w.document.documentElement){
+      w.document.documentElement.setAttribute('data-contrast', CONTRAST);
     }
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
     if(changed){
@@ -703,7 +682,7 @@ if(PK.createMenuItem){
       // een zichtbare paars/wit-flits terwijl alle content al in beeld blijft.
       try{ renderIndexBackground(); }catch(_e3){}
       try{
-        requestAnimationFrame(function(){
+        w.requestAnimationFrame(function(){
           try{ refreshActiveTintForContrast(); }catch(_eTint){}
           try{ retintInfoSlideTexts && retintInfoSlideTexts(); }catch(_e0){}
         });
@@ -719,7 +698,7 @@ if(PK.createMenuItem){
   }
   if(contrastBtn){
     var savedC = 'light';
-    try{ savedC = sessionStorage.getItem('pk_contrast_session') || 'light'; }catch(_e){}
+    try{ savedC = w.sessionStorage.getItem('pk_contrast_session') || 'light'; }catch(_e){}
     applyContrast(savedC === 'dark' ? 'dark' : 'light');
     contrastBtn.onclick = function(ev){
       if(ev && ev.preventDefault) ev.preventDefault();
@@ -727,15 +706,15 @@ if(PK.createMenuItem){
     };
   }
 
-  var shuffleBtn = document.getElementById('menuShuffleToggle');
+  var shuffleBtn = w.document.getElementById('menuShuffleToggle');
   function setShuffleEnabled(on){
     on = !!on;
     SHUFFLE_ON = on;
     if(shuffleBtn) shuffleBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    if(document && document.body && document.body.classList){
-      document.body.classList.toggle('shuffleOn', on);
+    if(w.document && w.document.body && w.document.body.classList){
+      w.document.body.classList.toggle('shuffleOn', on);
     }
-    try{ localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
+    try{ w.localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
     // Echte shuffle: pas de volgorde aan in grid + carrousel.
     // (We gebruiken ORIGINAL_ITEMS als bron, zodat 'uit' weer exact terug kan.)
     if(ORIGINAL_ITEMS && ORIGINAL_ITEMS.length){
@@ -744,7 +723,7 @@ if(PK.createMenuItem){
   }
   if(shuffleBtn){
     var saved = '0';
-    try{ saved = localStorage.getItem('pk_shuffle') || '0'; }catch(_e){}
+    try{ saved = w.localStorage.getItem('pk_shuffle') || '0'; }catch(_e){}
     setShuffleEnabled(saved === '1');
     shuffleBtn.onclick = function(ev){
       if(ev && ev.preventDefault) ev.preventDefault();
@@ -754,7 +733,7 @@ if(PK.createMenuItem){
   }
 
 
-  var menuList = document.getElementById('menuList');
+  var menuList = w.document.getElementById('menuList');
   if(menuList){
     menuList.addEventListener('click', function(e){
       var btn = e.target && (e.target.closest ? e.target.closest('button[data-set]') : null);
@@ -773,15 +752,15 @@ if(PK.createMenuItem){
   }
 
 
-  var naarOverzicht = document.getElementById('naarOverzicht');
+  var naarOverzicht = w.document.getElementById('naarOverzicht');
   if(naarOverzicht){
     naarOverzicht.onclick = function(){
       closeMenu();
       if(PK.PATHS && PK.PATHS.gridPage){
-        window.location.href = PK.PATHS.gridPage;
+        w.location.href = PK.PATHS.gridPage;
       }else{
         var base = (PK.PATHS && PK.PATHS.base) ? PK.PATHS.base : '.';
-        window.location.href = base.replace(/\/$/,'') + '/index.html';
+        w.location.href = base.replace(/\/$/,'') + '/index.html';
       }
     };
   }
@@ -797,14 +776,14 @@ if(PK.createMenuItem){
   // - tekstvlak kleurt mee op dominante kaartkleur
   // ------------------------------------------------------------
 
-  var infoSheet = document.getElementById('infoSheet');
-  var infoOverlay = document.getElementById('infoOverlay');
-  var infoCarousel = document.getElementById('infoCarousel');
+  var infoSheet = w.document.getElementById('infoSheet');
+  var infoOverlay = w.document.getElementById('infoOverlay');
+  var infoCarousel = w.document.getElementById('infoCarousel');
   // De kaarten-carrousel staat nu centraal op de pagina.
-  var cardsCarousel = document.getElementById('mainCarousel');
-  var sheetStack = document.getElementById('sheetStack');
-  var sheetPageCards = document.getElementById('sheetPageCards');
-  var sheetPageHelp = document.getElementById('sheetPageHelp');
+  var cardsCarousel = w.document.getElementById('mainCarousel');
+  var sheetStack = w.document.getElementById('sheetStack');
+  var sheetPageCards = w.document.getElementById('sheetPageCards');
+  var sheetPageHelp = w.document.getElementById('sheetPageHelp');
   var sheetViewport = infoSheet ? infoSheet.querySelector('.sheetViewport') : null;
   var infoCard = infoSheet ? infoSheet.querySelector('.infoCard') : null;
   var handle = infoSheet ? infoSheet.querySelector('.sheetHandle') : null;
@@ -821,12 +800,12 @@ if(PK.createMenuItem){
     enable = !!enable;
     if(enable === __pkScrollLock.on) return;
 
-    var docEl = document.documentElement;
-    var body = document.body;
+    var docEl = w.document.documentElement;
+    var body = w.document.body;
 
     if(enable){
       __pkScrollLock.on = true;
-      __pkScrollLock.y = (window.pageYOffset || docEl.scrollTop || body.scrollTop || 0);
+      __pkScrollLock.y = (w.pageYOffset || docEl.scrollTop || body.scrollTop || 0);
 
       // Zet body vast op huidige scrollpositie
       body.style.position = 'fixed';
@@ -846,14 +825,14 @@ if(PK.createMenuItem){
       body.style.width = '';
       docEl.style.overflow = '';
       // Scroll herstellen
-      try{ window.scrollTo(0, __pkScrollLock.y || 0); }catch(_e){}
+      try{ w.scrollTo(0, __pkScrollLock.y || 0); }catch(_e){}
     }
   }
 
   // --- Dynamic height helpers (compact kaarten -> max uitleg) ---
   function readCssPx(el, name, fallback){
     try{
-      var v = getComputedStyle(el || document.documentElement).getPropertyValue(name);
+      var v = w.getComputedStyle(el || w.document.documentElement).getPropertyValue(name);
       var n = parseFloat(String(v||'').replace('px',''));
       return isNaN(n) ? fallback : n;
     }catch(_e){ return fallback; }
@@ -861,13 +840,13 @@ if(PK.createMenuItem){
 
   function getMaxH(){
     // Max hoogte komt uit CSS var op .infoSheet (fallback op root var)
-    return readCssPx(infoSheet || document.documentElement, '--sheetMaxH', readCssPx(document.documentElement, '--sheetPageH', 520));
+    return readCssPx(infoSheet || w.document.documentElement, '--sheetMaxH', readCssPx(w.document.documentElement, '--sheetPageH', 520));
   }
   function getCompactH(){
-    return readCssPx(infoSheet || document.documentElement, '--sheetCompactH', Math.min(getMaxH(), 460));
+    return readCssPx(infoSheet || w.document.documentElement, '--sheetCompactH', Math.min(getMaxH(), 460));
   }
   function getCurH(){
-    return readCssPx(infoSheet || document.documentElement, '--sheetCurH', getCompactH());
+    return readCssPx(infoSheet || w.document.documentElement, '--sheetCurH', getCompactH());
   }
   function setCurH(px){
     if(!infoSheet) return;
@@ -884,7 +863,7 @@ if(PK.createMenuItem){
   function scheduleHelpMeasure(){
     if(!infoSheet) return;
     if(helpMeasureTimer) w.clearTimeout(helpMeasureTimer);
-    helpMeasureTimer = setTimeout(function(){
+    helpMeasureTimer = w.setTimeout(function(){
       helpMeasureTimer = 0;
       setCurH(measureHelpH() || getMaxH());
     }, 60);
@@ -945,10 +924,10 @@ if(PK.createMenuItem){
     var h = Math.round(r.height + handleH + pad);
 
     // Extra: zorg dat de sheet hoog genoeg is om de centrale index-kaart volledig te bedekken.
-    // Top(sheet) = windowindow.innerHeight - h. We willen: top(sheet) <= top(index-kaart).
-    // => h >= windowindow.innerHeight - top(index-kaart)
+    // Top(sheet) = window.innerHeight - h. We willen: top(sheet) <= top(index-kaart).
+    // => h >= window.innerHeight - top(index-kaart)
     try{
-      var main = document.getElementById('mainCarousel');
+      var main = w.document.getElementById('mainCarousel');
       if(main){
         var slides = Array.prototype.slice.call(main.children || []);
         var cx = w.innerWidth / 2;
@@ -965,7 +944,7 @@ if(PK.createMenuItem){
         var mainCard = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
         if(mainCard && mainCard.getBoundingClientRect){
           var rMain = mainCard.getBoundingClientRect();
-          var needed = Math.round(window.innerHeight - rMain.top);
+          var needed = Math.round(w.innerHeight - rMain.top);
           // kleine extra marge zodat hij écht over de kaart valt
           needed += 14;
           if(needed > h) h = needed;
@@ -988,7 +967,7 @@ if(PK.createMenuItem){
     if(!infoSheet || !infoCarousel) return;
 
     // Centrale kaart (index)
-    var main = document.getElementById('mainCarousel');
+    var main = w.document.getElementById('mainCarousel');
     if(!main) return;
     var mainSlides = Array.prototype.slice.call(main.children || []);
     if(!mainSlides.length) return;
@@ -1107,7 +1086,7 @@ function openInfo(){
     }catch(_eH){}
 
     // 4) Open van onder naar boven (altijd bottom-up)
-    requestAnimationFrame(function(){
+    w.requestAnimationFrame(function(){
       if(infoSheet.classList) infoSheet.classList.add('open');
       if(infoOverlay && infoOverlay.classList) infoOverlay.classList.add('open');
 
@@ -1118,7 +1097,7 @@ function openInfo(){
       }
 
       // 5) Na het openen (transform=0) pas de optische align toe (zonder hoogte-wijziging)
-      requestAnimationFrame(function(){
+      w.requestAnimationFrame(function(){
         try{ alignInfoSheetToMainCard(); }catch(_e2){}
       });
     });
@@ -1132,7 +1111,7 @@ function openInfo(){
       infoOverlay.style.pointerEvents = 'none';
     }
     // wacht transition uit en verberg dan echt
-    setTimeout(function(){
+    w.setTimeout(function(){
       infoSheet.hidden = true;
       infoSheet.style.transform = '';
       infoSheet.style.transition = '';
@@ -1320,16 +1299,16 @@ function openInfo(){
     for(var i=0;i<slides.length;i++){
       var s = slides[i];
 
-      var slide = document.createElement('div');
+      var slide = w.document.createElement('div');
       slide.className = 'infoSlide';
 
-      var inner = document.createElement('div');
+      var inner = w.document.createElement('div');
       inner.className = 'infoSlideInner';
 
-      var card = document.createElement('div');
+      var card = w.document.createElement('div');
       card.className = 'infoSlideCard';
 
-      var img = document.createElement('img');
+      var img = w.document.createElement('img');
       img.alt = s.isCover ? 'Voorkant' : (s.title || s.key);
       img.src = s.srcRect;
       img.onerror = function(){
@@ -1345,17 +1324,17 @@ function openInfo(){
 
       // Thema-naam in het midden (niet op de cover)
       if(!s.isCover && s.title){
-        var mid = document.createElement('div');
+        var mid = w.document.createElement('div');
         mid.className = 'infoSlideMidTitle';
         mid.textContent = s.title;
         card.appendChild(mid);
       }
 
-      var text = document.createElement('div');
+      var text = w.document.createElement('div');
       text.className = 'infoSlideText';
       setInfoTextContent(text, s.text);
 
-      var isDark = (document && document.documentElement && document.documentElement.getAttribute("data-contrast") === "dark");
+      var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
       var baseTint = isDark
         ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.86)"
         : "rgba(255,255,255,0.975)";
@@ -1372,11 +1351,11 @@ function openInfo(){
 
   // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
   function retintInfoSlideTexts(){
-    var isDark = (document && document.documentElement && document.documentElement.getAttribute('data-contrast') === 'dark');
+    var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
     var base = isDark
       ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.86)'
       : 'rgba(255,255,255,0.975)';
-    var nodes = (document && document.querySelectorAll) ? document.querySelectorAll('.infoSlideText') : [];
+    var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];
       try{ t.style.background = base; }catch(_e2){}
@@ -1465,27 +1444,6 @@ function openInfo(){
         ev.preventDefault();
         toggleFlip(card);
       }
-      // Pijltoetsen: navigeer naar vorige/volgende kaart
-      if(ev.key === 'ArrowLeft' || ev.key === 'ArrowRight'){
-        ev.preventDefault();
-        var curIdx = getActiveCardIndex();
-        var total = ITEMS ? ITEMS.length : 0;
-        if(!total) return;
-        var newIdx = ev.key === 'ArrowRight'
-          ? Math.min(curIdx + 1, total - 1)
-          : Math.max(curIdx - 1, 0);
-        goToCardIndex(newIdx);
-        // Focus de nieuwe actieve kaart na scroll
-        requestAnimationFrame(function(){
-          requestAnimationFrame(function(){
-            var slides = cardsCarousel.children || [];
-            var hasClones = slides[0] && slides[0].classList && slides[0].classList.contains('is-clone');
-            var targetSlide = slides[hasClones ? newIdx + 1 : newIdx];
-            var focusEl = targetSlide && (targetSlide.querySelector ? targetSlide.querySelector('[tabindex]') : null);
-            if(focusEl && focusEl.focus) focusEl.focus();
-          });
-        });
-      }
     });
   }
 
@@ -1496,31 +1454,26 @@ function openInfo(){
     for(var i=0;i<(items||[]).length;i++){
       var it = items[i] || {};
 
-      var slide = document.createElement('div');
+      var slide = w.document.createElement('div');
       slide.className = 'cardsSlide';
 
-      var inner = document.createElement('div');
+      var inner = w.document.createElement('div');
       inner.className = 'cardsSlideInner';
 
-      var card = document.createElement('div');
+      var card = w.document.createElement('div');
       card.className = 'cardsSlideCard pkFlip';
       card.setAttribute('role','button');
       card.setAttribute('tabindex','0');
       card.setAttribute('aria-pressed','false');
-      if(it.q || it.voorkant){
-        card.setAttribute('aria-label', (it.q || it.voorkant) + ' – druk Enter om te draaien');
-      }
 
-      var flip = document.createElement('div');
+      var flip = w.document.createElement('div');
       flip.className = 'pkFlipInner';
 
-      var front = document.createElement('div');
+      var front = w.document.createElement('div');
       front.className = 'pkFace pkFront';
 
-      var img = document.createElement('img');
+      var img = w.document.createElement('img');
       img.className = 'bg';
-      img.loading = 'lazy';
-      img.decoding = 'async';
       var rectSrc = it.bg || '';
       var fullSrc = rectSrc.indexOf('/cards_rect/') !== -1 ? rectSrc.replace('/cards_rect/','/cards/') : rectSrc;
       img.setAttribute('data-src-rect', rectSrc);
@@ -1551,16 +1504,16 @@ function openInfo(){
 
       var frontText = (it && (it.q || it.voorkant)) ? (it.q || it.voorkant) : '';
       if(frontText){
-        var q = document.createElement('div');
+        var q = w.document.createElement('div');
         q.className = 'cardsSlideQ';
-        var qSpan = document.createElement('span');
+        var qSpan = w.document.createElement('span');
         qSpan.className = 'cardsSlideQText';
         qSpan.textContent = safeText(frontText);
         q.appendChild(qSpan);
         front.appendChild(q);
       }
 
-      var back = document.createElement('div');
+      var back = w.document.createElement('div');
       back.className = 'pkFace pkBack';
 
       var backMode = CURRENT_BACK_MODE || 'mirror';
@@ -1572,10 +1525,8 @@ function openInfo(){
         if(backMode === 'cover'){
           backSrc = pathForSet(CURRENT_SET, 'cards/' + CURRENT_COVER);
           backSrcRect = pathForSet(CURRENT_SET, 'cards_rect/' + CURRENT_COVER);
-          var backImg = document.createElement('img');
+          var backImg = w.document.createElement('img');
           backImg.className = 'bg pkBackImg';
-          backImg.loading = 'lazy';
-          backImg.decoding = 'async';
           backImg.src = PK.withV ? PK.withV(backSrcRect) : backSrcRect;
           backImg.onerror = function(){
             this.onerror = null;
@@ -1593,10 +1544,8 @@ function openInfo(){
             backSrcRect = backSrc.replace('/cards/','/cards_rect/');
           }
 
-          var backImg2 = document.createElement('img');
+          var backImg2 = w.document.createElement('img');
           backImg2.className = 'bg pkBackImg' + (mirrorBack ? ' is-mirror' : '');
-          backImg2.loading = 'lazy';
-          backImg2.decoding = 'async';
           backImg2.src = PK.withV ? PK.withV(backSrc) : backSrc;
           if(backSrcRect){
             backImg2.onerror = function(){
@@ -1611,9 +1560,9 @@ function openInfo(){
 
       var backText = (it && (it.back || it.achterkant)) ? (it.back || it.achterkant) : '';
       if(backText){
-        var bt = document.createElement('div');
+        var bt = w.document.createElement('div');
         bt.className = 'cardsSlideBackText';
-        var btSpan = document.createElement('span');
+        var btSpan = w.document.createElement('span');
         btSpan.className = 'cardsSlideBackTextInner';
         btSpan.textContent = safeText(backText);
         bt.appendChild(btSpan);
@@ -1633,9 +1582,9 @@ function openInfo(){
     __activeCarouselIdx = 0;
     resetAllFlippedCards();
     // Tint direct laten meekleuren met de eerste kaart.
-    setTimeout(function(){ setActiveTintByIndex(0); }, 0);
+    w.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
     // Houd de sheet compact zolang alleen de kaart zichtbaar is.
-    setTimeout(measureAndSetCompactH, 0);
+    w.setTimeout(measureAndSetCompactH, 0);
   }
 
   // -----------------------------
@@ -1660,7 +1609,7 @@ function openInfo(){
 
       try{
         if(!__tintCanvas){
-          __tintCanvas = document.createElement('canvas');
+          __tintCanvas = w.document.createElement('canvas');
           __tintCanvas.width = 64;
           __tintCanvas.height = 64;
           __tintCtx = __tintCanvas.getContext('2d', { willReadFrequently: true });
@@ -1716,10 +1665,10 @@ function openInfo(){
   // de originele dominante kleur beschikbaar houden.
   function setCssTint(bgRgbCsv, hueRgbCsv){
     try{
-      document.documentElement.style.setProperty('--activeTintRgb', bgRgbCsv || '255, 255, 255');
-      document.documentElement.style.setProperty('--activeHueRgb', hueRgbCsv || bgRgbCsv || '255, 255, 255');
+      w.document.documentElement.style.setProperty('--activeTintRgb', bgRgbCsv || '255, 255, 255');
+      w.document.documentElement.style.setProperty('--activeHueRgb', hueRgbCsv || bgRgbCsv || '255, 255, 255');
       // Backward compat (oude css gebruikte alpha). Niet meer leidend.
-      document.documentElement.style.setProperty('--activeTintA','1');
+      w.document.documentElement.style.setProperty('--activeTintA','1');
     }catch(_e){}
   }
 
@@ -1924,7 +1873,7 @@ function openInfo(){
     var __tintRaf = 0;
     function scheduleTintUpdate(){
       if(__tintRaf) return;
-      __tintRaf = requestAnimationFrame(function(){
+      __tintRaf = w.requestAnimationFrame(function(){
         __tintRaf = 0;
         var idx = getActiveCardIndex();
         if(idx !== __activeCarouselIdx){
@@ -1938,11 +1887,11 @@ function openInfo(){
       });
     }
     cardsCarousel.addEventListener('scroll', scheduleTintUpdate, { passive: true });
-    window.addEventListener('resize', function(){
-      requestAnimationFrame(function(){
+    w.addEventListener('resize', function(){
+      w.setTimeout(function(){
         var idx = getActiveCardIndex();
         setActiveTintByIndex(idx);
-      });
+      }, 30);
     });
   }
 
@@ -1952,7 +1901,7 @@ function openInfo(){
   // --- Sheet hoogte helpers (compact kaarten -> max uitleg) ---
   function getCssPx(el, name, fallback){
     try{
-      var cs = getComputedStyle(el || document.documentElement);
+      var cs = w.getComputedStyle(el || w.document.documentElement);
       var v = cs.getPropertyValue(name);
       var n = parseFloat(String(v || '').replace('px',''));
       return isNaN(n) ? fallback : n;
@@ -1960,7 +1909,7 @@ function openInfo(){
   }
 
   function getSheetMaxH(){
-    return getCssPx(infoSheet, '--sheetMaxH', getCssPx(document.documentElement, '--sheetPageH', 520) || 520);
+    return getCssPx(infoSheet, '--sheetMaxH', getCssPx(w.document.documentElement, '--sheetPageH', 520) || 520);
   }
 
   function getSheetCurH(){
@@ -2043,7 +1992,7 @@ function openInfo(){
 
     function currentTranslateY(el){
       try{
-        var st = getComputedStyle(el);
+        var st = w.getComputedStyle(el);
         var tr = st.transform || st.webkitTransform || 'none';
         if(!tr || tr === 'none') return 0;
         // matrix(a,b,c,d,tx,ty)
@@ -2119,10 +2068,10 @@ function openInfo(){
 
       if(ev && ev.preventDefault) ev.preventDefault();
 
-      window.addEventListener('touchmove', onMove, { passive:false });
-      window.addEventListener('touchend', onUp, { passive:true });
-      window.addEventListener('pointermove', onMove);
-      window.addEventListener('pointerup', onUp);
+      w.addEventListener('touchmove', onMove, { passive:false });
+      w.addEventListener('touchend', onUp, { passive:true });
+      w.addEventListener('pointermove', onMove);
+      w.addEventListener('pointerup', onUp);
     }
 
     function onMove(ev){
@@ -2172,7 +2121,7 @@ function openInfo(){
       if(ev && ev.preventDefault) ev.preventDefault();
 
       if(!raf){
-        raf = requestAnimationFrame(function(){
+        raf = w.requestAnimationFrame(function(){
           raf = 0;
           applySheet(targetY);
         });
@@ -2208,7 +2157,7 @@ function openInfo(){
       infoSheet.style.transition = 'transform 280ms cubic-bezier(0.2, 0.85, 0.2, 1)';
       applySheet(sheetTargetY);
 
-      setTimeout(function(){
+      w.setTimeout(function(){
         infoSheet.style.transition = '';
         infoSheet.style.transform = '';
         if(infoCard && infoCard.classList){
@@ -2241,7 +2190,7 @@ function openInfo(){
     loadAndRender();
     // Kaartenpagina bestaat altijd: bouw de carrousel zodra items geladen zijn.
     // (Geen dynamisch mounten na interactie.)
-    setTimeout(function(){
+    w.setTimeout(function(){
       if(cardsCarousel && !cardsCarousel.children.length && ITEMS && ITEMS.length){
         renderCards(ITEMS);
       }
@@ -2251,5 +2200,21 @@ function openInfo(){
     // Gestures activeren (Google Maps-achtig) zodra de sheet wordt geopend.
     // (We initialiseren hier alvast zodat de handle meteen werkt als de sheet open is.)
     try{ initDrag(); w.__pkInfoDragInited = true; }catch(_e){}
+
+  // Toetsenbordnavigatie: pijltoetsen door kaarten-carrousel
+  w.document.addEventListener('keydown', function(ev) {
+    var key = ev && (ev.key || '');
+    var code = ev && (ev.keyCode || 0);
+    if (key === 'ArrowLeft' || code === 37) {
+      ev.preventDefault();
+      var cur = getActiveCardIndex ? getActiveCardIndex() : 0;
+      goToCardIndex(cur - 1);
+    } else if (key === 'ArrowRight' || code === 39) {
+      ev.preventDefault();
+      var cur2 = getActiveCardIndex ? getActiveCardIndex() : 0;
+      goToCardIndex(cur2 + 1);
+    }
+  });
+
   }
-}
+})(window);

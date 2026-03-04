@@ -1,31 +1,12 @@
-// Praatkaartjes – sets-pagina (grid)
-import { setThemeChrome } from '../core/theme.js';
-import { getJson, loadJson } from '../core/net.js';
-import { PATHS, withV, pathForSet, DEBUG } from '../core/paths.js';
-import { getQueryParam } from '../core/query.js';
-import { applyUiConfig, UI_ACTIVE } from '../core/ui.js';
-import { applyCssVars } from '../shell/initShell.js';
-import { createMenu } from '../components/menu.js';
-import { createMenuItem } from '../components/cardRenderer.js';
-import { gridBackground } from '../components/gridBackground.js';
+// Praatkaartjes – kaartensets index (ES5)
+// Doel: simpele, voorspelbare sets-pagina zonder gedeelde "carousel" classes
+// die elders ook gebruikt worden (en daardoor onverwachte styling/scroll gedrag geven).
+(function(w){
+  'use strict';
 
-export function initGrid() {
-  // Lokale w/PK alias zodat interne code ongewijzigd werkt
-  const w   = window;
-  const doc = document;
-  const PK = {
-    get DEBUG()     { return DEBUG; },
-    get PATHS()     { return PATHS; },
-    get UI_ACTIVE() { return UI_ACTIVE; },
-    withV, pathForSet, getJson, loadJson,
-    applyUiConfig,
-    createMenu,
-    createMenuItem,
-    gridBackground,
-    setThemeChrome,
-    shell: { applyCssVars },
-    pages: {},
-  };
+  var PK = w.PK = w.PK || {};
+  PK.pages = PK.pages || {};
+  var doc = w.document;
 
   var carousel = doc.getElementById('setsCarousel'); // .setsHeroCarousel
   var grid = doc.getElementById('setsGrid');
@@ -65,7 +46,7 @@ export function initGrid() {
       target = (PK && PK.PATHS && PK.PATHS.gridPage) ? String(PK.PATHS.gridPage) : '';
     }catch(_eHome){}
     if(!target) target = './index.html';
-    try{ window.location.href = target; }catch(_eNav){}
+    try{ w.location.href = target; }catch(_eNav){}
   }
   if(PK.createMenu){
     menuApi = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
@@ -227,7 +208,7 @@ export function initGrid() {
       candidates.push(cssVars['pk-set-card']);
     }
     try{
-      var rs = getComputedStyle ? getComputedStyle(doc.documentElement) : null;
+      var rs = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
       if(rs){
         candidates.push(rs.getPropertyValue('--pk-set-bg'));
         candidates.push(rs.getPropertyValue('--bg-base-color'));
@@ -294,7 +275,7 @@ export function initGrid() {
     if(!doc || !doc.documentElement || !doc.body) return;
     if(!doc.body.classList || !doc.body.classList.contains('setsIndex')) return;
 
-    var scrollTop = window.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+    var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
     var heroEnd = 0;
 
     if(gridSection && !gridSection.hidden && gridSection.getBoundingClientRect){
@@ -302,7 +283,7 @@ export function initGrid() {
     }else if(heroSection && !heroSection.hidden && heroSection.getBoundingClientRect){
       heroEnd = Math.round(scrollTop + heroSection.getBoundingClientRect().bottom);
     }else{
-      heroEnd = Math.round(scrollTop + (window.innerHeight || 0) * 0.62);
+      heroEnd = Math.round(scrollTop + (w.innerHeight || 0) * 0.62);
     }
 
     if(!isFinite(heroEnd) || heroEnd < 220) heroEnd = 220;
@@ -311,7 +292,7 @@ export function initGrid() {
 
   function scheduleBackgroundBands(){
     if(bgBandsTimer) w.clearTimeout(bgBandsTimer);
-    bgBandsTimer = setTimeout(function(){
+    bgBandsTimer = w.setTimeout(function(){
       updateBackgroundBandsNow();
       syncHeroCardStates();
       syncGridCardStates();
@@ -321,9 +302,9 @@ export function initGrid() {
   function ensureBackgroundBandSync(){
     if(bgBandsBound) return;
     bgBandsBound = true;
-    window.addEventListener('resize', scheduleBackgroundBands, { passive:true });
-    window.addEventListener('orientationchange', scheduleBackgroundBands, { passive:true });
-    window.addEventListener('load', scheduleBackgroundBands, { passive:true });
+    w.addEventListener('resize', scheduleBackgroundBands, { passive:true });
+    w.addEventListener('orientationchange', scheduleBackgroundBands, { passive:true });
+    w.addEventListener('load', scheduleBackgroundBands, { passive:true });
   }
 
   function getCardsPage(){
@@ -345,7 +326,7 @@ export function initGrid() {
 
   function getVisitCounts(){
     try{
-      var raw = localStorage.getItem('pk_set_counts') || '';
+      var raw = w.localStorage.getItem('pk_set_counts') || '';
       var data = raw ? JSON.parse(raw) : {};
       if(!data || typeof data !== 'object') return {};
       return data;
@@ -355,7 +336,7 @@ export function initGrid() {
 
   function getLastVisitedId(sets, fallbackId){
     var last = '';
-    try{ last = trim(localStorage.getItem('pk_last_set') || ''); }catch(_eLast){}
+    try{ last = trim(w.localStorage.getItem('pk_last_set') || ''); }catch(_eLast){}
     if(last){
       for(var i=0;i<sets.length;i++){
         if(trim((sets[i] || {}).id || '') === last) return last;
@@ -506,6 +487,35 @@ export function initGrid() {
     }
   }
 
+  // Pijltoetsen: navigeer door hero-carrousel
+  function heroArrowNav(direction){
+    if(!carousel) return;
+    var sw = getHeroSlideWidth();
+    if(!sw) return;
+    var nReal = getHeroRealCount();
+    if(!nReal) return;
+    var curIdx = Math.round((carousel.scrollLeft || 0) / sw);
+    if(isHeroInfinite()) curIdx = curIdx - 1;
+    var next = curIdx + direction;
+    if(isHeroInfinite()){
+      if(carousel.scrollTo) carousel.scrollTo({ left: (next + 1) * sw, behavior: 'smooth' });
+      else carousel.scrollLeft = (next + 1) * sw;
+    } else {
+      if(next < 0) next = nReal - 1;
+      if(next >= nReal) next = 0;
+      if(carousel.scrollTo) carousel.scrollTo({ left: next * sw, behavior: 'smooth' });
+      else carousel.scrollLeft = next * sw;
+    }
+  }
+
+  w.document.addEventListener('keydown', function(ev){
+    if(!heroSection || heroSection.hidden) return;
+    var key = ev && (ev.key || '');
+    var code = ev && (ev.keyCode || 0);
+    if(key === 'ArrowLeft'  || code === 37){ ev.preventDefault(); heroArrowNav(-1); }
+    else if(key === 'ArrowRight' || code === 39){ ev.preventDefault(); heroArrowNav(1); }
+  });
+
   function bindDots(){
     if(!carousel || dotsBound) return;
     dotsBound = true;
@@ -513,7 +523,7 @@ export function initGrid() {
     carousel.addEventListener('scroll', function(){
       if(ticking) return;
       ticking = true;
-      requestAnimationFrame(function(){
+      w.requestAnimationFrame(function(){
         ticking = false;
         var sw = getHeroSlideWidth() || 1;
         var nReal = getHeroRealCount();
@@ -531,7 +541,7 @@ export function initGrid() {
   function resetPositions(){
     // iOS/Safari kan scrollposities terugzetten bij refresh/back (bfcache).
     // We willen dat de sets-pagina altijd netjes bovenaan begint + op slide 0.
-    try{ window.scrollTo(0, 0); }catch(_e0){}
+    try{ w.scrollTo(0, 0); }catch(_e0){}
     if(carousel){
       try{
         var sw = getHeroSlideWidth();
@@ -571,7 +581,7 @@ export function initGrid() {
       return (r && r.width) ? r.width : 0;
     }
 
-    requestAnimationFrame(function(){
+    w.requestAnimationFrame(function(){
       var w1 = slideWidth();
       if(w1) container.scrollLeft = w1;
     });
@@ -591,13 +601,13 @@ export function initGrid() {
       if(left <= sw * 0.25){
         jumping = true;
         container.scrollLeft = sw * nReal;
-        requestAnimationFrame(function(){ jumping = false; });
+        w.requestAnimationFrame(function(){ jumping = false; });
         return;
       }
       if(left >= sw * (nReal + 1 - 0.25)){
         jumping = true;
         container.scrollLeft = sw;
-        requestAnimationFrame(function(){ jumping = false; });
+        w.requestAnimationFrame(function(){ jumping = false; });
       }
     }, { passive:true });
 
@@ -605,8 +615,8 @@ export function initGrid() {
   }
 
   // pageshow vuurt ook bij bfcache "back" — dan wil je juist resetten.
-  window.addEventListener('pageshow', function(){
-    setTimeout(function(){
+  w.addEventListener('pageshow', function(){
+    w.setTimeout(function(){
       resetPositions();
       scheduleBackgroundBands();
     }, 0);
@@ -617,7 +627,7 @@ export function initGrid() {
 
     // 1) laatste bezochte set (kaarten route)
     var last = '';
-    try{ last = trim(localStorage.getItem('pk_last_set') || ''); }catch(_eLast){}
+    try{ last = trim(w.localStorage.getItem('pk_last_set') || ''); }catch(_eLast){}
     if(last){
       for(var i=0;i<sets.length;i++){
         var sid = trim((sets[i] || {}).id || '');
@@ -907,8 +917,8 @@ export function initGrid() {
       : 1;
     var surfaceZones = null;
     if(!isDark){
-      var vpH = window.innerHeight || 0;
-      var scrollTop = window.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
+      var vpH = w.innerHeight || 0;
+      var scrollTop = w.pageYOffset || doc.documentElement.scrollTop || doc.body.scrollTop || 0;
       var topEndPx = NaN;
       var heroEndPx = NaN;
       var heroStyle = null;
@@ -917,8 +927,8 @@ export function initGrid() {
       var zoneHeroColor = '#EDF2F1';
       var zoneGridColor = '#F3F6F5';
       try{
-        heroStyle = (heroSection && getComputedStyle) ? getComputedStyle(heroSection) : null;
-        rootStyle = getComputedStyle ? getComputedStyle(doc.documentElement) : null;
+        heroStyle = (heroSection && w.getComputedStyle) ? w.getComputedStyle(heroSection) : null;
+        rootStyle = w.getComputedStyle ? w.getComputedStyle(doc.documentElement) : null;
         var heroPadTop = heroStyle ? parseFloat(String(heroStyle.paddingTop || '')) : NaN;
         var heroExtra = rootStyle ? parseFloat(String(rootStyle.getPropertyValue('--setsHeroPadExtra') || '')) : NaN;
         if(isFinite(heroPadTop) && isFinite(heroExtra)){
@@ -995,7 +1005,7 @@ export function initGrid() {
     var nextContrast = (mode === 'dark') ? 'dark' : 'light';
     var changed = (nextContrast !== CONTRAST);
     CONTRAST = nextContrast;
-    try{ sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
+    try{ w.sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
     if(doc && doc.documentElement){
       doc.documentElement.setAttribute('data-contrast', CONTRAST);
     }
@@ -1007,12 +1017,12 @@ export function initGrid() {
     }catch(_eTheme){}
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
     if(changed && lastIndexConfig) applyBackground(lastIndexConfig);
-    requestAnimationFrame(function(){
+    w.requestAnimationFrame(function(){
       try{
         if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
       }catch(_eRepaint){}
     });
-    setTimeout(function(){
+    w.setTimeout(function(){
       try{
         if(PK && typeof PK.setThemeChrome === 'function') PK.setThemeChrome(CONTRAST);
       }catch(_eRepaint2){}
@@ -1025,7 +1035,7 @@ export function initGrid() {
     if(doc && doc.body && doc.body.classList){
       doc.body.classList.toggle('shuffleOn', on);
     }
-    try{ localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
+    try{ w.localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
   }
 
   function init(){
@@ -1106,9 +1116,9 @@ export function initGrid() {
       }catch(_eTpl){}
 
       try{
-        if(PK.DEBUG && console && console.log){
-          console.log('[DEBUG] active set', state.setId);
-          console.log('[DEBUG] viewer template', (state.meta && state.meta.viewerTemplate) ? state.meta.viewerTemplate : 'classic');
+        if(PK.DEBUG && w.console && w.console.log){
+          w.console.log('[DEBUG] active set', state.setId);
+          w.console.log('[DEBUG] viewer template', (state.meta && state.meta.viewerTemplate) ? state.meta.viewerTemplate : 'classic');
         }
       }catch(_eDbg){}
 
@@ -1118,9 +1128,9 @@ export function initGrid() {
       renderHero(state.idx, state.setId, state.meta);
       renderGrid(state.idx, state.setId, state.meta);
       scheduleBackgroundBands();
-      requestAnimationFrame(function(){
+      w.requestAnimationFrame(function(){
         updateBackgroundBandsNow();
-        requestAnimationFrame(function(){
+        w.requestAnimationFrame(function(){
           updateBackgroundBandsNow();
         });
       });
@@ -1133,7 +1143,7 @@ export function initGrid() {
           var targetSet = trim(btn.getAttribute('data-set') || '');
           if(!targetSet) return;
           try{ if(menuApi && menuApi.close) menuApi.close(); }catch(_eClose){}
-          window.location.href = getCardsPage() + '?set=' + encodeURIComponent(targetSet);
+          w.location.href = getCardsPage() + '?set=' + encodeURIComponent(targetSet);
         });
       }
 
@@ -1143,7 +1153,7 @@ export function initGrid() {
       // Contrast toggle
       if(contrastBtn){
         var savedC = 'light';
-        try{ savedC = sessionStorage.getItem('pk_contrast_session') || 'light'; }catch(_eC){}
+        try{ savedC = w.sessionStorage.getItem('pk_contrast_session') || 'light'; }catch(_eC){}
         applyContrast(savedC === 'dark' ? 'dark' : 'light');
         contrastBtn.onclick = function(ev){
           if(ev && ev.preventDefault) ev.preventDefault();
@@ -1154,7 +1164,7 @@ export function initGrid() {
       // Shuffle toggle (alleen state bewaren; kaartenpagina gebruikt dit ook)
       if(shuffleBtn){
         var savedS = '0';
-        try{ savedS = localStorage.getItem('pk_shuffle') || '0'; }catch(_eS){}
+        try{ savedS = w.localStorage.getItem('pk_shuffle') || '0'; }catch(_eS){}
         setShuffleEnabled(savedS === '1');
         shuffleBtn.onclick = function(ev){
           if(ev && ev.preventDefault) ev.preventDefault();
@@ -1164,7 +1174,7 @@ export function initGrid() {
       }
 
       // Nogmaals forceren na layout (Safari)
-      requestAnimationFrame(function(){
+      w.requestAnimationFrame(function(){
         resetPositions();
       });
     }).catch(function(){
@@ -1189,5 +1199,5 @@ export function initGrid() {
     });
   }
 
-  init();
-}
+  PK.pages.initGrid = init;
+})(window);
