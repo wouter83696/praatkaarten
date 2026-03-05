@@ -24,6 +24,9 @@ export function initGrid() {
   var indexInfoOverlay = doc.getElementById('indexInfoOverlay');
   var indexInfoClose = doc.getElementById('indexInfoClose');
   var indexInfoVersion = doc.getElementById('indexInfoVersion');
+  var indexInfoCard = indexInfoSheet ? indexInfoSheet.querySelector('.infoCard') : null;
+  var indexInfoHandle = indexInfoSheet ? indexInfoSheet.querySelector('.sheetHandle') : null;
+  var indexInfoCarousel = indexInfoSheet ? indexInfoSheet.querySelector('.infoCarousel') : null;
   var lastIndexConfig = null;
   var lastRenderState = null;
   var dotsBound = false;
@@ -1059,6 +1062,36 @@ export function initGrid() {
     try{ window.localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
   }
 
+  var __indexSheetScrollLock = { on: false, y: 0 };
+  function lockIndexBackgroundScroll(enable){
+    enable = !!enable;
+    if(enable === __indexSheetScrollLock.on) return;
+
+    var docEl = doc.documentElement;
+    var body = doc.body;
+    if(!docEl || !body) return;
+
+    if(enable){
+      __indexSheetScrollLock.on = true;
+      __indexSheetScrollLock.y = (window.pageYOffset || docEl.scrollTop || body.scrollTop || 0);
+      body.style.position = 'fixed';
+      body.style.top = (-__indexSheetScrollLock.y) + 'px';
+      body.style.left = '0';
+      body.style.right = '0';
+      body.style.width = '100%';
+      docEl.style.overflow = 'hidden';
+    }else{
+      __indexSheetScrollLock.on = false;
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      docEl.style.overflow = '';
+      try{ window.scrollTo(0, __indexSheetScrollLock.y || 0); }catch(_e){}
+    }
+  }
+
   function openIndexSheet(){
     if(!indexInfoSheet) return;
     indexInfoSheet.hidden = false;
@@ -1069,18 +1102,194 @@ export function initGrid() {
       if(indexInfoSheet.classList) indexInfoSheet.classList.add('open');
       if(indexInfoOverlay && indexInfoOverlay.classList) indexInfoOverlay.classList.add('open');
     });
+    lockIndexBackgroundScroll(true);
     if(menuInfoBtn) menuInfoBtn.setAttribute('aria-expanded','true');
   }
 
-  function closeIndexSheet(){
+  function closeIndexSheet(opts){
+    opts = opts || {};
     if(!indexInfoSheet) return;
     if(indexInfoSheet.classList) indexInfoSheet.classList.remove('open');
     if(indexInfoOverlay && indexInfoOverlay.classList) indexInfoOverlay.classList.remove('open');
+    var wait = opts.immediate ? 0 : 320;
     window.setTimeout(function(){
       if(indexInfoSheet) indexInfoSheet.hidden = true;
       if(indexInfoOverlay) indexInfoOverlay.hidden = true;
-    }, 320);
+      lockIndexBackgroundScroll(false);
+    }, wait);
     if(menuInfoBtn) menuInfoBtn.setAttribute('aria-expanded','false');
+  }
+
+  function initIndexSheetDrag(){
+    if(!indexInfoHandle || !indexInfoSheet) return;
+
+    var dragging = false;
+    var startY = 0;
+    var startX = 0;
+    var dy = 0;
+    var dx = 0;
+    var raf = 0;
+    var lastMoveT = 0;
+    var lastMoveY = 0;
+    var vY = 0;
+    var cancelled = false;
+    var baseSheetY = 0;
+
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    function getY(ev){
+      if(!ev) return 0;
+      if(ev.touches && ev.touches.length) return ev.touches[0].clientY;
+      if(typeof ev.clientY === 'number') return ev.clientY;
+      return 0;
+    }
+    function getX(ev){
+      if(!ev) return 0;
+      if(ev.touches && ev.touches.length) return ev.touches[0].clientX;
+      if(typeof ev.clientX === 'number') return ev.clientX;
+      return 0;
+    }
+    function rubberBand(dist){
+      var c = 160;
+      var d = Math.abs(dist);
+      var r = (c * d) / (c + d);
+      return (dist < 0) ? -r : r;
+    }
+    function currentTranslateY(el){
+      try{
+        var st = window.getComputedStyle(el);
+        var tr = st.transform || st.webkitTransform || 'none';
+        if(!tr || tr === 'none') return 0;
+        var m = tr.match(/matrix\(([^)]+)\)/);
+        if(m && m[1]){
+          var parts = m[1].split(',');
+          var ty = parseFloat(parts[5] || '0');
+          return isNaN(ty) ? 0 : ty;
+        }
+        var m3 = tr.match(/matrix3d\(([^)]+)\)/);
+        if(m3 && m3[1]){
+          var p3 = m3[1].split(',');
+          var ty3 = parseFloat(p3[13] || '0');
+          return isNaN(ty3) ? 0 : ty3;
+        }
+      }catch(_e){}
+      return 0;
+    }
+    function applySheet(y){
+      indexInfoSheet.style.transform = 'translate3d(0,' + y + 'px,0)';
+    }
+
+    function onDown(ev){
+      if(!indexInfoSheet || indexInfoSheet.hidden) return;
+      var t = ev && ev.target;
+      var inCarousel = !!(indexInfoCarousel && t && t.closest && t.closest('.infoCarousel') === indexInfoCarousel);
+      var inHandle = !!(t && t.closest && t.closest('.sheetHandle'));
+      var inClose = !!(t && t.closest && t.closest('.infoClose'));
+      if(inClose) return;
+      if(inCarousel && !inHandle) return;
+
+      dragging = true;
+      cancelled = false;
+      startX = getX(ev);
+      startY = getY(ev);
+      dy = 0;
+      dx = 0;
+      vY = 0;
+      lastMoveT = Date.now();
+      lastMoveY = startY;
+      baseSheetY = currentTranslateY(indexInfoSheet);
+
+      indexInfoSheet.style.transition = 'none';
+      lockIndexBackgroundScroll(true);
+      if(ev && ev.preventDefault) ev.preventDefault();
+
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onUp, { passive: true });
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    }
+
+    function onMove(ev){
+      if(!dragging || cancelled) return;
+      var y = getY(ev);
+      var x = getX(ev);
+      dy = (y - startY);
+      dx = (x - startX);
+
+      if(Math.abs(dx) > Math.abs(dy) * 1.15){
+        cancelled = true;
+        onUp();
+        return;
+      }
+
+      var sheetH = indexInfoSheet.getBoundingClientRect ? indexInfoSheet.getBoundingClientRect().height : 520;
+      var openY = 0;
+      var closeY = Math.max(0, sheetH);
+      var targetY = baseSheetY + dy;
+
+      if(targetY < openY){
+        targetY = openY + rubberBand(targetY - openY);
+      }else if(targetY > closeY){
+        targetY = closeY + rubberBand(targetY - closeY);
+      }else{
+        targetY = clamp(targetY, openY, closeY);
+      }
+
+      var now = Date.now();
+      var dtv = now - lastMoveT;
+      if(dtv > 0){
+        var inst = (y - lastMoveY) / dtv;
+        vY = (vY * 0.8) + (inst * 0.2);
+        lastMoveY = y;
+        lastMoveT = now;
+      }
+
+      if(ev && ev.preventDefault) ev.preventDefault();
+      if(!raf){
+        raf = window.requestAnimationFrame(function(){
+          raf = 0;
+          applySheet(targetY);
+        });
+      }
+    }
+
+    function onUp(){
+      if(!dragging) return;
+      dragging = false;
+
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onUp);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+
+      var sheetH = indexInfoSheet.getBoundingClientRect ? indexInfoSheet.getBoundingClientRect().height : 520;
+      var openY = 0;
+      var closeY = Math.max(0, sheetH);
+      var sheetY = currentTranslateY(indexInfoSheet);
+      var shouldClose = (sheetY > 90 || vY > 0.85);
+      var targetY = shouldClose ? closeY : openY;
+
+      indexInfoSheet.style.transition = 'transform 280ms cubic-bezier(0.2, 0.85, 0.2, 1)';
+      applySheet(targetY);
+
+      window.setTimeout(function(){
+        indexInfoSheet.style.transition = '';
+        indexInfoSheet.style.transform = '';
+        if(shouldClose){
+          closeIndexSheet({ immediate: true });
+        }
+      }, 320);
+    }
+
+    indexInfoHandle.addEventListener('touchstart', onDown, { passive: false });
+    indexInfoHandle.addEventListener('pointerdown', onDown);
+    if(indexInfoCard){
+      indexInfoCard.addEventListener('touchstart', onDown, { passive: false });
+      indexInfoCard.addEventListener('pointerdown', onDown);
+    }
+    indexInfoHandle.addEventListener('click', function(){
+      if(indexInfoSheet && !indexInfoSheet.hidden) closeIndexSheet();
+      else openIndexSheet();
+    });
   }
 
   function initIndexSheet(){
@@ -1110,6 +1319,11 @@ export function initGrid() {
         closeIndexSheet();
       }
     });
+
+    if(indexInfoSheet && !indexInfoSheet.__pkDragBound){
+      initIndexSheetDrag();
+      indexInfoSheet.__pkDragBound = true;
+    }
   }
 
   function init(){

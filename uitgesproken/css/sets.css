@@ -359,16 +359,21 @@ html[data-contrast="dark"] .indexBgSvg{
 
 .indexInfoCard {
   height: 100%;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .indexInfoSheet .sheetViewport {
-  max-height: var(--sheetCurH);
-  height: var(--sheetCurH);
+  height: 100%;
+  max-height: none;
 }
 
 .indexInfoSheet .sheetStack,
 .indexInfoSheet .sheetPage {
-  min-height: var(--sheetCurH);
+  min-height: 100%;
+}
+
+.indexInfoCarousel {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
 }
 
 .indexInfoSlideCard {
@@ -377,14 +382,58 @@ html[data-contrast="dark"] .indexBgSvg{
 .indexInfoSlideCard::after{
   content: none;
 }
-.indexInfoCoverImg {
-  background: #a8e1dd;
+.indexInfoCover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3.2%, 26px) 16px;
+  text-align: center;
+  user-select: none;
+  pointer-events: none;
+  transform: translateY(-1.5%);
 }
 
-.indexInfoCoverImg[src*="voorkant-main.svg"]{
+.indexInfoBubbleIcon {
+  width: clamp(148px, 39%, 340px);
+  height: auto;
+  display: block;
+}
+.indexInfoSlideCard .indexInfoBubbleIcon{
+  position: relative;
+  inset: auto;
+  width: clamp(148px, 39%, 340px) !important;
+  height: auto !important;
+  max-width: 100%;
+  margin: 0;
   object-fit: contain;
   object-position: center;
-  transform: none;
+  transform: none !important;
+}
+
+.indexInfoCoverTitle {
+  margin: clamp(10px, 2.2%, 16px) 0 0;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: clamp(24px, 4.8vw, 56px);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: 0.004em;
+  color: #4f8e9e;
+  max-width: 92%;
+}
+
+.indexInfoCoverSub {
+  margin: clamp(6px, 1.2%, 10px) 0 0;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: clamp(10px, 1.35vw, 16px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: 0.1em;
+  color: #4f8e9e;
+  text-transform: uppercase;
+  max-width: 92%;
 }
 
 .indexInfoSlideText {
