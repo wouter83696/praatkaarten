@@ -1,0 +1,30 @@
+/* Praatkaartjes – gedeelde shell styles */
+@import "./menu.css?v=4.2.36";
+@import "./cards.css?v=4.1.4";
+
+/* Skip-link (WCAG 2.1 2.4.1) */
+.skipLink.srOnly {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skipLink.srOnly:focus {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  padding: 8px 16px;
+  background: #fff;
+  color: #1a1a2e;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18);
+  z-index: 9999;
+  text-decoration: none;
+}
