@@ -18,7 +18,14 @@ export function initGrid() {
   var gridSection = doc.querySelector ? doc.querySelector('.setsGridSection') : null;
 
   var CONTRAST = 'light';
+
+  // Index info sheet (volledig los van kaarten-sheet)
+  var indexInfoSheet = doc.getElementById('indexInfoSheet');
+  var indexInfoOverlay = doc.getElementById('indexInfoOverlay');
+  var indexInfoClose = doc.getElementById('indexInfoClose');
+  var indexInfoVersion = doc.getElementById('indexInfoVersion');
   var lastIndexConfig = null;
+  var lastRenderState = null;
   var dotsBound = false;
   var bgBandsBound = false;
   var bgBandsTimer = 0;
@@ -345,15 +352,33 @@ export function initGrid() {
     return (sets[0] && sets[0].id) ? trim(sets[0].id) : '';
   }
 
-  function getDefaultOrder(idx, activeSetId){
+  function getDefaultOrder(idx){
     var sets = (idx && Array.isArray(idx.sets)) ? idx.sets : [];
-    var ordered = [];
-    if(activeSetId) ordered.push(activeSetId);
+    var items = [];
     for(var i=0;i<sets.length;i++){
       var sid = trim((sets[i] || {}).id || '');
-      if(sid && sid !== activeSetId) ordered.push(sid);
+      if(!sid) continue;
+      items.push({ id: sid, title: String((sets[i] || {}).title || sid) });
     }
-    return ordered;
+    items.sort(function(a, b){
+      return a.title.localeCompare(b.title, 'nl', { sensitivity: 'base' });
+    });
+    return items.map(function(s){ return s.id; });
+  }
+
+  function shuffleArray(arr){
+    var a = arr.slice();
+    for(var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function getOrderedSets(idx){
+    var isShuffled = !!(shuffleBtn && shuffleBtn.getAttribute('aria-pressed') === 'true');
+    var base = getDefaultOrder(idx);
+    return isShuffled ? shuffleArray(base) : base;
   }
 
   function getHeroSetOrder(idx, activeSetId, limit){
@@ -829,7 +854,7 @@ export function initGrid() {
     }
 
     var maxItems = getGridLimit();
-    var ordered = maxItems > 0 ? getHeroSetOrder(idx, activeSetId, maxItems) : getDefaultOrder(idx, activeSetId);
+    var ordered = maxItems > 0 ? getHeroSetOrder(idx, activeSetId, maxItems) : getOrderedSets(idx);
     var count = 0;
     for(var k=0;k<ordered.length;k++){
       if(maxItems > 0 && count >= maxItems) break;
@@ -1033,8 +1058,62 @@ export function initGrid() {
     try{ window.localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
   }
 
+  function openIndexSheet(){
+    if(!indexInfoSheet) return;
+    indexInfoSheet.hidden = false;
+    if(indexInfoOverlay) indexInfoOverlay.hidden = false;
+    // force reflow
+    try{ indexInfoSheet.offsetHeight; }catch(_e){}
+    window.requestAnimationFrame(function(){
+      if(indexInfoSheet.classList) indexInfoSheet.classList.add('open');
+      if(indexInfoOverlay && indexInfoOverlay.classList) indexInfoOverlay.classList.add('open');
+    });
+    if(menuInfoBtn) menuInfoBtn.setAttribute('aria-expanded','true');
+  }
+
+  function closeIndexSheet(){
+    if(!indexInfoSheet) return;
+    if(indexInfoSheet.classList) indexInfoSheet.classList.remove('open');
+    if(indexInfoOverlay && indexInfoOverlay.classList) indexInfoOverlay.classList.remove('open');
+    window.setTimeout(function(){
+      if(indexInfoSheet) indexInfoSheet.hidden = true;
+      if(indexInfoOverlay) indexInfoOverlay.hidden = true;
+    }, 320);
+    if(menuInfoBtn) menuInfoBtn.setAttribute('aria-expanded','false');
+  }
+
+  function initIndexSheet(){
+    // Versienummer invullen
+    try{
+      if(indexInfoVersion && window.PK_ASSET_V){
+        indexInfoVersion.textContent = 'build ' + window.PK_ASSET_V;
+      }
+    }catch(_e){}
+
+    if(menuInfoBtn){
+      menuInfoBtn.addEventListener('click', function(ev){
+        if(ev) ev.stopPropagation();
+        // Sluit het menu eerst
+        try{ if(menuApi && menuApi.close) menuApi.close(); }catch(_e){}
+        openIndexSheet();
+      });
+    }
+    if(indexInfoClose){
+      indexInfoClose.addEventListener('click', closeIndexSheet);
+    }
+    if(indexInfoOverlay){
+      indexInfoOverlay.addEventListener('click', closeIndexSheet);
+    }
+    document.addEventListener('keydown', function(ev){
+      if(ev && ev.key === 'Escape' && indexInfoSheet && !indexInfoSheet.hidden){
+        closeIndexSheet();
+      }
+    });
+  }
+
   function init(){
     resetPositions();
+    initIndexSheet();
     if(!window.PK.loadJson && !window.PK.getJson) return;
 
     function normalizeIndex(idx){
@@ -1120,6 +1199,7 @@ export function initGrid() {
       applyIndexLayout();
       ensureBackgroundBandSync();
 
+      lastRenderState = state;
       renderHero(state.idx, state.setId, state.meta);
       renderGrid(state.idx, state.setId, state.meta);
       scheduleBackgroundBands();
@@ -1165,6 +1245,9 @@ export function initGrid() {
           if(ev && ev.preventDefault) ev.preventDefault();
           var isOn = shuffleBtn.getAttribute('aria-pressed') === 'true';
           setShuffleEnabled(!isOn);
+          if(lastRenderState){
+            renderGrid(lastRenderState.idx, lastRenderState.setId, lastRenderState.meta);
+          }
         };
       }
 
