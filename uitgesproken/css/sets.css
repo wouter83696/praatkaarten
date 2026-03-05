@@ -359,76 +359,36 @@ html[data-contrast="dark"] .indexBgSvg{
 
 .indexInfoCard {
   height: 100%;
-  box-shadow: none;
 }
 
 .indexInfoSheet .sheetViewport {
-  height: 100%;
-  max-height: none;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
+  max-height: var(--sheetCurH);
+  height: var(--sheetCurH);
 }
 
 .indexInfoSheet .sheetStack,
 .indexInfoSheet .sheetPage {
-  min-height: 100%;
+  min-height: var(--sheetCurH);
 }
 
-.indexInfoCarousel {
-  overflow-x: hidden;
-  overflow-y: visible;
-  touch-action: pan-y;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
-}
-
-.indexInfoCarousel .infoSlide {
-  flex-basis: 100%;
-  padding-bottom: 0;
-}
-
-.indexInfoSlideInner {
-  max-width: 820px;
-  margin: 0 auto;
-}
-
-/* Sluitknop rechtsboven in de sheet */
-.indexInfoClose {
-  position: absolute;
-  top: 8px;
-  right: max(10px, env(safe-area-inset-right, 0px) + 10px);
-  z-index: 20;
-}
-
-/* Tijdelijke kaart met mint logo in kaartvorm */
 .indexInfoSlideCard {
-  background: #e8f6f5;
+  background: #a8e1dd;
+}
+.indexInfoSlideCard::after{
+  content: none;
 }
 .indexInfoCoverImg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
+  background: #a8e1dd;
 }
 
-/* Main index uitlegkaart: zelfde subtiele schaal als kaartenindex-coverkaarten. */
 .indexInfoCoverImg[src*="voorkant-main.svg"]{
-  transform: scale(1.018);
-  transform-origin: center;
+  object-fit: contain;
+  object-position: center;
+  transform: none;
 }
 
 .indexInfoSlideText {
   margin-bottom: 0;
-  padding-bottom: 22px;
-  background: rgba(255,255,255,0.975);
-}
-
-html[data-contrast="dark"] .indexInfoSlideText{
-  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.86);
 }
 
 .indexInfoDivider {
