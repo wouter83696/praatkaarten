@@ -69,7 +69,7 @@
   </script>
 
   <link rel="stylesheet" href="./css/shell.css?v=4.0.55">
-  <link rel="stylesheet" href="./css/sets.css?v=3.7.1.97">
+  <link rel="stylesheet" href="./css/sets.css?v=3.7.2.1">
   <link rel="stylesheet" href="./templates/ui-base.css?v=3.7.1.15">
   <link rel="stylesheet" href="./templates/main-index.css?v=3.7.1.46">
 </head>
@@ -147,25 +147,30 @@
   <!-- Index info sheet (volledig los van kaarten-sheet) -->
   <div id="indexInfoOverlay" class="indexInfoOverlay" hidden></div>
   <section id="indexInfoSheet" class="indexInfoSheet" role="dialog" aria-label="Over Uitgesproken" hidden>
-    <div class="indexInfoSheetInner">
-      <button id="indexInfoClose" class="indexInfoClose" type="button" aria-label="Sluiten">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M18 6 6 18"/><path d="M6 6l12 12"/>
-        </svg>
-      </button>
-      <div class="indexInfoContent">
-        <div class="indexInfoLogo">
-          <img src="./assets/logo-icons/masters/master-squircle.svg" alt="Uitgesproken" class="indexInfoLogoImg">
-        </div>
-        <p class="indexInfoIntro">Uitgesproken nodigt je uit om samen te vertragen en te verdiepen. Met een breed palet aan thema's en vragen willen we nieuwsgierig maken, dialoog op gang brengen en ruimte maken voor verbinding.</p>
-        <div class="indexInfoDivider"></div>
-        <div class="indexInfoContact">
-          <p>Vragen of feedback?</p>
-          <a href="mailto:info@uitgesproken.app" class="indexInfoLink">info@uitgesproken.app</a>
-        </div>
-        <div class="indexInfoCredits">
-          <span>Uitgesproken &copy; 2026</span>
-          <span class="indexInfoVersion" id="indexInfoVersion"></span>
+    <div class="infoCard indexInfoCard">
+      <div class="sheetHandle" aria-hidden="true"></div>
+      <div class="indexInfoSheetInner">
+        <div class="indexInfoContent">
+          <div class="infoSlideCard indexInfoSlideCard">
+            <img src="./assets/logo-icons/index-cover.svg" alt="Uitgesproken" class="indexInfoCoverImg">
+            <button id="indexInfoClose" class="indexInfoClose menuMiniBtn" type="button" aria-label="Sluiten">
+              <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 6 6 18"/><path d="M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="infoSlideText indexInfoSlideText" id="indexInfoSlideText">
+            <p class="infoTextIntro">Uitgesproken nodigt je uit om samen te vertragen en te verdiepen. Met een breed palet aan thema&#8217;s en vragen willen we nieuwsgierig maken, dialoog op gang brengen en ruimte maken voor verbinding.</p>
+          </div>
+          <div class="indexInfoDivider"></div>
+          <div class="indexInfoContact">
+            <p>Vragen of feedback?</p>
+            <a href="mailto:info@uitgesproken.app" class="indexInfoLink">info@uitgesproken.app</a>
+          </div>
+          <div class="indexInfoCredits">
+            <span>Uitgesproken &copy; 2026</span>
+            <span class="indexInfoVersion" id="indexInfoVersion"></span>
+          </div>
         </div>
       </div>
     </div>

@@ -359,15 +359,9 @@ html[data-contrast="dark"] .indexBgSvg{
   transform: translateY(100%);
   transition: transform var(--ui-slow) var(--ui-ease);
   will-change: transform;
-  border-radius: 22px 22px 0 0;
-  border-top: 0.5px solid rgba(0,0,0,0.05);
-  background: rgba(var(--menuSurface, 255, 255, 255), 0.34);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
 }
 .indexInfoSheet.open {
   transform: translateY(0);
@@ -382,63 +376,45 @@ html[data-contrast="dark"] .indexBgSvg{
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 24px 24px 48px;
+  padding: 0 0 48px;
 }
 
 /* Sluitknop: zelfde kleur als hamburger */
 .indexInfoClose {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 30px;
-  height: 30px;
-  border: 0;
-  padding: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(11,18,32,var(--menuMiniIconAlpha, 0.51));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
 }
-.indexInfoClose:active {
-  background: rgba(0,0,0,0.068);
-}
-.indexInfoClose svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 1.6;
+
+/* indexInfoCard: box-shadow none, matches infoCard exactly */
+.indexInfoCard {
+  box-shadow: none;
 }
 
 .indexInfoContent {
-  padding-top: 8px;
+  padding-top: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: stretch;
 }
 
-/* Logo gecentreerd, squircle variant */
-.indexInfoLogo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 28px;
+/* Cover kaart — fallback achtergrond kleur */
+.indexInfoSlideCard {
+  background: #e8f6f5;
 }
-.indexInfoLogoImg {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
+.indexInfoCoverImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.indexInfoIntro {
-  font-size: 1.0rem;
-  line-height: 1.65;
-  color: rgba(11,18,32,0.82);
-  margin: 0 0 28px;
-  max-width: 340px;
+/* Tekstvak — marge onder vóór de divider */
+.indexInfoSlideText {
+  margin-bottom: 24px;
 }
 
 .indexInfoDivider {
@@ -480,9 +456,7 @@ html[data-contrast="dark"] .indexInfoSheet {
   background: rgba(var(--menuSurface, 30, 24, 54), 0.6);
   border-top-color: rgba(255,255,255,0.07);
 }
-html[data-contrast="dark"] .indexInfoClose {
-  color: rgba(255,255,255,var(--menuMiniIconAlpha, 0.51));
-}
+
 html[data-contrast="dark"] .indexInfoIntro {
   color: rgba(255,255,255,0.82);
 }
