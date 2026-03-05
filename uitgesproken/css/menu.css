@@ -139,18 +139,6 @@ html[data-contrast="dark"] .glassSurface::before{
   align-items: flex-start;
 }
 
-.themePillBrand::after{
-  content: "BETA";
-  display: inline-block;
-  margin-left: 2px;
-  font-size: 0.46em;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(94, 156, 165, 0.76);
-  transform: translateY(-0.54em);
-  line-height: 1;
-}
 
 .themePillMenuIcon{
   width: var(--topBarMenuTap, 36px);
@@ -528,10 +516,6 @@ html[data-contrast="dark"] .themePillBrand{
   color: var(--topBarBrandColor, #4F8E9E);
 }
 
-html[data-contrast="dark"] .themePillBrand::after{
-  color: rgba(168, 220, 228, 0.78);
-}
-
 html[data-contrast="dark"] .menuHeaderTools{
   border: 1px solid rgba(255,255,255,0.06);
   background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.46);
@@ -782,6 +766,13 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   height: 3px;
   border-radius: 999px;
   background: rgba(0,0,0,0.18);
+}
+
+.infoClose{
+  position: absolute;
+  top: 8px;
+  right: max(10px, env(safe-area-inset-right, 0px) + 10px);
+  z-index: 20;
 }
 
 .infoFrame{

@@ -773,6 +773,7 @@ export function initKaarten() {
 
   var infoSheet = document.getElementById('infoSheet');
   var infoOverlay = document.getElementById('infoOverlay');
+  var infoClose = document.getElementById('infoClose');
   var infoCarousel = document.getElementById('infoCarousel');
   // De kaarten-carrousel staat nu centraal op de pagina.
   var cardsCarousel = document.getElementById('mainCarousel');
@@ -2036,6 +2037,8 @@ export function initKaarten() {
       var t = ev && ev.target;
       var inCarousel = !!(t && t.closest && (t.closest('.infoCarousel') || t.closest('.cardsCarousel')));
       var inHandle = !!(t && t.closest && t.closest('.sheetHandle'));
+      var inClose = !!(t && t.closest && t.closest('.infoClose'));
+      if(inClose) return;
       if(inCarousel && !inHandle) return;
 
       dragging = true;
@@ -2192,6 +2195,13 @@ export function initKaarten() {
     }, 260);
     // Overlay click = sluit volledig
     if(infoOverlay) infoOverlay.onclick = peekInfo;
+    if(infoClose){
+      infoClose.onclick = function(ev){
+        if(ev && ev.preventDefault) ev.preventDefault();
+        if(ev && ev.stopPropagation) ev.stopPropagation();
+        peekInfo();
+      };
+    }
     // Gestures activeren (Google Maps-achtig) zodra de sheet wordt geopend.
     // (We initialiseren hier alvast zodat de handle meteen werkt als de sheet open is.)
     try{ initDrag(); window.__pkInfoDragInited = true; }catch(_e){}

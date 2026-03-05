@@ -24,7 +24,6 @@ export function initGrid() {
   var indexInfoOverlay = doc.getElementById('indexInfoOverlay');
   var indexInfoClose = doc.getElementById('indexInfoClose');
   var indexInfoVersion = doc.getElementById('indexInfoVersion');
-  var indexInfoSlideText = doc.getElementById('indexInfoSlideText');
   var lastIndexConfig = null;
   var lastRenderState = null;
   var dotsBound = false;
@@ -855,7 +854,8 @@ export function initGrid() {
     }
 
     var maxItems = getGridLimit();
-    var ordered = maxItems > 0 ? getHeroSetOrder(idx, activeSetId, maxItems) : getOrderedSets(idx);
+    // Grid: altijd alfabetische basisvolgorde; shuffle-toggle randomize alleen de grid.
+    var ordered = getOrderedSets(idx);
     var count = 0;
     for(var k=0;k<ordered.length;k++){
       if(maxItems > 0 && count >= maxItems) break;
@@ -1115,13 +1115,6 @@ export function initGrid() {
   function init(){
     resetPositions();
     initIndexSheet();
-    // Meekleuring tekstvak op basis van de cover-kaart
-    try{
-      if(indexInfoSlideText && window.PK && window.PK.dominantColorFromSvgText && window.PK.getText){
-        var coverUrl = './assets/logo-icons/index-cover.svg';
-        window.PK.applyDominantTint(indexInfoSlideText, coverUrl, 'rgba(255,255,255,0.975)');
-      }
-    }catch(_eTint){}
     if(!window.PK.loadJson && !window.PK.getJson) return;
 
     function normalizeIndex(idx){

@@ -334,15 +334,10 @@ html[data-contrast="dark"] .indexBgSvg{
 }
 
 /* ============================================================
-   Index Info Sheet — volledig los van kaarten-sheet
-   Gebruikt dezelfde CSS-variabelen als de kaarten-sheet
+   Index Info Sheet — zelfde opbouw als kaartenindex, eigen gedrag
    ============================================================ */
 
 .indexInfoOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.0);
-  z-index: var(--z-overlay);
   pointer-events: none;
 }
 .indexInfoOverlay.open {
@@ -350,56 +345,63 @@ html[data-contrast="dark"] .indexBgSvg{
 }
 
 .indexInfoSheet {
-  position: fixed;
-  left: 0;
-  right: 0;
+  top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 16px) + var(--topBarHeight, 64px) + 8px);
   bottom: 0;
-  top: var(--topBarHeight, 64px);
-  z-index: calc(var(--z-menu) + 1);
-  transform: translateY(100%);
-  transition: transform var(--ui-slow) var(--ui-ease);
-  will-change: transform;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.indexInfoSheet.open {
-  transform: translateY(0);
+  --sheetMaxH: 100%;
+  --sheetCompactH: 100%;
+  --sheetCurH: 100%;
+  --helpShift: 0px;
 }
 .indexInfoSheet[hidden],
 .indexInfoOverlay[hidden] {
   display: none !important;
 }
 
-.indexInfoSheetInner {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding: 0 0 48px;
-}
-
-/* Sluitknop: zelfde kleur als hamburger */
-.indexInfoClose {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
-}
-
-/* indexInfoCard: box-shadow none, matches infoCard exactly */
 .indexInfoCard {
+  height: 100%;
   box-shadow: none;
 }
 
-.indexInfoContent {
-  padding-top: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+.indexInfoSheet .sheetViewport {
+  height: 100%;
+  max-height: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
-/* Cover kaart — fallback achtergrond kleur */
+.indexInfoSheet .sheetStack,
+.indexInfoSheet .sheetPage {
+  min-height: 100%;
+}
+
+.indexInfoCarousel {
+  overflow-x: hidden;
+  overflow-y: visible;
+  touch-action: pan-y;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+.indexInfoCarousel .infoSlide {
+  flex-basis: 100%;
+  padding-bottom: 0;
+}
+
+.indexInfoSlideInner {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* Sluitknop rechtsboven in de sheet */
+.indexInfoClose {
+  position: absolute;
+  top: 8px;
+  right: max(10px, env(safe-area-inset-right, 0px) + 10px);
+  z-index: 20;
+}
+
+/* Tijdelijke kaart met mint logo in kaartvorm */
 .indexInfoSlideCard {
   background: #e8f6f5;
 }
@@ -409,19 +411,31 @@ html[data-contrast="dark"] .indexBgSvg{
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 
-/* Tekstvak — marge onder vóór de divider */
+/* Main index uitlegkaart: zelfde subtiele schaal als kaartenindex-coverkaarten. */
+.indexInfoCoverImg[src*="voorkant-main.svg"]{
+  transform: scale(1.018);
+  transform-origin: center;
+}
+
 .indexInfoSlideText {
-  margin-bottom: 24px;
+  margin-bottom: 0;
+  padding-bottom: 22px;
+  background: rgba(255,255,255,0.975);
+}
+
+html[data-contrast="dark"] .indexInfoSlideText{
+  background: rgba(var(--darkBaseRgb, 24, 18, 60), 0.86);
 }
 
 .indexInfoDivider {
   width: 100%;
   height: 1px;
-  background: rgba(var(--menuSurface, 0,0,0), 0.08);
-  margin: 0 0 20px;
+  background: rgba(var(--menuSurface, 0, 0, 0), 0.08);
+  margin: 16px 0 20px;
 }
 
 .indexInfoContact {
@@ -433,13 +447,17 @@ html[data-contrast="dark"] .indexBgSvg{
   margin: 0 0 4px;
 }
 .indexInfoLink {
-  font-size: 0.95rem;
-  color: var(--accent, #67C5BB);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: var(--topBarBrandSize, 15px);
+  font-weight: var(--topBarBrandWeight, 400);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--topBarBrandColor, #4F8E9E);
   text-decoration: none;
-  font-weight: 500;
+  opacity: 0.92;
 }
 .indexInfoLink:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .indexInfoCredits {
@@ -451,15 +469,6 @@ html[data-contrast="dark"] .indexBgSvg{
 }
 .indexInfoVersion { opacity: 0.8; }
 
-/* Dark mode — volgt zelfde patronen als kaarten-sheet */
-html[data-contrast="dark"] .indexInfoSheet {
-  background: rgba(var(--menuSurface, 30, 24, 54), 0.6);
-  border-top-color: rgba(255,255,255,0.07);
-}
-
-html[data-contrast="dark"] .indexInfoIntro {
-  color: rgba(255,255,255,0.82);
-}
 html[data-contrast="dark"] .indexInfoContact p,
 html[data-contrast="dark"] .indexInfoCredits {
   color: rgba(255,255,255,0.4);
