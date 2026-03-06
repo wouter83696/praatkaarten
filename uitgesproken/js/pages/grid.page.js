@@ -1308,6 +1308,24 @@ export function initGrid() {
         openIndexSheet();
       });
     }
+
+    // Als sheet open staat en je op de menupill tapt:
+    // sluit de sheet direct en open het menu in dezelfde tap.
+    if(pillBtn && !pillBtn.__pkIndexSheetMenuBridgeBound){
+      pillBtn.__pkIndexSheetMenuBridgeBound = true;
+      pillBtn.addEventListener('click', function(ev){
+        var sheetOpen = !!(indexInfoSheet && !indexInfoSheet.hidden);
+        if(!sheetOpen) return;
+        if(ev){
+          if(ev.preventDefault) ev.preventDefault();
+          if(ev.stopPropagation) ev.stopPropagation();
+          if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+        }
+        closeIndexSheet({ immediate: true });
+        try{ if(menuApi && menuApi.open) menuApi.open(); }catch(_eOpen){}
+      }, true);
+    }
+
     if(indexInfoClose){
       indexInfoClose.addEventListener('click', closeIndexSheet);
     }
