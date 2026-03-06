@@ -22,7 +22,7 @@ export function initShell() {
     const brand = !!(body && body.getAttribute && body.getAttribute('data-brand-icon') === '1');
     const icon = document.getElementById('setCoverIcon');
     if (brand && icon) {
-      const src = pathForAsset('logo-icons/masters/master-transparent.svg');
+      const src = pathForAsset('logo-icons/masters/logo-ballon-vlak.svg');
       icon.setAttribute('src', withV(src));
     }
   } catch (_eIcon) {}

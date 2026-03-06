@@ -73,9 +73,14 @@ export function createMenuItem(args) {
   miniImg.decoding = 'async';
   var cardFile = (args.cardFile || (args.key + '.svg'));
   var coverFile = args.cover || 'voorkant.svg';
+  var thumbFile = String(args.thumbFile || '').replace(/^\s+|\s+$/g,'').replace(/^\//,'');
   var basePath = PATHS.setsDir;
-  var srcRect = pathForSet(args.setId, 'cards_rect/' + cardFile);
-  var srcFull = pathForSet(args.setId, 'cards/' + cardFile);
+  var srcRect = thumbFile
+    ? pathForSet(args.setId, thumbFile)
+    : pathForSet(args.setId, 'cards_rect/' + cardFile);
+  var srcFull = thumbFile
+    ? srcRect
+    : pathForSet(args.setId, 'cards/' + cardFile);
   var coverRect = pathForSet(args.setId, 'cards_rect/' + coverFile);
   var coverFull = pathForSet(args.setId, 'cards/' + coverFile);
   miniImg.setAttribute('data-fallback-step','0');

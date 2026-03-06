@@ -3,6 +3,7 @@
 /* Top bar */
 :root{
   --ui-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ui-contrast-duration: 380ms;
   --ui-fast: 180ms;
   --ui-med: 240ms;
   --ui-slow: 360ms;
@@ -32,7 +33,7 @@
   --pkStatusBg: #f7f7f6;
   /* Align header action icons with menu card thumbnails */
   --menuRowPadX: 12px;
-  --menuThumbSize: 64px;
+  --menuThumbSize: 72px;
   --menuThumbOffset: 1px;
   --menuToolsPadX: 0px;
   --menuRightAlign: 18px;
@@ -207,6 +208,7 @@ body[data-brand-icon="1"] .setCoverIcon{
     --topBarBrandWeight: 400;
     --topBarMenuTap: 36px;
     --topBarMenuSize: 21.6px;
+    --menuThumbSize: 72px;
   }
 }
 
@@ -276,6 +278,12 @@ body[data-brand-icon="1"] .setCoverIcon{
 .themeMenu:not([hidden]){
   opacity: 1;
   transform: translateY(0);
+}
+
+.themeMenu.is-closing{
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
 }
 
 .menuCard{
@@ -418,6 +426,7 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   gap: 12px;
   line-height: 1.2;
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
 .menuItem:active{ background: rgba(0,0,0,0.03); }
@@ -432,16 +441,24 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   aspect-ratio: 85 / 55;
   border-radius: 10px;
   overflow: hidden;
-  background: transparent;
+  background: #8fbfaf; /* match voorkant.svg achtergrondkleur */
   flex-shrink: 0;
+}
+
+html[data-contrast="dark"] .menuThumbCard{
+  background: #6a9e8e;
 }
 
 .menuThumbCard img{
   width: 100%;
   height: 100%;
+  margin: 0;
   display: block;
   object-fit: cover;
   object-position: center;
+  /* Definitieve crop/bleed staat in cards.css (1 bron van waarheid). */
+  transform: none;
+  flex-shrink: 0;
 }
 .miThumbRight{
   flex: 0 0 var(--menuThumbSize, 64px);
@@ -450,12 +467,13 @@ html[data-contrast="dark"] .menuLink:focus-visible{
   align-items:center;
   justify-content: flex-end;
   margin-left: auto;
-  margin-right: 2px;
+  margin-right: 0;
+  overflow: hidden;
 }
 
 .menuFooter{
   border-top: 0;
-  padding: 2px 0 0;
+  padding: 2px 0 4px;
   position: relative;
 }
 
@@ -606,6 +624,8 @@ html[data-contrast="dark"] .infoCard{
 }
 
 html[data-contrast="dark"] .sheetHandle::before{
+  content: "";
+  display: block;
   background: rgba(255,255,255,0.22);
 }
 
@@ -627,8 +647,15 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 .sheetOverlay{
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.0);
+  background: rgba(0,0,0,0.10);
   z-index: var(--z-overlay);
+  opacity: 0;
+  transition: opacity 0.32s var(--ui-ease);
+  pointer-events: none;
+}
+.sheetOverlay.open {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .infoSheet{
@@ -670,7 +697,9 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   background: rgba(var(--menuSurface, 255, 255, 255), 0.34);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
-  overflow: hidden;
+  /* overflow:visible zodat carousel-peek links/rechts zichtbaar is */
+  overflow: visible;
+  clip-path: inset(0 round 22px 22px 0 0);
   overscroll-behavior: contain;
   /* iOS: zorg dat de sheet altijd netjes op de onderrand blijft liggen */
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
@@ -794,13 +823,14 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
+  /* Geen globale smooth hier: dat veroorzaakt jitter bij clone-jumps. */
+  scroll-behavior: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
-  /* match index mainCarousel sizing */
   gap: 0;
-  padding: 0 14px 18px;
+  padding: 0 5% 18px;
   box-sizing: border-box;
-  scroll-padding: 14px;
+  scroll-padding: 5%;
 }
 .infoCard[data-top="help"] .infoCarousel,
 .infoCard[data-mode="help"] .infoCarousel{
@@ -816,11 +846,14 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
+  padding: 0 4%;
+  box-sizing: border-box;
+  scroll-padding: 4%;
 }
 .cardsCarousel::-webkit-scrollbar{ display:none; }
 
-.cardsSlide{ flex: 0 0 100%; scroll-snap-align: start; padding: 0 18px 18px 18px; box-sizing: border-box; }
-.cardsSlideInner{ width: 100%; max-width: 760px; margin: 0 auto; }
+.cardsSlide{ flex: 0 0 92%; scroll-snap-align: center; padding: 0 8px 18px; box-sizing: border-box; }
+.cardsSlideInner{ width: 100%; max-width: 760px; margin: 0 auto; box-sizing: border-box; }
 
 .cardsSlideCard{
   position: relative;
@@ -840,10 +873,10 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  overflow: hidden;
+  overflow: visible;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-  transition: transform 520ms ease;
+  transition: transform 520ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cardsSlideCard.is-flipped .pkFlipInner{
@@ -857,6 +890,10 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   background: #FAFAF8;
+  border-radius: inherit;
+  overflow: hidden;
+  /* Geen color/background transitie tijdens flip (voorkomt flash) */
+  transition: none !important;
 }
 
 .pkFace.pkFront{
@@ -867,18 +904,17 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 .pkFace.pkBack{
   transform: rotateY(180deg) translateZ(0);
   z-index: 1;
-  backface-visibility: visible;
-  -webkit-backface-visibility: visible;
-  opacity: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  opacity: 1;
 }
 
 .cardsSlideCard.is-flipped .pkFace.pkFront{
-  opacity: 0;
-  visibility: hidden;
+  /* backface-visibility:hidden handles hiding - no opacity needed */
 }
 
 .cardsSlideCard.is-flipped .pkFace.pkBack{
-  opacity: 1;
+  /* backface-visibility:hidden handles showing */
 }
 
 /* Zorg dat de kaart-achtergrond full-bleed is (geen dikke witte 'rand' door SVG-lucht) */
@@ -999,19 +1035,19 @@ html[data-contrast="dark"] .menuMiniBtn[aria-pressed="true"]{
 .infoCarousel::-webkit-scrollbar{ display:none; }
 
 @media (min-width: 720px){
-  .infoCarousel .infoSlide{ flex-basis: 92%; }
+  .infoCarousel .infoSlide{ flex-basis: 90%; }
 }
 
 @media (min-width: 980px){
-  .infoCarousel .infoSlide{ flex-basis: 88%; }
+  .infoCarousel .infoSlide{ flex-basis: 86%; }
 }
 
 .infoSlide{
-  /* match index mainCarousel slide sizing */
-  flex: 0 0 95%;
+  flex: 0 0 90%;
   scroll-snap-align: center;
-  padding: 0 10px 10px 10px;
+  padding: 0 6px 10px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 
@@ -1033,11 +1069,11 @@ html[data-contrast="dark"] .infoSlideInner{
 
 /* responsive infoSlide sizing (match index mainCarousel) */
 @media (min-width: 720px){
-  .infoSlide{ flex-basis: 92%; }
+  .infoSlide{ flex-basis: 90%; }
 }
 
 @media (min-width: 980px){
-  .infoSlide{ flex-basis: 88%; }
+  .infoSlide{ flex-basis: 86%; }
 }
 
 /* Koppen boven uitlegkaartjes weg (titel staat al in het kaartje) */
@@ -1083,6 +1119,7 @@ html[data-contrast="dark"] .infoSlideInner{
   width: 100%;
   height: 100%;
   display: block;
+  vertical-align: bottom;
   object-fit: cover;
   object-position: center;
   /* container rondt al af; geen dubbele rand */
@@ -1092,7 +1129,7 @@ html[data-contrast="dark"] .infoSlideInner{
   /* Tekstvlak sluit strak aan op de kaart: boven recht, onder afgerond */
   position: relative;
   z-index: 1;
-  margin-top: 0;
+  margin-top: -1px;
   padding: 20px 18px 18px;
   border-radius: 0;
   border: 0;
@@ -1151,6 +1188,47 @@ html[data-contrast="dark"] .infoSlideText{
   margin: 5px 0;
 }
 
+.infoCoverFooter{
+  margin-top: 12px;
+  padding-top: 0;
+  border-top: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: 12px;
+}
+
+.infoCoverHint{
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.42;
+  color: rgba(11,18,32,0.66);
+}
+
+.infoScrollTopBtn{
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(11,18,32,0.36);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: end;
+  margin-bottom: 1px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.infoScrollTopBtn:active{
+  transform: translateY(1px);
+}
+
 html[data-contrast="dark"] .infoSlideText p{
   color: rgba(244,246,250,0.84);
 }
@@ -1166,6 +1244,14 @@ html[data-contrast="dark"] .infoSlideText .infoTextHeading{
 
 html[data-contrast="dark"] .infoSlideText strong{
   font-weight: 500;
+}
+
+html[data-contrast="dark"] .infoCoverHint{
+  color: rgba(244,246,250,0.74);
+}
+
+html[data-contrast="dark"] .infoScrollTopBtn{
+  color: rgba(245,250,255,0.72);
 }
 
 .sheetScrollHint{

@@ -24,6 +24,48 @@ html[data-contrast="dark"] body{
   --cardsTopBarGap: 14px;
 }
 
+/* Kaartenindex: topbar moet boven info-sheet/overlay blijven voor directe klik op menu/logo. */
+body[data-page="kaarten"] .topBar{
+  z-index: calc(var(--z-menu, 50) + 3);
+}
+
+/* Kaartenindex: menu mag tijdens sheet-close boven de sheet verschijnen. */
+body[data-page="kaarten"] .themeMenu{
+  z-index: calc(var(--z-menu, 50) + 2);
+}
+
+/* Kaartenindex: kruisje op uitleg-sheet verbergen. */
+body[data-page="kaarten"] #infoClose{
+  display: none !important;
+}
+
+/* Kaartenindex: zelfde ruimte tussen handle en uitlegkaart als main index. */
+body[data-page="kaarten"] .infoCarousel{
+  padding-top: 10px;
+  padding-left: 14px;
+  padding-right: 14px;
+  scroll-padding-left: 14px;
+  scroll-padding-right: 14px;
+}
+
+/* Kaartenindex: side-cards verder naar buiten, zodat kaarttekst niet zichtbaar is. */
+body[data-page="kaarten"] .infoSlide{
+  flex-basis: 95%;
+  padding: 0 10px 10px;
+}
+
+@media (min-width: 720px){
+  body[data-page="kaarten"] .infoSlide{
+    flex-basis: 92%;
+  }
+}
+
+@media (min-width: 980px){
+  body[data-page="kaarten"] .infoSlide{
+    flex-basis: 88%;
+  }
+}
+
 
 /* Dynamische achtergrond – alleen achter de index grid */
 .page{
@@ -123,6 +165,31 @@ html[data-contrast="dark"] .carouselStage::before{ display: none; }
   max-width: 920px;
   padding: 0 14px;
   scroll-snap-type: x mandatory;
+}
+
+@keyframes pkCardsPageIn{
+  0%{
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.993);
+  }
+  62%{
+    opacity: 1;
+    transform: translate3d(0, -2px, 0) scale(1.001);
+  }
+  100%{
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+body[data-page="kaarten"].pkCardsIntro .carouselStage{
+  animation: pkCardsPageIn 520ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce){
+  body[data-page="kaarten"].pkCardsIntro .carouselStage{
+    animation: none !important;
+  }
 }
 
 .mainCarousel .cardsSlide{
@@ -376,5 +443,3 @@ html[data-contrast="dark"] .indexSoftBlob{
     display: block;
   }
 }
-
-

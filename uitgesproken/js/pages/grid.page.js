@@ -23,7 +23,6 @@ export function initGrid() {
   var indexInfoSheet = doc.getElementById('indexInfoSheet');
   var indexInfoOverlay = doc.getElementById('indexInfoOverlay');
   var indexInfoClose = doc.getElementById('indexInfoClose');
-  var indexInfoVersion = doc.getElementById('indexInfoVersion');
   var indexInfoCard = indexInfoSheet ? indexInfoSheet.querySelector('.infoCard') : null;
   var indexInfoHandle = indexInfoSheet ? indexInfoSheet.querySelector('.sheetHandle') : null;
   var indexInfoCarousel = indexInfoSheet ? indexInfoSheet.querySelector('.infoCarousel') : null;
@@ -771,6 +770,7 @@ export function initGrid() {
           setId: id,
           key: id,
           label: label,
+          thumbFile: (s && s.thumb) ? String(s.thumb) : '',
           cardFile: coverFile,
           cover: coverFile
         }));
@@ -860,18 +860,21 @@ export function initGrid() {
     // Grid: altijd alfabetische basisvolgorde; shuffle-toggle randomize alleen de grid.
     var ordered = getOrderedSets(idx);
     var count = 0;
+    var cardIdx = 0;
     for(var k=0;k<ordered.length;k++){
       if(maxItems > 0 && count >= maxItems) break;
       var id = ordered[k];
       var label = titleMap[id] || id;
       var file = (id === activeSetId && activeMeta && activeMeta.cover) ? String(activeMeta.cover) : 'voorkant.svg';
       var cardsPage = getCardsPage();
-      grid.appendChild(buildGridCard({
+      var gCard = buildGridCard({
         setId: id,
         file: file,
         label: label,
         href: cardsPage + '?set=' + encodeURIComponent(id)
-      }));
+      });
+      gCard.style.setProperty('--card-i', cardIdx++);
+      grid.appendChild(gCard);
       count++;
     }
 
@@ -880,10 +883,12 @@ export function initGrid() {
     var phNeeded = Math.max(0, minGrid - count);
     var gridTints = buildMainIndexPlaceholderTints(phNeeded, count);
     for(var m=0;m<phNeeded;m++){
-      grid.appendChild(buildGridCard({
+      var phCard = buildGridCard({
         placeholder: true,
         rgb: gridTints[m]
-      }));
+      });
+      phCard.style.setProperty('--card-i', cardIdx++);
+      grid.appendChild(phCard);
     }
     syncGridCardStates();
   }
@@ -1293,13 +1298,6 @@ export function initGrid() {
   }
 
   function initIndexSheet(){
-    // Versienummer invullen
-    try{
-      if(indexInfoVersion && window.PK_ASSET_V){
-        indexInfoVersion.textContent = 'build ' + window.PK_ASSET_V;
-      }
-    }catch(_e){}
-
     if(menuInfoBtn){
       menuInfoBtn.addEventListener('click', function(ev){
         if(ev) ev.stopPropagation();
@@ -1321,8 +1319,10 @@ export function initGrid() {
           if(ev.stopPropagation) ev.stopPropagation();
           if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
         }
-        closeIndexSheet({ immediate: true });
-        try{ if(menuApi && menuApi.open) menuApi.open(); }catch(_eOpen){}
+        closeIndexSheet();
+        window.requestAnimationFrame(function(){
+          try{ if(menuApi && menuApi.open) menuApi.open(); }catch(_eOpen){}
+        });
       }, true);
     }
 

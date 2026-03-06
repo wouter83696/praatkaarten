@@ -41,6 +41,8 @@ export function createMenu(options) {
   var menu = options.menu || document.getElementById('themeMenu');
   var overlay = options.overlay || document.getElementById('themeMenuOverlay');
   var trigger = options.trigger || document.getElementById('themePill');
+  var closeTimer = 0;
+  var MENU_CLOSE_MS = 260;
   var api = null;
 
   if(menu && menu.__pkMenuApi) return menu.__pkMenuApi;
@@ -51,16 +53,42 @@ export function createMenu(options) {
     };
   }
 
+  function clearCloseTimer(){
+    if(!closeTimer) return;
+    try{ window.clearTimeout(closeTimer); }catch(_eClr){}
+    closeTimer = 0;
+  }
+
+  function finishClose(){
+    clearCloseTimer();
+    if(menu && menu.classList) menu.classList.remove('is-closing');
+    if(menu) menu.hidden = true;
+  }
+
   function open(){
+    clearCloseTimer();
     menu.hidden = false;
+    if(menu.classList) menu.classList.remove('is-closing');
     if(overlay) overlay.hidden = true;
     if(trigger) trigger.setAttribute('aria-expanded','true');
   }
 
-  function close(){
-    menu.hidden = true;
+  function close(opts){
+    opts = opts || {};
+    var immediate = !!opts.immediate;
+    clearCloseTimer();
     if(overlay) overlay.hidden = true;
     if(trigger) trigger.setAttribute('aria-expanded','false');
+    if(menu.hidden){
+      if(menu.classList) menu.classList.remove('is-closing');
+      return;
+    }
+    if(immediate || !menu.classList){
+      finishClose();
+      return;
+    }
+    menu.classList.add('is-closing');
+    closeTimer = window.setTimeout(finishClose, MENU_CLOSE_MS);
   }
 
   function isOpen(){
@@ -73,7 +101,7 @@ export function createMenu(options) {
 
   function onTriggerClick(ev){
     if(isHomeAreaClick(trigger, ev)){
-      close();
+      close({ immediate: true });
       goHome();
       return;
     }
@@ -115,9 +143,11 @@ export function createMenu(options) {
   api = {
     open: open,
     close: close,
+    closeImmediate: function(){ close({ immediate: true }); },
     toggle: toggle,
     isOpen: isOpen,
     destroy: function(){
+      clearCloseTimer();
       if(trigger) trigger.removeEventListener('click', onTriggerClick);
       document.removeEventListener('pointerdown', onDocPointerDown, true);
       document.removeEventListener('click', onDocClick, true);

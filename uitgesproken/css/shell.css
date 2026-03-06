@@ -1,6 +1,6 @@
 /* Praatkaartjes – gedeelde shell styles */
-@import "./menu.css?v=4.2.36";
-@import "./cards.css?v=4.1.4";
+@import "./menu.css?v=4.2.50";
+@import "./cards.css?v=4.1.15";
 
 /* Skip-link (WCAG 2.1 2.4.1) */
 .skipLink.srOnly {

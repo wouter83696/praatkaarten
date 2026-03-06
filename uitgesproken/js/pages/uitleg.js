@@ -73,6 +73,7 @@ export function initUitleg() {
     }
     if(
       t === 'Systemisch werken' ||
+      t === 'Teamrollen van Belbin' ||
       t === 'Rollen van Belbin' ||
       t === 'In beweging' ||
       t === 'Waarom werkwoorden?' ||

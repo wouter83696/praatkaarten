@@ -8,7 +8,7 @@ const _base = (() => {
   return '.';
 })();
 
-export const VERSION = '4.2.7';
+export const VERSION = '4.2.17';
 
 export const PATHS = {
   base:      _base,

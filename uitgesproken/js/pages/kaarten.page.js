@@ -47,6 +47,23 @@ export function initKaarten() {
   var UI_DEFAULTS = {};
   var CARDS_INDEX_PAGE_BG = null;
   var doc = document;
+  var __cardsPageIntroPlayed = false;
+  var __cardsPageIntroTimer = 0;
+
+  function playCardsPageIntro(){
+    if(__cardsPageIntroPlayed) return;
+    __cardsPageIntroPlayed = true;
+    if(!doc || !doc.body || !doc.body.classList) return;
+    try{ doc.body.classList.add('pkCardsIntro'); }catch(_eAdd){}
+    if(__cardsPageIntroTimer){
+      try{ window.clearTimeout(__cardsPageIntroTimer); }catch(_eClr){}
+      __cardsPageIntroTimer = 0;
+    }
+    __cardsPageIntroTimer = window.setTimeout(function(){
+      __cardsPageIntroTimer = 0;
+      try{ if(doc && doc.body && doc.body.classList) doc.body.classList.remove('pkCardsIntro'); }catch(_eRem){}
+    }, 620);
+  }
 
   function parseHexToRgbCsv(input){
     var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
@@ -223,13 +240,32 @@ export function initKaarten() {
     return a;
   }
 
+  function disableInfiniteCarousel(container){
+    if(!container) return;
+    try{
+      if(container.__pkInfiniteOnScroll){
+        container.removeEventListener('scroll', container.__pkInfiniteOnScroll);
+        container.__pkInfiniteOnScroll = null;
+      }
+    }catch(_eL){}
+    try{ container.removeAttribute('data-infinite'); }catch(_eA){}
+    try{
+      var clones = container.querySelectorAll('.is-clone');
+      for(var i=0;i<clones.length;i++){
+        var n = clones[i];
+        if(n && n.parentNode === container) container.removeChild(n);
+      }
+    }catch(_eC){}
+  }
+
   // Infinite scroll helper (clones first/last)
   function enableInfiniteCarousel(container, slideClass){
     if(!container) return { hasClones:false };
+    // Reset eerder infinite-gedrag om dubbele listeners/jumps te voorkomen.
+    disableInfiniteCarousel(container);
+
     var slides = container.querySelectorAll('.' + slideClass);
     if(!slides || slides.length < 2) return { hasClones:false };
-    // voorkom dubbel toepassen
-    if(container.getAttribute('data-infinite') === '1') return { hasClones:true };
 
     var first = slides[0].cloneNode(true);
     var last  = slides[slides.length-1].cloneNode(true);
@@ -254,7 +290,9 @@ export function initKaarten() {
     });
 
     var jumping = false;
-    container.addEventListener('scroll', function(){
+    var onScroll = function(){
+      // Alleen actief zolang deze carousel expliciet infinite staat.
+      if(container.getAttribute('data-infinite') !== '1') return;
       if(jumping) return;
       var all = container.querySelectorAll('.' + slideClass);
       if(!all || all.length < 3) return;
@@ -276,7 +314,9 @@ export function initKaarten() {
         container.scrollLeft = sw;
         window.requestAnimationFrame(function(){ jumping = false; });
       }
-    }, { passive:true });
+    };
+    container.__pkInfiniteOnScroll = onScroll;
+    container.addEventListener('scroll', onScroll, { passive:true });
 
     return { hasClones:true };
   }
@@ -421,7 +461,14 @@ export function initKaarten() {
           if(!key) continue;
   var cardFile = th.card || (key + '.svg');
   if(window.PK.createMenuItem){
-  menuList.appendChild(window.PK.createMenuItem({ setId: setId, key: key, label: (th.label || key), cardFile: cardFile, cover: CURRENT_COVER }));
+  menuList.appendChild(window.PK.createMenuItem({
+    setId: setId,
+    key: key,
+    label: (th.label || key),
+    thumbFile: (th && th.thumb) ? String(th.thumb) : '',
+    cardFile: cardFile,
+    cover: CURRENT_COVER
+  }));
   }else{
   var btn = document.createElement('button');
   btn.className = 'menuItem themeItem';
@@ -646,6 +693,7 @@ export function initKaarten() {
   }
 
   // Menu acties: info (open sheet in uitleg) + shuffle toggle (alleen state/UI)
+  var menuSetTitle = document.getElementById('menuSetTitle');
   var menuInfoBtn = document.getElementById('menuInfoBtn');
   if(menuInfoBtn){
     menuInfoBtn.onclick = function(ev){
@@ -655,6 +703,60 @@ export function initKaarten() {
       try{ setSheetMode('help'); }catch(_e){}
       if(infoSheet) openInfo();
     };
+  }
+
+  // Klik op "Samen onderzoeken" in het menu: terug naar kaart 1 van de set.
+  if(menuSetTitle && !menuSetTitle.__pkResetToStartBound){
+    menuSetTitle.__pkResetToStartBound = true;
+    try{
+      menuSetTitle.setAttribute('role', 'button');
+      menuSetTitle.setAttribute('tabindex', '0');
+      menuSetTitle.style.cursor = 'pointer';
+    }catch(_eTitleA11y){}
+
+    var resetToSetStart = function(ev){
+      if(ev && ev.preventDefault) ev.preventDefault();
+      if(ev && ev.stopPropagation) ev.stopPropagation();
+      closeMenu();
+      try{
+        if(window.PK.setActiveTheme && THEMES && THEMES.length){
+          window.PK.setActiveTheme(THEMES[0]);
+        }
+      }catch(_eThemeStart){}
+      try{
+        if(cardsCarousel && cardsCarousel.children && cardsCarousel.children.length){
+          goToCardIndex(0);
+          resetAllFlippedCards();
+        }
+      }catch(_eGo0){}
+    };
+
+    menuSetTitle.addEventListener('click', resetToSetStart);
+    menuSetTitle.addEventListener('keydown', function(ev){
+      var key = (ev && ev.key) ? ev.key : '';
+      if(key === 'Enter' || key === ' '){
+        resetToSetStart(ev);
+      }
+    });
+  }
+
+  // Als uitleg-sheet open staat: 1 tap op de topbar-pill (menu/logo) sluit de sheet
+  // en opent direct het menu (in plaats van eerst sheet sluiten en opnieuw tikken).
+  if(pillBtn && !pillBtn.__pkInfoSheetMenuBridgeBound){
+    pillBtn.__pkInfoSheetMenuBridgeBound = true;
+    pillBtn.addEventListener('click', function(ev){
+      var sheetOpen = !!(infoSheet && !infoSheet.hidden);
+      if(!sheetOpen) return;
+      if(ev){
+        if(ev.preventDefault) ev.preventDefault();
+        if(ev.stopPropagation) ev.stopPropagation();
+        if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+      }
+      try{ peekInfo(); }catch(_ePeek){}
+      window.requestAnimationFrame(function(){
+        try{ openMenu(); }catch(_eOpen){}
+      });
+    }, true);
   }
 
   // Contrast (licht/donker) – icon-only toggle in het menu
@@ -784,6 +886,15 @@ export function initKaarten() {
   var infoCard = infoSheet ? infoSheet.querySelector('.infoCard') : null;
   var handle = infoSheet ? infoSheet.querySelector('.sheetHandle') : null;
   var topPage = 'cards';
+  var __infoOpenedOnce = false;
+  var __infoResetOnNextOpen = false;
+  var __infoReturnAnimRaf = 0;
+
+  function cancelInfoReturnAnim(){
+    if(!__infoReturnAnimRaf) return;
+    try{ window.cancelAnimationFrame(__infoReturnAnimRaf); }catch(_e){}
+    __infoReturnAnimRaf = 0;
+  }
 
   // ------------------------------------------------------------
   // Scroll-lock (Google Maps-achtig)
@@ -1032,21 +1143,91 @@ export function initKaarten() {
     try{ infoSheet.style.setProperty('--helpShift', shift + 'px'); }catch(_e){}
   }
 
-  // Zorg dat uitleg altijd op de voorkant start (voorspelbaar).
-  function resetInfoCarouselToCover(){
-    if(!infoCarousel) return;
+  function getInfoSlides(){
+    if(!infoCarousel) return [];
     try{
-      var all = infoCarousel.querySelectorAll('.infoSlide');
-      if(!all || all.length < 1) return;
-      // Infinite modus: clones aan begin/eind, eerste echte slide op 1 slideWidth.
-      var hasClones = (infoCarousel.getAttribute('data-infinite') === '1');
-      if(hasClones && all.length >= 3){
-        var r = all[1].getBoundingClientRect();
-        var w1 = (r && r.width) ? r.width : 0;
-        if(w1) infoCarousel.scrollLeft = w1;
-        else infoCarousel.scrollLeft = 0;
+      // Sluit clones uit (infinite carousel voegt clones toe aan begin/eind)
+      return Array.prototype.slice.call(infoCarousel.querySelectorAll('.infoSlide:not(.is-clone)') || []);
+    }catch(_e){ return []; }
+  }
+
+  function getInfoActiveIndex(){
+    if(!infoCarousel) return 0;
+    var all = getInfoSlides();
+    if(!all.length) return 0;
+    var center = (infoCarousel.scrollLeft || 0) + (infoCarousel.clientWidth || 0) / 2;
+    var bestIdx = 0;
+    var bestDist = Infinity;
+    for(var i=0;i<all.length;i++){
+      var sl = all[i];
+      if(!sl) continue;
+      var slCenter = (sl.offsetLeft || 0) + (sl.offsetWidth || 0) / 2;
+      var d = Math.abs(slCenter - center);
+      if(d < bestDist){
+        bestDist = d;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }
+
+  function getInfoSlideTargetLeft(index){
+    if(!infoCarousel) return 0;
+    var all = getInfoSlides();
+    if(!all.length) return 0;
+    var idx = Math.max(0, Math.min(all.length - 1, index|0));
+    var slide = all[idx];
+    if(!slide) return 0;
+    var cw = infoCarousel.clientWidth || 0;
+    var sw = slide.offsetWidth || 0;
+    var left = (slide.offsetLeft || 0) - ((cw - sw) / 2);
+    if(!isFinite(left)) left = (slide.offsetLeft || 0);
+    if(left < 0) left = 0;
+    return Math.round(left);
+  }
+
+  function isInfoCarouselAtCover(){
+    return getInfoActiveIndex() === 0;
+  }
+
+  // Zet uitleg-carrousel terug op voorkant (optioneel smooth).
+  function scrollInfoCarouselToCover(opts){
+    opts = opts || {};
+    var smooth = !!opts.smooth;
+    var direction = String(opts.direction || '');
+    if(!infoCarousel) return;
+
+    // Eenvoudig terugscrollen naar links (natuurlijk 'terugspoelen')
+    if(smooth && direction === 'right'){
+      var targetLeft = getInfoSlideTargetLeft(0);
+      if((infoCarousel.scrollLeft || 0) < 2) return;
+      try{
+        infoCarousel.scrollTo({ left: targetLeft, behavior: 'smooth' });
+      }catch(_e){
+        infoCarousel.scrollLeft = targetLeft;
+      }
+      return;
+    }
+
+    try{
+      // Zet scroll-behavior tijdelijk, zodat we gecontroleerd kunnen animeren.
+      var prevBehavior = infoCarousel.style.scrollBehavior;
+      infoCarousel.style.scrollBehavior = smooth ? 'smooth' : 'auto';
+
+      var targetLeft = getInfoSlideTargetLeft(0);
+      try{
+        infoCarousel.scrollTo({ left: targetLeft, behavior: smooth ? 'smooth' : 'auto' });
+      }catch(_eScroll){
+        infoCarousel.scrollLeft = targetLeft;
+      }
+
+      // Herstel scroll-behavior
+      if(smooth){
+        window.setTimeout(function(){
+          try{ infoCarousel.style.scrollBehavior = prevBehavior || ''; }catch(_eRestore){}
+        }, 280);
       }else{
-        infoCarousel.scrollLeft = 0;
+        infoCarousel.style.scrollBehavior = prevBehavior || '';
       }
     }catch(_e){}
   }
@@ -1054,6 +1235,7 @@ export function initKaarten() {
 
   function openInfo(){
     if(!infoSheet) return;
+    var shouldAnimateBackToCover = !!__infoResetOnNextOpen;
 
     // Reset eventuele drag/transforms uit oude sessies
     infoSheet.style.transition = '';
@@ -1068,9 +1250,8 @@ export function initKaarten() {
       if(infoOverlay.classList) infoOverlay.classList.remove('open');
     }
 
-    // 2) Zet meteen naar uitleg + cover, zodat DOM-sizes kloppen vóór de open-animatie
+    // 2) Zet meteen naar uitleg, zodat DOM-sizes kloppen vóór de open-animatie
     try{ setSheetMode('help'); }catch(_e0){}
-    try{ resetInfoCarouselToCover(); }catch(_e3){}
 
     // Force reflow zodat measureHelpH betrouwbare waarden geeft (ook op iOS)
     try{ infoSheet.offsetHeight; }catch(_eR){}
@@ -1085,6 +1266,20 @@ export function initKaarten() {
     window.requestAnimationFrame(function(){
       if(infoSheet.classList) infoSheet.classList.add('open');
       if(infoOverlay && infoOverlay.classList) infoOverlay.classList.add('open');
+      __infoOpenedOnce = true;
+      __infoResetOnNextOpen = false;
+
+      // Altijd bij openen naar de cover-slide:
+      // - eerste open: direct (voorkomt starten op clone/laatste kaart als sheet hidden was)
+      // - heropen na sluiten op andere slide: geanimeerd terug naar rechts
+      window.requestAnimationFrame(function(){
+        try{
+          scrollInfoCarouselToCover({
+            smooth: shouldAnimateBackToCover,
+            direction: shouldAnimateBackToCover ? 'right' : ''
+          });
+        }catch(_e3){}
+      });
 
       // Init gestures 1x
       if(!window.__pkInfoDragInited){
@@ -1101,11 +1296,18 @@ export function initKaarten() {
   function peekInfo(){
     // Sluit uitleg-sheet volledig (geen 'peek' meer)
     if(!infoSheet) return;
+    cancelInfoReturnAnim();
+    try{
+      __infoResetOnNextOpen = !isInfoCarouselAtCover();
+    }catch(_eTrack){
+      __infoResetOnNextOpen = false;
+    }
     if(infoSheet.classList) infoSheet.classList.remove('open');
     if(infoOverlay){
       infoOverlay.hidden = true;
       infoOverlay.style.pointerEvents = 'none';
     }
+    // Kaarten-carousel blijft op huidige positie bij sluiten uitleg-sheet.
     // wacht transition uit en verberg dan echt
     window.setTimeout(function(){
       infoSheet.hidden = true;
@@ -1151,6 +1353,7 @@ export function initKaarten() {
     }
     if(
       t === 'Systemisch werken' ||
+      t === 'Teamrollen van Belbin' ||
       t === 'Rollen van Belbin' ||
       t === 'In beweging' ||
       t === 'Waarom werkwoorden?' ||
@@ -1249,6 +1452,69 @@ export function initKaarten() {
 
     el.innerHTML = html.join('');
   }
+
+  function appendCoverFooterHint(el){
+    if(!el || !el.appendChild) return;
+    if(el.querySelector && el.querySelector('.infoCoverFooter')) return;
+
+    var footer = document.createElement('div');
+    footer.className = 'infoCoverFooter';
+
+    var hint = document.createElement('p');
+    hint.className = 'infoCoverHint';
+    hint.textContent = 'Swipe naar links of rechts voor verdere uitleg per thema.';
+
+    var topBtn = document.createElement('button');
+    topBtn.type = 'button';
+    topBtn.className = 'infoScrollTopBtn';
+    topBtn.setAttribute('aria-label', 'Naar boven');
+    topBtn.textContent = '⌃';
+
+    footer.appendChild(hint);
+    footer.appendChild(topBtn);
+    el.appendChild(footer);
+  }
+
+  var __infoUiHandlersBound = false;
+  var __infoLastActiveIdx = -1;
+  var __infoScrollRaf = 0;
+  function scrollHelpViewportToTop(smooth){
+    var vp = sheetViewport || (infoSheet && infoSheet.querySelector ? infoSheet.querySelector('.sheetViewport') : null);
+    if(!vp) return;
+    if((vp.scrollTop || 0) <= 1) return;
+    try{
+      vp.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+    }catch(_eVp){
+      vp.scrollTop = 0;
+    }
+  }
+  function ensureInfoUiHandlers(){
+    if(__infoUiHandlersBound || !infoCarousel) return;
+    __infoUiHandlersBound = true;
+
+    infoCarousel.addEventListener('scroll', function(){
+      if(__infoScrollRaf) return;
+      __infoScrollRaf = window.requestAnimationFrame(function(){
+        __infoScrollRaf = 0;
+        var idx = getInfoActiveIndex();
+        if(idx === __infoLastActiveIdx) return;
+        if(__infoLastActiveIdx !== -1){
+          // Bij wisselen van uitlegkaart altijd terug naar boven.
+          scrollHelpViewportToTop(false);
+        }
+        __infoLastActiveIdx = idx;
+      });
+    }, { passive:true });
+
+    infoCarousel.addEventListener('click', function(ev){
+      var target = ev && ev.target;
+      var btn = target && target.closest ? target.closest('.infoScrollTopBtn') : null;
+      if(!btn) return;
+      if(ev.preventDefault) ev.preventDefault();
+      if(ev.stopPropagation) ev.stopPropagation();
+      scrollHelpViewportToTop(true);
+    }, false);
+  }
   function cardPathRect(setId, file){
     return pathForSet(setId, 'cards_rect/' + file);
   }
@@ -1291,6 +1557,8 @@ export function initKaarten() {
 
   function renderSlides(slides){
     if(!infoCarousel) return;
+    // Reset vorige staat
+    disableInfiniteCarousel(infoCarousel);
     infoCarousel.innerHTML = '';
     for(var i=0;i<slides.length;i++){
       var s = slides[i];
@@ -1329,6 +1597,9 @@ export function initKaarten() {
       var text = document.createElement('div');
       text.className = 'infoSlideText';
       setInfoTextContent(text, s.text);
+      if(s.isCover){
+        appendCoverFooterHint(text);
+      }
 
       var isDark = (document && document.documentElement && document.documentElement.getAttribute("data-contrast") === "dark");
       var baseTint = isDark
@@ -1341,8 +1612,17 @@ export function initKaarten() {
       slide.appendChild(inner);
       infoCarousel.appendChild(slide);
     }
-    // Infinite loop (clone first/last)
-    enableInfiniteCarousel(infoCarousel, 'infoSlide');
+    // Infinite carousel voor uitleg: peek links/rechts zoals de main carrousel.
+    try{ enableInfiniteCarousel(infoCarousel, 'infoSlide'); }catch(_eInf){}
+    ensureInfoUiHandlers();
+    // Start op de eerste echte slide (na de clone aan de linkerkant).
+    try{
+      var firstReal = infoCarousel.querySelector('.infoSlide:not(.is-clone)');
+      if(firstReal){ infoCarousel.scrollLeft = firstReal.offsetLeft; }
+    }catch(_e0){}
+    window.requestAnimationFrame(function(){
+      __infoLastActiveIdx = getInfoActiveIndex();
+    });
   }
 
   // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
@@ -1577,6 +1857,7 @@ export function initKaarten() {
     ensureFlipHandlers();
     __activeCarouselIdx = 0;
     resetAllFlippedCards();
+    playCardsPageIntro();
     // Tint direct laten meekleuren met de eerste kaart.
     window.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
     // Houd de sheet compact zolang alleen de kaart zichtbaar is.
