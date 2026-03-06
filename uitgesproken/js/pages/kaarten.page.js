@@ -411,8 +411,28 @@ export function initKaarten() {
 
     // Menu titel: kaartenset naam (ipv "Thema's")
     var menuTitle = document.getElementById('menuSetTitle');
+    var menuSetButton = document.getElementById('menuSetButton');
+    var menuThumbImg = document.getElementById('menuSetThumbImg');
+    var menuSetName = (meta && meta.name) ? meta.name : window.PK.prettyName(setId);
     if(menuTitle){
-      menuTitle.textContent = (meta && meta.name) ? meta.name : window.PK.prettyName(setId);
+      menuTitle.textContent = menuSetName;
+    }
+    if(menuSetButton){
+      menuSetButton.setAttribute('aria-label', 'Ga naar het begin van ' + menuSetName);
+    }
+    if(menuThumbImg){
+      var thumbRect = pathForSet(setId, 'cards_rect/' + CURRENT_COVER);
+      var thumbFull = pathForSet(setId, 'cards/' + CURRENT_COVER);
+      menuThumbImg.setAttribute('data-src-full', thumbFull);
+      menuThumbImg.setAttribute('data-fallback-step', '0');
+      menuThumbImg.src = window.PK.withV ? window.PK.withV(thumbRect) : thumbRect;
+      menuThumbImg.onerror = function(){
+        var step = parseInt(this.getAttribute('data-fallback-step') || '0', 10);
+        if(step > 0) return;
+        this.setAttribute('data-fallback-step', '1');
+        var next = this.getAttribute('data-src-full') || '';
+        if(next) this.src = window.PK.withV ? window.PK.withV(next) : next;
+      };
     }
     trackSetVisit(setId);
 
@@ -694,6 +714,7 @@ export function initKaarten() {
 
   // Menu acties: info (open sheet in uitleg) + shuffle toggle (alleen state/UI)
   var menuSetTitle = document.getElementById('menuSetTitle');
+  var menuSetButton = document.getElementById('menuSetButton');
   var menuInfoBtn = document.getElementById('menuInfoBtn');
   if(menuInfoBtn){
     menuInfoBtn.onclick = function(ev){
@@ -705,14 +726,10 @@ export function initKaarten() {
     };
   }
 
-  // Klik op "Samen onderzoeken" in het menu: terug naar kaart 1 van de set.
-  if(menuSetTitle && !menuSetTitle.__pkResetToStartBound){
-    menuSetTitle.__pkResetToStartBound = true;
-    try{
-      menuSetTitle.setAttribute('role', 'button');
-      menuSetTitle.setAttribute('tabindex', '0');
-      menuSetTitle.style.cursor = 'pointer';
-    }catch(_eTitleA11y){}
+  // Klik op de huidige set-thumb in het menu: terug naar kaart 1 van de set.
+  var menuSetTarget = menuSetButton || menuSetTitle;
+  if(menuSetTarget && !menuSetTarget.__pkResetToStartBound){
+    menuSetTarget.__pkResetToStartBound = true;
 
     var resetToSetStart = function(ev){
       if(ev && ev.preventDefault) ev.preventDefault();
@@ -731,8 +748,8 @@ export function initKaarten() {
       }catch(_eGo0){}
     };
 
-    menuSetTitle.addEventListener('click', resetToSetStart);
-    menuSetTitle.addEventListener('keydown', function(ev){
+    menuSetTarget.addEventListener('click', resetToSetStart);
+    menuSetTarget.addEventListener('keydown', function(ev){
       var key = (ev && ev.key) ? ev.key : '';
       if(key === 'Enter' || key === ' '){
         resetToSetStart(ev);
@@ -945,9 +962,38 @@ export function initKaarten() {
     }catch(_e){ return fallback; }
   }
 
+  function getHelpOpenH(){
+    var fallback = readCssPx(document.documentElement, '--sheetPageH', 520);
+    var topBar = document.querySelector ? document.querySelector('.topBar') : null;
+    var barBottom = 0;
+    if(topBar && topBar.getBoundingClientRect){
+      var topBarRect = topBar.getBoundingClientRect();
+      if(topBarRect && isFinite(topBarRect.bottom)) barBottom = topBarRect.bottom;
+    }
+    if(!(barBottom > 0)){
+      barBottom = readCssPx(document.documentElement, '--topBarInset', 16)
+        + readCssPx(document.documentElement, '--topBarHeight', 64);
+    }
+    var available = Math.round((window.innerHeight || 0) - barBottom - 8);
+    if(!isFinite(available) || available < 240) available = fallback;
+    return Math.max(240, available || fallback || 240);
+  }
+
+  function syncHelpSheetMaxH(){
+    var px = getHelpOpenH();
+    if(infoSheet && infoSheet.style && infoSheet.style.setProperty){
+      infoSheet.style.setProperty('--sheetMaxH', px + 'px');
+    }
+    return px;
+  }
+
   function getMaxH(){
     // Max hoogte komt uit CSS var op .infoSheet (fallback op root var)
-    return readCssPx(infoSheet || document.documentElement, '--sheetMaxH', readCssPx(document.documentElement, '--sheetPageH', 520));
+    return readCssPx(
+      infoSheet || document.documentElement,
+      '--sheetMaxH',
+      syncHelpSheetMaxH() || readCssPx(document.documentElement, '--sheetPageH', 520)
+    );
   }
   function getCompactH(){
     return readCssPx(infoSheet || document.documentElement, '--sheetCompactH', Math.min(getMaxH(), 460));
@@ -972,7 +1018,7 @@ export function initKaarten() {
     if(helpMeasureTimer) window.clearTimeout(helpMeasureTimer);
     helpMeasureTimer = window.setTimeout(function(){
       helpMeasureTimer = 0;
-      setCurH(measureHelpH() || getMaxH());
+      setCurH(syncHelpSheetMaxH() || getMaxH());
     }, 60);
   }
 
@@ -1002,8 +1048,7 @@ export function initKaarten() {
 
     // Viewport hoogte:
     // - kaarten = compact (kaart)
-    // - uitleg  = "fit" (kaart + tekst), NIET altijd max hoogte
-    //   -> voorkomt enorme lege ruimte boven de kaart en houdt de top mooi in lijn.
+    // - uitleg  = dezelfde open hoogte als de main index
     var compactH = getCompactH();
     if(mode === 'help'){
       scheduleHelpMeasure();
@@ -1015,132 +1060,17 @@ export function initKaarten() {
   }
   try{ window.PK.setSheetMode = setSheetMode; }catch(_eSetMode){}
 
-  // Meet de benodigde hoogte voor de uitleg-sheet (kaart + tekst) zodat
-  // de bovenkant van de sheet niet onnodig hoog uitkomt.
+  // Kaartenindex gebruikt voor uitleg dezelfde open hoogte als de main index.
   function measureHelpH(){
-    if(!infoSheet) return 0;
-    var slideInner = infoSheet.querySelector ? infoSheet.querySelector('.infoSlideInner') : null;
-    if(!slideInner || !slideInner.getBoundingClientRect) return 0;
-    var r = slideInner.getBoundingClientRect();
-    if(!r || !r.height) return 0;
-    // Handle + ondermarge + safe-area
-    var handleH = 18;
-    var pad = 18;
-    // env(safe-area-inset-bottom) is niet betrouwbaar via getComputedStyle;
-    // de CSS regelt safe-area al. Hier dus geen extra.
-    var h = Math.round(r.height + handleH + pad);
-
-    // Extra: zorg dat de sheet hoog genoeg is om de centrale index-kaart volledig te bedekken.
-    // Top(sheet) = windowindow.innerHeight - h. We willen: top(sheet) <= top(index-kaart).
-    // => h >= windowindow.innerHeight - top(index-kaart)
-    try{
-      var main = document.getElementById('mainCarousel');
-      if(main){
-        var slides = Array.prototype.slice.call(main.children || []);
-        var cx = window.innerWidth / 2;
-        var best = null;
-        var bestDist = Infinity;
-        for(var i=0;i<slides.length;i++){
-          var sl = slides[i];
-          if(!sl || sl.nodeType !== 1) continue;
-          var rr = sl.getBoundingClientRect();
-          var mx = rr.left + rr.width/2;
-          var d = Math.abs(mx - cx);
-          if(d < bestDist){ bestDist = d; best = sl; }
-        }
-        var mainCard = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
-        if(mainCard && mainCard.getBoundingClientRect){
-          var rMain = mainCard.getBoundingClientRect();
-          var needed = Math.round(window.innerHeight - rMain.top);
-          // kleine extra marge zodat hij écht over de kaart valt
-          needed += 14;
-          if(needed > h) h = needed;
-        }
-      }
-    }catch(_eCover){}
-
-    var maxH = getMaxH();
-    // Clamp: nooit kleiner dan 320 (stabiel) en nooit groter dan max.
-    h = Math.max(320, Math.min(maxH, h));
-    return h;
+    return syncHelpSheetMaxH() || getMaxH();
   }
 
 
-  // --- Align uitleg-inhoud precies over de centrale kaart op de index ---
-  // Belangrijk: de sheet zelf moet altijd aan de onderrand blijven 'haken'.
-  // Daarom verplaatsen we NIET de hele sheet (dat gaf soms een gap op iOS),
-  // maar schuiven we alleen de uitleg-inhoud (CSS var --helpShift).
+  // Kaartenindex gebruikt hier dezelfde rustige sheet-opbouw als de main index.
+  // Daarom geen extra verticale content-shift meer binnen de sheet.
   function alignInfoSheetToMainCard(){
-    if(!infoSheet || !infoCarousel) return;
-
-    // Centrale kaart (index)
-    var main = document.getElementById('mainCarousel');
-    if(!main) return;
-    var mainSlides = Array.prototype.slice.call(main.children || []);
-    if(!mainSlides.length) return;
-
-    var cx = window.innerWidth / 2;
-    var best = null;
-    var bestDist = Infinity;
-    for(var i=0;i<mainSlides.length;i++){
-      var sl = mainSlides[i];
-      if(!sl || sl.nodeType !== 1) continue;
-      var r = sl.getBoundingClientRect();
-      var mx = r.left + r.width/2;
-      var d = Math.abs(mx - cx);
-      if(d < bestDist){ bestDist = d; best = sl; }
-    }
-    var mainCard = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
-    if(!mainCard) return;
-    var rMain = mainCard.getBoundingClientRect();
-
-    // Zichtbare kaart (uitleg)
-    var infoSlides = Array.prototype.slice.call(infoCarousel.children || []);
-    if(!infoSlides.length) return;
-    var bestI = null;
-    var bestIDist = Infinity;
-    for(var j=0;j<infoSlides.length;j++){
-      var isl = infoSlides[j];
-      if(!isl || isl.nodeType !== 1) continue;
-      var ir = isl.getBoundingClientRect();
-      var imx = ir.left + ir.width/2;
-      var id = Math.abs(imx - cx);
-      if(id < bestIDist){ bestIDist = id; bestI = isl; }
-    }
-    // Gebruik de kaart-container (niet het <img>) zodat de maat altijd gelijk is
-    // aan de index-kaart (aspect-ratio) en niet varieert per SVG.
-    var infoCardEl = bestI && bestI.querySelector ? bestI.querySelector('.infoSlideCard') : null;
-    if(!infoCardEl) return;
-    var rInfo = infoCardEl.getBoundingClientRect();
-
-    // Doel: bovenkant van uitleg-kaart uitlijnen op de centrale index-kaart.
-    // shift (px) = gewensteTop - huidigeTop.
-    var shift = Math.round(rMain.top - rInfo.top);
-
-    // Guardrails: laat de kaart nooit uit de sheet-viewport 'knippen'.
-    // (Dit was de oorzaak van "alleen een strook" van de kaart zien.)
-    if(sheetViewport && sheetViewport.getBoundingClientRect){
-      var vp = sheetViewport.getBoundingClientRect();
-      var pad = 12; // visuele marge boven/onder
-      var topLimit = vp.top + pad;
-      var bottomLimit = vp.bottom - pad;
-
-      var topAfter = rInfo.top + shift;
-      var bottomAfter = rInfo.bottom + shift;
-
-      if(topAfter < topLimit){
-        shift += (topLimit - topAfter);
-      }
-      if(bottomAfter > bottomLimit){
-        shift -= (bottomAfter - bottomLimit);
-      }
-    }
-
-    // Extra clamp tegen extreme values bij rare metingen (iOS rotate / rubberband)
-    if(shift > 140) shift = 140;
-    if(shift < -140) shift = -140;
-
-    try{ infoSheet.style.setProperty('--helpShift', shift + 'px'); }catch(_e){}
+    if(!infoSheet || !infoSheet.style || !infoSheet.style.setProperty) return;
+    try{ infoSheet.style.setProperty('--helpShift', '0px'); }catch(_e){}
   }
 
   function getInfoSlides(){
@@ -1253,12 +1183,12 @@ export function initKaarten() {
     // 2) Zet meteen naar uitleg, zodat DOM-sizes kloppen vóór de open-animatie
     try{ setSheetMode('help'); }catch(_e0){}
 
-    // Force reflow zodat measureHelpH betrouwbare waarden geeft (ook op iOS)
+    // Force reflow zodat de definitieve sheethoogte stabiel is (ook op iOS)
     try{ infoSheet.offsetHeight; }catch(_eR){}
 
     // 3) Bepaal de definitieve sheet hoogte vóór het openen (voorkomt 'top-down' krimp)
     try{
-      var h = measureHelpH();
+      var h = syncHelpSheetMaxH();
       if(h) setCurH(h);
     }catch(_eH){}
 
@@ -1842,7 +1772,10 @@ export function initKaarten() {
     // Tint direct laten meekleuren met de eerste kaart.
     window.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
     // Houd de sheet compact zolang alleen de kaart zichtbaar is.
-    window.setTimeout(measureAndSetCompactH, 0);
+    window.setTimeout(function(){
+      syncHelpSheetMaxH();
+      measureAndSetCompactH();
+    }, 0);
   }
 
   // -----------------------------
@@ -2149,7 +2082,27 @@ export function initKaarten() {
       window.setTimeout(function(){
         var idx = getActiveCardIndex();
         setActiveTintByIndex(idx);
+        syncHelpSheetMaxH();
+        measureAndSetCompactH();
+        if(sheetMode === 'help' || isInfoOpen()){
+          setCurH(syncHelpSheetMaxH() || getMaxH());
+          window.requestAnimationFrame(function(){
+            try{ alignInfoSheetToMainCard(); }catch(_eAlign){}
+          });
+        }
       }, 30);
+    });
+    window.addEventListener('orientationchange', function(){
+      window.setTimeout(function(){
+        syncHelpSheetMaxH();
+        measureAndSetCompactH();
+        if(sheetMode === 'help' || isInfoOpen()){
+          setCurH(syncHelpSheetMaxH() || getMaxH());
+          window.requestAnimationFrame(function(){
+            try{ alignInfoSheetToMainCard(); }catch(_eAlign){}
+          });
+        }
+      }, 60);
     });
   }
 
@@ -2167,7 +2120,11 @@ export function initKaarten() {
   }
 
   function getSheetMaxH(){
-    return getCssPx(infoSheet, '--sheetMaxH', getCssPx(document.documentElement, '--sheetPageH', 520) || 520);
+    return getCssPx(
+      infoSheet,
+      '--sheetMaxH',
+      syncHelpSheetMaxH() || getCssPx(document.documentElement, '--sheetPageH', 520) || 520
+    );
   }
 
   function getSheetCurH(){
@@ -2187,6 +2144,7 @@ export function initKaarten() {
 
   function measureAndSetCompactH(){
     if(!infoSheet || !sheetViewport) return;
+    syncHelpSheetMaxH();
     // Neem de eerste slide als referentie (kaart + kleine marge)
     var first = cardsCarousel ? cardsCarousel.querySelector('.cardsSlideInner') : null;
     if(!first || !first.getBoundingClientRect) return;
@@ -2447,6 +2405,7 @@ export function initKaarten() {
   if(infoSheet){
     // start altijd volledig dicht; alleen openen via info-knop
     infoSheet.hidden = true;
+    syncHelpSheetMaxH();
     loadAndRender();
     // Kaartenpagina bestaat altijd: bouw de carrousel zodra items geladen zijn.
     // (Geen dynamisch mounten na interactie.)

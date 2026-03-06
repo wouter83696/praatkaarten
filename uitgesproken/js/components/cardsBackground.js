@@ -746,6 +746,23 @@ export const cardsBackground = {
       renderSvgLayer(svg, assets.shapes, assets.palette, rnd2, lite, opts);
     }
 
+    function scheduleStabilizeRerenders(c){
+      if(!c) return;
+      c._stabilizeUntil = Date.now() + 1800;
+      if(c._stabilizeToken === token) return;
+      c._stabilizeToken = token;
+      function rerender(){
+        doRender(c.assets, c.seed);
+      }
+      window.requestAnimationFrame(function(){
+        rerender();
+        window.requestAnimationFrame(rerender);
+      });
+      window.setTimeout(rerender, 180);
+      window.setTimeout(rerender, 420);
+      window.setTimeout(rerender, 860);
+    }
+
     function ensureCache(){
       if(cache && cache.key===key && cache.assets && cache.seed){
         return Promise.resolve(cache);
@@ -759,6 +776,7 @@ export const cardsBackground = {
 
     ensureCache().then(function(c){
       doRender(c.assets, c.seed);
+      scheduleStabilizeRerenders(c);
     });
 
     // re-render on resize (debounced) – zónder nieuwe random
@@ -782,20 +800,22 @@ export const cardsBackground = {
 
         var dw = Math.abs(cw - lastW);
         var dh = Math.abs(ch - lastH);
+        var settling = !!(cache && cache._stabilizeUntil && Date.now() < cache._stabilizeUntil);
 
         // Redraw alleen bij:
         // - duidelijke breedte verandering (desktop resize / rotatie)
         // - of grote hoogte verandering (rotatie)
         // Kleine hoogte-shifts door scroll → overslaan.
-        if(dw >= 2 || dh >= 140){
+        if(dw >= 2 || dh >= 140 || (settling && dh >= 8)){
           doRender(cache.assets, cache.seed);
         }
       }, 120);
     }
 
-    if(!canvas._pkBgBound){
-      canvas._pkBgBound = true;
-      window.addEventListener('resize', onResize, { passive:true });
+    if(canvas._pkBgResizeHandler){
+      try{ window.removeEventListener('resize', canvas._pkBgResizeHandler); }catch(_eRem){}
     }
+    canvas._pkBgResizeHandler = onResize;
+    window.addEventListener('resize', onResize, { passive:true });
   }
 };

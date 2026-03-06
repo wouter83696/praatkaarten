@@ -816,6 +816,23 @@ export const gridBackground = {
       renderSvgLayer(svg, assets.shapes, assets.palette, rnd2, lite, opts);
     }
 
+    function scheduleStabilizeRerenders(c){
+      if(!c) return;
+      if(c._stabilizeToken === token) return;
+      c._stabilizeToken = token;
+      function rerender(){
+        doRender(c.assets, c.seed);
+      }
+      window.requestAnimationFrame(function(){
+        rerender();
+        window.requestAnimationFrame(rerender);
+      });
+      window.setTimeout(rerender, 180);
+      window.setTimeout(rerender, 420);
+      window.setTimeout(rerender, 860);
+      window.setTimeout(rerender, 1400);
+    }
+
     function ensureCache(){
       if(cache && cache.key===key && cache.assets && cache.seed){
         return Promise.resolve(cache);
@@ -829,6 +846,7 @@ export const gridBackground = {
 
     ensureCache().then(function(c){
       doRender(c.assets, c.seed);
+      scheduleStabilizeRerenders(c);
     });
 
     // Achtergrond blijft statisch na eerste render.

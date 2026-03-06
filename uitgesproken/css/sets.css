@@ -265,7 +265,7 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
 .setGridCard:hover .cardInner,
 .setGridCard:focus-visible .cardInner {
   transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06) !important;
+  box-shadow: none !important;
   opacity: 1;
 }
 .setGridCard .cardInner::before{
@@ -429,7 +429,7 @@ html[data-contrast="dark"] .indexBgSvg{
   box-sizing: border-box;
 }
 .indexInfoCarousel .infoSlide{
-  width: min(100%, 760px);
+  width: min(100%, var(--floatingSurfaceWidth, 760px));
   margin: 0 auto;
   padding: 0;
 }

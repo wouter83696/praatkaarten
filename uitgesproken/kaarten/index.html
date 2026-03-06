@@ -139,7 +139,6 @@
 <section id="themeMenu" class="themeMenu" role="dialog" aria-label="Menu" hidden>
   <div class="menuCard glassSurface">
     <div class="menuHeaderRow">
-      <div id="menuSetTitle" class="menuHeader">Samen onderzoeken</div>
       <div class="menuHeaderTools" aria-label="Acties">
         <!-- Contrast: 2 standen (licht/donker) – icon-only, minimaal -->
         <button id="menuContrastToggle" class="menuMiniBtn" type="button" aria-label="Contrastmodus" aria-pressed="false">
@@ -169,6 +168,14 @@
         </button>
       </div>
     </div>
+    <button id="menuSetButton" class="menuItem menuCurrentSet" type="button" aria-label="Ga naar het begin van deze kaartenset">
+      <span id="menuSetTitle" class="miLabel">Samen onderzoeken</span>
+      <span class="miThumbRight" aria-hidden="true">
+        <span class="menuThumbCard menuCurrentThumb">
+          <img id="menuSetThumbImg" class="bg" src="../sets/samenwerken/cards_rect/voorkant.svg" alt="">
+        </span>
+      </span>
+    </button>
     <div id="menuList" class="menuList">
       <!-- Wordt dynamisch gevuld -->
     </div>
