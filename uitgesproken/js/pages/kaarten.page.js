@@ -1476,8 +1476,6 @@ export function initKaarten() {
   }
 
   var __infoUiHandlersBound = false;
-  var __infoLastActiveIdx = -1;
-  var __infoScrollRaf = 0;
   function scrollHelpViewportToTop(smooth){
     var vp = sheetViewport || (infoSheet && infoSheet.querySelector ? infoSheet.querySelector('.sheetViewport') : null);
     if(!vp) return;
@@ -1491,20 +1489,6 @@ export function initKaarten() {
   function ensureInfoUiHandlers(){
     if(__infoUiHandlersBound || !infoCarousel) return;
     __infoUiHandlersBound = true;
-
-    infoCarousel.addEventListener('scroll', function(){
-      if(__infoScrollRaf) return;
-      __infoScrollRaf = window.requestAnimationFrame(function(){
-        __infoScrollRaf = 0;
-        var idx = getInfoActiveIndex();
-        if(idx === __infoLastActiveIdx) return;
-        if(__infoLastActiveIdx !== -1){
-          // Bij wisselen van uitlegkaart altijd terug naar boven.
-          scrollHelpViewportToTop(false);
-        }
-        __infoLastActiveIdx = idx;
-      });
-    }, { passive:true });
 
     infoCarousel.addEventListener('click', function(ev){
       var target = ev && ev.target;
@@ -1620,9 +1604,6 @@ export function initKaarten() {
       var firstReal = infoCarousel.querySelector('.infoSlide:not(.is-clone)');
       if(firstReal){ infoCarousel.scrollLeft = firstReal.offsetLeft; }
     }catch(_e0){}
-    window.requestAnimationFrame(function(){
-      __infoLastActiveIdx = getInfoActiveIndex();
-    });
   }
 
   // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).

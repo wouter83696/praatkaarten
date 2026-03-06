@@ -1220,7 +1220,7 @@ html[data-contrast="dark"] .infoSlideText{
   align-items: center;
   justify-content: center;
   align-self: end;
-  margin-bottom: 1px;
+  margin-bottom: 6px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
