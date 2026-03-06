@@ -53,3 +53,28 @@ html[data-contrast="dark"]{
   --menuMiniActiveBgAlpha: 0.12;
   --menuMiniActiveTextAlpha: 0.77;
 }
+
+/* ── Light/dark mode overgang ─────────────────────────── */
+html {
+  transition:
+    background-color var(--ui-contrast-duration, 380ms) ease,
+    color           var(--ui-contrast-duration, 380ms) ease;
+}
+
+/* Alle elementen die een achtergrond of kleur hebben krijgen een zachte overgang */
+body,
+.topBar,
+.themePill,
+.glassSurface,
+.menuCard,
+.infoCard,
+.indexInfoCard,
+.infoSlideText,
+.setGridCard .cardInner,
+.setsHeroCard .cardInner {
+  transition:
+    background-color var(--ui-contrast-duration, 380ms) ease,
+    background      var(--ui-contrast-duration, 380ms) ease,
+    color           var(--ui-contrast-duration, 380ms) ease,
+    border-color    var(--ui-contrast-duration, 380ms) ease;
+}
