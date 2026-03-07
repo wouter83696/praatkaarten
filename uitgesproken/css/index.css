@@ -39,39 +39,45 @@ body[data-page="kaarten"] #infoClose{
   display: none !important;
 }
 
-/* Kaartenindex: gebruik dezelfde sheet-shell als de main index. */
-body[data-page="kaarten"] .infoSheet{
-  top: calc(env(safe-area-inset-top, 0px) + var(--topBarInset, 16px) + var(--topBarHeight, 64px) + 8px);
-  bottom: 0;
-  --sheetMaxH: 100%;
-  --sheetCompactH: 100%;
-  --sheetCurH: 100%;
-  --helpShift: 0px;
+body[data-page="kaarten"] .infoSlideText,
+body[data-page="kaarten"] .indexInfoSlideText{
+  margin-bottom: 0;
+  padding: 16px 20px 20px;
+  line-height: 1.56;
 }
 
-body[data-page="kaarten"] .infoCard{
-  height: 100%;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+body[data-page="kaarten"] .infoSlideText .infoTextIntro,
+body[data-page="kaarten"] .indexInfoSlideText .infoTextIntro{
+  margin-bottom: 10px;
+  color: rgba(11,18,32,0.88);
 }
 
-body[data-page="kaarten"] .sheetViewport{
-  height: 100%;
-  max-height: none;
+html[data-contrast="dark"] body[data-page="kaarten"] .infoSlideText{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.010) 0%,
+      rgba(255,255,255,0.003) 14%,
+      rgba(255,255,255,0.000) 32%
+    ),
+    rgba(20,23,49,0.94);
+  box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.018);
+  padding: 16px 20px 26px;
 }
 
-body[data-page="kaarten"] .sheetStack,
-body[data-page="kaarten"] .sheetPage{
-  min-height: 100%;
+html[data-contrast="dark"] body[data-page="kaarten"] .infoSlideText .infoTextIntro,
+html[data-contrast="dark"] body[data-page="kaarten"] .indexInfoSlideText .infoTextIntro{
+  color: rgba(244,246,250,0.93);
 }
 
 /* Kaartenindex: zelfde ruimte tussen handle en uitlegkaart als main index. */
 body[data-page="kaarten"] .infoCarousel{
   padding-top: 10px;
-  padding-left: 14px;
-  padding-right: 14px;
+  padding-left: var(--sheetContentInset, 14px);
+  padding-right: var(--sheetContentInset, 14px);
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
-  scroll-padding-left: 14px;
-  scroll-padding-right: 14px;
+  scroll-padding-left: var(--sheetContentInset, 14px);
+  scroll-padding-right: var(--sheetContentInset, 14px);
 }
 
 /* Kaartenindex: exact dezelfde peek-verhouding als de hoofdcarrousel. */
@@ -136,7 +142,7 @@ body[data-page="kaarten"] .infoSlideInner{
      Geen waas / papier / overlays. */
   display: block;
   background: rgb(var(--activeTintRgb, 255, 255, 255));
-  transition: background-color 420ms ease;
+  transition: background-color var(--ui-contrast-duration, 240ms) var(--ui-contrast-ease, cubic-bezier(0.24, 0.9, 0.32, 1));
 }
 
 /* Light mode: geen volle kleurlaag over de hele pagina */
@@ -327,7 +333,7 @@ body[data-page="kaarten"] .indexSoftBlob{
      zichtbaar blijft (anders wordt hij te donker en verdwijnt hij). */
   background: radial-gradient(circle at 35% 35%, rgba(var(--activeHueRgb, 120, 160, 190), 0.030) 0%, rgba(var(--activeHueRgb, 120, 160, 190), 0) 64%);
   filter: blur(140px) saturate(0.95);
-  transition: background 420ms ease;
+  transition: background var(--ui-contrast-duration, 240ms) var(--ui-contrast-ease, cubic-bezier(0.24, 0.9, 0.32, 1));
 }
 
 /* Light mode: geen extra waas-veld */
