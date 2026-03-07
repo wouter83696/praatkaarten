@@ -1,15 +1,10 @@
 {
+  "_comment": "Voeg een nieuwe set toe via: ./scripts/new-set.sh <id> \"Titel\"",
   "default": "samenwerken",
   "sets": [
     {
       "id": "samenwerken",
       "title": "Samen onderzoeken"
-    }
-  ],
-  "available": [
-    {
-      "id": "samenwerken",
-      "title": "samenwerken"
     }
   ],
   "uiDefaults": {
