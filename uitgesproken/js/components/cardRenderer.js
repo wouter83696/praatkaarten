@@ -51,10 +51,15 @@ export function createGridCard(item) {
 
 export function createMenuItem(args) {
   // args: { setId, key, label, cardFile }
-  var btn = document.createElement('button');
-  btn.className = 'menuItem themeItem';
-  btn.type = 'button';
-  btn.setAttribute('data-set', args.key);
+  var isDisabled = !!(args && args.disabled);
+  var btn = document.createElement(isDisabled ? 'div' : 'button');
+  btn.className = 'menuItem themeItem' + (isDisabled ? ' is-dummy' : '');
+  if(!isDisabled){
+    btn.type = 'button';
+    btn.setAttribute('data-set', args.key);
+  }else{
+    btn.setAttribute('aria-disabled', 'true');
+  }
 
   var lab = document.createElement('span');
   lab.className = 'miLabel';

@@ -1,114 +1,144 @@
-# Uitgesproken – Praatkaartjes
+# Uitgesproken
 
-Gesprekskaarten web-app. Werkt op desktop, mobiel en als PWA.
+Gesprekskaartjes-webapp. Kaartensets zijn volledig modulair — elke set is een zelfstandige map onder `sets/`.
 
-## Mapstructuur
+---
+
+## Structuur
 
 ```
-index.html              ← kaartensets overzicht (grid/carousel)
-kaarten/index.html      ← kaartenpagina per set
-uitleg/index.html       ← uitlegpagina per set
-favicon.ico
-
-assets/
-  icons/sprite.svg      ← UI iconen
-  logo-icons/           ← app logo's en favicons
-
-css/
-  shell.css             ← skip-links, gedeelde basis
-  menu.css              ← topbar, pill, menu, bottomsheet
-  cards.css             ← kaartenpagina
-  index.css             ← grid/carousel pagina
-  sets.css              ← sets hero en grid
-  uitleg.css            ← uitlegpagina
-
-js/
-  main.js               ← bootstrap: imports, PK-object, boot
-  core/
-    paths.js            ← paden, VERSION, withV()
-    net.js              ← getText / getJson / loadJson
-    query.js            ← getQueryParam, getActiveSet, prettyName
-    color.js            ← dominantColorFromSvgText, lighten
-    state.js            ← activeSet / activeTheme state
-    ui.js               ← mergeDeep, applyUiConfig, validateUiConfig
-  shell/
-    initShell.js        ← applyCssVars, initShell
-  components/
-    menu.js             ← createMenu
-    bottomSheet.js      ← createBottomSheet
-    cardRenderer.js     ← createGridCard, createMenuItem, applyDominantTint
-    gridBackground.js   ← gridBackground.render()
-    cardsBackground.js  ← cardsBackground.render()
-  pages/
-    grid.page.js        ← index pagina logica
-    kaarten.page.js     ← kaartenpagina logica
-    uitleg.js           ← uitlegpagina logica
-  templates/
-    index.js            ← viewer templates registry
-
-templates/
-  ui-base.css           ← gedeelde menu/sheet CSS tokens
-  main-index.css        ← index achtergrond banden
-  cards-index.css       ← kaarten achtergrond
-
-sets/
-  index.json            ← lijst van alle sets + globale uiDefaults
-  _template/            ← startpunt voor nieuwe sets
-  samenwerken/          ← voorbeeld set
-    meta.json
-    questions.json
-    uitleg.json
-    intro.json
-    theme.css
-    cards/              ← SVG kaarten (vierkant)
-    cards_rect/         ← SVG kaarten (rechthoek)
-    cards_square/       ← SVG kaarten (vierkant variant)
-
-docs/
-  ui-overrides.md       ← uitleg over menu/sheet/layout config per set
-  set-meta-template.json
-  main-index-kaarten-palette-reference.svg
-
-scripts/
-  new-set.sh            ← nieuw set aanmaken via terminal
+uitgesproken/
+├── index.html              ← Kaartensets-overzicht
+├── kaarten/index.html      ← Kaartenviewer
+├── uitleg/index.html       ← Uitleg (intern iframe)
+│
+├── css/
+│   ├── shell.css           ← Importeert menu.css + cards.css
+│   ├── menu.css            ← Menu, topbar, sheet (alle pagina's)
+│   ├── cards.css           ← Kaarten-layout + flip-animatie
+│   ├── index.css           ← Kaartenviewer specifiek
+│   ├── sets.css            ← Kaartensets-overzicht specifiek
+│   └── uitleg.css          ← Uitleg-pagina specifiek
+│
+├── templates/
+│   ├── ui-base.css         ← Gedeelde CSS-tokens (menu, sheet)
+│   ├── main-index.css      ← Achtergrondkleuren overzicht
+│   └── cards-index.css     ← Achtergrondkleur kaartenviewer
+│
+├── js/
+│   ├── main.js             ← Bootstrap + PK-global
+│   ├── core/               ← Utilities: paths, net, query, color, state, ui
+│   ├── components/         ← UI: menu, sheet, background, cardRenderer
+│   └── pages/              ← Pagina-logica: grid.page.js, kaarten.page.js
+│
+├── sets/
+│   ├── index.json          ← Set-registry + globale UI-defaults ← HIER begin je
+│   ├── _template/          ← Startpunt voor nieuwe sets
+│   └── samenwerken/        ← "Samen onderzoeken" (voorbeeld)
+│
+├── scripts/
+│   └── new-set.sh          ← Nieuwe set scaffolden
+│
+└── docs/
+    ├── ui-overrides.md     ← Alle meta.json UI-opties uitgelegd
+    └── main-index-kaarten-palette-reference.svg
 ```
 
-## Nieuwe set maken
+---
 
-```bash
-./scripts/new-set.sh <set-id> "Titel"
-```
+## Nieuwe kaartenset toevoegen
 
-Voorbeeld:
+### Stap 1 — Scaffold
 
 ```bash
 ./scripts/new-set.sh teamreflectie "Team reflectie"
 ```
 
-Dit maakt `sets/teamreflectie/` aan vanuit `sets/_template/` en voegt de set toe aan `sets/index.json`.
+Dit kopieert `sets/_template/`, vult de ID en titel in, en registreert de set in `sets/index.json`.
 
-Daarna vervang je in `sets/teamreflectie/`:
-- `cards/*.svg` en `cards_rect/*.svg` — de kaartafbeeldingen
-- `questions.json` — de vragen
-- `meta.json` — titel, kleur, ui-instellingen
-- `theme.css` — optionele per-set stijl
+### Stap 2 — Inhoud invullen
 
-Zie `docs/ui-overrides.md` voor alle configuratie-opties.
+`sets/teamreflectie/` bevat:
 
-## Technische opzet
+| Bestand | Wat aanpassen |
+|---|---|
+| `meta.json` | Thema-namen, accentkleur, UI-opties |
+| `questions.json` | Vragen per thema |
+| `uitleg.json` | Uitleg-tekst per thema |
+| `intro.json` | Intro-kaarttekst |
+| `theme.css` | Set-specifieke stijlen (optioneel) |
+| `cards/*.svg` | Kaartafbeeldingen (85×55 viewBox) |
+| `cards_rect/*.svg` | Portret-thumbnails voor menu |
 
-Alle JS is geschreven als **ES modules** — geen bundler, geen build stap.
-`main.js` importeert alle modules direct en vult `window.PK` voor backward compatibility.
+### Stap 3 — Volgorde bepalen
 
-Vereist een HTTP-server (niet `file://`). Lokaal testen:
+Pas `sets/index.json` aan:
+
+```json
+{
+  "default": "samenwerken",
+  "sets": [
+    { "id": "samenwerken",    "title": "Samen onderzoeken" },
+    { "id": "teamreflectie",  "title": "Team reflectie" }
+  ]
+}
+```
+
+De volgorde in de array = volgorde op het scherm.
+
+### Minimale `meta.json`
+
+```json
+{
+  "id": "teamreflectie",
+  "title": "Team reflectie",
+  "themes": [
+    { "key": "verkennen",  "label": "Verkennen" },
+    { "key": "verbinden",  "label": "Verbinden" }
+  ]
+}
+```
+
+Alle opties staan in `docs/ui-overrides.md`.
+
+---
+
+## Lokaal draaien
 
 ```bash
 npx serve .
+# of
+python3 -m http.server 3000
 ```
 
-Daarna open je `http://localhost:3000`.
+---
 
-## Deployen
+## CMS toevoegen?
 
-Publiceer de inhoud van deze map zodat `index.html` in de root staat.
-Werkt direct op **GitHub Pages**, Netlify, Vercel of elke statische host.
+De data is bewust platte JSON + SVG, zodat je altijd zonder tooling kunt werken.
+
+**Zonder CMS (aanbevolen voor kleine teams):** gebruik `new-set.sh` + een teksteditor. Werkt direct.
+
+**Met CMS (handig bij meerdere redacteuren):** [Decap CMS](https://decapcms.org/) werkt direct op een GitHub-repo zonder backend. Je voegt een `static/admin/config.yml` toe en krijgt een `/admin`-interface. De relevante content-types zijn:
+- `sets/index.json` — set-volgorde
+- `sets/*/meta.json` — labels, kleuren, thema's
+- `sets/*/questions.json` — vragen per thema
+
+---
+
+## Admin-paneel (`/admin`)
+
+Open `admin/index.html` in je browser om kaartensets visueel te beheren.
+
+**Wat je nodig hebt:**
+- Je GitHub-repository staat online (bijv. GitHub Pages)
+- Een GitHub Personal Access Token met `repo`-rechten
+
+**Wat je kunt doen in het paneel:**
+- Sets toevoegen, hernoemen en verwijderen
+- Thema's aanmaken en herordenen
+- Vragen bewerken per thema
+- Uitleg-teksten aanpassen
+- Intro-slides bewerken
+
+Alle wijzigingen worden direct via de GitHub API opgeslagen als commits.

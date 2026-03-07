@@ -9,7 +9,7 @@ export function initGrid() {
   if(!carousel && !grid) return;
 
   var menuList = doc.getElementById('menuList');
-  var menuTitle = doc.getElementById('menuSetTitle');
+  var menuHeaderTitle = doc.getElementById('menuHeaderTitle');
   var pillText = doc.getElementById('themePillText');
   var contrastBtn = doc.getElementById('menuContrastToggle');
   var shuffleBtn = doc.getElementById('menuShuffleToggle');
@@ -343,28 +343,29 @@ export function initGrid() {
     try{ last = trim(window.localStorage.getItem('pk_last_set') || ''); }catch(_eLast){}
     if(last){
       for(var i=0;i<sets.length;i++){
-        if(trim((sets[i] || {}).id || '') === last) return last;
+        if(trim((sets[i] || {}).id || '') === last && !(sets[i] || {}).placeholder) return last;
       }
     }
     if(fallbackId){
       for(var j=0;j<sets.length;j++){
-        if(trim((sets[j] || {}).id || '') === fallbackId) return fallbackId;
+        if(trim((sets[j] || {}).id || '') === fallbackId && !(sets[j] || {}).placeholder) return fallbackId;
       }
+    }
+    for(var k=0;k<sets.length;k++){
+      if((sets[k] || {}).placeholder) continue;
+      if((sets[k] || {}).id) return trim(sets[k].id);
     }
     return (sets[0] && sets[0].id) ? trim(sets[0].id) : '';
   }
 
   function getDefaultOrder(idx){
-    var sets = (idx && Array.isArray(idx.sets)) ? idx.sets : [];
+    var sets = getDisplaySets(idx);
     var items = [];
     for(var i=0;i<sets.length;i++){
       var sid = trim((sets[i] || {}).id || '');
       if(!sid) continue;
       items.push({ id: sid, title: String((sets[i] || {}).title || sid) });
     }
-    items.sort(function(a, b){
-      return a.title.localeCompare(b.title, 'nl', { sensitivity: 'base' });
-    });
     return items.map(function(s){ return s.id; });
   }
 
@@ -377,6 +378,23 @@ export function initGrid() {
     return a;
   }
 
+  function getDisplaySets(idx){
+    var sets = (idx && Array.isArray(idx.sets)) ? idx.sets.slice() : [];
+    return sets.sort(function(a, b){
+      var aPlaceholder = !!(a && a.placeholder);
+      var bPlaceholder = !!(b && b.placeholder);
+      if(aPlaceholder !== bPlaceholder) return aPlaceholder ? -1 : 1;
+      if(aPlaceholder && bPlaceholder){
+        var aMatch = String((a && a.title) || '').match(/(\d+)/);
+        var bMatch = String((b && b.title) || '').match(/(\d+)/);
+        var aNum = aMatch ? parseInt(aMatch[1], 10) : Number.MAX_SAFE_INTEGER;
+        var bNum = bMatch ? parseInt(bMatch[1], 10) : Number.MAX_SAFE_INTEGER;
+        if(aNum !== bNum) return aNum - bNum;
+      }
+      return 0;
+    });
+  }
+
   function getOrderedSets(idx){
     var isShuffled = !!(shuffleBtn && shuffleBtn.getAttribute('aria-pressed') === 'true');
     var base = getDefaultOrder(idx);
@@ -384,7 +402,7 @@ export function initGrid() {
   }
 
   function getHeroSetOrder(idx, activeSetId, limit){
-    var sets = (idx && Array.isArray(idx.sets)) ? idx.sets : [];
+    var sets = getDisplaySets(idx);
     var ids = [];
     var orderMap = {};
     for(var i=0;i<sets.length;i++){
@@ -653,7 +671,7 @@ export function initGrid() {
     if(last){
       for(var i=0;i<sets.length;i++){
         var sid = trim((sets[i] || {}).id || '');
-        if(sid === last) return sid;
+        if(sid === last && !(sets[i] || {}).placeholder) return sid;
       }
     }
 
@@ -662,14 +680,14 @@ export function initGrid() {
     if(def){
       for(var j=0;j<sets.length;j++){
         var sid2 = trim((sets[j] || {}).id || '');
-        if(sid2 === def) return sid2;
+        if(sid2 === def && !(sets[j] || {}).placeholder) return sid2;
       }
     }
 
     // 3) eerste beschikbare
     for(var k=0;k<sets.length;k++){
       var sid3 = trim((sets[k] || {}).id || '');
-      if(sid3) return sid3;
+      if(sid3 && !(sets[k] || {}).placeholder) return sid3;
     }
 
     return last || def || 'samenwerken';
@@ -683,7 +701,7 @@ export function initGrid() {
     innerWrap.className = 'setsHeroSlideInner';
 
     var card = doc.createElement(args.href ? 'a' : 'div');
-    card.className = 'setsHeroCard card is-muted' + (args.placeholder ? ' is-placeholder' : '');
+    card.className = 'setsHeroCard card is-muted' + (args.placeholder ? ' is-placeholder' : '') + (args.dummy ? ' is-dummy' : '');
     if(args.href){
       card.href = args.href;
       card.setAttribute('aria-label', args.label || 'Kaartenset');
@@ -721,7 +739,7 @@ export function initGrid() {
 
   function buildGridCard(args){
     var el = doc.createElement(args.href ? 'a' : 'div');
-    el.className = 'setGridCard is-muted' + (args.placeholder ? ' is-placeholder' : '');
+    el.className = 'setGridCard is-muted' + (args.placeholder ? ' is-placeholder' : '') + (args.dummy ? ' is-dummy' : '');
     if(args.href){
       el.href = args.href;
       el.setAttribute('aria-label', args.label || 'Kaart');
@@ -758,11 +776,12 @@ export function initGrid() {
   function renderMenuForIndex(idx){
     if(!menuList) return;
     menuList.innerHTML = '';
-    var sets = (idx && Array.isArray(idx.sets)) ? idx.sets : [];
+    var sets = getDisplaySets(idx);
     for(var i=0;i<sets.length;i++){
       var s = sets[i] || {};
       var id = trim(s.id || '');
       if(!id) continue;
+      var isPlaceholder = !!s.placeholder;
       var label = String(s.title || id);
       var coverFile = 'voorkant.svg';
       if(window.PK.createMenuItem){
@@ -772,13 +791,18 @@ export function initGrid() {
           label: label,
           thumbFile: (s && s.thumb) ? String(s.thumb) : '',
           cardFile: coverFile,
-          cover: coverFile
+          cover: coverFile,
+          disabled: isPlaceholder
         }));
       }else{
-        var btn = doc.createElement('button');
-        btn.className = 'menuItem themeItem';
-        btn.type = 'button';
-        btn.setAttribute('data-set', id);
+        var btn = doc.createElement(isPlaceholder ? 'div' : 'button');
+        btn.className = 'menuItem themeItem' + (isPlaceholder ? ' is-dummy' : '');
+        if(!isPlaceholder){
+          btn.type = 'button';
+          btn.setAttribute('data-set', id);
+        }else{
+          btn.setAttribute('aria-disabled', 'true');
+        }
         btn.textContent = label;
         menuList.appendChild(btn);
       }
@@ -796,12 +820,14 @@ export function initGrid() {
     carousel.innerHTML = '';
     try{ carousel.removeAttribute('data-infinite'); }catch(_eInf){}
 
-    var sets = (idx && Array.isArray(idx.sets)) ? idx.sets : [];
+    var sets = getDisplaySets(idx);
     var titleMap = {};
+    var placeholderMap = {};
     for(var i=0;i<sets.length;i++){
       var sid = trim((sets[i] || {}).id || '');
       if(!sid) continue;
       titleMap[sid] = String((sets[i] || {}).title || sid);
+      placeholderMap[sid] = !!(sets[i] || {}).placeholder;
     }
 
     var heroLimit = 6;
@@ -815,8 +841,9 @@ export function initGrid() {
       carousel.appendChild(buildHeroSlide({
         setId: id,
         file: file,
-        href: cardsPage + '?set=' + encodeURIComponent(id),
-        label: label
+        href: placeholderMap[id] ? '' : (cardsPage + '?set=' + encodeURIComponent(id)),
+        label: label,
+        dummy: !!placeholderMap[id]
       }));
       count++;
     }
@@ -848,12 +875,14 @@ export function initGrid() {
     }
     grid.innerHTML = '';
 
-    var sets = (idx && Array.isArray(idx.sets)) ? idx.sets : [];
+    var sets = getDisplaySets(idx);
     var titleMap = {};
+    var placeholderMap = {};
     for(var i=0;i<sets.length;i++){
       var sid = trim((sets[i] || {}).id || '');
       if(!sid) continue;
       titleMap[sid] = String((sets[i] || {}).title || sid);
+      placeholderMap[sid] = !!(sets[i] || {}).placeholder;
     }
 
     var maxItems = getGridLimit();
@@ -871,7 +900,8 @@ export function initGrid() {
         setId: id,
         file: file,
         label: label,
-        href: cardsPage + '?set=' + encodeURIComponent(id)
+        href: placeholderMap[id] ? '' : (cardsPage + '?set=' + encodeURIComponent(id)),
+        dummy: !!placeholderMap[id]
       });
       gCard.style.setProperty('--card-i', cardIdx++);
       grid.appendChild(gCard);
@@ -1051,11 +1081,6 @@ export function initGrid() {
         if(PK && typeof window.PK.setThemeChrome === 'function') window.PK.setThemeChrome(CONTRAST);
       }catch(_eRepaint){}
     });
-    window.setTimeout(function(){
-      try{
-        if(PK && typeof window.PK.setThemeChrome === 'function') window.PK.setThemeChrome(CONTRAST);
-      }catch(_eRepaint2){}
-    }, 140);
   }
 
   function setShuffleEnabled(on){
@@ -1383,7 +1408,7 @@ export function initGrid() {
       lastIndexConfig = idx;
 
       try{
-        if(menuTitle) menuTitle.textContent = 'Kaartensets';
+        if(menuHeaderTitle) menuHeaderTitle.textContent = 'Kaartensets';
         if(pillText) pillText.textContent = 'Kaartensets';
       }catch(_e0){}
 
@@ -1448,6 +1473,7 @@ export function initGrid() {
         menuList.addEventListener('click', function(e){
           var btn = e.target && (e.target.closest ? e.target.closest('button[data-set]') : null);
           if(!btn) return;
+          if(btn.getAttribute('aria-disabled') === 'true') return;
           var targetSet = trim(btn.getAttribute('data-set') || '');
           if(!targetSet) return;
           try{ if(menuApi && menuApi.close) menuApi.close(); }catch(_eClose){}
@@ -1491,7 +1517,7 @@ export function initGrid() {
     }).catch(function(){
       var fb = fallbackState();
       try{
-        if(menuTitle) menuTitle.textContent = 'Kaartensets';
+        if(menuHeaderTitle) menuHeaderTitle.textContent = 'Kaartensets';
         if(pillText) pillText.textContent = 'Kaartensets';
       }catch(_e0){}
       try{

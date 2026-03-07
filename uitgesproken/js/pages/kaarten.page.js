@@ -336,7 +336,8 @@ export function initKaarten() {
 
   function setThemePillText(txt){
     var pillText = document.getElementById('themePillText');
-    if(pillText) pillText.textContent = (txt || window.PK.prettyName(window.PK.getActiveSet()));
+    var next = (txt || window.PK.prettyName(window.PK.getActiveSet()));
+    if(pillText) pillText.textContent = next;
   }
 
   function openMenu(){
@@ -378,7 +379,7 @@ export function initKaarten() {
       try{ window.PK.UI_DEFAULTS = UI_DEFAULTS; }catch(_eU){}
       try{ renderIndexBackground(); }catch(_eBg1){}
       var sets = Array.isArray(idx.sets) ? idx.sets : [];
-      var available = sets.map(function(x){ return x.id; });
+      var available = sets.filter(function(x){ return x && !x.placeholder; }).map(function(x){ return x.id; });
       var def = (idx.default || '').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'');
       if(fromUrl && available.indexOf(fromUrl)!==-1) return fromUrl;
       if(def && available.indexOf(def)!==-1) return def;
@@ -410,30 +411,12 @@ export function initKaarten() {
     if(pill){ pill.setAttribute('aria-label', (meta && meta.name) ? meta.name : setId); }
 
     // Menu titel: kaartenset naam (ipv "Thema's")
-    var menuTitle = document.getElementById('menuSetTitle');
-    var menuSetButton = document.getElementById('menuSetButton');
-    var menuThumbImg = document.getElementById('menuSetThumbImg');
+    var menuHeaderTitle = document.getElementById('menuHeaderTitle');
     var menuSetName = (meta && meta.name) ? meta.name : window.PK.prettyName(setId);
-    if(menuTitle){
-      menuTitle.textContent = menuSetName;
+    if(menuHeaderTitle){
+      menuHeaderTitle.textContent = menuSetName;
     }
-    if(menuSetButton){
-      menuSetButton.setAttribute('aria-label', 'Ga naar het begin van ' + menuSetName);
-    }
-    if(menuThumbImg){
-      var thumbRect = pathForSet(setId, 'cards_rect/' + CURRENT_COVER);
-      var thumbFull = pathForSet(setId, 'cards/' + CURRENT_COVER);
-      menuThumbImg.setAttribute('data-src-full', thumbFull);
-      menuThumbImg.setAttribute('data-fallback-step', '0');
-      menuThumbImg.src = window.PK.withV ? window.PK.withV(thumbRect) : thumbRect;
-      menuThumbImg.onerror = function(){
-        var step = parseInt(this.getAttribute('data-fallback-step') || '0', 10);
-        if(step > 0) return;
-        this.setAttribute('data-fallback-step', '1');
-        var next = this.getAttribute('data-src-full') || '';
-        if(next) this.src = window.PK.withV ? window.PK.withV(next) : next;
-      };
-    }
+    setThemePillText(menuSetName);
     trackSetVisit(setId);
 
     // Per-set CSS vars (meta.cssVars)
@@ -713,8 +696,6 @@ export function initKaarten() {
   }
 
   // Menu acties: info (open sheet in uitleg) + shuffle toggle (alleen state/UI)
-  var menuSetTitle = document.getElementById('menuSetTitle');
-  var menuSetButton = document.getElementById('menuSetButton');
   var menuInfoBtn = document.getElementById('menuInfoBtn');
   if(menuInfoBtn){
     menuInfoBtn.onclick = function(ev){
@@ -724,37 +705,6 @@ export function initKaarten() {
       try{ setSheetMode('help'); }catch(_e){}
       if(infoSheet) openInfo();
     };
-  }
-
-  // Klik op de huidige set-thumb in het menu: terug naar kaart 1 van de set.
-  var menuSetTarget = menuSetButton || menuSetTitle;
-  if(menuSetTarget && !menuSetTarget.__pkResetToStartBound){
-    menuSetTarget.__pkResetToStartBound = true;
-
-    var resetToSetStart = function(ev){
-      if(ev && ev.preventDefault) ev.preventDefault();
-      if(ev && ev.stopPropagation) ev.stopPropagation();
-      closeMenu();
-      try{
-        if(window.PK.setActiveTheme && THEMES && THEMES.length){
-          window.PK.setActiveTheme(THEMES[0]);
-        }
-      }catch(_eThemeStart){}
-      try{
-        if(cardsCarousel && cardsCarousel.children && cardsCarousel.children.length){
-          goToCardIndex(0);
-          resetAllFlippedCards();
-        }
-      }catch(_eGo0){}
-    };
-
-    menuSetTarget.addEventListener('click', resetToSetStart);
-    menuSetTarget.addEventListener('keydown', function(ev){
-      var key = (ev && ev.key) ? ev.key : '';
-      if(key === 'Enter' || key === ' '){
-        resetToSetStart(ev);
-      }
-    });
   }
 
   // Als uitleg-sheet open staat: 1 tap op de topbar-pill (menu/logo) sluit de sheet
@@ -1509,17 +1459,11 @@ export function initKaarten() {
       }
 
       var text = document.createElement('div');
-      text.className = 'infoSlideText';
+      text.className = 'infoSlideText indexInfoSlideText';
       setInfoTextContent(text, s.text);
       if(s.isCover){
         appendCoverFooterHint(text);
       }
-
-      var isDark = (document && document.documentElement && document.documentElement.getAttribute("data-contrast") === "dark");
-      var baseTint = isDark
-        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.86)"
-        : "rgba(255,255,255,0.975)";
-      text.style.background = baseTint;
       inner.appendChild(card);
       inner.appendChild(text);
 
@@ -1536,16 +1480,13 @@ export function initKaarten() {
     }catch(_e0){}
   }
 
-  // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
+  // Laat het uitleg-tekstvlak volledig door CSS sturen, zodat kaartenindex
+  // exact dezelfde afwerking kan delen als het main-index tekstvak.
   function retintInfoSlideTexts(){
-    var isDark = (document && document.documentElement && document.documentElement.getAttribute('data-contrast') === 'dark');
-    var base = isDark
-      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.86)'
-      : 'rgba(255,255,255,0.975)';
     var nodes = (document && document.querySelectorAll) ? document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];
-      try{ t.style.background = base; }catch(_e2){}
+      try{ t.style.background = ''; }catch(_e2){}
     }
   }
 

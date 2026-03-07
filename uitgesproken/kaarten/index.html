@@ -49,8 +49,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/shell.css?v=4.0.83">
-  <link rel="stylesheet" href="../css/index.css?v=3.7.1.163">
+  <link rel="stylesheet" href="../css/shell.css?v=4.0.72">
+  <link rel="stylesheet" href="../css/index.css?v=3.7.1.164">
   <link rel="stylesheet" href="../templates/ui-base.css?v=3.7.1.16">
   <link rel="stylesheet" href="../templates/cards-index.css?v=3.7.1.9">
 
@@ -122,7 +122,7 @@
       <span class="setCoverWrap">
         <img id="setCoverIcon" class="setCoverIcon" src="../assets/logo-icons/masters/logo-ballon-vlak.svg" alt="">
       </span>
-      <span class="themePillBrand">Uitgesproken</span>
+      <span id="themePillBrand" class="themePillBrand">Uitgesproken</span>
     </span>
     <span class="themePillMenuIcon" aria-hidden="true">
       <svg class="gmIcon" viewBox="0 0 24 24">
@@ -136,54 +136,47 @@
 </header>
 
 <div id="themeMenuOverlay" class="menuOverlay" hidden></div>
-<section id="themeMenu" class="themeMenu" role="dialog" aria-label="Menu" hidden>
-  <div class="menuCard glassSurface">
-    <div class="menuHeaderRow">
-      <div class="menuHeaderTools" aria-label="Acties">
-        <!-- Contrast: 2 standen (licht/donker) – icon-only, minimaal -->
-        <button id="menuContrastToggle" class="menuMiniBtn" type="button" aria-label="Contrastmodus" aria-pressed="false">
-          <!-- half-moon/half-sun icoon, subtiel -->
-          <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3a9 9 0 1 0 0 18"/>
-            <path d="M12 3v18"/>
-          </svg>
-        </button>
-        <button id="menuInfoBtn" class="menuMiniBtn" type="button" aria-label="Informatie">
-          <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 10v7"></path>
-            <path d="M12 7h.01"></path>
-          </svg>
-        </button>
-        <button id="menuShuffleToggle" class="menuMiniBtn" type="button" aria-label="Shuffle" aria-pressed="false">
-          <!-- shuffle: strak, één stijl, pijltjes netjes op de lijnen -->
-          <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
-            <!-- Lucide shuffle (pijlen uitlijnen met de lijnen) -->
-            <path d="M16 3h5v5"></path>
-            <path d="M4 20l16-16"></path>
-            <path d="M4 4l8 8"></path>
-            <path d="M12 12l8 8"></path>
-            <path d="M21 16v5h-5"></path>
-          </svg>
-        </button>
+  <section id="themeMenu" class="themeMenu" role="dialog" aria-label="Menu" hidden>
+    <div class="menuCard glassSurface">
+      <div class="menuHeaderRow">
+        <div id="menuHeaderTitle" class="menuHeader">Samen onderzoeken</div>
+        <div class="menuHeaderTools" aria-label="Acties">
+          <!-- Contrast: 2 standen (licht/donker) – icon-only, minimaal -->
+          <button id="menuContrastToggle" class="menuMiniBtn" type="button" aria-label="Contrastmodus" aria-pressed="false">
+            <!-- half-moon/half-sun icoon, subtiel -->
+            <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3a9 9 0 1 0 0 18"/>
+              <path d="M12 3v18"/>
+            </svg>
+          </button>
+          <button id="menuInfoBtn" class="menuMiniBtn" type="button" aria-label="Informatie">
+            <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 10v7"></path>
+              <path d="M12 7h.01"></path>
+            </svg>
+          </button>
+          <button id="menuShuffleToggle" class="menuMiniBtn" type="button" aria-label="Shuffle" aria-pressed="false">
+            <!-- shuffle: strak, één stijl, pijltjes netjes op de lijnen -->
+            <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+              <!-- Lucide shuffle (pijlen uitlijnen met de lijnen) -->
+              <path d="M16 3h5v5"></path>
+              <path d="M4 20l16-16"></path>
+              <path d="M4 4l8 8"></path>
+              <path d="M12 12l8 8"></path>
+              <path d="M21 16v5h-5"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="menuList" class="menuList">
+        <!-- Wordt dynamisch gevuld -->
+      </div>
+      <div class="menuFooter">
+        <button id="naarOverzicht" class="menuLink" type="button">Alle kaartensets</button>
       </div>
     </div>
-    <button id="menuSetButton" class="menuItem menuCurrentSet" type="button" aria-label="Ga naar het begin van deze kaartenset">
-      <span id="menuSetTitle" class="miLabel">Samen onderzoeken</span>
-      <span class="miThumbRight" aria-hidden="true">
-        <span class="menuThumbCard menuCurrentThumb">
-          <img id="menuSetThumbImg" class="bg" src="../sets/samenwerken/cards_rect/voorkant.svg" alt="">
-        </span>
-      </span>
-    </button>
-    <div id="menuList" class="menuList">
-      <!-- Wordt dynamisch gevuld -->
-    </div>
-    <div class="menuFooter">
-      <button id="naarOverzicht" class="menuLink" type="button">Alle kaartensets</button>
-    </div>
-  </div>
-</section>
+  </section>
 
 <!-- Info sheet (subtiel aan de onderrand, Google Maps-achtig) -->
 <div id="infoOverlay" class="sheetOverlay" hidden></div>
@@ -216,7 +209,7 @@
   </div>
 </main>
 
-  <script type="module" src="../js/main.js?v=1.76"></script>
+  <script type="module" src="../js/main.js?v=2.06"></script>
 
 </div><!-- /#appRoot -->
 

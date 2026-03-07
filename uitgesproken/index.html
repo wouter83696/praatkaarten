@@ -68,8 +68,8 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="./css/shell.css?v=4.0.83">
-  <link rel="stylesheet" href="./css/sets.css?v=3.7.2.48">
+  <link rel="stylesheet" href="./css/shell.css?v=4.0.72">
+  <link rel="stylesheet" href="./css/sets.css?v=3.7.2.49">
   <link rel="stylesheet" href="./templates/ui-base.css?v=3.7.1.16">
   <link rel="stylesheet" href="./templates/main-index.css?v=3.7.1.46">
 </head>
@@ -83,7 +83,7 @@
         <span class="setCoverWrap">
           <img id="setCoverIcon" class="setCoverIcon" src="./assets/logo-icons/masters/logo-ballon-vlak.svg" alt="">
         </span>
-        <span class="themePillBrand">Uitgesproken</span>
+        <span id="themePillBrand" class="themePillBrand">Uitgesproken</span>
       </span>
       <span class="themePillMenuIcon" aria-hidden="true">
         <svg class="gmIcon" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@
   <section id="themeMenu" class="themeMenu" role="dialog" aria-label="Kaartensets" hidden>
     <div class="menuCard glassSurface">
       <div class="menuHeaderRow">
-        <div id="menuSetTitle" class="menuHeader">Kaartensets</div>
+        <div id="menuHeaderTitle" class="menuHeader">Kaartensets</div>
         <div class="menuHeaderTools" aria-label="Acties">
           <button id="menuContrastToggle" class="menuMiniBtn" type="button" aria-label="Contrastmodus" aria-pressed="false">
             <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
@@ -127,7 +127,7 @@
         </div>
       </div>
       <div id="menuList" class="menuList"></div>
-      <div class="menuFooter">
+      <div class="menuFooter" hidden>
         <button id="naarOverzicht" class="menuLink" type="button">Alle kaartensets</button>
       </div>
     </div>
@@ -187,6 +187,6 @@
     </div>
   </section>
 
-  <script type="module" src="./js/main.js?v=1.76"></script>
+  <script type="module" src="./js/main.js?v=2.06"></script>
 </body>
 </html>
