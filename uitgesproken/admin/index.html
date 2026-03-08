@@ -951,7 +951,21 @@ function uploadAndLink(input,ti,folder){
 function buildVragen(target){
   var themes=S.d.meta.themes||[],q=S.d.questions||{};
   var backMode=S.d.meta.backMode||'mirror';
-  if(!themes.length){target.innerHTML='<div class="panel"><div class="empty"><p>Maak eerst thema\'s aan voordat je vragen kunt schrijven.</p><button class="btn" onclick="'+(S.mode==='wizard'?'wizJump(1)':'switchTab(\'themas\')')+'">Naar Thema\'s</button></div></div>';return;}
+  if(!themes.length){
+    // No themes: show a simple single question list under "Algemeen"
+    target.innerHTML='<div class="panel">'+
+      '<p style="font-size:12px;color:var(--k2);margin-bottom:10px;line-height:1.5">Je hebt nog geen thema&#39;s. Je kunt hieronder vragen toevoegen voor de set als geheel.</p>'+
+      '<div class="thSec"><div class="thSH"><h4>Algemeen</h4>'+
+        '<div style="display:flex;align-items:center;gap:5px;margin-left:auto">'+
+          '<button class="bs gh" data-action="bulk" data-key="_general" title="Bulk importeren">&#8999; Bulk</button>'+
+          '<button class="bs tl" data-action="addq" data-key="_general">+ Vraag</button>'+
+        '</div></div>'+
+      '<div class="qList" id="ql-_general">'+
+        ((S.d.questions&&S.d.questions._general||[]).map(function(card,qi){return buildQRow('_general',qi,card);}).join('')||'<div class="qEmpty">Klik op "+ Vraag" om te beginnen.</div>')+
+      '</div></div></div>';
+    target.querySelectorAll('.qIn,.qInBack').forEach(function(t){setTimeout(function(){autoH(t);},0);});
+    return;
+  }
   var html='<div class="panel">'+
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:9px 12px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--k2)">'+
       '<span style="font-weight:600;color:var(--k)">Achterkant:</span>'+
@@ -1232,13 +1246,74 @@ function buildStijl(target){
   fontGroupHtml+='<input type="search" id="fontSearch" class="fIn" placeholder="Zoek lettertype…" style="margin-bottom:7px;font-size:12px" oninput="filterFonts(this.value)">';
   fontGroupHtml+='<div id="fontGrid" style="display:flex;flex-wrap:wrap;gap:4px;max-height:180px;overflow-y:auto;padding:2px 0"></div>';
 
+  // Live card preview vars
+  var prevTheme=themes[0]||null;
+  var prevCardPath=prevTheme?'sets/'+S.activeId+'/cards/'+(prevTheme.card||(prevTheme.key+'.svg')):'';
+  var prevCached=prevCardPath?CC[prevCardPath]:null;
+  var prevBg=prevCached&&prevCached.dataUrl?'url('+prevCached.dataUrl+')':'none';
+  var curAlign=cv['--pk-text-align']||'left';
+  var curVAlign=cv['--pk-text-valign']||'center';
+
   var html='<div class="panel">'+
-    (themes.length?'<div class="sLbl" style="margin-top:0">Kaartweergave</div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">'+prevCards+'</div>'+
-    '<div class="fHint" style="margin-bottom:3px">Zo ziet de naam van een thema eruit op de kaart.</div><hr class="sep">':'') +
+    // KAARTPREVIEW
+    '<div class="sLbl" style="margin-top:0">Kaartpreview</div>'+
+    '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:4px">'+
+      '<div style="position:relative;width:170px;height:110px;border-radius:9px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.13);flex-shrink:0;background:'+esc(accent)+'">'+
+        '<div id="stijlCardBg" style="position:absolute;inset:0;background-image:'+prevBg+';background-size:cover;background-position:center;opacity:.85"></div>'+
+        '<div id="stijlCardTxt" style="position:absolute;inset:0;display:flex;padding:10px 12px;box-sizing:border-box;align-items:'+(curVAlign==='top'?'flex-start':curVAlign==='bottom'?'flex-end':'center')+';justify-content:'+(curAlign==='left'?'flex-start':curAlign==='right'?'flex-end':'center')+'">'+
+          '<span id="stijlCardLabel" style="font-family:'+esc(curFont)+',sans-serif;color:'+esc(curFontColor)+';font-size:13px;font-weight:600;line-height:1.3;text-align:'+esc(curAlign)+';max-width:100%">'+esc(prevTheme?prevTheme.label||prevTheme.key:'Voorbeeldtekst')+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:180px">'+
+        '<p style="font-size:11.5px;color:var(--k2);line-height:1.55;margin-bottom:8px">Typ om preview te zien:</p>'+
+        '<input type="text" class="fIn" id="stijlPreviewTxt" placeholder="Typ eigen tekst..." value="'+esc(prevTheme?prevTheme.label||prevTheme.key:'Voorbeeldtekst')+'" style="font-size:12px;margin-bottom:6px" oninput="updateStijlPreview()">'+
+        (themes.length>1?'<div style="display:flex;gap:4px;flex-wrap:wrap">'+themes.map(function(th,ti){
+          var tp='sets/'+S.activeId+'/cards/'+(th.card||th.key+'.svg'),tc=CC[tp];
+          var thumb=tc&&tc.dataUrl?'<img src="'+tc.dataUrl+'" style="width:24px;height:15px;object-fit:contain;border-radius:2px;vertical-align:middle;margin-right:3px">':'';
+          return '<button class="bs gh previewThBtn'+(ti===0?' sel':'')+'" data-action="previewTh" data-ti="'+ti+'" style="font-size:10px">'+thumb+esc(th.label||th.key)+'</button>';
+        }).join('')+'</div>':'') +
+      '</div>'+
+    '</div>'+
+    '<hr class="sep">'+
+    // LETTERTYPE
     '<div class="sLbl">Lettertype</div>'+
-    '<div style="margin-bottom:6px;background:var(--bg);padding:8px 11px;border-radius:8px;font-size:12px;color:var(--k2)">Gekozen: <strong id="fontPreviewName">'+esc(curFont)+'</strong> — <span id="fontPreviewSample" style="font-family:'+esc(curFont)+',sans-serif">"Samenwerken begint hier"</span></div>'+
-    /* font grid in fontGroupHtml */ ''+
+    '<div style="margin-bottom:8px;background:var(--bg);padding:8px 11px;border-radius:8px;font-size:12px;color:var(--k2)">Gekozen: <strong id="fontPreviewName">'+esc(curFont)+'</strong></div>'+
+    fontGroupHtml+
+    '<hr class="sep">'+
+    // TEKSTKLEUR
+    '<div class="sLbl">Tekstkleur</div>'+
+    '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:5px">'+
+      ['#1a1a2e','#ffffff','#f5f5f5','#2d3436','#4f8e9e','#c0392b','#27ae60'].map(function(cl){
+        var sel=curFontColor.toLowerCase()===cl.toLowerCase();
+        return '<div class="sw'+(sel?' sel':'')+'" style="background:'+cl+';border:2px solid '+(sel?'var(--tl)':'var(--br)')+'" data-action="setFontColor" data-v="'+cl+'" title="'+cl+'"></div>';
+      }).join('')+
+    '</div>'+
+    '<div class="cPair" style="margin-top:3px;max-width:220px">'+
+      '<input type="color" id="fc_cp" value="'+esc(curFontColor)+'" oninput="fontColorLive(this)">'+
+      '<input type="text" class="fIn" id="fc_ch" value="'+esc(curFontColor)+'" placeholder="#1a1a2e" style="max-width:110px" oninput="fontColorHexLive(this)">'+
+    '</div>'+
+    '<hr class="sep">'+
+    // UITLIJNING
+    '<div class="sLbl">Tekstuitlijning</div>'+
+    '<div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:4px">'+
+      '<div><p style="font-size:10.5px;color:var(--k3);margin-bottom:5px">Horizontaal</p>'+
+        '<div class="radioGroup" style="gap:3px">'+
+          ['left','center','right'].map(function(al){
+            var icons={'left':'&#8676;','center':'&#8596;','right':'&#8677;'};
+            var labels={'left':'Links','center':'Midden','right':'Rechts'};
+            return '<div class="radioOpt'+(curAlign===al?' sel':'')+'" data-action="setAlign" data-v="'+al+'" style="font-size:11px;padding:4px 10px">'+icons[al]+' '+labels[al]+'</div>';
+          }).join('')+
+        '</div>'+
+      '</div>'+
+      '<div><p style="font-size:10.5px;color:var(--k3);margin-bottom:5px">Verticaal</p>'+
+        '<div class="radioGroup" style="gap:3px">'+
+          ['top','center','bottom'].map(function(va){
+            var labels={'top':'Boven','center':'Midden','bottom':'Onder'};
+            return '<div class="radioOpt'+(curVAlign===va?' sel':'')+'" data-action="setVAlign" data-v="'+va+'" style="font-size:11px;padding:4px 10px">'+labels[va]+'</div>';
+          }).join('')+
+        '</div>'+
+      '</div>'+
+    '</div>'+
     '<hr class="sep"><div class="sLbl">Accentkleur</div>'+
     (autoColors.length
       ?'<p class="fHint" style="margin-bottom:8px">&#10024; Kleuren overgenomen van je kaarten. Aanpassen mag.</p>'
@@ -1309,9 +1384,8 @@ function fontColorLive(el){
   var v=el.value;
   setCV('--pk-font-color',v);markDirty();
   var ch=g('fc_ch');if(ch)ch.value=v;
-  // update card previews
+  var scl=document.getElementById('stijlCardLabel');if(scl)scl.style.color=v;
   document.querySelectorAll('[id^="fpCard-"]').forEach(function(el2){el2.style.color=v;});
-  var fps=g('fontPreviewSample');if(fps)fps.style.color=v;
 }
 function fontColorHexLive(el){
   var v=el.value.trim();
@@ -1321,6 +1395,21 @@ function fontColorHexLive(el){
   var cp=g('fc_cp');if(cp)cp.value=v;
   document.querySelectorAll('[id^="fpCard-"]').forEach(function(el2){el2.style.color=v;});
   var fps=g('fontPreviewSample');if(fps)fps.style.color=v;
+}
+function updateStijlPreview(){
+  var txt=document.getElementById('stijlPreviewTxt');
+  var lbl=document.getElementById('stijlCardLabel');
+  if(txt&&lbl)lbl.textContent=txt.value||'Voorbeeldtekst';
+}
+function updateStijlPreviewAlign(){
+  var cv2=S.d.meta.cssVars||{};
+  var ha=cv2['--pk-text-align']||'left',va=cv2['--pk-text-valign']||'center';
+  var wrap=document.getElementById('stijlCardTxt');
+  if(!wrap)return;
+  wrap.style.alignItems=va==='top'?'flex-start':va==='bottom'?'flex-end':'center';
+  wrap.style.justifyContent=ha==='left'?'flex-start':ha==='right'?'flex-end':'center';
+  var lbl=document.getElementById('stijlCardLabel');
+  if(lbl)lbl.style.textAlign=ha;
 }
 function accentLive(el){
   var v=el.value;g('s_ch').value=v;
@@ -1726,6 +1815,7 @@ document.addEventListener('click',function(ev){
     var fn=el2.dataset.f;
     setCV('--pk-font-family',fn);
     loadFont(fn, (FONT_DATA.find(function(f){return f[0]===fn;})||['',''])[1]);
+    var _sl=document.getElementById('stijlCardLabel');if(_sl)_sl.style.fontFamily=fn+',sans-serif';
     markDirty();
     var fpn=g('fontPreviewName'),fps=g('fontPreviewSample');
     if(fpn)fpn.textContent=fn;
