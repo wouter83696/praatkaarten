@@ -657,11 +657,13 @@ function afterRender(){
   var id=S.mode==='wizard'?STEPS[S.wizStep].id:S.clTab;
   if(id==='kaarten')setTimeout(loadCardPreviews,80);
   if(id==='stijl'){
-    setTimeout(renderBgPreview,80);
-    // Pre-load active font for live preview
-    var curFont=(S.d.meta.cssVars||{})['--pk-font-family']||'IBM Plex Sans';
-    loadFontForPreview(curFont);
-    setTimeout(updateStijlPreview,120);
+    // Load card images first, then render preview + fonts
+    loadCardPreviews(function(){
+      renderBgPreview();
+      var curFont=(S.d.meta.cssVars||{})['--pk-font-family']||'IBM Plex Sans';
+      loadFontForPreview(curFont);
+      setTimeout(updateStijlPreview,200);
+    });
   }
 }
 function switchMode(){
@@ -859,20 +861,23 @@ function buildCTile(card,folder,path){
     '<div class="cFoot"><span class="cLbl">'+esc(card.label)+'</span>'+lnk+'</div></div>'+
     '<input type="file" id="fi-'+sid+'" accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp" data-path="'+esc(path)+'" data-sid="'+sid+'" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">';
 }
-function loadCardPreviews(){
+function loadCardPreviews(cb){
   var id=S.activeId,themes=S.d.meta.themes||[];
   var toLoad=[{f:'cards',n:'voorkant.svg'},{f:'cards_rect',n:'voorkant.svg'}];
   themes.forEach(function(t){var n=t.card||(t.key+'.svg');toLoad.push({f:'cards',n:n},{f:'cards_rect',n:n});});
-  var seen={};
+  var seen={},tasks=[];
   toLoad.filter(function(x){var k=x.f+'/'+x.n;if(seen[k])return false;seen[k]=true;return true;}).forEach(function(item){
     var path='sets/'+id+'/'+item.f+'/'+item.n;if(CC[path])return;
-    api('/contents/'+path).then(function(res){
+    tasks.push(api('/contents/'+path).then(function(res){
       var isSvg=/\.svg$/i.test(item.n),raw=atob(res.content.replace(/\s/g,''));
       var ext=item.n.split('.').pop().toLowerCase(),mime=ext==='png'?'image/png':ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/svg+xml';var dataUrl=isSvg?'data:image/svg+xml;base64,'+btoa(encode(raw)):'data:'+mime+';base64,'+res.content.replace(/\s/g,'');
       CC[path]={sha:res.sha,dataUrl:dataUrl};
       updateTile(path,dataUrl);
-    }).catch(function(){});
+    }).catch(function(){}));
   });
+  Promise.all(tasks).then(function(){if(typeof cb==='function')cb();}).catch(function(){if(typeof cb==='function')cb();});
+  // If nothing to load, fire callback immediately
+  if(!tasks.length&&typeof cb==='function')cb();
 }
 function updateTile(path,dataUrl){var sid=safeid(path),tile=g('ct-'+sid);if(!tile)return;var old=tile.querySelector('.cPrev,.cMt');if(!old)return;var d=document.createElement('div');d.className='cPrev';d.innerHTML='<img src="'+dataUrl+'" alt="">';old.replaceWith(d);}
 function uploadFile(file,path,sid,skipThumb){
@@ -1046,7 +1051,7 @@ function buildVragen(target){
     var cardPath='sets/'+S.activeId+'/cards/'+(th.card||(th.key+'.svg'));
     var cached=CC[cardPath];
     var prevHtml='<div class="thCardBig">'+(cached&&cached.dataUrl?'<img src="'+cached.dataUrl+'">':'')+'<div class="thCardBigLabel">'+esc(th.label||th.key)+'</div></div>';
-    html+='<div class="thSec"><div class="thSH">'+prevHtml+'<h4>'+esc(th.label||th.key)+'</h4>'+
+    html+='<div class="thSec"><div class="thSH">'+prevHtml+
       '<div style="display:flex;align-items:center;gap:5px;margin-left:auto">'+
         '<span style="font-size:11px;color:var(--tld)">'+cnt+'</span>'+
         '<button class="bs gh" data-action="bulk" data-key="'+esc(th.key)+'" title="Plak meerdere vragen">⧉ Bulk</button>'+
@@ -1146,8 +1151,8 @@ function buildIntroductie(target){
   var coverPath='sets/'+id+'/cards/voorkant.svg';
   var cached=CC[coverPath];
   var prevHtml=cached&&cached.dataUrl
-    ?'<div style="width:80px;height:52px;border-radius:5px;overflow:hidden;border:1px solid var(--br);margin-bottom:8px"><img src="'+cached.dataUrl+'" style="width:100%;height:100%;object-fit:contain"></div>'
-    :'<div style="width:80px;height:52px;border-radius:5px;border:2px dashed var(--br);margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--k3)">geen cover</div>';
+    ?'<div style="width:140px;height:90px;border-radius:6px;overflow:hidden;border:1px solid var(--br);margin-bottom:8px"><img src="'+cached.dataUrl+'" style="width:100%;height:100%;object-fit:cover"></div>'
+    :'<div style="width:140px;height:90px;border-radius:6px;border:2px dashed var(--br);margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--k3)">geen cover</div>';
 
   // Slides rows
   var rows=slides.map(function(sl,i){
@@ -1182,14 +1187,7 @@ function buildIntroductie(target){
     fR('Tekst (hele set)','textarea','u_cover',u.cover||'','Omschrijf de set — doel, gebruik, context')+
     (themes.length?'<div style="margin-top:10px">'+themes.map(function(th){return fR(esc(th.label||th.key),'textarea','u_'+th.key,u[th.key]||'','Toelichting bij '+esc(th.label||th.key));}).join('')+'</div>':'')+
 
-    // ── SECTIE 2: Welkomstscherm (slides) ──
     '<hr class="sep">'+
-    '<div class="sLbl">Welkomstscherm (eerste bezoek)</div>'+
-    '<p style="font-size:12px;color:var(--k2);margin-bottom:10px;line-height:1.55">Wordt getoond als de gebruiker de set opent. Je kunt dit uitschakelen.</p>'+
-    '<div class="togGroup">'+
-      '<div class="togRow"><div><label>Tonen bij eerste bezoek</label><span class="togRowSub">Gebruiker ziet welkomstscherm automatisch</span></div>'+
-      '<label class="tog"><input type="checkbox" id="i_showOnFirst"'+(showOnFirst?' checked':'')+'><span class="togSl"></span></label></div>'+
-    '</div>'+
     '<div class="fRow" style="margin-top:10px"><label class="fLbl">Weergave</label>'+
     '<div class="radioGroup">'+
       '<div class="radioOpt'+(introMode==='carousel'?' sel':'')+'" data-action="setIntroMode" data-v="carousel">&#127904; Carrousel</div>'+
@@ -1219,7 +1217,7 @@ function buildIntroductie(target){
   var cu=g('coverUploadInput');
   if(cu)cu.onchange=function(){var f=this.files&&this.files[0];if(!f)return;uploadFile(f,'sets/'+id+'/cards/voorkant.svg',safeid('sets/'+id+'/cards/voorkant.svg'));this.value='';};
   // Wire first-visit toggle
-  var sof=g('i_showOnFirst');if(sof)sof.onchange=function(){S.d.intro=S.d.intro||{};S.d.intro.showOnFirst=this.checked;markDirty();};
+
   // Wire nav hint toggle
   var nh=g('i_navHint');if(nh)nh.onchange=function(){
     var fld=g('navHintField');if(fld)fld.style.display=this.checked?'':'none';
@@ -1335,17 +1333,16 @@ function buildStijl(target){
     // TEKSTKLEUR
     '<div class="sLbl">Tekstkleur</div>'+
 
-    '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">'+
-      '<div class="colorSwatch" id="fc_preview" style="width:28px;height:28px;border-radius:5px;border:2px solid var(--br);background:'+esc(curFontColor)+';flex-shrink:0;cursor:pointer" onclick="toggleCpPanel()" title="Klik voor kleurenkiezer"></div>'+
-      '<input type="text" class="fIn" id="fc_ch" value="'+esc(curFontColor)+'" placeholder="#1a1a2e" style="max-width:110px" oninput="fontColorHexLive(this)">'+
+    // Round swatches like accent color
+    '<div class="swRow" style="margin-bottom:5px">'+
+    ['#1a1a2e','#ffffff','#f5f5f5','#4f8e9e','#c0392b','#27ae60','#f39c12','#8e44ad'].map(function(cl){
+      var sel=curFontColor.toLowerCase()===cl.toLowerCase();
+      return '<div class="sw'+(sel?' sel':'')+'" style="background:'+cl+'" data-action="setFontColor" data-v="'+cl+'" title="'+cl+'"></div>';
+    }).join('')+
     '</div>'+
-    '<div id="cpPanel" style="display:none;margin-top:6px;padding:8px;background:var(--sf);border:1px solid var(--br);border-radius:8px;max-width:280px">'+
-      '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">'+
-      ['#1a1a2e','#2d3436','#ffffff','#f5f5f5','#eae8e0','#4f8e9e','#3a7d8c','#c0392b','#e74c3c','#27ae60','#2ecc71','#f39c12','#8e44ad','#6c5ce7','#fd79a8','#00b894'].map(function(cl){
-        return '<div style="width:22px;height:22px;border-radius:4px;background:'+cl+';border:2px solid '+(curFontColor.toLowerCase()===cl.toLowerCase()?'var(--tl)':'transparent')+';cursor:pointer" data-action="setFontColor" data-v="'+cl+'" title="'+cl+'"></div>';
-      }).join('')+
-      '</div>'+
-      '<input type="color" id="fc_cp" value="'+esc(curFontColor)+'" style="width:100%;height:28px;border:1px solid var(--br);border-radius:5px;cursor:pointer;padding:0" oninput="fontColorLive(this)" title="Kies eigen kleur">'+
+    '<div class="cPair" style="max-width:200px">'+
+      '<input type="color" id="fc_cp" value="'+esc(curFontColor)+'" oninput="fontColorLive(this)">'+
+      '<input type="text" class="fIn" id="fc_ch" value="'+esc(curFontColor)+'" placeholder="#1a1a2e" style="max-width:110px" oninput="fontColorHexLive(this)">'+
     '</div>'+
     '<hr class="sep">'+
     // UITLIJNING
@@ -1435,15 +1432,11 @@ function renderFontGrid(cat,search){
     return '<button class="fontPill'+(sel?' sel':'')+'" data-action="setFont" data-f="'+f[0]+'" style="font-family:'+f[0]+',sans-serif;font-size:12.5px;padding:4px 11px;border-radius:20px;border:1.5px solid '+(sel?'var(--tl)':'var(--br)')+';background:'+(sel?'var(--tlp)':'white')+';cursor:pointer;transition:all .12s;color:'+(sel?'var(--tld)':'var(--k)')+';white-space:nowrap">'+f[0]+'</button>';
   }).join('');
 }
-// Load Google Font on demand for preview
-var _loadedFonts={};
 function loadFontForPreview(fontName){
-  if(!fontName||_loadedFonts[fontName])return;
-  _loadedFonts[fontName]=true;
-  var link=document.createElement('link');
-  link.rel='stylesheet';
-  link.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(fontName).replace(/%20/g,'+').replace(/%3A/g,':')+'&display=swap';
-  document.head.appendChild(link);
+  if(!fontName)return;
+  var fd=FONT_DATA.find(function(f){return f[0]===fontName;});
+  if(fd)loadFont(fd[0],fd[1]);
+  else loadFont(fontName,fontName.replace(/ /g,'+'));
 }
 
 function fontColorLive(el){
@@ -1453,7 +1446,6 @@ function fontColorLive(el){
   var scl=document.getElementById('stijlCardLabel');if(scl)scl.style.color=v;
   document.querySelectorAll('[id^="fpCard-"]').forEach(function(el2){el2.style.color=v;});
 }
-function toggleCpPanel(){var p=g('cpPanel');if(p)p.style.display=p.style.display==='none'?'':'none';}
 function fontColorHexLive(el){
   var v=el.value.trim();
   if(/^#[0-9a-fA-F]{3}$/.test(v))v='#'+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
@@ -1635,6 +1627,7 @@ function buildInst(target){
   function radioHtml(name,options,current){
     return '<div class="radioGroup">'+options.map(function(o){return'<div class="radioOpt'+(current===o.v?' sel':'')+'" data-action="radio" data-name="'+esc(name)+'" data-v="'+esc(o.v)+'">'+esc(o.l)+'</div>';}).join('')+'</div>';
   }
+  var showOnFirst=S.d.intro&&S.d.intro.showOnFirst!==false;
   target.innerHTML='<div class="panel">'+
     '<div class="sLbl" style="margin-top:0">Menu</div>'+
     '<div class="togGroup">'+
@@ -1646,12 +1639,10 @@ function buildInst(target){
     '<p style="font-size:12px;color:var(--k2);margin-bottom:9px;line-height:1.6">Hoe toont de achterkant van een kaart?</p>'+
     radioHtml('backMode',[{v:'mirror',l:'Spiegel voorkant'},{v:'blank',l:'Blanco'},{v:'custom',l:'Eigen tekst (uit vragen)'}],backMode)+
     '<hr class="sep">'+
-    '<div class="sLbl">Introductie-sheet</div>'+
+    '<div class="sLbl">Introductie</div>'+
     '<div class="togGroup">'+
       togHtml('i_sheet','Introductie inschakelen',sheet.enabled!==false,'Knop ⓘ opent de introductie')+
-    '</div>'+
-    '<div class="fRow" style="margin-top:10px"><label class="fLbl">Standaard weergave</label>'+
-      radioHtml('sheetMode',[{v:'cards',l:'Kaarten'},{v:'list',l:'Lijst'}],sheet.defaultMode||'cards')+
+      togHtml('i_showOnFirst','Tonen bij eerste bezoek',showOnFirst,'Gebruiker ziet introductie automatisch bij openen')+
     '</div>'+
     '<hr class="sep">'+
     '<div class="sLbl">Viewer-opties</div>'+
@@ -1661,6 +1652,7 @@ function buildInst(target){
     '</div>'+
   '</div>';
   // Wire toggles
+  var sof2=g('i_showOnFirst');if(sof2)sof2.onchange=function(){S.d.intro=S.d.intro||{};S.d.intro.showOnFirst=this.checked;markDirty();};
   [['i_info','ui.menu.showInfo'],['i_shuf','ui.menu.showShuffle'],['i_sheet','ui.sheet.enabled'],['i_anim','flipAnim'],['i_flip','doubleSided']].forEach(function(pair){
     var el2=g(pair[0]);if(!el2)return;
     el2.onchange=function(){
