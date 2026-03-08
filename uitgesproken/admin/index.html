@@ -175,8 +175,8 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .qInBack{width:100%;border:none;background:transparent;font-family:inherit;font-size:12px;color:var(--k2);outline:none;padding:3px 5px;border-radius:4px;resize:none;min-height:24px;line-height:1.5;border-top:1px dashed var(--br);font-style:italic}
 .qInBack:focus{background:var(--bg)}
 .qInBack::placeholder{color:var(--k3);font-style:italic}
-.qDel{flex-shrink:0;cursor:pointer;color:var(--k3);padding:3px;border:none;background:none;border-radius:4px;font-size:13px;line-height:1;transition:all .12s}
-.qDel:hover{color:var(--rd);background:rgba(201,64,64,.08)}
+.qDel{flex-shrink:0;cursor:pointer;color:var(--k3);padding:4px 6px;border:1.5px solid var(--br);background:white;border-radius:5px;font-size:12px;line-height:1;transition:all .12s;margin-top:2px}
+.qDel:hover{color:var(--rd);background:rgba(201,64,64,.06);border-color:var(--rd)}
 .qEmpty{padding:10px 12px;font-size:12px;color:var(--k3);background:white;text-align:center}
 .charCount{font-size:9.5px;color:var(--k3);text-align:right;padding:0 5px 2px;font-variant-numeric:tabular-nums;transition:color .15s}
 .charCount.warn{color:var(--am)}
@@ -213,6 +213,13 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .uploadSpin{width:16px;height:16px;border:2px solid var(--br);border-top-color:var(--tl);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.libUploadZone{display:block;position:relative;border:2px dashed var(--br);border-radius:9px;padding:14px 16px;cursor:pointer;background:var(--bg);transition:border-color .15s;text-align:center}
+.libUploadZone:hover,.libDrag{border-color:var(--tl);background:var(--tlp)}
+.libUplInner{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--k2);pointer-events:none}
+.libItem{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;border:1.5px solid var(--br);border-radius:7px;background:white;min-width:64px;max-width:80px}
+.libThumb{width:48px;height:31px;display:flex;align-items:center;justify-content:center}
+.libFn{font-size:8.5px;color:var(--k2);word-break:break-all;text-align:center;line-height:1.2;max-width:72px}
+.libBadge{font-size:8px;color:var(--gn);font-weight:600;background:rgba(39,174,96,.1);padding:1px 5px;border-radius:4px}
 .cThemeBadge{position:absolute;top:0;left:0;right:0;background:rgba(79,142,158,.85);color:white;font-size:9.5px;font-weight:600;padding:3px 7px;text-align:center;}
 .cBadge{position:absolute;top:3px;right:3px;background:rgba(26,26,46,.48);color:rgba(255,255,255,.92);font-size:8.5px;padding:1px 4px;border-radius:5px;max-width:86%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
 .cLoading{position:absolute;inset:0;background:rgba(255,255,255,.84);display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--tld);z-index:2}
@@ -472,7 +479,16 @@ function disconnect(){localStorage.removeItem('pk_cfg');location.reload();}
 // ═══════════════════════════════════════════
 function loadIndex(){
   show('app');hide('setup');g('sbRepo').textContent=S.repo;
-  return getFile('sets/index.json').then(function(r){S.sets=r.data.sets||[];S.indexSha=r.sha;S.indexData=r.data;renderSidebar();});
+  return getFile('sets/index.json').then(function(r){
+    S.sets=r.data.sets||[];S.indexSha=r.sha;S.indexData=r.data;
+    // Cleanup orphaned drafts/modes for IDs not in index
+    var validIds=S.sets.map(function(s){return s.id;});
+    Object.keys(localStorage).forEach(function(k){
+      var m=k.match(/^pk_draft_(.+)$/)||k.match(/^pk_mode_(.+)$/);
+      if(m&&validIds.indexOf(m[1])<0)localStorage.removeItem(k);
+    });
+    renderSidebar();
+  });
 }
 function saveIndex(msg){S.indexData.sets=S.sets;return saveFile('sets/index.json',S.indexData,S.indexSha,msg||'Update index').then(function(r){S.indexSha=(r.content||{}).sha||S.indexSha;});}
 
@@ -524,7 +540,15 @@ function initSbDrag(){
 // ═══════════════════════════════════════════
 function reqLoad(id){
   if(id===S.activeId)return;
-  if(S.dirty){
+  // If current set is new and unsaved, clean it up
+  var curSet=S.sets.find(function(s){return s.id===S.activeId;});
+  if(curSet&&curSet._new&&S.dirty){
+    S.sets=S.sets.filter(function(s){return s.id!==S.activeId;});
+    lsDel('pk_draft_'+S.activeId);lsDel('pk_mode_'+S.activeId);
+    S.activeId=null;S.dirty=false;renderSidebar();
+    // proceed to load new id
+  }
+  if(S.dirty&&S.activeId){
     showModal('<h3>Niet opgeslagen wijzigingen</h3><p>Wat wil je doen met de wijzigingen in <strong>'+esc(S.activeId)+'</strong>?</p>'+
       '<div class="mAct">'+
       '<button class="mCa" onclick="closeModal();loadSet(\''+esc(id)+'\')">Weggooien</button>'+
@@ -802,8 +826,18 @@ function buildKaarten(target){
   var themes=S.d.meta.themes||[],id=S.activeId;
   // Cover-only is fine — no themes needed for just a cover card
   var allCards=[{key:'voorkant',label:'Cover',cf:'voorkant.svg',ic:true}].concat(themes.map(function(t,i){return{key:t.key,label:t.label||t.key,cf:t.card||(t.key+'.svg'),ti:i,isTheme:true};}));
-  var html='<div class="panel"><p class="cSub">Klik op een tegel of sleep er een afbeelding op. Met <strong>Koppel</strong> kies je een geüpload bestand voor een thema.</p>'+
-    '<div style="font-size:11.5px;color:var(--tld);background:var(--tlp);padding:8px 11px;border-radius:7px;margin-bottom:13px;line-height:1.6">&#128247; Toegestane formaten: SVG, PNG, JPEG, WebP. <strong>Thumbnails (cards_rect/) worden automatisch gegenereerd</strong> — je kunt ze daarna vervangen als ze niet kloppen.</div>';
+  var html='<div class="panel">'+
+    '<div style="font-size:11.5px;color:var(--tld);background:var(--tlp);padding:8px 11px;border-radius:7px;margin-bottom:13px;line-height:1.6">&#128247; Toegestane formaten: SVG, PNG, JPEG, WebP. <strong>Thumbnails (cards_rect/) worden automatisch gegenereerd</strong> — je kunt ze daarna vervangen als ze niet kloppen.</div>'+
+    // UPLOAD LIBRARY
+    '<div class="sLbl" style="margin-top:0;margin-bottom:8px">&#128193; Bestandsbibliotheek</div>'+
+    '<p style="font-size:11.5px;color:var(--k2);margin-bottom:8px;line-height:1.5">Upload hier bestanden. Daarna koppel je ze via <strong>Koppel</strong> aan een thema.</p>'+
+    '<label class="libUploadZone" id="libUploadZone">'+
+      '<input type="file" id="libUploadInput" accept=".svg,.png,.jpg,.jpeg,.webp" multiple style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">'+
+      '<div class="libUplInner"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'+
+      '<span>Sleep bestanden hier of <u>klik om te uploaden</u></span></div>'+
+    '</label>'+
+    '<div id="libFileList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:0"></div>'+
+    '<hr class="sep">';
   ['cards','cards_rect'].forEach(function(folder){
     html+='<div class="folH">'+(folder==='cards'?'🃏 cards/ — liggende kaarten (85×55)':'📎 cards_rect/ — staande thumbnails (menu)')+'</div><div class="cGrid" id="cg-'+folder+'">';
     allCards.forEach(function(card){html+=buildCTile(card,folder,'sets/'+id+'/'+folder+'/'+card.cf);});
@@ -927,6 +961,46 @@ function openLinkPopup(ev,ti,folder){
   setTimeout(function(){document.addEventListener('click',closeLpOut);},10);
 }
 function linkCard(ti,folder,fn){var theme=S.d.meta.themes[ti];if(!theme)return;theme.card=fn;markDirty();closeLp();var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}setTimeout(loadCardPreviews,50);toast('Gekoppeld: '+fn);}
+function uploadLibFile(file){
+  var id=S.activeId;
+  var fn=file.name.replace(/[^a-zA-Z0-9._-]/g,'-');
+  var path='sets/'+id+'/cards/'+fn;
+  var isSvg=/\.svg$/i.test(fn),reader=new FileReader();
+  reader.onload=function(e){
+    var raw=e.target.result;
+    var b64=isSvg?btoa(encode(raw)):btoa(raw);
+    var ext=fn.split('.').pop().toLowerCase(),mime=ext==='png'?'image/png':ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/svg+xml';
+    var dataUrl='data:'+mime+';base64,'+b64;
+    var ex=CC[path];var body={message:'Upload: '+fn,content:b64};if(ex)body.sha=ex.sha;
+    // optimistic preview
+    CC[path]={dataUrl:dataUrl};renderLibList();
+    api('/contents/'+path,'PUT',body).then(function(res){
+      CC[path]={sha:(res.content||{}).sha,dataUrl:dataUrl};
+      renderLibList();toast('Geüpload: '+fn,'green');
+      // auto-generate thumbnail
+      genThumb(fn,b64,mime,id);
+    }).catch(function(err){toast('Fout: '+err.message,'red');delete CC[path];renderLibList();});
+  };
+  isSvg?reader.readAsText(file):reader.readAsBinaryString(file);
+}
+function renderLibList(){
+  var id=S.activeId,list=g('libFileList');if(!list)return;
+  var prefix='sets/'+id+'/cards/';
+  var files=Object.keys(CC).filter(function(k){return k.indexOf(prefix)===0&&CC[k].dataUrl;});
+  if(!files.length){list.innerHTML='<span style="font-size:11px;color:var(--k3);padding:4px 0">Nog geen bestanden geüpload.</span>';return;}
+  list.innerHTML=files.map(function(path){
+    var fn=path.slice(prefix.length);
+    var cached=CC[path];
+    var isTheme=(S.d.meta.themes||[]).some(function(t){return t.card===fn||(t.key+'.svg')===fn;});
+    var isCover=fn==='voorkant.svg';
+    var thumb=cached.dataUrl?'<img src="'+cached.dataUrl+'" style="width:48px;height:31px;object-fit:contain;display:block;border-radius:3px">':'<div style="width:48px;height:31px;background:var(--bg);border-radius:3px"></div>';
+    return '<div class="libItem" title="'+esc(fn)+'" data-path="'+esc(path)+'">'+
+      '<div class="libThumb">'+thumb+'</div>'+
+      '<div class="libFn">'+esc(fn)+'</div>'+
+      (isTheme?'<div class="libBadge">✓ gekoppeld</div>':isCover?'<div class="libBadge">cover</div>':'')+
+    '</div>';
+  }).join('');
+}
 function uploadAndLink(input,ti,folder){
   var file=input.files&&input.files[0];if(!file)return;
   var theme=S.d.meta.themes[ti],id=S.activeId,fn=file.name.replace(/[^a-zA-Z0-9._-]/g,'-'),path='sets/'+id+'/'+folder+'/'+fn;
@@ -1671,6 +1745,7 @@ function saveSet(cb){
     saveIndex(msg)
   ]).then(function(){
     S.dirty=false;lsDel('pk_draft_'+id);
+    var sv=S.sets.find(function(s){return s.id===id;});if(sv)delete sv._new;
     if(btn){btn.disabled=false;btn.innerHTML='Opslaan';}
     var db=g('dirtyBadge');if(db)db.classList.remove('on');
     renderSidebar();toast('Opgeslagen ✓','green');
@@ -1696,7 +1771,7 @@ function createSet(){
   if(!id){toast('Ongeldige naam','red');return;}
   // Make unique if needed
   var base=id,i=2;while(S.sets.find(function(s){return s.id===id;})){id=base+'-'+i;i++;}
-  closeModal();S.sets.push({id:id,title:title});
+  closeModal();S.sets.push({id:id,title:title,_new:true});
   S.d={meta:mkMeta(id,title),questions:{},uitleg:{cover:''},intro:{slides:[{key:'cover',title:title,body:'',img:'cards/voorkant.svg',alt:title}],hint:'← → swipe'}};
   S.activeId=id;S.dirty=true;renderSidebar();showModeChoice();
 }
