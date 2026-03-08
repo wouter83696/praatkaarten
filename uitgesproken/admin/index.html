@@ -80,17 +80,21 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 
 /* ── WIZARD ── */
 .wizWrap{flex:1;display:flex;flex-direction:column;padding:0 24px 20px;min-height:0}
-.wizBar{height:3px;background:var(--br);border-radius:2px;margin:0 0 14px;flex-shrink:0;overflow:hidden}
+.wizBar{height:3px;background:var(--br);border-radius:2px;margin:0 0 8px;flex-shrink:0;overflow:hidden}
 .wizFill{height:100%;background:var(--tl);border-radius:2px;transition:width .3s ease}
 .wizPanel{flex:1;background:var(--sf);border-radius:10px;border:1px solid var(--br);overflow-y:auto;padding:20px}
 .wizPanel::-webkit-scrollbar{width:4px}
 .wizPanel::-webkit-scrollbar-thumb{background:var(--br);border-radius:2px}
 .wizHint{font-size:11px;color:var(--k3)}
-.wizStepDots{display:flex;gap:5px;align-items:center;margin-bottom:14px;flex-shrink:0;flex-wrap:wrap}
-.wDot{width:8px;height:8px;border-radius:50%;background:var(--br);cursor:pointer;transition:all .2s;flex-shrink:0}
-.wDot.done{background:var(--gn)}
-.wDot.active{background:var(--tl);width:22px;border-radius:4px}
-.wDotLbl{font-size:11.5px;font-weight:600;color:var(--k);margin-left:3px}
+.wizStepDots{display:flex;gap:4px;align-items:center;margin-bottom:8px;flex-shrink:0;flex-wrap:nowrap;overflow-x:auto}
+.wizStepDots::-webkit-scrollbar{height:0}
+.wDot{display:flex;align-items:center;gap:3px;flex-shrink:0;cursor:pointer;padding:3px 6px;border-radius:12px;font-size:10px;font-weight:500;color:var(--k3);background:transparent;transition:all .15s;white-space:nowrap}
+.wDot:not(:last-child)::after{content:'';width:10px;height:1.5px;background:var(--br);margin-left:2px;flex-shrink:0}
+.wDot .wBubble{width:18px;height:18px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--k3);flex-shrink:0;transition:all .15s}
+.wDot.done .wBubble{background:var(--gn);color:#fff}
+.wDot.active .wBubble{background:var(--tl);color:#fff}
+.wDot.active{color:var(--k)}
+.wDot.done{color:var(--gn)}
 .wNav{display:flex;align-items:center;gap:4px;flex-shrink:0}
 
 /* ── CHECKLIST TABS ── */
@@ -393,8 +397,8 @@ var STEPS=[
   {id:'basis',   label:'Basis',      fn:buildBasis},
   {id:'kaarten', label:'Kaarten',    fn:buildKaarten},
   {id:'vragen',  label:'Vragen',     fn:buildVragen},
-  {id:'intro',   label:'Introductie', fn:buildIntro},
   {id:'welkomst',label:'Welkomst',   fn:buildWelkomst},
+  {id:'intro',   label:'Introductie', fn:buildIntro},
   {id:'stijl',   label:'Stijl',      fn:buildStijl},
   {id:'inst',    label:'Instellingen',fn:buildInst}
 ];
@@ -589,9 +593,9 @@ function renderEditor(){
     var pct=Math.round((S.wizStep+1)/STEPS.length*100);
     var dots=STEPS.map(function(s,i){
       var cls=i<S.wizStep?'done':(i===S.wizStep?'active':'');
-      return '<div class="wDot '+cls+'" onclick="wizJump('+i+')" title="'+esc(s.label)+'"></div>';
-    }).join('')+'<span class="wDotLbl">'+esc(STEPS[S.wizStep].label)+'</span>'+
-    '<span style="font-size:10.5px;color:var(--k3);margin-left:4px">('+( S.wizStep+1)+'/'+STEPS.length+')</span>';
+      var icon=i<S.wizStep?'&#10003;':(i+1);
+      return '<div class="wDot '+cls+'" onclick="wizJump('+i+')" title="'+esc(s.label)+'"><span class="wBubble">'+icon+'</span> '+esc(s.label)+'</div>';
+    }).join('');
     // Inject prev/next into topbar tbR before save
     tb=tb.replace('<button class="btn" id="saveBtn" onclick="saveSet()">Opslaan</button>',
       (S.wizStep>0?'<button class="btnS wNav" onclick="wizBack()" style="padding:7px 11px;font-size:12px">← Vorige</button>':'')+
@@ -600,7 +604,7 @@ function renderEditor(){
         :'<button class="btn wNav" onclick="saveSet()" id="saveBtn">&#10003; Opslaan</button>')+
       '<button class="btn" id="saveBtn" onclick="saveSet()" style="'+(S.wizStep<STEPS.length-1?'background:var(--bg);color:var(--k2);border:1px solid var(--br)':'display:none')+'">Opslaan</button>'
     );
-    g('mc').innerHTML=tb+'<div class="wizWrap"><div class="wizStepDots">'+dots+'</div><div class="wizBar"><div class="wizFill" style="width:'+pct+'%"></div></div><div class="wizPanel" id="pw"></div></div>';
+    g('mc').innerHTML=tb+'<div class="wizWrap"><div class="wizStepDots" id="wizDots">'+dots+'</div><div class="wizBar"><div class="wizFill" style="width:'+pct+'%"></div></div><div class="wizPanel" id="pw"></div></div>';
     STEPS[S.wizStep].fn(g('pw'));
   } else {
     var tabs=STEPS.map(function(s){
@@ -686,23 +690,15 @@ function buildBasis(target){
     return '<div class="thRow" draggable="true" data-i="'+i+'" id="thr'+i+'">'+
       '<span class="thHandle" ondragstart="event.stopPropagation()">&#9219;</span>'+
       '<input class="thLb" type="text" value="'+esc(th.label||'')+'" placeholder="bijv. Samenwerken, Verbinden\u2026" oninput="updThLabel('+i+',this.value)" style="flex:1">'+
-      '<span style="font-size:9.5px;color:var(--k3);font-family:monospace;flex-shrink:0;min-width:60px;text-align:right;padding-right:4px" title="Interne sleutel (auto)">'+esc(th.key||'&#8212;')+'</span>'+
+      '<span class="thSlug" style="font-size:9.5px;color:var(--k3);font-family:monospace;flex-shrink:0;min-width:60px;text-align:right;padding-right:4px" title="Interne sleutel (auto)">'+esc(th.key||'—')+'</span>'+
       '<button class="bs rd" data-action="delth" data-i="'+i+'">&#10005;</button></div>';
   }).join('');
   target.innerHTML='<div class="panel">'+
     fR('Naam van de set','text','b_title',m.title||'','bijv. Samen Onderzoeken of Teamreflectie')+
     '<p class="fHint" style="margin-bottom:16px">Tip: gebruik een beschrijvende naam zodat gebruikers direct begrijpen wat de set is.</p>'+
     '<hr class="sep">'+
-    '<div class="secH"><h3>Thema&#39;s</h3>'+
-      '<div style="display:flex;gap:5px;align-items:center">'+
-        '<label style="font-size:11px;color:var(--k3)">Aantal:</label>'+
-        '<div class="radioGroup" id="thCountGroup">'+
-          '<div class="radioOpt'+(themes.length<=1?' sel':'')+'" data-action="setThCount" data-n="1" style="font-size:11px;padding:3px 9px">1 thema</div>'+
-          '<div class="radioOpt'+(themes.length>1?' sel':'')+'" data-action="setThCount" data-n="many" style="font-size:11px;padding:3px 9px">Meerdere</div>'+
-        '</div>'+
-      '</div>'+
-    '</div>'+
-    '<p style="font-size:12px;color:var(--k2);margin-bottom:10px;line-height:1.55">Typ een naam voor elk thema. De interne code wordt automatisch aangemaakt.</p>'+
+    '<div class="secH"><h3>Thema&#39;s</h3></div>'+
+    '<p style="font-size:12px;color:var(--k2);margin-bottom:10px;line-height:1.55">Thema&#39;s zijn de categorieën binnen je set — bijv. <em>Samenwerken</em>, <em>Verbinden</em>. Per thema upload je een kaartje en stel je vragen in. Je kunt ook maar 1 thema hebben.</p>'+
     (!themes.length?'<div class="empty" style="padding:14px;margin-bottom:8px"><p style="margin-bottom:10px">Nog geen thema&#39;s.</p><button class="btn" onclick="addTh()">+ Eerste thema toevoegen</button></div>':'')+
     '<div class="thList" id="thList">'+thRows+'</div>'+
     (themes.length?'<button class="bs tl" onclick="addTh()" style="margin-top:9px">+ Thema toevoegen</button>':'')+
@@ -741,7 +737,17 @@ function buildThemas(target){
 }
 function addTh(){S.d.meta.themes=S.d.meta.themes||[];S.d.meta.themes.push({key:'nieuw-'+Date.now().toString(36).slice(-4),label:'',card:'voorkant.svg'});markDirty();var pw=g('pw');if(pw){var cid=S.mode==='wizard'?STEPS[S.wizStep].id:S.clTab;if(cid==='basis')rebuildBasis();else rebuildThemas();}}
 function slugify(s){return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,30)||'thema';}
-function updThLabel(i,v){if(!S.d.meta.themes[i])return;var th=S.d.meta.themes[i];var wasAuto=!th._keyEdited;th.label=v;if(wasAuto)th.key=slugify(v);markDirty();rebuildThemas();}
+function updThLabel(i,v){
+  if(!S.d.meta.themes[i])return;
+  var th=S.d.meta.themes[i];
+  var wasAuto=!th._keyEdited;
+  th.label=v;
+  if(wasAuto)th.key=slugify(v)||('thema-'+(i+1));
+  markDirty();
+  // Only update the slug display, don't re-render (would lose focus)
+  var slug=document.querySelector('#thr'+i+' .thSlug');
+  if(slug)slug.textContent=th.key||'—';
+}
 function delTh(i){S.d.meta.themes.splice(i,1);markDirty();var pw=g('pw');if(pw){var cid=S.mode==='wizard'?STEPS[S.wizStep].id:S.clTab;if(cid==='basis')rebuildBasis();else rebuildThemas();}}
 function updTh(i,f,v){if(S.d.meta.themes[i])S.d.meta.themes[i][f]=v;markDirty();}
 function rebuildThemas(){var pw=g('pw');if(!pw)return;var cid=S.mode==='wizard'?STEPS[S.wizStep].id:S.clTab;if(cid==='basis')rebuildBasis();else if(S.mode==='wizard'){var st=STEPS.find(function(s){return s.id==='themas';});if(st)st.fn(pw);}else renderClPanel();}
@@ -777,7 +783,10 @@ function buildCTile(card,folder,path){
   var prev=cached&&cached.dataUrl?'<div class="cPrev"><img src="'+cached.dataUrl+'" alt="'+esc(card.label)+'"></div>':'<div class="cMt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9l4-4 4 4 4-6 6 8"/></svg><span>Klik of sleep</span></div>';
   var badge=(cached&&!card.ic)?'<div class="cBadge">'+esc(path.split('/').pop())+'</div>':'';
   var lnk=(!card.ic&&typeof card.ti==='number')?'<button class="cLnk" data-action="lnk" data-ti="'+card.ti+'" data-folder="'+folder+'">Koppel</button>':'';
-  return '<div class="cTile" id="ct-'+sid+'" data-path="'+esc(path)+'" data-sid="'+sid+'">'+prev+badge+'<div class="cFoot"><span class="cLbl">'+esc(card.label)+'</span>'+lnk+'</div><input type="file" id="fi-'+sid+'" accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp" data-path="'+esc(path)+'" data-sid="'+sid+'"></div>';
+  return '<div class="cTile" id="ct-'+sid+'" data-path="'+esc(path)+'" data-sid="'+sid+'">'+prev+badge+
+    (card.label!=='Cover'&&cached&&cached.dataUrl?'<button class="cClear" data-action="clearCard" data-sid="'+sid+'" data-path="'+esc(path)+'" title="Verwijder kaart" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">&#10005;</button>':'')+
+    '<div class="cFoot"><span class="cLbl">'+esc(card.label)+'</span>'+lnk+'</div></div>'+
+    '<input type="file" id="fi-'+sid+'" accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp" data-path="'+esc(path)+'" data-sid="'+sid+'" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">';
 }
 function loadCardPreviews(){
   var id=S.activeId,themes=S.d.meta.themes||[];
@@ -1019,6 +1028,7 @@ function buildWelkomst(target){
 // STEP: INTRO SLIDES
 // ═══════════════════════════════════════════
 function buildIntro(target){
+  var themes=S.d.meta.themes||[];
   var slides=(S.d.intro&&S.d.intro.slides)||[];
   var rows=slides.map(function(sl,i){
     var isCover=sl.key==='cover';
@@ -1489,18 +1499,19 @@ function saveSet(cb){
 // NEW / DUPLICATE / DELETE
 // ═══════════════════════════════════════════
 function showNewSetModal(){
-  showModal('<h3>Nieuwe kaartenset</h3><p>Kies een ID (slug) en een naam.</p>'+
-    '<div class="field"><label>ID (kleine letters, streepjes)</label><input id="ns_id" type="text" placeholder="team-reflectie" class="fIn"></div>'+
-    '<div class="field"><label>Naam</label><input id="ns_title" type="text" placeholder="Team Reflectie" class="fIn"></div>'+
+  showModal('<h3>Nieuwe kaartenset</h3>'+
+    '<div class="field"><label>Naam van de set</label><input id="ns_title" type="text" placeholder="bijv. Team Reflectie" class="fIn" oninput="var v=slugify(this.value);var h=g(\'ns_slug\');if(h)h.textContent=v||\'…\'"></div>'+
+    '<div style="font-size:11px;color:var(--k3);margin-top:-4px;margin-bottom:10px">ID: <span id="ns_slug" style="font-family:monospace">…</span></div>'+
     '<div class="mAct"><button class="mCa" onclick="closeModal()">Annuleren</button><button class="mOk" onclick="createSet()">Aanmaken</button></div>');
-  setTimeout(function(){var n=g('ns_id');if(n)n.focus();},50);
+  setTimeout(function(){var n=g('ns_title');if(n)n.focus();},50);
 }
 function createSet(){
-  var rawId=(g('ns_id').value||'').trim(),title=(g('ns_title').value||'').trim();
-  if(!rawId||!title){toast('Vul beide velden in','red');return;}
-  var id=rawId.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-');
-  if(!id){toast('Ongeldige ID','red');return;}
-  if(S.sets.find(function(s){return s.id===id;})){toast('Set bestaat al','red');return;}
+  var title=(g('ns_title').value||'').trim();
+  if(!title){toast('Vul een naam in','red');return;}
+  var id=slugify(title);
+  if(!id){toast('Ongeldige naam','red');return;}
+  // Make unique if needed
+  var base=id,i=2;while(S.sets.find(function(s){return s.id===id;})){id=base+'-'+i;i++;}
   closeModal();S.sets.push({id:id,title:title});
   S.d={meta:mkMeta(id,title),questions:{},uitleg:{cover:''},intro:{slides:[{key:'cover',title:title,body:'',img:'cards/voorkant.svg',alt:title}],hint:'← → swipe'}};
   S.activeId=id;S.dirty=true;renderSidebar();showModeChoice();
@@ -1560,6 +1571,17 @@ document.addEventListener('click',function(ev){
     return;
   }
   if(a==='setThCount'){setThCount(el2.dataset.n==='1'?1:'many');return;}
+  if(a==='clearCard'){
+    var sp=el2.dataset.path,ss=el2.dataset.sid;
+    // Remove from cache and re-render tile
+    delete CC[sp];
+    var tile=g('ct-'+ss);
+    if(tile){
+      tile.querySelector('.cPrev').innerHTML='<div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--k3)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9l4-4 4 4 4-4 4 4"/><circle cx="8" cy="14" r="1.5"/></svg><span style="font-size:10px">Klik of sleep</span></div>';
+      tile.querySelector('.cClear')&&tile.querySelector('.cClear').remove();
+    }
+    return;
+  }
   if(a==='fontCat'){showFontCat(el2.dataset.cat);return;}
   if(a==='setFontColor'){
     var fclr=el2.dataset.c;
@@ -1596,7 +1618,13 @@ document.addEventListener('click',function(ev){
     if(idx>=0)keys.splice(idx,1);else keys.push(el2.dataset.key);
     markDirty();rebuildWelkomst();return;
   }
-  if(!ev.target.closest('button')&&!ev.target.closest('label')&&!ev.target.closest('input')&&!ev.target.closest('textarea')){var tile=ev.target.closest('.cTile');if(tile){var fi=g('fi-'+tile.dataset.sid);if(fi)fi.click();}}
+  if(!ev.target.closest('button')&&!ev.target.closest('label')&&!ev.target.closest('input[type=file]')&&!ev.target.closest('textarea')&&!ev.target.closest('select')){
+    var tile=ev.target.closest('.cTile');
+    if(tile){
+      var fi=document.querySelector('input[type=file][data-sid="'+tile.dataset.sid+'"]');
+      if(fi){fi.click();}
+    }
+  }
 });
 document.addEventListener('change',function(ev){
   if(ev.target.type!=='file')return;
