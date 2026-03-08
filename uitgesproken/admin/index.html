@@ -200,6 +200,20 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .cLbl{font-size:10px;font-weight:500;color:var(--k2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .cLnk{font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--tlp);color:var(--tld);border:none;cursor:pointer;font-family:inherit;flex-shrink:0}
 .cLnk:hover{background:var(--tlp2)}
+.qMiniCard{width:80px;flex-shrink:0;perspective:400px;cursor:pointer}
+.qMiniCard:hover .qMiniCardFront{transform:rotateY(-180deg)}
+.qMiniCard:hover .qMiniCardBack{transform:rotateY(0)}
+.qMiniCardFront,.qMiniCardBack{width:80px;height:52px;border-radius:5px;overflow:hidden;position:relative;backface-visibility:hidden;transition:transform .4s;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.qMiniCardBack{transform:rotateY(180deg);background:var(--bg);border:1.5px solid var(--br);display:flex;align-items:center;justify-content:center;margin-top:-52px}
+.qMiniCardBg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.85}
+.qMiniCardTxt{position:relative;z-index:1;padding:5px 6px;font-size:9px;font-weight:600;line-height:1.3;height:100%;display:flex;align-items:center}
+.qMiniCardBackTxt{font-size:8.5px;padding:4px 5px;text-align:center;color:var(--k2);line-height:1.3}
+.qRow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--br)}
+.uploading{opacity:.7;pointer-events:none;}
+.uploadSpin{width:16px;height:16px;border:2px solid var(--br);border-top-color:var(--tl);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.cThemeBadge{position:absolute;top:0;left:0;right:0;background:rgba(79,142,158,.85);color:white;font-size:9.5px;font-weight:600;padding:3px 7px;text-align:center;}
 .cBadge{position:absolute;top:3px;right:3px;background:rgba(26,26,46,.48);color:rgba(255,255,255,.92);font-size:8.5px;padding:1px 4px;border-radius:5px;max-width:86%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
 .cLoading{position:absolute;inset:0;background:rgba(255,255,255,.84);display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--tld);z-index:2}
 input[type=file]{display:none}
@@ -316,6 +330,7 @@ input[type=file]{display:none}
 .mDng{flex:1;padding:8px;background:var(--rd);color:white;border:none;border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.28);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .hidden{display:none!important}
 @media(max-width:680px){.fGrid2{grid-template-columns:1fr}.bgWrap{flex-direction:column}.bgCtrls{flex:none;width:100%}}
 </style>
@@ -397,8 +412,7 @@ var STEPS=[
   {id:'basis',   label:'Basis',      fn:buildBasis},
   {id:'kaarten', label:'Kaarten',    fn:buildKaarten},
   {id:'vragen',  label:'Vragen',     fn:buildVragen},
-  {id:'welkomst',label:'Welkomst',   fn:buildWelkomst},
-  {id:'intro',   label:'Introductie', fn:buildIntro},
+  {id:'introductie', label:'Introductie', fn:buildIntroductie},
   {id:'stijl',   label:'Stijl',      fn:buildStijl},
   {id:'inst',    label:'Instellingen',fn:buildInst}
 ];
@@ -597,11 +611,13 @@ function renderEditor(){
       return '<div class="wDot '+cls+'" onclick="wizJump('+i+')" title="'+esc(s.label)+'"><span class="wBubble">'+icon+'</span> '+esc(s.label)+'</div>';
     }).join('');
     // Inject prev/next into topbar tbR before save
+    var isLastRequired=S.wizStep===2; // After Vragen = ready to publish
     tb=tb.replace('<button class="btn" id="saveBtn" onclick="saveSet()">Opslaan</button>',
       (S.wizStep>0?'<button class="btnS wNav" onclick="wizBack()" style="padding:7px 11px;font-size:12px">← Vorige</button>':'')+
+      (isLastRequired?'<button class="btnS wNav" onclick="saveSet()" style="padding:7px 11px;font-size:12px;color:var(--gn)">&#10003; Publiceer nu</button>':'')+
       (S.wizStep<STEPS.length-1
-        ?'<button class="btn wNav" onclick="wizNext()" style="padding:7px 14px">Volgende →</button>'
-        :'<button class="btn wNav" onclick="saveSet()" id="saveBtn">&#10003; Opslaan</button>')+
+        ?'<button class="btn wNav" onclick="wizNext()" style="padding:7px 14px">'+(isLastRequired?'Meer opties →':'Volgende →')+'</button>'
+        :'<button class="btn wNav" onclick="saveSet()" id="saveBtn">&#10003; Opslaan & publiceer</button>')+
       '<button class="btn" id="saveBtn" onclick="saveSet()" style="'+(S.wizStep<STEPS.length-1?'background:var(--bg);color:var(--k2);border:1px solid var(--br)':'display:none')+'">Opslaan</button>'
     );
     g('mc').innerHTML=tb+'<div class="wizWrap"><div class="wizStepDots" id="wizDots">'+dots+'</div><div class="wizBar"><div class="wizFill" style="width:'+pct+'%"></div></div><div class="wizPanel" id="pw"></div></div>';
@@ -630,7 +646,24 @@ function switchMode(){
   lsSet('pk_mode_'+S.activeId,S.mode);renderEditor();
 }
 function wizJump(i){collectCurrent();S.wizStep=i;renderEditor();}
-function wizNext(){collectCurrent();S.wizStep=Math.min(S.wizStep+1,STEPS.length-1);renderEditor();}
+function wizNext(){
+  collectCurrent();
+  var cur=STEPS[S.wizStep];
+  var msg=wizValidate(cur.id);
+  if(msg){
+    showToast(msg,'red');
+    // Shake the panel
+    var pw=g('pw');if(pw){pw.style.animation='none';setTimeout(function(){pw.style.animation='shake .3s ease';},10);}
+    return;
+  }
+  S.wizStep=Math.min(S.wizStep+1,STEPS.length-1);renderEditor();
+}
+function wizValidate(id){
+  if(id==='basis'){
+    if(!S.d.meta.title||!S.d.meta.title.trim())return 'Vul eerst een naam in voor de set.';
+  }
+  return null; // other steps are optional
+}
 function wizBack(){collectCurrent();S.wizStep=Math.max(S.wizStep-1,0);renderEditor();}
 function switchTab(id){collectCurrent();S.clTab=id;renderClPanel();afterRender();}
 function renderClPanel(){
@@ -646,7 +679,7 @@ function stepDone(id){
   
   if(id==='kaarten')return Object.keys(CC).some(function(k){return k.indexOf('sets/'+S.activeId+'/cards/')===0;});
   if(id==='vragen')return Object.values(S.d.questions||{}).some(function(a){return Array.isArray(a)&&a.length>0;});
-  if(id==='introductie'||id==='intro')return !!(S.d.uitleg&&S.d.uitleg.cover);
+  if(id==='introductie')return true; // always passable
   if(id==='welkomst')return !!(S.d.intro&&S.d.intro.slides&&S.d.intro.slides.length>1);
   return true;
 }
@@ -674,9 +707,9 @@ function collectCurrent(){
   if(id==='basis'){
     var t=g('b_title');if(t){S.d.meta.title=t.value;var idx=S.sets.findIndex(function(s){return s.id===S.activeId;});if(idx>=0)S.sets[idx].title=t.value;}
   }
-  if(id==='intro'){
-    var uc=g('u_cover');if(uc)S.d.uitleg.cover=uc.value;
-    (S.d.meta.themes||[]).forEach(function(th){var i2=g('u_'+th.key);if(i2)S.d.uitleg[th.key]=i2.value;});
+  if(id==='introductie'){
+    var uc=g('u_cover');if(uc){S.d.uitleg=S.d.uitleg||{};S.d.uitleg.cover=uc.value;}
+    (S.d.meta.themes||[]).forEach(function(th){var i2=g('u_'+th.key);if(i2){S.d.uitleg=S.d.uitleg||{};S.d.uitleg[th.key]=i2.value;}});
   }
 }
 
@@ -767,8 +800,8 @@ function initThDrag(){
 // ═══════════════════════════════════════════
 function buildKaarten(target){
   var themes=S.d.meta.themes||[],id=S.activeId;
-  if(!themes.length){target.innerHTML='<div class="panel"><div class="empty"><p>Maak eerst thema\'s aan voordat je kaarten kunt koppelen.</p><button class="btn" onclick="'+(S.mode==='wizard'?'wizJump(1)':'switchTab(\'themas\')')+'">Naar Thema\'s</button></div></div>';return;}
-  var allCards=[{key:'voorkant',label:'Cover',cf:'voorkant.svg',ic:true}].concat(themes.map(function(t,i){return{key:t.key,label:t.label||t.key,cf:t.card||(t.key+'.svg'),ti:i};}));
+  // Cover-only is fine — no themes needed for just a cover card
+  var allCards=[{key:'voorkant',label:'Cover',cf:'voorkant.svg',ic:true}].concat(themes.map(function(t,i){return{key:t.key,label:t.label||t.key,cf:t.card||(t.key+'.svg'),ti:i,isTheme:true};}));
   var html='<div class="panel"><p class="cSub">Klik op een tegel of sleep er een afbeelding op. Met <strong>Koppel</strong> kies je een geüpload bestand voor een thema.</p>'+
     '<div style="font-size:11.5px;color:var(--tld);background:var(--tlp);padding:8px 11px;border-radius:7px;margin-bottom:13px;line-height:1.6">&#128247; Toegestane formaten: SVG, PNG, JPEG, WebP. <strong>Thumbnails (cards_rect/) worden automatisch gegenereerd</strong> — je kunt ze daarna vervangen als ze niet kloppen.</div>';
   ['cards','cards_rect'].forEach(function(folder){
@@ -781,7 +814,10 @@ function buildKaarten(target){
 function buildCTile(card,folder,path){
   var sid=safeid(path),cached=CC[path];
   var prev=cached&&cached.dataUrl?'<div class="cPrev"><img src="'+cached.dataUrl+'" alt="'+esc(card.label)+'"></div>':'<div class="cMt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9l4-4 4 4 4-6 6 8"/></svg><span>Klik of sleep</span></div>';
-  var badge=(cached&&!card.ic)?'<div class="cBadge">'+esc(path.split('/').pop())+'</div>':'';
+  var badge='';
+  if(card.isTheme&&folder==='cards'){
+    badge='<div class="cThemeBadge">🃏 '+esc(card.label)+'</div>';
+  }
   var lnk=(!card.ic&&typeof card.ti==='number')?'<button class="cLnk" data-action="lnk" data-ti="'+card.ti+'" data-folder="'+folder+'">Koppel</button>':'';
   return '<div class="cTile" id="ct-'+sid+'" data-path="'+esc(path)+'" data-sid="'+sid+'">'+prev+badge+
     (card.label!=='Cover'&&cached&&cached.dataUrl?'<button class="cClear" data-action="clearCard" data-sid="'+sid+'" data-path="'+esc(path)+'" title="Verwijder kaart" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:white;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">&#10005;</button>':'')+
@@ -805,6 +841,9 @@ function loadCardPreviews(){
 }
 function updateTile(path,dataUrl){var sid=safeid(path),tile=g('ct-'+sid);if(!tile)return;var old=tile.querySelector('.cPrev,.cMt');if(!old)return;var d=document.createElement('div');d.className='cPrev';d.innerHTML='<img src="'+dataUrl+'" alt="">';old.replaceWith(d);}
 function uploadFile(file,path,sid,skipThumb){
+  // Show uploading state on tile
+  var tile=g('ct-'+sid);
+  if(tile){tile.classList.add('uploading');var mt=tile.querySelector('.cMt');if(mt)mt.innerHTML='<div class="uploadSpin"></div><span>Uploaden…</span>';}
   var tile=g('ct-'+sid);
   var ld=document.createElement('div');ld.className='cLoading';ld.innerHTML='<span class="spinner" style="border-color:rgba(79,142,158,.3);border-top-color:var(--tl)"></span> Uploaden…';
   if(tile)tile.appendChild(ld);
@@ -911,8 +950,18 @@ function uploadAndLink(input,ti,folder){
 // ═══════════════════════════════════════════
 function buildVragen(target){
   var themes=S.d.meta.themes||[],q=S.d.questions||{};
+  var backMode=S.d.meta.backMode||'mirror';
   if(!themes.length){target.innerHTML='<div class="panel"><div class="empty"><p>Maak eerst thema\'s aan voordat je vragen kunt schrijven.</p><button class="btn" onclick="'+(S.mode==='wizard'?'wizJump(1)':'switchTab(\'themas\')')+'">Naar Thema\'s</button></div></div>';return;}
-  var html='<div class="panel">';
+  var html='<div class="panel">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:9px 12px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--k2)">'+
+      '<span style="font-weight:600;color:var(--k)">Achterkant:</span>'+
+      '<div class="radioGroup" style="gap:4px">'+
+        '<div class="radioOpt'+(backMode==='mirror'?' sel':'')+' bm" data-action="setBackMode" data-v="mirror" style="font-size:11px;padding:3px 9px">Spiegel</div>'+
+        '<div class="radioOpt'+(backMode==='blank'?' sel':'')+' bm" data-action="setBackMode" data-v="blank" style="font-size:11px;padding:3px 9px">Blanco</div>'+
+        '<div class="radioOpt'+(backMode==='custom'?' sel':'')+' bm" data-action="setBackMode" data-v="custom" style="font-size:11px;padding:3px 9px">Eigen tekst</div>'+
+      '</div>'+
+      '<span style="color:var(--k3);font-size:10.5px">Per thema aanpasbaar via dropdown</span>'+
+    '</div>';
   themes.forEach(function(th){
     var qs=q[th.key]||[],cnt=qs.length;
     var cardPath='sets/'+S.activeId+'/cards/'+(th.card||(th.key+'.svg'));
@@ -958,14 +1007,35 @@ function buildQRow(key,qi,card){
   var MAX=90;
   var fc=front.length, bc=back.length;
   var fcCls=fc>MAX?'over':fc>MAX*.8?'warn':'', bcCls=bc>MAX?'over':bc>MAX*.8?'warn':'';
-  return '<div class="qRow"><span class="qNum">'+(qi+1)+'</span>'+
+  var thObj=(S.d.meta.themes||[]).find(function(t){return t.key===key;})||{};
+  var cardPath='sets/'+S.activeId+'/cards/'+(thObj.card||(key+'.svg'));
+  var cached=CC[cardPath];
+  var accent=(S.d.meta.cssVars||{})['--pk-set-accent']||'#F3D7A3';
+  var fontFamily=(S.d.meta.cssVars||{})['--pk-font-family']||'IBM Plex Sans';
+  var fontColor=(S.d.meta.cssVars||{})['--pk-font-color']||'#1a1a2e';
+  var bgImg=cached&&cached.dataUrl?'url('+cached.dataUrl+')':'none';
+  var miniCard='<div class="qMiniCard" title="Hover om achterkant te zien">'+
+    '<div class="qMiniCardFront" style="background-color:'+esc(accent)+'">'+
+      '<div class="qMiniCardBg" style="background-image:'+bgImg+'"></div>'+
+      '<div class="qMiniCardTxt" id="qmct-'+esc(key)+'-'+qi+'" style="color:'+esc(fontColor)+';font-family:'+esc(fontFamily)+',sans-serif">'+esc(front||'Vraag…')+'</div>'+
+    '</div>'+
+    '<div class="qMiniCardBack">'+
+      '<div class="qMiniCardBackTxt" id="qmcb-'+esc(key)+'-'+qi+'" style="color:'+esc(fontColor)+';font-family:'+esc(fontFamily)+',sans-serif">'+esc(back||'Achterkant…')+'</div>'+
+    '</div>'+
+  '</div>';
+  return '<div class="qRow">'+miniCard+'<span class="qNum">'+(qi+1)+'</span>'+
     '<div class="qFields">'+
-      '<textarea class="qIn" rows="1" placeholder="Voorkant — de vraag" oninput="updQ(\''+esc(key)+'\','+qi+',\'voorkant\',this.value);autoH(this);updCC(this,'+MAX+')">'+esc(front)+'</textarea>'+
+      '<textarea class="qIn" rows="1" placeholder="Voorkant — de vraag" oninput="updQ(\''+esc(key)+'\','+qi+',\'voorkant\',this.value);autoH(this);updCC(this,'+MAX+');liveQPrev(\''+esc(key)+'\','+qi+',\'f\',this.value)">'+esc(front)+'</textarea>'+
       '<div class="charCount'+(fcCls?' '+fcCls:'')+'" id="cc-f-'+key+'-'+qi+'">'+fc+'/'+MAX+'</div>'+
-      '<textarea class="qInBack" rows="1" placeholder="Achterkant — toelichting of antwoord (optioneel)" oninput="updQ(\''+esc(key)+'\','+qi+',\'achterkant\',this.value);autoH(this);updCC(this,'+MAX+')">'+esc(back)+'</textarea>'+
+      '<textarea class="qInBack" rows="1" placeholder="Achterkant — toelichting of antwoord (optioneel)" oninput="updQ(\''+esc(key)+'\','+qi+',\'achterkant\',this.value);autoH(this);updCC(this,'+MAX+');liveQPrev(\''+esc(key)+'\','+qi+',\'b\',this.value)">'+esc(back)+'</textarea>'+
       (back?'<div class="charCount'+(bcCls?' '+bcCls:'')+'" id="cc-b-'+key+'-'+qi+'">'+bc+'/'+MAX+'</div>':'')+
     '</div>'+
-    '<button class="qDel" data-action="delq" data-key="'+esc(key)+'" data-qi="'+qi+'" title="Vraag verwijderen">✕</button></div>';
+    '<button class="qDel" data-action="delq" data-key="'+esc(key)+'" data-qi="'+qi+'" title="Vraag verwijderen">&#10005;</button></div>';
+}
+function liveQPrev(key,qi,side,val){
+  var elId=side==='f'?('qmct-'+key+'-'+qi):('qmcb-'+key+'-'+qi);
+  var el=document.getElementById(elId);
+  if(el)el.textContent=val||(side==='f'?'Vraag\u2026':'Achterkant\u2026');
 }
 function showBulkImport(key){
   var th=S.d.meta.themes.find(function(t){return t.key===key;})||{};
@@ -996,60 +1066,66 @@ function autoH(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 // ═══════════════════════════════════════════
 // STEP: UITLEG
 // ═══════════════════════════════════════════
-function buildWelkomst(target){
+function buildIntroductie(target){
   var themes=S.d.meta.themes||[],u=S.d.uitleg||{},id=S.activeId;
-  // Cover image picker
+  var intro=S.d.intro||{};
+  var slides=intro.slides||[];
+  var introMode=intro.mode||'carousel';
+  var showOnFirst=intro.showOnFirst!==false;
+  var navHint=intro.hint||'';
+  var showNavHint=!!(intro.hint);
+  var activeThemeKeys=intro.activeThemes||(themes.map(function(t){return t.key;}));
+
+  // Cover preview
   var coverPath='sets/'+id+'/cards/voorkant.svg';
   var cached=CC[coverPath];
   var prevHtml=cached&&cached.dataUrl
     ?'<div style="width:80px;height:52px;border-radius:5px;overflow:hidden;border:1px solid var(--br);margin-bottom:8px"><img src="'+cached.dataUrl+'" style="width:100%;height:100%;object-fit:contain"></div>'
-    :'';
-  var html='<div class="panel">'+
-    '<p style="font-size:12.5px;color:var(--k2);margin-bottom:14px;line-height:1.6">Schrijf een introductie voor de hele set en per thema een korte toelichting. Dit ziet de gebruiker als die op ⓘ tikt.</p>'+
-    '<div class="fRow"><label class="fLbl">Cover-afbeelding (ⓘ pagina)</label>'+prevHtml+
-    '<div style="display:flex;gap:6px;align-items:center">'+
-    (cached&&cached.dataUrl?'<button class="bs tl" onclick="setCoverFromUploads()">Huidig ✓</button>':'<span style="font-size:11px;color:var(--k3)">Nog niet geüpload</span>')+
-    '<label class="bs gh" style="cursor:pointer">Upload cover<input type="file" accept=".svg,.png,.jpg,.jpeg,.webp" id="coverUploadInput" style="display:none"></label>'+
-    '</div><p class="fHint">Gebruik je uploadte voorkant.svg, of upload hier een aparte afbeelding voor de intro.</p></div>'+
-    '<hr class="sep">'+
-    fR('Tekst (hele set)','textarea','u_cover',u.cover||'','Omschrijf de set als geheel — doel, gebruik, context');
-  if(themes.length){
-    html+='<hr class="sep"><p style="font-size:10px;font-weight:600;color:var(--k3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Per thema</p>';
-    themes.forEach(function(th){html+=fR(esc(th.label||th.key),'textarea','u_'+th.key,u[th.key]||'','Toelichting bij '+esc(th.label||th.key));});
-  }
-  target.innerHTML=html+'</div>';
-  g('u_cover').oninput=function(){S.d.uitleg.cover=this.value;markDirty();};
-  themes.forEach(function(th){var inp=g('u_'+th.key);if(inp)inp.oninput=function(){S.d.uitleg[th.key]=this.value;markDirty();};});
-  var cu=g('coverUploadInput');
-  if(cu)cu.onchange=function(){var f=this.files&&this.files[0];if(!f)return;var path='sets/'+id+'/cards/voorkant.svg';uploadFile(f,path,safeid(path));this.value='';};
-}
+    :'<div style="width:80px;height:52px;border-radius:5px;border:2px dashed var(--br);margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--k3)">geen cover</div>';
 
-// ═══════════════════════════════════════════
-// STEP: INTRO SLIDES
-// ═══════════════════════════════════════════
-function buildIntro(target){
-  var themes=S.d.meta.themes||[];
-  var slides=(S.d.intro&&S.d.intro.slides)||[];
+  // Slides rows
   var rows=slides.map(function(sl,i){
     var isCover=sl.key==='cover';
     return '<div class="slCard" draggable="true" data-i="'+i+'" id="sl'+i+'">'+
       '<div class="slHead"><span class="slHdl">⠿</span><span class="slNum">'+(i+1)+'</span><span class="slKey">'+esc(sl.key||'')+'</span>'+
       (sl.img?'<span class="slImg" title="'+esc(sl.img)+'">'+esc(sl.img)+'</span>':'')+
-      (!isCover?'<button class="bs rd" data-action="delsl" data-i="'+i+'" style="margin-left:auto">✕</button>':'')+
+      (!isCover?'<button class="bs rd" data-action="delsl" data-i="'+i+'" style="margin-left:auto">&#10005;</button>':'')+
       '</div>'+
       '<div class="slFlds">'+
-        '<div class="fRow"><label class="fLbl">Titel</label><input type="text" class="fIn" value="'+esc(sl.title||'')+'" oninput="updSl('+i+',\'title\',this.value)" placeholder="Slide titel"></div>'+
-        '<div class="fRow"><label class="fLbl">Afbeelding (pad)</label><input type="text" class="fIn" value="'+esc(sl.img||'')+'" oninput="updSl('+i+',\'img\',this.value)" placeholder="cards/voorkant.svg"></div>'+
-        '<div class="fRow" style="grid-column:1/-1"><label class="fLbl">Tekst</label><textarea class="fTa" rows="2" oninput="updSl('+i+',\'body\',this.value)">'+esc(sl.body||'')+'</textarea></div>'+
+        '<div class="fRow"><label class="fLbl">Titel</label><input type="text" class="fIn slF" data-si="'+i+'" data-field="title" value="'+esc(sl.title||'')+'" placeholder="Slide titel"></div>'+
+        '<div class="fRow"><label class="fLbl">Afbeelding</label>'+
+        '<div style="display:flex;gap:6px;align-items:center">'+
+          (sl.img&&CC['sets/'+S.activeId+'/'+sl.img]&&CC['sets/'+S.activeId+'/'+sl.img].dataUrl
+            ?'<img src="'+CC['sets/'+S.activeId+'/'+sl.img].dataUrl+'" style="width:40px;height:26px;object-fit:contain;border-radius:3px;border:1px solid var(--br)">'
+            :'<span style="font-size:10px;color:var(--k3)">'+esc(sl.img||'geen')+'</span>')+
+          '<button class="bs gh" data-action="pickSlImg" data-si="'+i+'" style="font-size:10.5px">Kies kaart</button>'+
+        '</div></div>'+
+        '<div class="fRow" style="grid-column:1/-1"><label class="fLbl">Tekst</label><textarea class="fTa slF" data-si="'+i+'" data-field="body" rows="2">'+esc(sl.body||'')+'</textarea></div>'+
       '</div></div>';
   }).join('');
-  var hint=(S.d.intro&&S.d.intro.hint)||'← → swipe';
-  var introMode=(S.d.intro&&S.d.intro.mode)||'carousel';
-  var activeThemeKeys=(S.d.intro&&S.d.intro.activeThemes)||(themes.map(function(t){return t.key;}));
+
   target.innerHTML='<div class="panel">'+
-    '<p style="font-size:12.5px;color:var(--k2);margin-bottom:12px;line-height:1.6">Het welkomstscherm wordt getoond als de gebruiker de set voor het eerst opent.</p>'+
-    '<div class="fRow"><label class="fLbl">Weergave</label>'+
-    '<div class="radioGroup" style="margin-bottom:10px">'+
+    // ── SECTIE 1: ⓘ knop tekst ──
+    '<div class="sLbl" style="margin-top:0">Introductietekst (ⓘ knop)</div>'+
+    '<p style="font-size:12px;color:var(--k2);margin-bottom:12px;line-height:1.55">Dit ziet de gebruiker als die op ⓘ tikt. Schrijf een algemene tekst voor de hele set, en optioneel per thema.</p>'+
+    '<div class="fRow"><label class="fLbl">Cover-afbeelding</label>'+prevHtml+
+    '<div style="display:flex;gap:6px;align-items:center">'+
+    (cached&&cached.dataUrl?'<span class="bs tl" style="cursor:default">Huidig ✓</span>':'<span style="font-size:11px;color:var(--k3)">Nog niet geüpload</span>')+
+    '<label class="bs gh" style="cursor:pointer">Upload apart<input type="file" accept=".svg,.png,.jpg,.jpeg,.webp" id="coverUploadInput" style="display:none"></label>'+
+    '</div></div>'+
+    fR('Tekst (hele set)','textarea','u_cover',u.cover||'','Omschrijf de set — doel, gebruik, context')+
+    (themes.length?'<div style="margin-top:10px">'+themes.map(function(th){return fR(esc(th.label||th.key),'textarea','u_'+th.key,u[th.key]||'','Toelichting bij '+esc(th.label||th.key));}).join('')+'</div>':'')+
+
+    // ── SECTIE 2: Welkomstscherm (slides) ──
+    '<hr class="sep">'+
+    '<div class="sLbl">Welkomstscherm (eerste bezoek)</div>'+
+    '<p style="font-size:12px;color:var(--k2);margin-bottom:10px;line-height:1.55">Wordt getoond als de gebruiker de set opent. Je kunt dit uitschakelen.</p>'+
+    '<div class="togGroup">'+
+      '<div class="togRow"><div><label>Tonen bij eerste bezoek</label><span class="togRowSub">Gebruiker ziet welkomstscherm automatisch</span></div>'+
+      '<label class="tog"><input type="checkbox" id="i_showOnFirst"'+(showOnFirst?' checked':'')+'><span class="togSl"></span></label></div>'+
+    '</div>'+
+    '<div class="fRow" style="margin-top:10px"><label class="fLbl">Weergave</label>'+
+    '<div class="radioGroup">'+
       '<div class="radioOpt'+(introMode==='carousel'?' sel':'')+'" data-action="setIntroMode" data-v="carousel">&#127904; Carrousel</div>'+
       '<div class="radioOpt'+(introMode==='static'?' sel':'')+'" data-action="setIntroMode" data-v="static">&#128196; Statisch</div>'+
     '</div></div>'+
@@ -1058,29 +1134,47 @@ function buildIntro(target){
       '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:3px">'+
       themes.map(function(th){var on=activeThemeKeys.indexOf(th.key)>=0;return'<div class="radioOpt'+(on?' sel':'')+' thToggle" data-action="toggleTheme" data-key="'+esc(th.key)+'">'+esc(th.label||th.key)+'</div>';}).join('')+
       '</div></div>':'')+
-    '<hr class="sep">'+
-    '<p style="font-size:12.5px;color:var(--k2);margin-bottom:10px;line-height:1.5">Slides — sleep om te herordenen.</p>'+
+    '<p style="font-size:12px;color:var(--k2);margin:8px 0 6px;line-height:1.5">Slides — sleep om te herordenen.</p>'+
     '<div class="slList" id="slList">'+rows+'</div>'+
     '<div style="display:flex;gap:6px;margin-top:9px">'+
-    (S.d.meta.themes&&S.d.meta.themes.length?'<button class="bs tl" onclick="addSlFromTheme()">+ Van thema\'s</button>':'')+
+    (themes.length?'<button class="bs tl" onclick="addSlFromTheme()">+ Van thema&#39;s</button>':'')+
     '<button class="bs gh" onclick="addSlide()">+ Lege slide</button>'+
     '</div>'+
-    '<hr class="sep">'+fR('Navigatie-hint','text','sl_hint',hint,'bijv. "← → swipe"')+'</div>';
-  g('sl_hint').oninput=function(){S.d.intro=S.d.intro||{};S.d.intro.hint=this.value;markDirty();};
+    '<div class="togGroup" style="margin-top:12px">'+
+      '<div class="togRow"><div><label>Navigatie-hint tonen</label><span class="togRowSub">Bijv. "← → swipe"</span></div>'+
+      '<label class="tog"><input type="checkbox" id="i_navHint"'+(showNavHint?' checked':'')+'><span class="togSl"></span></label></div>'+
+    '</div>'+
+    (showNavHint?'<div id="navHintField" style="margin-top:6px">'+fR('Hint tekst','text','sl_hint',navHint,'bijv. ← → swipe')+'</div>':'<div id="navHintField" style="display:none">'+fR('Hint tekst','text','sl_hint',navHint,'bijv. ← → swipe')+'</div>')+
+  '</div>';
+
+  // Wire text inputs
+  var uc=g('u_cover');if(uc)uc.oninput=function(){S.d.uitleg=S.d.uitleg||{};S.d.uitleg.cover=this.value;markDirty();};
+  themes.forEach(function(th){var inp=g('u_'+th.key);if(inp)inp.oninput=function(){S.d.uitleg=S.d.uitleg||{};S.d.uitleg[th.key]=this.value;markDirty();};});
+  var cu=g('coverUploadInput');
+  if(cu)cu.onchange=function(){var f=this.files&&this.files[0];if(!f)return;uploadFile(f,'sets/'+id+'/cards/voorkant.svg',safeid('sets/'+id+'/cards/voorkant.svg'));this.value='';};
+  // Wire first-visit toggle
+  var sof=g('i_showOnFirst');if(sof)sof.onchange=function(){S.d.intro=S.d.intro||{};S.d.intro.showOnFirst=this.checked;markDirty();};
+  // Wire nav hint toggle
+  var nh=g('i_navHint');if(nh)nh.onchange=function(){
+    var fld=g('navHintField');if(fld)fld.style.display=this.checked?'':'none';
+    if(!this.checked){S.d.intro=S.d.intro||{};S.d.intro.hint='';markDirty();}
+  };
+  var sh=g('sl_hint');if(sh)sh.oninput=function(){S.d.intro=S.d.intro||{};S.d.intro.hint=this.value;markDirty();};
   initSlDrag();
 }
+
 function updSl(i,f,v){var sl=S.d.intro&&S.d.intro.slides&&S.d.intro.slides[i];if(sl){sl[f]=v;markDirty();}}
-function addSlide(){S.d.intro=S.d.intro||{slides:[],hint:'← →'};S.d.intro.slides.push({key:'slide-'+(S.d.intro.slides.length+1),title:'',body:'',img:'cards/voorkant.svg',alt:''});markDirty();rebuildWelkomst();}
+function addSlide(){S.d.intro=S.d.intro||{slides:[],hint:'← →'};S.d.intro.slides.push({key:'slide-'+(S.d.intro.slides.length+1),title:'',body:'',img:'cards/voorkant.svg',alt:''});markDirty();rebuildIntroductie();}
 function addSlFromTheme(){
   var themes=S.d.meta.themes||[];if(!themes.length){toast('Maak eerst thema\'s aan');return;}
   S.d.intro=S.d.intro||{slides:[],hint:'← →'};
   var ex=S.d.intro.slides.map(function(s){return s.key;}),added=0;
   themes.forEach(function(th){if(ex.indexOf(th.key)>=0)return;S.d.intro.slides.push({key:th.key,title:th.label||th.key,body:(S.d.uitleg&&S.d.uitleg[th.key])||'',img:'cards/'+(th.card||th.key+'.svg'),alt:th.label||th.key});added++;});
-  if(added>0){markDirty();rebuildWelkomst();toast(added+' slide'+(added!==1?'s':'')+' toegevoegd');}
+  if(added>0){markDirty();rebuildIntroductie();toast(added+' slide'+(added!==1?'s':'')+' toegevoegd');}
   else toast('Alle thema\'s hebben al een slide','amber');
 }
-function delSl(i){if(S.d.intro&&S.d.intro.slides)S.d.intro.slides.splice(i,1);markDirty();rebuildWelkomst();}
-function rebuildWelkomst(){var pw=g('pw');if(pw){if(S.mode==='wizard')buildWelkomst(pw);else renderClPanel();}}
+function delSl(i){if(S.d.intro&&S.d.intro.slides)S.d.intro.slides.splice(i,1);markDirty();rebuildIntroductie();}
+function rebuildIntroductie(){var pw=g('pw');if(pw){if(S.mode==='wizard')buildWelkomst(pw);else renderClPanel();}}
 function initSlDrag(){
   var list=g('slList');if(!list)return;
   list.querySelectorAll('.slCard').forEach(function(row){
@@ -1088,7 +1182,7 @@ function initSlDrag(){
     row.addEventListener('dragend',function(){this.classList.remove('dragging');list.querySelectorAll('.slCard').forEach(function(r){r.classList.remove('dragover');});});
     row.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
     row.addEventListener('dragleave',function(){this.classList.remove('dragover');});
-    row.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('dragover');var from=parseInt(e.dataTransfer.getData('text/plain'),10),to=parseInt(this.dataset.i,10);if(from===to)return;var arr=S.d.intro.slides,item=arr.splice(from,1)[0];arr.splice(to,0,item);markDirty();rebuildWelkomst();});
+    row.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('dragover');var from=parseInt(e.dataTransfer.getData('text/plain'),10),to=parseInt(this.dataset.i,10);if(from===to)return;var arr=S.d.intro.slides,item=arr.splice(from,1)[0];arr.splice(to,0,item);markDirty();rebuildIntroductie();});
   });
 }
 
@@ -1376,8 +1470,7 @@ function buildInst(target){
     '<div class="sLbl" style="margin-top:0">Menu</div>'+
     '<div class="togGroup">'+
       togHtml('i_info','Informatieknop (ⓘ)',menu.showInfo!==false,'Opent de introductie-sheet')+
-      togHtml('i_shuf','Shuffelknop',menu.showShuffle!==false,'Kaarten in willekeurige volgorde')+
-      togHtml('i_sets','Knop "Alle sets"',menu.showAllSets!==false,'Navigeer terug naar de setoverzicht')+
+      togHtml('i_shuf','Shuffle-knop',menu.showShuffle!==false,'Kaarten in willekeurige volgorde')+
     '</div>'+
     '<hr class="sep">'+
     '<div class="sLbl">Achterkant van kaarten</div>'+
@@ -1399,7 +1492,7 @@ function buildInst(target){
     '</div>'+
   '</div>';
   // Wire toggles
-  [['i_info','ui.menu.showInfo'],['i_shuf','ui.menu.showShuffle'],['i_sets','ui.menu.showAllSets'],['i_sheet','ui.sheet.enabled'],['i_anim','flipAnim'],['i_flip','doubleSided']].forEach(function(pair){
+  [['i_info','ui.menu.showInfo'],['i_shuf','ui.menu.showShuffle'],['i_sheet','ui.sheet.enabled'],['i_anim','flipAnim'],['i_flip','doubleSided']].forEach(function(pair){
     var el2=g(pair[0]);if(!el2)return;
     el2.onchange=function(){
       var parts=pair[1].split('.');var obj=S.d.meta;
@@ -1491,7 +1584,9 @@ function saveSet(cb){
     S.dirty=false;lsDel('pk_draft_'+id);
     if(btn){btn.disabled=false;btn.innerHTML='Opslaan';}
     var db=g('dirtyBadge');if(db)db.classList.remove('on');
-    renderSidebar();toast('Opgeslagen ✓','green');if(typeof cb==='function')cb();
+    renderSidebar();toast('Opgeslagen ✓','green');
+  // Remove uploading state
+  var tile2=g('ct-'+sid);if(tile2)tile2.classList.remove('uploading');if(typeof cb==='function')cb();
   }).catch(function(e){if(btn){btn.disabled=false;btn.innerHTML='Opslaan';}toast('Fout: '+e.message,'red');});
 }
 
@@ -1582,6 +1677,43 @@ document.addEventListener('click',function(ev){
     }
     return;
   }
+  // Slide field editing via data attributes
+  var slf=ev.target.closest('.slF');
+  if(slf){var si=parseInt(slf.dataset.si,10),sf=slf.dataset.field,sv=slf.value;updSl(si,sf,sv);return;}
+  if(a==='pickSlImg'){
+    var si2=parseInt(el2.dataset.si,10);
+    // Build a popup with all uploaded cards to choose from
+    var opts='';
+    var id2=S.activeId;
+    var allC=[{k:'voorkant.svg',l:'Cover'}].concat((S.d.meta.themes||[]).map(function(t){return{k:t.card||(t.key+'.svg'),l:t.label||t.key};}));
+    var seen2={};
+    allC.forEach(function(x){
+      if(seen2[x.k])return;seen2[x.k]=true;
+      var p='sets/'+id2+'/cards/'+x.k,ca=CC[p];
+      var img=ca&&ca.dataUrl?'<img src="'+ca.dataUrl+'" style="width:52px;height:34px;object-fit:contain">':'<span style="font-size:9px;color:#aaa">?</span>';
+      opts+='<button class="slImgOpt" data-si="'+si2+'" data-img="cards/'+esc(x.k)+'" style="border:1.5px solid var(--br);border-radius:6px;padding:5px;cursor:pointer;background:white;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px">'+img+'<span>'+esc(x.l)+'</span></button>';
+    });
+    showModal('<h3>Kies afbeelding</h3><div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 0;max-height:300px;overflow-y:auto">'+opts+'</div><div class="mAct"><button class="mCa" onclick="closeModal()">Annuleren</button></div>');
+    return;
+  }
+  if(a==='setBackMode'){
+    S.d.meta.backMode=el2.dataset.v;markDirty();
+    g('pw').querySelectorAll('.bm').forEach(function(b){b.classList.toggle('sel',b.dataset.v===el2.dataset.v);});
+    return;
+  }
+  if(a==='slImgOpt'){
+    var si3=parseInt(el2.dataset.si,10),img2=el2.dataset.img;
+    var sl2=S.d.intro&&S.d.intro.slides&&S.d.intro.slides[si3];
+    if(sl2){sl2.img=img2;markDirty();}
+    closeModal();rebuildIntroductie();
+    return;
+  }
+  if(a==='setThBack'){
+    var tk=el2.dataset.key,tv=el2.value;
+    S.d.meta.themeBack=S.d.meta.themeBack||{};
+    if(tv)S.d.meta.themeBack[tk]=tv;else delete S.d.meta.themeBack[tk];
+    markDirty();return;
+  }
   if(a==='fontCat'){showFontCat(el2.dataset.cat);return;}
   if(a==='setFontColor'){
     var fclr=el2.dataset.c;
@@ -1608,7 +1740,7 @@ document.addEventListener('click',function(ev){
   if(a==='setIntroMode'){
     S.d.intro=S.d.intro||{slides:[],hint:'← →'};
     S.d.intro.mode=el2.dataset.v;markDirty();
-    rebuildWelkomst();return;
+    rebuildIntroductie();return;
   }
   if(a==='toggleTheme'){
     S.d.intro=S.d.intro||{slides:[],hint:'← →'};
@@ -1616,7 +1748,7 @@ document.addEventListener('click',function(ev){
     S.d.intro.activeThemes=keys;
     var idx=keys.indexOf(el2.dataset.key);
     if(idx>=0)keys.splice(idx,1);else keys.push(el2.dataset.key);
-    markDirty();rebuildWelkomst();return;
+    markDirty();rebuildIntroductie();return;
   }
   if(!ev.target.closest('button')&&!ev.target.closest('label')&&!ev.target.closest('input[type=file]')&&!ev.target.closest('textarea')&&!ev.target.closest('select')){
     var tile=ev.target.closest('.cTile');
