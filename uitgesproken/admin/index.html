@@ -100,9 +100,9 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 /* ── CHECKLIST TABS ── */
 .clBar{display:flex;align-items:flex-end;padding:12px 24px 0;flex-shrink:0;gap:1px;overflow-x:auto}
 .clBar::-webkit-scrollbar{height:0}
-.clTab{padding:5px 12px;border-radius:6px 6px 0 0;cursor:pointer;font-size:12px;color:var(--k2);border:1px solid transparent;border-bottom:none;background:transparent;font-family:inherit;transition:all .12s;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
-.clTab:hover{color:var(--k);background:rgba(255,255,255,.6)}
-.clTab.active{color:var(--tld);background:var(--sf);border-color:var(--br);font-weight:500}
+.clTab{padding:6px 14px;border-radius:6px 6px 0 0;cursor:pointer;font-size:12px;color:var(--k2);border:1px solid transparent;border-bottom:none;background:transparent;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0}
+.clTab:hover{color:var(--k);background:rgba(255,255,255,.7)}
+.clTab.active{color:var(--tld);background:white;border-color:var(--br);border-bottom-color:white;font-weight:600;box-shadow:0 -2px 0 0 var(--tl) inset}
 .clDot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:background .2s}
 .clBody{flex:1;margin:0 24px 20px;border-top:1px solid var(--br);background:var(--sf);border-radius:0 8px 8px 8px;overflow-y:auto;padding:18px 20px}
 .clBody::-webkit-scrollbar{width:4px}
@@ -200,14 +200,9 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .cLbl{font-size:10px;font-weight:500;color:var(--k2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .cLnk{font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--tlp);color:var(--tld);border:none;cursor:pointer;font-family:inherit;flex-shrink:0}
 .cLnk:hover{background:var(--tlp2)}
-.qMiniCard{width:80px;flex-shrink:0;perspective:400px;cursor:pointer}
-.qMiniCard:hover .qMiniCardFront{transform:rotateY(-180deg)}
-.qMiniCard:hover .qMiniCardBack{transform:rotateY(0)}
-.qMiniCardFront,.qMiniCardBack{width:80px;height:52px;border-radius:5px;overflow:hidden;position:relative;backface-visibility:hidden;transition:transform .4s;box-shadow:0 1px 6px rgba(0,0,0,.1)}
-.qMiniCardBack{transform:rotateY(180deg);background:var(--bg);border:1.5px solid var(--br);display:flex;align-items:center;justify-content:center;margin-top:-52px}
-.qMiniCardBg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.85}
-.qMiniCardTxt{position:relative;z-index:1;padding:5px 6px;font-size:9px;font-weight:600;line-height:1.3;height:100%;display:flex;align-items:center}
-.qMiniCardBackTxt{font-size:8.5px;padding:4px 5px;text-align:center;color:var(--k2);line-height:1.3}
+.thCardBig{width:72px;height:46px;border-radius:6px;overflow:hidden;border:1px solid rgba(79,142,158,.2);flex-shrink:0;position:relative;background:rgba(79,142,158,.08)}
+.thCardBig img{width:100%;height:100%;object-fit:cover;display:block}
+.thCardBigLabel{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:white;text-shadow:0 1px 3px rgba(0,0,0,.6);text-align:center;padding:3px;background:rgba(0,0,0,.18);line-height:1.2}
 .qRow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--br)}
 .uploading{opacity:.7;pointer-events:none;}
 .uploadSpin{width:16px;height:16px;border:2px solid var(--br);border-top-color:var(--tl);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
@@ -661,7 +656,13 @@ function renderEditor(){
 function afterRender(){
   var id=S.mode==='wizard'?STEPS[S.wizStep].id:S.clTab;
   if(id==='kaarten')setTimeout(loadCardPreviews,80);
-  if(id==='stijl')setTimeout(renderBgPreview,80);
+  if(id==='stijl'){
+    setTimeout(renderBgPreview,80);
+    // Pre-load active font for live preview
+    var curFont=(S.d.meta.cssVars||{})['--pk-font-family']||'IBM Plex Sans';
+    loadFontForPreview(curFont);
+    setTimeout(updateStijlPreview,120);
+  }
 }
 function switchMode(){
   collectCurrent();
@@ -1024,7 +1025,6 @@ function uploadAndLink(input,ti,folder){
 // ═══════════════════════════════════════════
 function buildVragen(target){
   var themes=S.d.meta.themes||[],q=S.d.questions||{};
-  var backMode=S.d.meta.backMode||'mirror';
   if(!themes.length){
     // No themes: show a simple single question list under "Algemeen"
     target.innerHTML='<div class="panel">'+
@@ -1040,21 +1040,12 @@ function buildVragen(target){
     target.querySelectorAll('.qIn,.qInBack').forEach(function(t){setTimeout(function(){autoH(t);},0);});
     return;
   }
-  var html='<div class="panel">'+
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:9px 12px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--k2)">'+
-      '<span style="font-weight:600;color:var(--k)">Achterkant:</span>'+
-      '<div class="radioGroup" style="gap:4px">'+
-        '<div class="radioOpt'+(backMode==='mirror'?' sel':'')+' bm" data-action="setBackMode" data-v="mirror" style="font-size:11px;padding:3px 9px">Spiegel</div>'+
-        '<div class="radioOpt'+(backMode==='blank'?' sel':'')+' bm" data-action="setBackMode" data-v="blank" style="font-size:11px;padding:3px 9px">Blanco</div>'+
-        '<div class="radioOpt'+(backMode==='custom'?' sel':'')+' bm" data-action="setBackMode" data-v="custom" style="font-size:11px;padding:3px 9px">Eigen tekst</div>'+
-      '</div>'+
-      '<span style="color:var(--k3);font-size:10.5px">Per thema aanpasbaar via dropdown</span>'+
-    '</div>';
+  var html='<div class="panel">';
   themes.forEach(function(th){
     var qs=q[th.key]||[],cnt=qs.length;
     var cardPath='sets/'+S.activeId+'/cards/'+(th.card||(th.key+'.svg'));
     var cached=CC[cardPath];
-    var prevHtml=cached&&cached.dataUrl?'<div class="thPrev"><img src="'+cached.dataUrl+'"></div>':'';
+    var prevHtml='<div class="thCardBig">'+(cached&&cached.dataUrl?'<img src="'+cached.dataUrl+'">':'')+'<div class="thCardBigLabel">'+esc(th.label||th.key)+'</div></div>';
     html+='<div class="thSec"><div class="thSH">'+prevHtml+'<h4>'+esc(th.label||th.key)+'</h4>'+
       '<div style="display:flex;align-items:center;gap:5px;margin-left:auto">'+
         '<span style="font-size:11px;color:var(--tld)">'+cnt+'</span>'+
@@ -1102,16 +1093,7 @@ function buildQRow(key,qi,card){
   var fontFamily=(S.d.meta.cssVars||{})['--pk-font-family']||'IBM Plex Sans';
   var fontColor=(S.d.meta.cssVars||{})['--pk-font-color']||'#1a1a2e';
   var bgImg=cached&&cached.dataUrl?'url('+cached.dataUrl+')':'none';
-  var miniCard='<div class="qMiniCard" title="Hover om achterkant te zien">'+
-    '<div class="qMiniCardFront" style="background-color:'+esc(accent)+'">'+
-      '<div class="qMiniCardBg" style="background-image:'+bgImg+'"></div>'+
-      '<div class="qMiniCardTxt" id="qmct-'+esc(key)+'-'+qi+'" style="color:'+esc(fontColor)+';font-family:'+esc(fontFamily)+',sans-serif">'+esc(front||'Vraag…')+'</div>'+
-    '</div>'+
-    '<div class="qMiniCardBack">'+
-      '<div class="qMiniCardBackTxt" id="qmcb-'+esc(key)+'-'+qi+'" style="color:'+esc(fontColor)+';font-family:'+esc(fontFamily)+',sans-serif">'+esc(back||'Achterkant…')+'</div>'+
-    '</div>'+
-  '</div>';
-  return '<div class="qRow">'+miniCard+'<span class="qNum">'+(qi+1)+'</span>'+
+  return '<div class="qRow"><span class="qNum">'+(qi+1)+'</span>'+
     '<div class="qFields">'+
       '<textarea class="qIn" rows="1" placeholder="Voorkant — de vraag" oninput="updQ(\''+esc(key)+'\','+qi+',\'voorkant\',this.value);autoH(this);updCC(this,'+MAX+');liveQPrev(\''+esc(key)+'\','+qi+',\'f\',this.value)">'+esc(front)+'</textarea>'+
       '<div class="charCount'+(fcCls?' '+fcCls:'')+'" id="cc-f-'+key+'-'+qi+'">'+fc+'/'+MAX+'</div>'+
@@ -1120,11 +1102,7 @@ function buildQRow(key,qi,card){
     '</div>'+
     '<button class="qDel" data-action="delq" data-key="'+esc(key)+'" data-qi="'+qi+'" title="Vraag verwijderen">&#10005;</button></div>';
 }
-function liveQPrev(key,qi,side,val){
-  var elId=side==='f'?('qmct-'+key+'-'+qi):('qmcb-'+key+'-'+qi);
-  var el=document.getElementById(elId);
-  if(el)el.textContent=val||(side==='f'?'Vraag\u2026':'Achterkant\u2026');
-}
+
 function showBulkImport(key){
   var th=S.d.meta.themes.find(function(t){return t.key===key;})||{};
   showModal('<h3>Bulk importeren — '+esc(th.label||key)+'</h3>'+
@@ -1356,15 +1334,18 @@ function buildStijl(target){
     '<hr class="sep">'+
     // TEKSTKLEUR
     '<div class="sLbl">Tekstkleur</div>'+
-    '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:5px">'+
-      ['#1a1a2e','#ffffff','#f5f5f5','#2d3436','#4f8e9e','#c0392b','#27ae60'].map(function(cl){
-        var sel=curFontColor.toLowerCase()===cl.toLowerCase();
-        return '<div class="sw'+(sel?' sel':'')+'" style="background:'+cl+';border:2px solid '+(sel?'var(--tl)':'var(--br)')+'" data-action="setFontColor" data-v="'+cl+'" title="'+cl+'"></div>';
-      }).join('')+
-    '</div>'+
-    '<div class="cPair" style="margin-top:3px;max-width:220px">'+
-      '<input type="color" id="fc_cp" value="'+esc(curFontColor)+'" oninput="fontColorLive(this)">'+
+
+    '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">'+
+      '<div class="colorSwatch" id="fc_preview" style="width:28px;height:28px;border-radius:5px;border:2px solid var(--br);background:'+esc(curFontColor)+';flex-shrink:0;cursor:pointer" onclick="toggleCpPanel()" title="Klik voor kleurenkiezer"></div>'+
       '<input type="text" class="fIn" id="fc_ch" value="'+esc(curFontColor)+'" placeholder="#1a1a2e" style="max-width:110px" oninput="fontColorHexLive(this)">'+
+    '</div>'+
+    '<div id="cpPanel" style="display:none;margin-top:6px;padding:8px;background:var(--sf);border:1px solid var(--br);border-radius:8px;max-width:280px">'+
+      '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">'+
+      ['#1a1a2e','#2d3436','#ffffff','#f5f5f5','#eae8e0','#4f8e9e','#3a7d8c','#c0392b','#e74c3c','#27ae60','#2ecc71','#f39c12','#8e44ad','#6c5ce7','#fd79a8','#00b894'].map(function(cl){
+        return '<div style="width:22px;height:22px;border-radius:4px;background:'+cl+';border:2px solid '+(curFontColor.toLowerCase()===cl.toLowerCase()?'var(--tl)':'transparent')+';cursor:pointer" data-action="setFontColor" data-v="'+cl+'" title="'+cl+'"></div>';
+      }).join('')+
+      '</div>'+
+      '<input type="color" id="fc_cp" value="'+esc(curFontColor)+'" style="width:100%;height:28px;border:1px solid var(--br);border-radius:5px;cursor:pointer;padding:0" oninput="fontColorLive(this)" title="Kies eigen kleur">'+
     '</div>'+
     '<hr class="sep">'+
     // UITLIJNING
@@ -1454,6 +1435,17 @@ function renderFontGrid(cat,search){
     return '<button class="fontPill'+(sel?' sel':'')+'" data-action="setFont" data-f="'+f[0]+'" style="font-family:'+f[0]+',sans-serif;font-size:12.5px;padding:4px 11px;border-radius:20px;border:1.5px solid '+(sel?'var(--tl)':'var(--br)')+';background:'+(sel?'var(--tlp)':'white')+';cursor:pointer;transition:all .12s;color:'+(sel?'var(--tld)':'var(--k)')+';white-space:nowrap">'+f[0]+'</button>';
   }).join('');
 }
+// Load Google Font on demand for preview
+var _loadedFonts={};
+function loadFontForPreview(fontName){
+  if(!fontName||_loadedFonts[fontName])return;
+  _loadedFonts[fontName]=true;
+  var link=document.createElement('link');
+  link.rel='stylesheet';
+  link.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(fontName).replace(/%20/g,'+').replace(/%3A/g,':')+'&display=swap';
+  document.head.appendChild(link);
+}
+
 function fontColorLive(el){
   var v=el.value;
   setCV('--pk-font-color',v);markDirty();
@@ -1461,6 +1453,7 @@ function fontColorLive(el){
   var scl=document.getElementById('stijlCardLabel');if(scl)scl.style.color=v;
   document.querySelectorAll('[id^="fpCard-"]').forEach(function(el2){el2.style.color=v;});
 }
+function toggleCpPanel(){var p=g('cpPanel');if(p)p.style.display=p.style.display==='none'?'':'none';}
 function fontColorHexLive(el){
   var v=el.value.trim();
   if(/^#[0-9a-fA-F]{3}$/.test(v))v='#'+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
@@ -1474,6 +1467,19 @@ function updateStijlPreview(){
   var txt=document.getElementById('stijlPreviewTxt');
   var lbl=document.getElementById('stijlCardLabel');
   if(txt&&lbl)lbl.textContent=txt.value||'Voorbeeldtekst';
+  var cv=S.d.meta.cssVars||{};
+  var ff=cv['--pk-font-family']||'IBM Plex Sans';
+  var fc=cv['--pk-font-color']||'#1a1a2e';
+  if(lbl){lbl.style.fontFamily="'"+ff+"',sans-serif";lbl.style.color=fc;}
+  // Also update preview bg card image
+  var prevBg=document.getElementById('stijlCardBg');
+  var themes=S.d.meta.themes||[];
+  if(prevBg&&themes.length){
+    var th=themes[0];
+    var cp2='sets/'+S.activeId+'/cards/'+(th.card||(th.key+'.svg'));
+    var cch=CC[cp2];
+    if(cch&&cch.dataUrl)prevBg.style.backgroundImage='url('+cch.dataUrl+')';
+  }
 }
 function updateStijlPreviewAlign(){
   var cv2=S.d.meta.cssVars||{};
