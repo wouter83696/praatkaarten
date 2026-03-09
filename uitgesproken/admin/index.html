@@ -29,6 +29,9 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .sNote ol{padding-left:14px;margin-top:4px}
 .sNote li{margin-bottom:2px}
 
+/* ── LOADING BAR ── */
+#loadBar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--tl);z-index:999;transition:width .25s ease,opacity .4s ease;opacity:0;pointer-events:none;border-radius:0 2px 2px 0}
+#loadBar.on{opacity:1}
 /* ── MAIN ── */
 #app{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:var(--sb);flex-shrink:0;background:var(--sf);border-right:1px solid var(--br);display:flex;flex-direction:column;overflow:hidden}
@@ -380,6 +383,7 @@ input[type=file]{display:none}
 </head>
 <body>
 
+<div id="loadBar"></div>
 <div id="setup">
   <div class="sCard">
     <div class="logo">
@@ -388,9 +392,9 @@ input[type=file]{display:none}
     </div>
     <h1>Verbinden met GitHub</h1>
     <p>Vul je repository en een Personal Access Token in. Je gegevens worden lokaal opgeslagen.</p>
-    <div class="field"><label>Repository (eigenaar/naam)</label><input id="iRepo" type="text" placeholder="jouw-naam/uitgesproken" class="fIn" spellcheck="false" autocomplete="off"></div>
-    <div class="field"><label>Personal Access Token</label><input id="iToken" type="password" placeholder="ghp_xxxxxxxxxxxx" class="fIn" autocomplete="off"></div>
-    <button class="btn full" id="conBtn" onclick="connect()">Verbinden</button>
+    <div class="field"><label>Repository (eigenaar/naam)</label><input id="iRepo" type="text" placeholder="jouw-naam/uitgesproken" class="fIn" spellcheck="false" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('iToken').focus()"></div>
+    <div class="field"><label>Personal Access Token</label><input id="iToken" type="password" placeholder="ghp_xxxxxxxxxxxx" class="fIn" autocomplete="off" onkeydown="if(event.key==='Enter')connect()"></div>
+    <button class="btn full" id="conBtn" type="button" onclick="connect()">Verbinden</button>
     <div class="sNote">
       <strong>Classic token (aanbevolen):</strong>
       <ol>
@@ -507,16 +511,52 @@ function connect(){
   if(!repo||!token){toast('Vul beide velden in','red');return;}
   var btn=g('conBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Verbinden…';
   S.repo=repo;S.token=token;localStorage.setItem('pk_cfg',JSON.stringify({repo:repo,token:token}));
-  loadIndex().catch(function(e){btn.disabled=false;btn.innerHTML='Verbinden';toast('Verbinding mislukt: '+e.message,'red');show('setup');hide('app');});
+  lbStart();
+  loadIndex().catch(function(e){
+    btn.disabled=false;btn.innerHTML='Verbinden';
+    var em=e.message||'';
+    if(em.indexOf('401')>=0||em.toLowerCase().indexOf('unauthorized')>=0||em.toLowerCase().indexOf('bad cred')>=0)
+      toast('Token ongeldig of verlopen — controleer je token','red');
+    else if(em.indexOf('404')>=0)
+      toast('Repository niet gevonden — controleer eigenaar/naam','red');
+    else
+      toast('Verbinding mislukt: '+em,'red');
+    lbFail();show('setup');hide('app');
+  });
 }
 function disconnect(){localStorage.removeItem('pk_cfg');location.reload();}
 
+
+// ─── LOADING BAR ─────────────────────────────────────────────────────────────
+var _lbTimer=null,_lbVal=0;
+function lbStart(){
+  var b=g('loadBar');if(!b)return;
+  clearInterval(_lbTimer);_lbVal=0;
+  b.style.transition='none';b.style.width='0%';b.classList.add('on');
+  setTimeout(function(){
+    b.style.transition='width .25s ease,opacity .4s ease';
+    _lbTimer=setInterval(function(){
+      // Slow approach to 90% — never completes automatically
+      var step=_lbVal<30?4:_lbVal<60?2:_lbVal<85?0.8:0.2;
+      _lbVal=Math.min(_lbVal+step,90);
+      b.style.width=_lbVal+'%';
+    },100);
+  },20);
+}
+function lbDone(){
+  var b=g('loadBar');if(!b)return;
+  clearInterval(_lbTimer);_lbTimer=null;_lbVal=100;
+  b.style.width='100%';
+  setTimeout(function(){b.classList.remove('on');setTimeout(function(){b.style.width='0%';},400);},280);
+}
+function lbFail(){var b=g('loadBar');if(!b)return;clearInterval(_lbTimer);b.style.background='var(--rd)';lbDone();setTimeout(function(){b.style.background='var(--tl)';},800);}
 // ═══════════════════════════════════════════
 // INDEX
 // ═══════════════════════════════════════════
 function loadIndex(){
   show('app');hide('setup');g('sbRepo').textContent=S.repo;
-  return getFile('sets/index.json').then(function(r){S.sets=r.data.sets||[];S.indexSha=r.sha;S.indexData=r.data;renderSidebar();});
+  g('mc').innerHTML='<div class="welcome"><span class="spinner" style="border-color:rgba(79,142,158,.3);border-top-color:var(--tl);width:22px;height:22px;border-width:2.5px"></span><p style="font-size:12px;color:var(--k3);margin-top:10px">Sets laden…</p></div>';
+  return getFile('sets/index.json').then(function(r){S.sets=r.data.sets||[];S.indexSha=r.sha;S.indexData=r.data;lbDone();renderSidebar();});
 }
 function saveIndex(msg){S.indexData.sets=S.sets;return saveFile('sets/index.json',S.indexData,S.indexSha,msg||'Update index').then(function(r){S.indexSha=(r.content||{}).sha||S.indexSha;});}
 
@@ -580,7 +620,7 @@ function reqLoad(id){
 }
 function loadSet(id){
   S.activeId=id;S.dirty=false;S.wizStep=0;S.clTab='basis';
-  renderSidebar();
+  lbStart();renderSidebar();
   g('mc').innerHTML='<div class="welcome"><span class="spinner" style="border-color:rgba(79,142,158,.3);border-top-color:var(--tl);width:20px;height:20px;border-width:2.5px"></span></div>';
   Promise.all([
     getFile('sets/'+id+'/meta.json').catch(function(){return{data:mkMeta(id),sha:null};}),
@@ -600,11 +640,11 @@ function loadSet(id){
       window._pd=draft;return;
     }
     afterLoad(id);
-  }).catch(function(e){toast('Laden mislukt: '+e.message,'red');});
+  }).catch(function(e){lbFail();toast('Laden mislukt: '+e.message,'red');});
 }
 function restoreDraft(){S.d=window._pd.data;lsDel('pk_draft_'+S.activeId);afterLoad(S.activeId,lsGet('pk_mode_'+S.activeId)||'checklist');}
 function discardDraft(){lsDel('pk_draft_'+S.activeId);afterLoad(S.activeId,lsGet('pk_mode_'+S.activeId)||'checklist');}
-function afterLoad(id,mode){S.mode=mode||lsGet('pk_mode_'+id)||'checklist';startAutoSave();var hasMeta=S.d.meta&&S.d.meta.title;if(hasMeta){renderEditor();}else{showModeChoice();}}
+function afterLoad(id,mode){lbDone();S.mode=mode||lsGet('pk_mode_'+id)||'checklist';startAutoSave();var hasMeta=S.d.meta&&S.d.meta.title;if(hasMeta){renderEditor();}else{showModeChoice();}}
 function startAutoSave(){
   clearInterval(asTimer);
   asTimer=setInterval(function(){
@@ -805,13 +845,61 @@ function buildKaarten(target){
   var allCards=[{key:'voorkant',label:'Cover',cf:'voorkant.svg',ic:true}].concat(themes.map(function(t,i){return{key:t.key,label:t.label||t.key,cf:t.card||(t.key+'.svg'),ti:i};}));
   var html='<div class="panel"><p class="cSub">Klik op een tegel of sleep een SVG/PNG erop. Met <strong>Koppel</strong> kies je een al geüpload bestand voor een thema.'+(themes.length===0?' Voeg thema\'s toe om kaartafbeeldingen per thema in te stellen.':'')+'</p>';
   ['cards','cards_rect'].forEach(function(folder){
-    html+='<div class="folH">'+(folder==='cards'?'🃏 cards/ — liggende kaarten (85×55)':'📎 cards_rect/ — staande thumbnails (menu)')+'</div><div class="cGrid" id="cg-'+folder+'">';
+    var folderLabel=folder==='cards'?'🃏 Kaartafbeeldingen':'📎 Menu-thumbnails';
+    html+='<div class="folH">'+folderLabel+'</div><div class="cGrid" id="cg-'+folder+'">';
     allCards.forEach(function(card){html+=buildCTile(card,folder,'sets/'+id+'/'+folder+'/'+card.cf);});
     html+='</div>';
   });
+  // Loose file upload section
+  html+='<div class="folH" style="margin-top:10px">📂 Los bestand uploaden</div>'+
+    '<div style="background:var(--bg);border:1.5px dashed var(--br);border-radius:8px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px">'+
+    '<div style="flex:1;min-width:180px">'+
+      '<div style="font-size:12px;color:var(--k2);margin-bottom:4px">Upload een SVG of PNG naar een map naar keuze</div>'+
+      '<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">'+
+        '<select id="looseFolder" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:inherit;font-size:12px;background:white;color:var(--k)">'+
+          '<option value="cards">Kaartafbeeldingen (cards/)</option>'+
+          '<option value="cards_rect">Menu-thumbnails (cards_rect/)</option>'+
+        '</select>'+
+        '<label class="btn" style="cursor:pointer;padding:6px 12px;font-size:12px">'+
+          '+ Bestand kiezen'+
+          '<input type="file" accept=".svg,.png,image/svg+xml,image/png" id="looseFileIn" style="display:none" onchange="uploadLooseFile(this)">'+
+        '</label>'+
+      '</div>'+
+    '</div>'+
+    '<div style="font-size:11px;color:var(--k3);max-width:200px;line-height:1.5">Je kunt daarna via <strong>Koppel</strong> een thema aan dit bestand koppelen.</div>'+
+    '</div>';
   target.innerHTML=html+'</div>';
 }
-function buildCTile(card,folder,path){
+function uploadLooseFile(input){
+  var file=input.files&&input.files[0];if(!file){return;}
+  var folder=g('looseFolder');var folderName=folder?folder.value:'cards';
+  var id=S.activeId,fn=file.name.replace(/[^a-zA-Z0-9._-]/g,'-');
+  var path='sets/'+id+'/'+folderName+'/'+fn;
+  var isPng=/\.png$/i.test(file.name);
+  input.value='';
+  if(isPng){
+    var reader=new FileReader();
+    reader.onload=function(e){showCropModal(e.target.result,path,safeid(path),false);};
+    reader.readAsDataURL(file);
+  } else {
+    var reader2=new FileReader();
+    reader2.onload=function(e){
+      var raw=e.target.result,b64=btoa(encode(raw));
+      var dataUrl='data:image/svg+xml;base64,'+b64;
+      toast('<span class="spinner" style="border-color:rgba(79,142,158,.3);border-top-color:var(--tl);display:inline-block;vertical-align:middle;margin-right:5px"></span> Uploaden…');
+      var body={message:'Upload: '+fn,content:b64};var ex=CC[path];if(ex)body.sha=ex.sha;
+      api('/contents/'+path,'PUT',body).then(function(res){
+        CC[path]={sha:(res.content||{}).sha,dataUrl:dataUrl};
+        delete KF['sets/'+id+'/'+folderName];
+        toast('✓ '+fn+' geüpload','green');
+        // Rebuild the tab so the file appears
+        var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
+        setTimeout(loadCardPreviews,80);
+      }).catch(function(err){toast('Fout: '+err.message,'red');});
+    };
+    reader2.readAsText(file);
+  }
+}
   var sid=safeid(path),cached=CC[path];
   var isSq=folder==='cards'; // cards/ folder has square SVGs
   var sqCls=isSq?' sq':'';
