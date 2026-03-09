@@ -4,21 +4,34 @@
   <ns0:defs>
     <ns0:style>
       .st0 {
-        fill: #b6dccb;
-        isolation: isolate;
-        opacity: .85;
+        fill: none;
       }
 
       .st1 {
-        fill: #f8f9f9;
+        fill: #aebee3;
+        isolation: isolate;
+        opacity: .9;
       }
 
       .st2 {
-        fill: #cfe6d8;
+        fill: #cad6ef;
+      }
+
+      .st3 {
+        fill: #f8f9f9;
+      }
+
+      .st4 {
+        clip-path: url(#clippath);
       }
     </ns0:style>
+    <ns0:clipPath id="clippath">
+      <ns0:rect class="st0" width="240.94" height="155.91" />
+    </ns0:clipPath>
   </ns0:defs>
-  <ns0:rect class="st1" y="0" width="240.94" height="155.91" rx="0" ry="0" />
-  <ns0:circle class="st2" cx="-14.17" cy="-8.5" r="85.04" />
-  <ns0:path class="st0" d="M219.21-13.55h0c21.92,0,39.69,17.77,39.69,39.69v104.88c0,21.92-17.77,39.69-39.69,39.69h0c-21.92,0-39.69-17.77-39.69-39.69V26.13c0-21.92,17.77-39.69,39.69-39.69h0Z" />
+  <ns0:g class="st4">
+    <ns0:rect class="st3" width="240.94" height="155.91" rx="0" ry="0" />
+    <ns0:path class="st2" d="M226.6-17.01h51.02v189.92h-51.02c-39.69,0-68.03-25.51-68.03-62.36V-17.01c0-39.69,28.35-62.36,68.03-62.36V-17.01h0Z" />
+    <ns0:path class="st1" d="M-28.35,133.23c62.36-17.01,96.38-5.67,136.06,17.01,28.35,17.01,56.69,28.35,107.72,34.02v45.35H-56.69l28.35-96.38h-.01Z" />
+  </ns0:g>
 </ns0:svg>
