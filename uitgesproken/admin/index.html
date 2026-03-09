@@ -186,8 +186,8 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .cpBg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .cpBgEmpty{position:absolute;inset:0}
 .cpOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px}
-.cpFront{font-size:12px;font-weight:600;color:#fff;text-align:center;line-height:1.35;text-shadow:0 1px 3px rgba(0,0,0,.45),0 0 8px rgba(0,0,0,.3);width:100%;word-break:break-word;padding:6px;max-height:90%;overflow:hidden}
-.cpHint{opacity:.5;font-weight:400}
+.cpFront{font-size:12pt;font-weight:600;text-align:center;line-height:1.35;width:100%;word-break:break-word;padding:6px;max-height:100%;overflow:hidden}
+.cpHint{opacity:.4;font-weight:400;color:var(--k2)}
 .cpLabel{font-size:10px;color:var(--k3);text-align:center;margin-top:5px;letter-spacing:.02em}
 .cpSide{display:flex;gap:4px;justify-content:center;margin-top:5px}
 .cpBtn{padding:3px 10px;font-size:11px;border:1.5px solid var(--br);border-radius:5px;background:white;cursor:pointer;color:var(--k2);font-family:inherit}
@@ -281,8 +281,9 @@ input[type=file]{display:none}
 .bgWrap{display:flex;gap:14px;align-items:flex-start;margin-top:4px}
 .bgCtrls{flex:0 0 258px;display:flex;flex-direction:column;gap:9px}
 .bgPrev{flex:1;min-width:0;position:sticky;top:0}
-.bgCanvas{width:100%;min-height:180px;aspect-ratio:4/3;border-radius:8px;overflow:hidden;border:1px solid var(--br);background:var(--bg);position:relative}
+.bgCanvas{width:100%;min-height:180px;aspect-ratio:9/16;border-radius:8px;overflow:hidden;border:1px solid var(--br);background:#F8FAFA;position:relative}
 .bgCanvas canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
+.bgPrev{flex:0 0 160px}
 .bgHint{font-size:10px;color:var(--k3);text-align:center;margin-top:4px}
 .ctrlG{background:var(--bg);border-radius:7px;padding:9px 10px}
 .ctrlG>.cgT{display:block;font-size:9.5px;font-weight:600;color:var(--k2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}
@@ -438,7 +439,7 @@ var STEPS=[
   {id:'themas',  label:"Thema's",    fn:buildThemas},
   {id:'kaarten', label:'Kaarten',    fn:buildKaarten},
   {id:'vragen',  label:'Vragen',     fn:buildVragen},
-  {id:'info',    label:'Info',       fn:buildInfo},
+  {id:'info',    label:'Infosheet',  fn:buildInfo},
   {id:'stijl',   label:'Stijl',      fn:buildStijl},
   {id:'inst',    label:'Instellingen',fn:buildInst}
 ];
@@ -733,11 +734,8 @@ function collectCurrent(){
 function buildBasis(target){
   var m=S.d.meta||{};
   target.innerHTML='<div class="panel">'+
-    '<div class="fGrid2">'+
     fR('Naam van de set','text','b_title',m.title||'','bijv. "Samen onderzoeken"')+
-    fR('Set-ID (slug)','text','b_id',m.id||S.activeId,'',true)+
-    '</div>'+
-    '<p class="fHint" style="margin-top:6px">De naam en ID zijn de basis van je set. Kleuren en stijl stel je in via het tabblad <strong>Stijl</strong> nadat je kaarten hebt geüpload.</p></div>';
+    '<p class="fHint" style="margin-top:8px">Geef je set een herkenbare naam. Kleuren en stijl stel je in bij <strong>Stijl</strong>.</p></div>';
   g('b_title').oninput=function(){S.d.meta.title=this.value;markDirty();};
 }
 function setCV(k,v){S.d.meta.cssVars=S.d.meta.cssVars||{};S.d.meta.cssVars[k]=v;markDirty();}
@@ -787,9 +785,8 @@ function initThDrag(){
 // ═══════════════════════════════════════════
 function buildKaarten(target){
   var themes=S.d.meta.themes||[],id=S.activeId;
-  if(!themes.length){target.innerHTML='<div class="panel"><div class="empty"><p>Maak eerst thema\'s aan voordat je kaarten kunt koppelen.</p><button class="btn" onclick="'+(S.mode==='wizard'?'wizJump(1)':'switchTab(\'themas\')')+'">Naar Thema\'s</button></div></div>';return;}
   var allCards=[{key:'voorkant',label:'Cover',cf:'voorkant.svg',ic:true}].concat(themes.map(function(t,i){return{key:t.key,label:t.label||t.key,cf:t.card||(t.key+'.svg'),ti:i};}));
-  var html='<div class="panel"><p class="cSub">Klik op een tegel of sleep een SVG/PNG erop. Met <strong>Koppel</strong> kies je een al geüpload bestand voor een thema.</p>';
+  var html='<div class="panel"><p class="cSub">Klik op een tegel of sleep een SVG/PNG erop. Met <strong>Koppel</strong> kies je een al geüpload bestand voor een thema.'+(themes.length===0?' Voeg thema\'s toe om kaartafbeeldingen per thema in te stellen.':'')+'</p>';
   ['cards','cards_rect'].forEach(function(folder){
     html+='<div class="folH">'+(folder==='cards'?'🃏 cards/ — liggende kaarten (85×55)':'📎 cards_rect/ — staande thumbnails (menu)')+'</div><div class="cGrid" id="cg-'+folder+'">';
     allCards.forEach(function(card){html+=buildCTile(card,folder,'sets/'+id+'/'+folder+'/'+card.cf);});
@@ -918,7 +915,7 @@ function buildVragen(target){
           '<div class="cardFace" id="cpface-'+esc(th.key)+'">'+
             (imgSrc?'<img class="cpBg" src="'+imgSrc+'" alt="'+esc(th.label||th.key)+'">':'<div class="cpBgEmpty" style="background:'+esc(accentColor)+'"></div>')+
             '<div class="cpOverlay">'+
-              '<div class="cpFront" id="cpfront-'+esc(th.key)+'">'+(qs[0]&&qs[0].voorkant?esc(qs[0].voorkant):'<span class="cpHint">Voorkant tekst</span>')+'</div>'+
+              '<div class="cpFront" id="cpfront-'+esc(th.key)+'" style="font-family:\''+esc((S.d.meta.cssVars||{})['--pk-font']||'IBM Plex Sans')+'\',sans-serif;font-size:'+esc(FONT_SIZE_PX[(S.d.meta.cssVars||{})['--pk-font-size']||'md']||'12pt')+';color:'+esc((S.d.meta.cssVars||{})['--pk-set-text']||'#1a1a2e')+'">'+(qs[0]&&qs[0].voorkant?esc(qs[0].voorkant):'<span class="cpHint">Voorkant tekst</span>')+'</div>'+
             '</div>'+
           '</div>'+
           '<div class="cpLabel">Live kaartpreview</div>'+
@@ -993,6 +990,11 @@ function updateCardPreview(key,frontTxt,backTxt){
   var txt=isBack?(backTxt||frontTxt||''):frontTxt||'';
   var frontEl=g('cpfront-'+key);if(!frontEl)return;
   frontEl.innerHTML=txt?esc(txt):'<span class="cpHint">'+(isBack?'Achterkant':'Voorkant')+'</span>';
+  // Apply current set font/color
+  var cv=(S.d.meta||{}).cssVars||{};
+  frontEl.style.fontFamily="'"+(cv['--pk-font']||'IBM Plex Sans')+"', sans-serif";
+  frontEl.style.fontSize=FONT_SIZE_PX[cv['--pk-font-size']||'md']||'12pt';
+  frontEl.style.color=cv['--pk-set-text']||'#1a1a2e';
 }
 function buildQRow(key,qi,card){
   var front=card.voorkant||card.q||'', back=card.achterkant||card.back||'';
@@ -1154,7 +1156,8 @@ var FONT_LIST=[
   'Roboto Slab','Zilla Slab','Bitter','Crete Round','Arvo',
   'Patrick Hand','Caveat','Pacifico','Fredoka','Comfortaa'
 ];
-var FONT_SIZE_OPTS=[{v:'sm',l:'Klein'},{ v:'md',l:'Normaal'},{v:'lg',l:'Groot'},{v:'xl',l:'Zeer groot'}];
+var FONT_SIZE_OPTS=[{v:'sm',l:'10pt'},{v:'md',l:'12pt'},{v:'lg',l:'14pt'},{v:'xl',l:'16pt'}];
+var FONT_SIZE_PX={sm:'10pt',md:'12pt',lg:'14pt',xl:'16pt'};
 
 function buildStijl(target){
   var m=S.d.meta||{};
@@ -1185,21 +1188,20 @@ function buildStijl(target){
       var cardPath=firstTheme?'sets/'+S.activeId+'/cards/'+(firstTheme.card||(firstTheme.key+'.svg')):'sets/'+S.activeId+'/cards/voorkant.svg';
       var ca=CC[cardPath]||CC['sets/'+S.activeId+'/cards/voorkant.svg'];
       var imgSrc=ca&&ca.dataUrl?ca.dataUrl:'';
-      var fsMap={sm:'11px',md:'13px',lg:'15px',xl:'18px'};
-      var fs=fsMap[curFontSize]||'13px';
+      var fs=FONT_SIZE_PX[curFontSize]||'12pt';
       var sampleQ=firstTheme&&S.d.questions&&S.d.questions[firstTheme.key]&&S.d.questions[firstTheme.key][0];
       var sampleTxt=sampleQ&&sampleQ.voorkant?sampleQ.voorkant:(firstTheme?firstTheme.label||firstTheme.key:'Voorbeeld tekst');
-      return '<div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:14px">'+
-        '<div style="width:160px;flex-shrink:0">'+
+      return '<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:14px">'+
+        '<div style="width:180px;flex-shrink:0">'+
           '<div id="stijlCardPrev" style="aspect-ratio:85/55;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.12);position:relative;background:'+accent+'">'+
-            (imgSrc?'<img style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block" src="'+imgSrc+'">':'')+
-            '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px">'+
-              '<div style="font-family:\''+esc(curFont)+'\',sans-serif;font-size:'+fs+';font-weight:600;color:'+esc(textColor)+';text-align:center;line-height:1.35;text-shadow:0 1px 2px rgba(255,255,255,.5);word-break:break-word">'+esc(sampleTxt)+'</div>'+
+            (imgSrc?'<img id="stijlCardImg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block" src="'+imgSrc+'">':'')+
+            '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10px">'+
+              '<div id="stijlCardTxt" style="font-family:\''+esc(curFont)+'\',sans-serif;font-size:'+fs+';font-weight:600;color:'+esc(textColor)+';text-align:center;line-height:1.35;word-break:break-word;max-height:100%;overflow:hidden">'+esc(sampleTxt)+'</div>'+
             '</div>'+
           '</div>'+
           '<div style="font-size:10px;color:var(--k3);text-align:center;margin-top:4px">Kaartpreview</div>'+
         '</div>'+
-        '<div style="flex:1;font-size:11.5px;color:var(--k2);line-height:1.6">Pas lettertype, grootte en kleuren aan. De preview links toont hoe een kaart eruitziet.</div>'+
+        '<div style="flex:1;font-size:11.5px;color:var(--k2);line-height:1.6;padding-top:4px">Pas lettertype, grootte en kleuren aan.<br>De preview toont hoe een kaart eruitziet.</div>'+
       '</div>';
     })()+
 
@@ -1227,10 +1229,10 @@ function buildStijl(target){
 
   target.innerHTML=html;
 
-  g('s_cp').oninput=function(){g('s_ch').value=this.value;setCV('--pk-set-accent',this.value);scheduleBg();};
-  g('s_ch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_cp').value=v;setCV('--pk-set-accent',v);scheduleBg();}markDirty();};
-  g('s_tcp').oninput=function(){g('s_tch').value=this.value;setCV('--pk-set-text',this.value);markDirty();};
-  g('s_tch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_tcp').value=v;setCV('--pk-set-text',v);markDirty();}};
+  g('s_cp').oninput=function(){g('s_ch').value=this.value;setCV('--pk-set-accent',this.value);scheduleBg();updateStijlPreview();};
+  g('s_ch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_cp').value=v;setCV('--pk-set-accent',v);scheduleBg();updateStijlPreview();}markDirty();};
+  g('s_tcp').oninput=function(){g('s_tch').value=this.value;setCV('--pk-set-text',this.value);markDirty();updateStijlPreview();};
+  g('s_tch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_tcp').value=v;setCV('--pk-set-text',v);markDirty();updateStijlPreview();}};
 
   var fontLink=document.getElementById('fontPreviewLink');
   if(!fontLink){fontLink=document.createElement('link');fontLink.rel='stylesheet';fontLink.id='fontPreviewLink';document.head.appendChild(fontLink);}
@@ -1244,6 +1246,18 @@ function setFontLive(val){
   var fontLink=document.getElementById('fontPreviewLink');
   if(!fontLink){fontLink=document.createElement('link');fontLink.rel='stylesheet';fontLink.id='fontPreviewLink';document.head.appendChild(fontLink);}
   fontLink.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(val)+':wght@400;500;600&display=swap';
+  updateStijlPreview();
+}
+function updateStijlPreview(){
+  var txt=g('stijlCardTxt');if(!txt)return;
+  var m=S.d.meta||{};
+  var cv=m.cssVars||{};
+  var font=cv['--pk-font']||'IBM Plex Sans';
+  var fs=FONT_SIZE_PX[cv['--pk-font-size']||'md']||'12pt';
+  var color=cv['--pk-set-text']||'#1a1a2e';
+  txt.style.fontFamily="'"+font+"', sans-serif";
+  txt.style.fontSize=fs;
+  txt.style.color=color;
 }
 
 function bgCfg(){var m=S.d.meta;m.ui=m.ui||{};m.ui.index=m.ui.index||{};m.ui.index.background=m.ui.index.background||{};return m.ui.index.background;}
@@ -1295,14 +1309,14 @@ function wireBgCtrls(){
 }
 function scheduleBg(){clearTimeout(bgTimer);bgTimer=setTimeout(renderBgPreview,90);}
 
-// Canvas BG preview
+// Canvas BG preview — simulates 9:16 mobile viewport
 function renderBgPreview(){
   requestAnimationFrame(function(){
     var canvas=g('bgCanvas');if(!canvas)return;
     var wrap=g('bgWrap');if(!wrap)return;
     var W2=Math.round(wrap.getBoundingClientRect().width)||wrap.offsetWidth||300;
     if(W2<20){setTimeout(renderBgPreview,100);return;}
-    var H2=Math.round(W2*.75);
+    var H2=Math.round(W2*16/9); // 9:16 portrait like mobile
     canvas.width=W2*2;canvas.height=H2*2;canvas.style.width=W2+'px';canvas.style.height=H2+'px';
     var ctx=canvas.getContext('2d');if(!ctx)return;var W=W2*2,H=H2*2;
     var bg=bgCfg(),accent=(S.d.meta.cssVars||{})['--pk-set-accent']||'#F3D7A3';
@@ -1312,7 +1326,7 @@ function renderBgPreview(){
     var sizeScale=typeof bg.sizeScale==='number'?bg.sizeScale:1;
     var irr=typeof bg.blobIrregularity==='number'?bg.blobIrregularity:0.35;
     var spread=bg.blobSpread||'organic';
-    ctx.fillStyle='#F4F7F5';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#F8FAFA';ctx.fillRect(0,0,W,H); // match actual app bg
     var seed=0;pal.forEach(function(c){for(var i2=0;i2<c.length;i2++)seed=((seed*31+c.charCodeAt(i2))|0)>>>0;});
     var rnd=prng(seed+count*997);
     var pos=[];
@@ -1321,7 +1335,8 @@ function renderBgPreview(){
     for(var i=0;i<count;i++){
       var raw=pal[i%pal.length],rgb=h2r(raw),hsl=r2h(rgb[0],rgb[1],rgb[2]);
       var warm=(hsl[0]>=0&&hsl[0]<=70)||(hsl[0]>=290&&hsl[0]<=360),amt=warm?.28:.22;if(hsl[2]>.75)amt=warm?.36:.32;
-      var alpha=Math.min(((warm?.19:.24)+rnd()*.10)*alphaBoost,.68),radius=(Math.min(W,H)*(.10+rnd()*.18))*sizeScale;
+      // Use W (width) for radius like actual app on portrait screens
+      var alpha=Math.min(((warm?.19:.24)+rnd()*.10)*alphaBoost,.68),radius=(W*(.12+rnd()*.18))*sizeScale;
       ctx.globalAlpha=alpha;ctx.fillStyle=mixW(raw,amt);
       if(spread==='circle'){ctx.beginPath();ctx.arc(pos[i].x,pos[i].y,radius,0,Math.PI*2);ctx.closePath();ctx.fill();}
       else if(spread==='triangle'){triPath(ctx,pos[i].x,pos[i].y,radius,rnd);ctx.fill();}
@@ -1347,22 +1362,22 @@ function buildInst(target){
   var menu=m.ui&&m.ui.menu||{};
   var sheet=m.ui&&m.ui.sheet||{};
   var backMode=m.backMode||'mirror';
-  var blankText=m.blankBackText||'';
   var blankColor=m.blankBackColor||'#F8E4D2';
   function togHtml(id,label,checked,sub){
     return '<div class="togRow"><div><label for="'+id+'">'+esc(label)+'</label>'+(sub?'<span class="togRowSub">'+esc(sub)+'</span>':'')+'</div>'+
       '<label class="tog"><input type="checkbox" id="'+id+'"'+(checked?' checked':'')+'><span class="togSl"></span></label></div>';
   }
-  function radioHtml(name,options,current){
-    return '<div class="radioGroup">'+options.map(function(o){return'<div class="radioOpt'+(current===o.v?' sel':'')+'" data-action="radio" data-name="'+esc(name)+'" data-v="'+esc(o.v)+'">'+esc(o.l)+'</div>';}).join('')+'</div>';
-  }
 
-  // Simple clean back-mode options
+  // Check if any questions have achterkant filled
+  var hasAchterkant=Object.values(S.d.questions||{}).some(function(qs){
+    return Array.isArray(qs)&&qs.some(function(q){return q.achterkant&&q.achterkant.trim();});
+  });
+
+  // Back mode: only mirror vs blanco
   var backHtml='<div class="togGroup" style="margin-bottom:0">'+
     [
-      {v:'mirror', l:'Zelfde als voorkant',   sub:'De achterkant spiegelt de kaartafbeelding'},
-      {v:'blank',  l:'Eigen kleur',            sub:'Kies per thema een achtergrondkleur'},
-      {v:'custom', l:'Tekst uit vragenlijst',  sub:'Gebruik de achterkant-tekst die je invulde bij Vragen'}
+      {v:'mirror', l:'Gespiegeld',   sub:'Achterkant toont dezelfde kaartafbeelding'},
+      {v:'blank',  l:'Eigen kleur',  sub:'Kies per thema een achtergrondkleur voor de achterkant'}
     ].map(function(o){
       return '<div class="togRow" style="cursor:pointer" onclick="setBackMode(\''+o.v+'\')">'+
         '<div><label style="cursor:pointer"><input type="radio" name="backMode" value="'+o.v+'"'+(backMode===o.v?' checked':'')+' style="margin-right:7px;accent-color:var(--tl)">'+esc(o.l)+'</label>'+
@@ -1370,6 +1385,11 @@ function buildInst(target){
         '</div>';
     }).join('')+
     '</div>';
+
+  if(hasAchterkant){
+    backHtml+='<div style="margin:8px 0 0;padding:9px 12px;background:#f0f9f5;border-radius:7px;border:1px solid #c5e4d3;font-size:12px;color:#2a6a4a;line-height:1.5">'+
+      '<strong>✓ Achterkant-tekst gevonden</strong> — de achterkant van kaarten toont de tekst die je bij Vragen hebt ingevuld.</div>';
+  }
 
   // Blank color panel
   var themes2=S.d.meta.themes||[];
@@ -1394,7 +1414,7 @@ function buildInst(target){
   target.innerHTML='<div class="panel">'+
     '<div class="sLbl" style="margin-top:0">Menu</div>'+
     '<div class="togGroup">'+
-      togHtml('i_info','Informatieknop (ⓘ)',menu.showInfo!==false,'Opent de Info-sheet')+
+      togHtml('i_info','Informatieknop (ⓘ)',menu.showInfo!==false,'Opent de Infosheet')+
       togHtml('i_shuf','Shuffelknop',menu.showShuffle!==false,'Kaarten in willekeurige volgorde')+
       togHtml('i_sets','Knop "Alle sets"',menu.showAllSets!==false,'Navigeer terug naar het overzicht')+
     '</div>'+
@@ -1402,10 +1422,9 @@ function buildInst(target){
     '<div class="sLbl">Achterkant van kaarten</div>'+
     backHtml+blankExtra+
     '<hr class="sep">'+
-    '<div class="sLbl">Info-sheet</div>'+
+    '<div class="sLbl">Infosheet</div>'+
     '<div class="togGroup">'+
-      togHtml('i_sheet','Info-sheet inschakelen',sheet.enabled!==false,'Knop ⓘ opent de info')+
-      togHtml('i_sfirst','Tonen bij eerste bezoek',sheet.showOnFirst!==false,'Info-sheet opent automatisch bij het eerste bezoek')+
+      togHtml('i_sfirst','Tonen bij eerste bezoek',sheet.showOnFirst!==false,'Infosheet opent automatisch bij het eerste bezoek')+
     '</div>'+
     '<hr class="sep">'+
     '<div class="sLbl">Viewer-opties</div>'+
@@ -1415,7 +1434,7 @@ function buildInst(target){
     '</div>'+
   '</div>';
   // Wire toggles
-  [['i_info','ui.menu.showInfo'],['i_shuf','ui.menu.showShuffle'],['i_sets','ui.menu.showAllSets'],['i_sheet','ui.sheet.enabled'],['i_sfirst','ui.sheet.showOnFirst'],['i_anim','flipAnim'],['i_flip','doubleSided']].forEach(function(pair){
+  [['i_info','ui.menu.showInfo'],['i_shuf','ui.menu.showShuffle'],['i_sets','ui.menu.showAllSets'],['i_sfirst','ui.sheet.showOnFirst'],['i_anim','flipAnim'],['i_flip','doubleSided']].forEach(function(pair){
     var el2=g(pair[0]);if(!el2)return;
     el2.onchange=function(){
       var parts=pair[1].split('.');var obj=S.d.meta;
@@ -1519,9 +1538,9 @@ document.addEventListener('click',function(ev){
   if(a==='bulk'){showBulkImport(el2.dataset.key);return;}
   if(a==='setl'){var m=S.d.meta;m.ui=m.ui||{};m.ui.index=m.ui.index||{};m.ui.index.layout=el2.dataset.id;markDirty();buildStijl(g('pw'));return;}
   if(a==='setv'){S.d.meta.viewerTemplate=el2.dataset.id;markDirty();buildStijl(g('pw'));return;}
-  if(a==='setc'){var p=FULL_PAL[parseInt(el2.dataset.i,10)];if(p){setCV('--pk-set-accent',p.a);markDirty();g('pw').querySelectorAll('[data-action="setc"]').forEach(function(d){d.style.border='2px solid '+(d.dataset.i==el2.dataset.i?'var(--ac)':'transparent');});scheduleBg();}return;}
-  if(a==='settc'){var p2=FULL_PAL[parseInt(el2.dataset.i,10)];if(p2){setCV('--pk-set-text',p2.a);markDirty();g('pw').querySelectorAll('[data-action="settc"]').forEach(function(d){d.style.border='2px solid '+(d.dataset.i==el2.dataset.i?'var(--ac)':'transparent');});}return;}
-  if(a==='setfs'){setCV('--pk-font-size',el2.dataset.v);markDirty();g('pw').querySelectorAll('.sizePill').forEach(function(b){b.classList.toggle('sel',b.dataset.v===el2.dataset.v);});return;}
+  if(a==='setc'){var p=FULL_PAL[parseInt(el2.dataset.i,10)];if(p){setCV('--pk-set-accent',p.a);markDirty();g('pw').querySelectorAll('[data-action="setc"]').forEach(function(d){d.style.border='2px solid '+(d.dataset.i==el2.dataset.i?'var(--ac)':'transparent');});scheduleBg();updateStijlPreview();}return;}
+  if(a==='settc'){var p2=FULL_PAL[parseInt(el2.dataset.i,10)];if(p2){setCV('--pk-set-text',p2.a);markDirty();g('pw').querySelectorAll('[data-action="settc"]').forEach(function(d){d.style.border='2px solid '+(d.dataset.i==el2.dataset.i?'var(--ac)':'transparent');});updateStijlPreview();}return;}
+  if(a==='setfs'){setCV('--pk-font-size',el2.dataset.v);markDirty();g('pw').querySelectorAll('.sizePill').forEach(function(b){b.classList.toggle('sel',b.dataset.v===el2.dataset.v);});updateStijlPreview();return;}
   if(a==='setblankc'){S.d.meta.blankBackColor=el2.dataset.hex;markDirty();buildInst(g('pw'));return;}
   if(a==='spread'){bgCfg().blobSpread=el2.dataset.v;markDirty();g('pw').querySelectorAll('.shPill').forEach(function(b){b.classList.toggle('sel',b.dataset.v===el2.dataset.v);});scheduleBg();return;}
   if(a==='addp'){var bc=bgCfg();bc.palette=Array.isArray(bc.palette)?bc.palette:[(S.d.meta.cssVars||{})['--pk-set-accent']||'#F3D7A3'];bc.palette.push('#aabbcc');markDirty();var pw2=g('bg_pal');if(pw2)pw2.innerHTML=buildPalEd(bc.palette);scheduleBg();return;}
