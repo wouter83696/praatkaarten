@@ -900,6 +900,7 @@ function uploadLooseFile(input){
     reader2.readAsText(file);
   }
 }
+function buildCTile(card,folder,path){
   var sid=safeid(path),cached=CC[path];
   var isSq=folder==='cards'; // cards/ folder has square SVGs
   var sqCls=isSq?' sq':'';
@@ -1094,7 +1095,35 @@ function buildVragen(target){
     var cached=CC[cardPath];
     var imgSrc=cached&&cached.dataUrl?cached.dataUrl:'';
     var prevHtml=imgSrc?'<div class="thPrev"><img src="'+imgSrc+'"></div>':'';
-    var accentColor=(S.d.meta.cssVars||{})['--pk-set-accent']||'#CFE6DF';
+    var cv=(S.d.meta.cssVars||{});
+    var font=cv['--pk-font']||'IBM Plex Sans';
+    var fs=fontSizeCss(cv['--pk-font-size']||'12');
+    var textColor=cv['--pk-set-text']||'#1a1a2e';
+    var backMode=S.d.meta.backMode||'mirror';
+    var blankColor=(S.d.meta.blankBackColors&&S.d.meta.blankBackColors[th.key])||S.d.meta.blankBackColor||'#F8E4D2';
+    var q0=qs[0]||{};
+    var cpHtml='<div class="cardPrevWrap" id="cpw-'+esc(th.key)+'">'+
+      '<div class="cardFaceOuter">'+
+        '<div class="cardFaceInner" id="cpface-'+esc(th.key)+'">'+
+          '<div class="cardFaceFront">'+
+            (imgSrc?'<img class="cpBg" src="'+imgSrc+'" alt="'+esc(th.label||th.key)+'">':'<div class="cpBgEmpty" style="background:'+esc(accentColor)+';position:absolute;inset:0"></div>')+
+            '<div class="cpOverlay">'+
+              '<div class="cpFront" id="cpfront-'+esc(th.key)+'" style="font-family:\''+esc(font)+'\',sans-serif;font-size:'+esc(fs)+';color:'+esc(textColor)+'">'+
+                (q0.voorkant?esc(q0.voorkant):'<span class="cpHint">Voorkant tekst</span>')+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="cardFaceBack" id="cpback-'+esc(th.key)+'" style="background:'+(backMode==='blank'?esc(blankColor):esc(accentColor))+';font-family:\''+esc(font)+'\',sans-serif;font-size:'+esc(fs)+';color:'+esc(textColor)+'">'+
+            (q0.achterkant?esc(q0.achterkant):(backMode==='mirror'?'<span style="opacity:.4;font-size:10px">Gespiegeld</span>':'<span style="opacity:.4;font-size:10px">Eigen kleur</span>'))+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="cpLabel">Live kaartpreview</div>'+
+      '<div class="cpSide" id="cpside-'+esc(th.key)+'">'+
+        '<button class="cpBtn sel" data-side="front" data-key="'+esc(th.key)+'" onclick="cpSetSide(\''+esc(th.key)+'\',\'front\',this)">Voorkant</button>'+
+        '<button class="cpBtn" data-side="back" data-key="'+esc(th.key)+'" onclick="cpSetSide(\''+esc(th.key)+'\',\'back\',this)">Achterkant</button>'+
+      '</div>'+
+    '</div>';
     html+='<div class="thSec">'+
       '<div class="thSH">'+prevHtml+'<h4>'+esc(th.label||th.key)+'</h4>'+
         '<div style="display:flex;align-items:center;gap:5px;margin-left:auto">'+
@@ -1104,45 +1133,13 @@ function buildVragen(target){
         '</div>'+
       '</div>'+
       '<div class="thEditorWrap">'+
-        // LEFT: question list
         '<div class="qList" id="ql-'+esc(th.key)+'">'+
           qs.map(function(card,qi){return buildQRow(th.key,qi,card);}).join('')+
           (cnt===0?'<div class="qEmpty">Nog geen vragen. Klik op "+ Vraag" of gebruik "⧉ Bulk".</div>':'')+
         '</div>'+
-        // RIGHT: live card preview with flip
-        (function(){
-          var cv=(S.d.meta.cssVars||{});
-          var font=cv['--pk-font']||'IBM Plex Sans';
-          var fs=fontSizeCss(cv['--pk-font-size']||'12');
-          var textColor=cv['--pk-set-text']||'#1a1a2e';
-          var backMode=S.d.meta.backMode||'mirror';
-          var blankColor=(S.d.meta.blankBackColors&&S.d.meta.blankBackColors[th.key])||S.d.meta.blankBackColor||'#F8E4D2';
-          var q0=qs[0]||{};
-          return '<div class="cardPrevWrap" id="cpw-'+esc(th.key)+'">'+
-            '<div class="cardFaceOuter">'+
-              '<div class="cardFaceInner" id="cpface-'+esc(th.key)+'">'+
-                // FRONT
-                '<div class="cardFaceFront">'+
-                  (imgSrc?'<img class="cpBg" src="'+imgSrc+'" alt="'+esc(th.label||th.key)+'">':'<div class="cpBgEmpty" style="background:'+esc(accentColor)+';position:absolute;inset:0"></div>')+
-                  '<div class="cpOverlay">'+
-                    '<div class="cpFront" id="cpfront-'+esc(th.key)+'" style="font-family:\''+esc(font)+'\',sans-serif;font-size:'+esc(fs)+';color:'+esc(textColor)+'">'+
-                      (q0.voorkant?esc(q0.voorkant):'<span class="cpHint">Voorkant tekst</span>')+
-                    '</div>'+
-                  '</div>'+
-                '</div>'+
-                // BACK
-                '<div class="cardFaceBack" id="cpback-'+esc(th.key)+'" style="background:'+(backMode==='blank'?esc(blankColor):esc(accentColor))+';font-family:\''+esc(font)+'\',sans-serif;font-size:'+esc(fs)+';color:'+esc(textColor)+'">'+
-                  (q0.achterkant?esc(q0.achterkant):(backMode==='mirror'?'<span style="opacity:.4;font-size:10px">Gespiegeld (zelfde als voorkant)</span>':'<span style="opacity:.4;font-size:10px">Achterkant</span>'))+
-                '</div>'+
-              '</div>'+
-            '</div>'+
-            '<div class="cpLabel">Live kaartpreview</div>'+
-            '<div class="cpSide" id="cpside-'+esc(th.key)+'">'+
-              '<button class="cpBtn sel" data-side="front" data-key="'+esc(th.key)+'" onclick="cpSetSide(\''+esc(th.key)+'\',\'front\',this)">Voorkant</button>'+
-              '<button class="cpBtn" data-side="back" data-key="'+esc(th.key)+'" onclick="cpSetSide(\''+esc(th.key)+'\',\'back\',this)">Achterkant</button>'+
-            '</div>'+
-          '</div>';
-        })()+
+        cpHtml+
+      '</div>'+
+    '</div>';
   });
   target.innerHTML=html+'</div>';
   target.querySelectorAll('.qIn,.qInBack').forEach(function(t){setTimeout(function(){autoH(t);},0);});
