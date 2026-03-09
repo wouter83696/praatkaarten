@@ -183,7 +183,7 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .charCount.warn{color:var(--am)}
 .charCount.over{color:var(--rd);font-weight:600}
 .thPrev{width:42px;height:27px;border-radius:4px;overflow:hidden;border:1px solid rgba(79,142,158,.25);flex-shrink:0;background:rgba(79,142,158,.08)}
-.thPrev img{width:100%;height:100%;object-fit:contain;display:block}
+.thPrev img{width:100%;height:100%;object-fit:cover;display:block}
 .bulkArea{width:100%;margin-top:8px;padding:8px 10px;border:1px dashed var(--br);border-radius:7px;font-family:inherit;font-size:12.5px;background:var(--bg);color:var(--k);outline:none;resize:vertical;min-height:70px;line-height:1.6}
 .bulkArea:focus{border-color:var(--tl)}
 
@@ -425,7 +425,6 @@ var STEPS=[
   {id:'themas',  label:"Thema's",    fn:buildThemas},
   {id:'kaarten', label:'Kaarten',    fn:buildKaarten},
   {id:'vragen',  label:'Vragen',     fn:buildVragen},
-  {id:'welkomst',label:'Welkomst',   fn:buildWelkomst},
   {id:'info',    label:'Info',       fn:buildInfo},
   {id:'stijl',   label:'Stijl',      fn:buildStijl},
   {id:'inst',    label:'Instellingen',fn:buildInst}
@@ -641,8 +640,8 @@ function renderEditor(){
 
 function afterRender(){
   var id=S.mode==='wizard'?STEPS[S.wizStep].id:S.clTab;
-  if(id==='kaarten')setTimeout(loadCardPreviews,80);
-  if(id==='stijl'&&_stijlSub==='bg')setTimeout(renderBgPreview,80);
+  if(id==='kaarten'||id==='info')setTimeout(loadCardPreviews,80);
+  if(id==='stijl')setTimeout(renderBgPreview,80);
 }
 function switchMode(){
   collectCurrent();
@@ -678,8 +677,7 @@ function stepDone(id){
   if(id==='themas')return !!(S.d.meta&&S.d.meta.themes&&S.d.meta.themes.length);
   if(id==='kaarten')return !!(S.d.meta&&S.d.meta.themes&&S.d.meta.themes.length&&S.d.meta.themes.every(function(t){return t.card||t.key;}));
   if(id==='vragen')return Object.values(S.d.questions||{}).some(function(a){return Array.isArray(a)&&a.length>0;});
-  if(id==='welkomst')return !!(S.d.intro&&S.d.intro.slides&&S.d.intro.slides.length>1);
-  if(id==='info')return !!(S.d.uitleg&&S.d.uitleg.cover);
+  if(id==='info')return !!(S.d.uitleg&&S.d.uitleg.cover)||(S.d.intro&&S.d.intro.slides&&S.d.intro.slides.length>1);
   return true;
 }
 function buildClWidget(){
@@ -941,47 +939,51 @@ function rebuildVragen(){var pw=g('pw');if(pw){if(S.mode==='wizard')buildVragen(
 function autoH(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 
 // ═══════════════════════════════════════════
-// STEP: UITLEG
+// STEP: INFO (uitleg texts + thumbnails + welkomst slides)
 // ═══════════════════════════════════════════
 function buildInfo(target){
   var themes=S.d.meta.themes||[],u=S.d.uitleg||{},id=S.activeId;
-  // Cover image picker
-  var coverPath='sets/'+id+'/cards/voorkant.svg';
-  var cached=CC[coverPath];
-  var prevHtml=cached&&cached.dataUrl
-    ?'<div style="width:80px;height:52px;border-radius:5px;overflow:hidden;border:1px solid var(--br);margin-bottom:8px"><img src="'+cached.dataUrl+'" style="width:100%;height:100%;object-fit:cover"></div>'
-    :'';
-  var html='<div class="panel">'+
-    '<p style="font-size:12.5px;color:var(--k2);margin-bottom:14px;line-height:1.6">De Info-sheet verschijnt als de gebruiker op <strong>ⓘ</strong> tikt. Schrijf een algemene tekst voor de hele set en per thema een korte toelichting.</p>'+
-    '<div class="fRow"><label class="fLbl">Cover-afbeelding (ⓘ Info-sheet)</label>'+prevHtml+
-    '<div style="display:flex;gap:6px;align-items:center">'+
-    (cached&&cached.dataUrl?'<button class="bs tl" onclick="setCoverFromUploads()">Huidig ✓</button>':'<span style="font-size:11px;color:var(--k3)">Nog niet geüpload</span>')+
-    '<label class="bs gh" style="cursor:pointer">Upload cover<input type="file" accept=".svg,.png" id="coverUploadInput" style="display:none"></label>'+
-    '</div><p class="fHint">Gebruik je geüploade voorkant.svg, of upload hier een aparte afbeelding voor de info-sheet.</p></div>'+
-    '<hr class="sep">'+
-    fR('Tekst (hele set)','textarea','u_cover',u.cover||'','Omschrijf de set als geheel — doel, gebruik, context');
-  if(themes.length){
-    html+='<hr class="sep"><p style="font-size:10px;font-weight:600;color:var(--k3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Per thema</p>';
-    themes.forEach(function(th){html+=fR(esc(th.label||th.key),'textarea','u_'+th.key,u[th.key]||'','Toelichting bij '+esc(th.label||th.key));});
-  }
-  target.innerHTML=html+'</div>';
-  g('u_cover').oninput=function(){S.d.uitleg.cover=this.value;markDirty();};
-  themes.forEach(function(th){var inp=g('u_'+th.key);if(inp)inp.oninput=function(){S.d.uitleg[th.key]=this.value;markDirty();};});
-  var cu=g('coverUploadInput');
-  if(cu)cu.onchange=function(){var f=this.files&&this.files[0];if(!f)return;var path='sets/'+id+'/cards/voorkant.svg';uploadFile(f,path,safeid(path));this.value='';};
-}
-
-// ═══════════════════════════════════════════
-// STEP: WELKOMST SLIDES
-// ═══════════════════════════════════════════
-function buildWelkomst(target){
   var slides=(S.d.intro&&S.d.intro.slides)||[];
-  var themes=S.d.meta.themes||[];
+  var hint=(S.d.intro&&S.d.intro.hint)||'← → swipe';
+
+  // ── 1. INHOUD — tekst per thema, met thumbnail ──
+  var coverPath='sets/'+id+'/cards/voorkant.svg';
+  var cachedCover=CC[coverPath];
+  var coverPrev=cachedCover&&cachedCover.dataUrl
+    ?'<div style="width:68px;height:44px;border-radius:5px;overflow:hidden;border:1px solid var(--br);flex-shrink:0"><img src="'+cachedCover.dataUrl+'" style="width:100%;height:100%;object-fit:cover"></div>'
+    :'<div style="width:68px;height:44px;border-radius:5px;background:var(--bg);border:1px solid var(--br);flex-shrink:0"></div>';
+
+  var html='<div class="panel">'+
+    '<p style="font-size:12px;color:var(--k2);margin-bottom:14px;line-height:1.6">De Info-sheet verschijnt als de gebruiker op <strong>ⓘ</strong> tikt. Schrijf een intro en per thema een korte toelichting.</p>'+
+
+    // Cover + algemene tekst
+    '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">'+coverPrev+
+    '<div style="flex:1"><label class="fLbl">Intro (hele set)</label><textarea class="fTa" id="u_cover" rows="3" placeholder="Omschrijf de set — doel, gebruik, context">'+esc(u.cover||'')+'</textarea></div></div>';
+
+  // Per-thema tekst met thumbnail
+  if(themes.length){
+    html+='<div class="sLbl" style="margin-top:4px">Per thema</div>';
+    themes.forEach(function(th){
+      var tp='sets/'+id+'/cards/'+(th.card||(th.key+'.svg'));
+      var ca=CC[tp];
+      var tPrev=ca&&ca.dataUrl
+        ?'<div style="width:52px;height:33px;border-radius:4px;overflow:hidden;border:1px solid var(--br);flex-shrink:0"><img src="'+ca.dataUrl+'" style="width:100%;height:100%;object-fit:cover"></div>'
+        :'<div style="width:52px;height:33px;border-radius:4px;background:var(--bg);border:1px solid var(--br);flex-shrink:0"></div>';
+      html+='<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:9px">'+tPrev+
+        '<div style="flex:1"><label class="fLbl">'+esc(th.label||th.key)+'</label><textarea class="fTa" id="u_'+esc(th.key)+'" rows="2" placeholder="Toelichting bij '+esc(th.label||th.key)+'">'+esc(u[th.key]||'')+'</textarea></div></div>';
+    });
+  }
+
+  // ── 2. WELKOMST SLIDES ──
   var rows=slides.map(function(sl,i){
     var isCover=sl.key==='cover';
+    var slThPath=sl.img?'sets/'+id+'/'+sl.img:'';
+    var slCa=slThPath&&CC[slThPath];
+    var slPrev=slCa&&slCa.dataUrl
+      ?'<div style="width:40px;height:26px;border-radius:3px;overflow:hidden;border:1px solid var(--br);flex-shrink:0"><img src="'+slCa.dataUrl+'" style="width:100%;height:100%;object-fit:cover"></div>'
+      :'<div style="width:40px;height:26px;border-radius:3px;background:var(--bg);border:1px solid var(--br);flex-shrink:0"></div>';
     return '<div class="slCard" draggable="true" data-i="'+i+'" id="sl'+i+'">'+
-      '<div class="slHead"><span class="slHdl">⠿</span><span class="slNum">'+(i+1)+'</span><span class="slKey">'+esc(sl.key||'')+'</span>'+
-      (sl.img?'<span class="slImg" title="'+esc(sl.img)+'">'+esc(sl.img)+'</span>':'')+
+      '<div class="slHead">'+slPrev+'<span class="slHdl" style="margin-left:4px">⠿</span><span class="slNum">'+(i+1)+'</span><span class="slKey">'+esc(sl.key||'')+'</span>'+
       (!isCover?'<button class="bs rd" data-action="delsl" data-i="'+i+'" style="margin-left:auto">✕</button>':'')+
       '</div>'+
       '<div class="slFlds">'+
@@ -990,44 +992,38 @@ function buildWelkomst(target){
         '<div class="fRow" style="grid-column:1/-1"><label class="fLbl">Tekst</label><textarea class="fTa" rows="2" oninput="updSl('+i+',\'body\',this.value)">'+esc(sl.body||'')+'</textarea></div>'+
       '</div></div>';
   }).join('');
-  var hint=(S.d.intro&&S.d.intro.hint)||'← → swipe';
-  var introMode=(S.d.intro&&S.d.intro.mode)||'carousel';
-  var activeThemeKeys=(S.d.intro&&S.d.intro.activeThemes)||(themes.map(function(t){return t.key;}));
-  target.innerHTML='<div class="panel">'+
-    '<p style="font-size:12.5px;color:var(--k2);margin-bottom:12px;line-height:1.6">Het welkomstscherm wordt getoond als de gebruiker de set voor het eerst opent.</p>'+
-    '<div class="fRow"><label class="fLbl">Weergave</label>'+
-    '<div class="radioGroup" style="margin-bottom:10px">'+
-      '<div class="radioOpt'+(introMode==='carousel'?' sel':'')+'" data-action="setIntroMode" data-v="carousel">&#127904; Carrousel</div>'+
-      '<div class="radioOpt'+(introMode==='static'?' sel':'')+'" data-action="setIntroMode" data-v="static">&#128196; Statisch</div>'+
-    '</div></div>'+
-    (themes.length&&introMode==='carousel'?
-      '<div class="fRow"><label class="fLbl">Thema&#39;s in carrousel</label>'+
-      '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:3px">'+
-      themes.map(function(th){var on=activeThemeKeys.indexOf(th.key)>=0;return'<div class="radioOpt'+(on?' sel':'')+' thToggle" data-action="toggleTheme" data-key="'+esc(th.key)+'">'+esc(th.label||th.key)+'</div>';}).join('')+
-      '</div></div>':'')+
-    '<hr class="sep">'+
-    '<p style="font-size:12.5px;color:var(--k2);margin-bottom:10px;line-height:1.5">Slides — sleep om te herordenen.</p>'+
+
+  html+='<hr class="sep">'+
+    '<div class="secH"><h3>Welkomstscherm</h3></div>'+
+    '<p style="font-size:12px;color:var(--k2);margin-bottom:10px;line-height:1.5">Slides die de gebruiker ziet bij het eerste openen.</p>'+
     '<div class="slList" id="slList">'+rows+'</div>'+
     '<div style="display:flex;gap:6px;margin-top:9px">'+
-    (S.d.meta.themes&&S.d.meta.themes.length?'<button class="bs tl" onclick="addSlFromTheme()">+ Van thema\'s</button>':'')+
+    (themes.length?'<button class="bs tl" onclick="addSlFromTheme()">+ Van thema\'s</button>':'')+
     '<button class="bs gh" onclick="addSlide()">+ Lege slide</button>'+
     '</div>'+
-    '<hr class="sep">'+fR('Navigatie-hint','text','sl_hint',hint,'bijv. "← → swipe"')+'</div>';
+    '<hr class="sep">'+fR('Navigatie-hint','text','sl_hint',hint,'bijv. "← → swipe"')+
+    '</div>';
+
+  target.innerHTML=html;
+  g('u_cover').oninput=function(){S.d.uitleg.cover=this.value;markDirty();};
+  themes.forEach(function(th){var inp=g('u_'+th.key);if(inp)inp.oninput=function(){S.d.uitleg[th.key]=this.value;markDirty();};});
   g('sl_hint').oninput=function(){S.d.intro=S.d.intro||{};S.d.intro.hint=this.value;markDirty();};
   initSlDrag();
 }
 function updSl(i,f,v){var sl=S.d.intro&&S.d.intro.slides&&S.d.intro.slides[i];if(sl){sl[f]=v;markDirty();}}
-function addSlide(){S.d.intro=S.d.intro||{slides:[],hint:'← →'};S.d.intro.slides.push({key:'slide-'+(S.d.intro.slides.length+1),title:'',body:'',img:'cards/voorkant.svg',alt:''});markDirty();rebuildWelkomst();}
+function addSlide(){S.d.intro=S.d.intro||{slides:[],hint:'← →'};S.d.intro.slides.push({key:'slide-'+(S.d.intro.slides.length+1),title:'',body:'',img:'cards/voorkant.svg',alt:''});markDirty();rebuildInfo();}
 function addSlFromTheme(){
   var themes=S.d.meta.themes||[];if(!themes.length){toast('Maak eerst thema\'s aan');return;}
   S.d.intro=S.d.intro||{slides:[],hint:'← →'};
   var ex=S.d.intro.slides.map(function(s){return s.key;}),added=0;
   themes.forEach(function(th){if(ex.indexOf(th.key)>=0)return;S.d.intro.slides.push({key:th.key,title:th.label||th.key,body:(S.d.uitleg&&S.d.uitleg[th.key])||'',img:'cards/'+(th.card||th.key+'.svg'),alt:th.label||th.key});added++;});
-  if(added>0){markDirty();rebuildWelkomst();toast(added+' slide'+(added!==1?'s':'')+' toegevoegd');}
+  if(added>0){markDirty();rebuildInfo();toast(added+' slide'+(added!==1?'s':'')+' toegevoegd');}
   else toast('Alle thema\'s hebben al een slide','amber');
 }
-function delSl(i){if(S.d.intro&&S.d.intro.slides)S.d.intro.slides.splice(i,1);markDirty();rebuildWelkomst();}
-function rebuildWelkomst(){var pw=g('pw');if(pw){if(S.mode==='wizard')buildWelkomst(pw);else renderClPanel();}}
+function delSl(i){if(S.d.intro&&S.d.intro.slides)S.d.intro.slides.splice(i,1);markDirty();rebuildInfo();}
+function rebuildInfo(){var pw=g('pw');if(pw){if(S.mode==='wizard')buildInfo(pw);else renderClPanel();}}
+// Keep alias for any lingering refs
+function rebuildWelkomst(){rebuildInfo();}
 function initSlDrag(){
   var list=g('slList');if(!list)return;
   list.querySelectorAll('.slCard').forEach(function(row){
@@ -1035,7 +1031,7 @@ function initSlDrag(){
     row.addEventListener('dragend',function(){this.classList.remove('dragging');list.querySelectorAll('.slCard').forEach(function(r){r.classList.remove('dragover');});});
     row.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
     row.addEventListener('dragleave',function(){this.classList.remove('dragover');});
-    row.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('dragover');var from=parseInt(e.dataTransfer.getData('text/plain'),10),to=parseInt(this.dataset.i,10);if(from===to)return;var arr=S.d.intro.slides,item=arr.splice(from,1)[0];arr.splice(to,0,item);markDirty();rebuildWelkomst();});
+    row.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('dragover');var from=parseInt(e.dataTransfer.getData('text/plain'),10),to=parseInt(this.dataset.i,10);if(from===to)return;var arr=S.d.intro.slides,item=arr.splice(from,1)[0];arr.splice(to,0,item);markDirty();rebuildInfo();});
   });
 }
 
@@ -1051,7 +1047,7 @@ var VTPL=[
   {id:'classic',nm:'Klassiek',ds:'Flip, menu, uitleg.',t:'<svg viewBox="0 0 155 116" fill="none"><rect width="155" height="116" fill="#f3f6f7"/><rect x="36" y="4" width="83" height="15" rx="7.5" fill="white" stroke="#b0d8e0"/><rect x="48" y="8" width="38" height="3.5" rx="1.75" fill="#4f8e9e" opacity=".4"/><rect x="17" y="24" width="121" height="79" rx="8.5" fill="white" stroke="#b0d8e0" stroke-width="1.5"/><rect x="44" y="50" width="67" height="5" rx="2.5" fill="#4f8e9e" opacity=".37"/><rect x="52" y="61" width="51" height="3" rx="1.5" fill="#b0ccd4" opacity=".5"/></svg>'},
   {id:'compact',nm:'Compact',ds:'Kleinere kaarten.',t:'<svg viewBox="0 0 155 116" fill="none"><rect width="155" height="116" fill="#f3f6f7"/><rect x="36" y="4" width="83" height="15" rx="7.5" fill="white" stroke="#b0d8e0"/><rect x="6" y="26" width="72" height="54" rx="6.5" fill="white" stroke="#b0d8e0"/><rect x="86" y="26" width="63" height="54" rx="6.5" fill="#e8f4f6" stroke="#b0d8e0" opacity=".7"/><rect x="17" y="46" width="32" height="3.5" rx="1.75" fill="#4f8e9e" opacity=".33"/></svg>'}
 ];
-var _stijlSubInit='layout'; // placeholder
+var _stijlSubInit='layout'; // legacy placeholder
 
 // Full palette from docs (3 rows: light, base, deep)
 var FULL_PAL=[
@@ -1076,79 +1072,64 @@ var FONT_LIST=[
   'Patrick Hand','Caveat','Pacifico','Fredoka','Comfortaa'
 ];
 var FONT_SIZE_OPTS=[{v:'sm',l:'Klein'},{ v:'md',l:'Normaal'},{v:'lg',l:'Groot'},{v:'xl',l:'Zeer groot'}];
-var _stijlSub='layout'; // track which sub-section is open
 
-function buildStijl(target,sub){
-  sub=sub||_stijlSub||'layout';_stijlSub=sub;
-  var m=S.d.meta||{},curL=((m.ui||{}).index||{}).layout||'carousel',curV=m.viewerTemplate||'classic';
+function buildStijl(target){
+  var m=S.d.meta||{};
   var accent=(m.cssVars||{})['--pk-set-accent']||'#F3D7A3';
   var bg=((m.ui||{}).index||{}).background||{};
   var curFont=(m.cssVars||{})['--pk-font']||'IBM Plex Sans';
   var curFontSize=(m.cssVars||{})['--pk-font-size']||'md';
   var textColor=(m.cssVars||{})['--pk-set-text']||'#1a1a2e';
 
-  var subBar='<div class="stSubBar">'+
-    '<button class="stSub'+(sub==='layout'?' sel':'')+'" onclick="buildStijl(g(\'pw\'),\'layout\')">🃏 Kaart &amp; Layout</button>'+
-    '<button class="stSub'+(sub==='bg'?' sel':'')+'" onclick="buildStijl(g(\'pw\'),\'bg\')">🎨 Achtergrond</button>'+
+  // Only show the 9 deep/saturated colors as dots + custom picker
+  var deepPal=FULL_PAL.slice(18);
+  function dotRow(actionName,currentColor,inputId,hexId){
+    return '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:5px 0 6px">'+
+      deepPal.map(function(p,i){
+        var sel=currentColor.toLowerCase()===p.a.toLowerCase();
+        return'<div class="palDot'+(sel?' sel':'')+'" style="background:'+p.a+';width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid '+(sel?'var(--ac)':'transparent')+';box-shadow:0 0 0 1px rgba(0,0,0,.1)" title="'+esc(p.n)+'" data-action="'+actionName+'" data-i="'+(i+18)+'"></div>';
+      }).join('')+
+      '</div>'+
+      '<div class="palRow2"><input type="color" id="'+inputId+'" value="'+esc(currentColor)+'"><input type="text" class="fIn" id="'+hexId+'" value="'+esc(currentColor)+'" placeholder="'+esc(currentColor)+'" style="max-width:105px;padding:5px 8px;font-family:monospace;font-size:12px"></div>';
+  }
+
+  var html='<div class="panel">'+
+
+    '<div class="sLbl" style="margin-top:0">Lettertype</div>'+
+    '<select class="fontSel" id="s_font" onchange="setFontLive(this.value)">'+
+    FONT_LIST.map(function(f){return'<option value="'+esc(f)+'"'+(f===curFont?' selected':'')+' style="font-family:'+esc(f)+'">'+esc(f)+'</option>';}).join('')+
+    '</select>'+
+
+    '<div class="sLbl" style="margin-top:12px">Tekstgrootte</div>'+
+    '<div class="sizePills">'+
+    FONT_SIZE_OPTS.map(function(s){return'<button class="sizePill'+(curFontSize===s.v?' sel':'')+'" data-action="setfs" data-v="'+s.v+'">'+s.l+'</button>';}).join('')+
+    '</div>'+
+
+    '<div class="sLbl" style="margin-top:12px">Tekstkleur</div>'+
+    dotRow('settc',textColor,'s_tcp','s_tch')+
+
+    '<div class="sLbl" style="margin-top:10px">Accentkleur</div>'+
+    dotRow('setc',accent,'s_cp','s_ch')+
+
+    '<hr class="sep"><div class="sLbl" style="margin-top:2px">Achtergrond</div>'+
+    '<p style="font-size:12px;color:var(--k2);margin-bottom:10px;line-height:1.5">Organische vormen in je accentkleuren. Tint mee met de actieve kaart.</p>'+
+    '<div class="bgWrap">'+buildBgCtrls(bg,accent)+
+    '<div class="bgPrev"><div class="bgCanvas" id="bgWrap"><canvas id="bgCanvas"></canvas></div><div class="bgHint">Live preview</div></div></div>'+
     '</div>';
 
-  var html='<div class="panel">'+subBar;
-
-  if(sub==='layout'){
-    // Index layout
-    html+='<div class="sLbl">Indexpagina</div><div class="tplGrid">';
-    LTPL.forEach(function(t){html+='<div class="tplCard'+(curL===t.id?' sel':'')+'" data-action="setl" data-id="'+t.id+'"><div class="tplBadge">✓</div><div class="tplTh">'+t.t+'</div><div class="tplInfo"><div class="tplNm">'+esc(t.nm)+'</div><div class="tplDs">'+esc(t.ds)+'</div></div></div>';});
-    html+='</div>';
-    // Viewer template
-    html+='<div class="sLbl">Kaartenviewer</div><div class="tplGrid">';
-    VTPL.forEach(function(t){html+='<div class="tplCard'+(curV===t.id?' sel':'')+'" data-action="setv" data-id="'+t.id+'"><div class="tplBadge">✓</div><div class="tplTh">'+t.t+'</div><div class="tplInfo"><div class="tplNm">'+esc(t.nm)+'</div><div class="tplDs">'+esc(t.ds)+'</div></div></div>';});
-    html+='</div>';
-    // Font
-    html+='<div class="sLbl">Lettertype</div>'+
-      '<select class="fontSel" id="s_font" onchange="setFontLive(this.value)">'+
-      FONT_LIST.map(function(f){return'<option value="'+esc(f)+'"'+(f===curFont?' selected':'')+' style="font-family:'+esc(f)+'">'+esc(f)+'</option>';}).join('')+
-      '</select>'+
-      '<p class="fHint" style="margin-top:4px">Lettertype wordt dynamisch geladen via Google Fonts.</p>';
-    // Font size
-    html+='<div class="sLbl" style="margin-top:12px">Tekstgrootte</div>'+
-      '<div class="sizePills">'+
-      FONT_SIZE_OPTS.map(function(s){return'<button class="sizePill'+(curFontSize===s.v?' sel':'')+'" data-action="setfs" data-v="'+s.v+'">'+s.l+'</button>';}).join('')+
-      '</div>';
-    // Text color
-    html+='<div class="sLbl" style="margin-top:12px">Tekstkleur</div>'+
-      '<div class="palSwatch" id="pal_text">'+
-      FULL_PAL.map(function(p,i){var sel=textColor.toLowerCase()===p.a.toLowerCase();return'<div class="palSw'+(sel?' sel':'')+'" style="background:'+p.a+'" title="'+esc(p.n)+'" data-action="settc" data-i="'+i+'"></div>';}).join('')+
-      '</div>'+
-      '<div class="palRow2"><input type="color" id="s_tcp" value="'+esc(textColor)+'"><input type="text" class="fIn" id="s_tch" value="'+esc(textColor)+'" placeholder="#1a1a2e" style="max-width:110px;padding:5px 8px;font-family:monospace;font-size:12px"></div>';
-    // Accent color
-    html+='<div class="sLbl" style="margin-top:12px">Accentkleur</div>'+
-      '<div class="palSwatch" id="pal_accent">'+
-      FULL_PAL.map(function(p,i){var sel=accent.toLowerCase()===p.a.toLowerCase();return'<div class="palSw'+(sel?' sel':'')+'" style="background:'+p.a+'" title="'+esc(p.n)+'" data-action="setc" data-i="'+i+'"></div>';}).join('')+
-      '</div>'+
-      '<div class="palRow2"><input type="color" id="s_cp" value="'+esc(accent)+'"><input type="text" class="fIn" id="s_ch" value="'+esc(accent)+'" placeholder="#F3D7A3" style="max-width:110px;padding:5px 8px;font-family:monospace;font-size:12px"></div>';
-  } else {
-    // BACKGROUND sub-section
-    html+='<div class="sLbl" style="margin-top:0">Achtergrond configuratie</div>'+
-      '<p style="font-size:12px;color:var(--k2);margin-bottom:12px;line-height:1.6">De achtergrond wordt opgebouwd uit organische vormen in de kleuren van je kaarten. De achtergrondkleur tint mee met de actieve kaart.</p>'+
-      '<div class="bgWrap">'+buildBgCtrls(bg,accent)+
-      '<div class="bgPrev"><div class="bgCanvas" id="bgWrap"><canvas id="bgCanvas"></canvas></div><div class="bgHint">Live preview</div></div></div>';
-  }
-  html+='</div>';
   target.innerHTML=html;
 
-  if(sub==='layout'){
-    g('s_cp').oninput=function(){g('s_ch').value=this.value;setCV('--pk-set-accent',this.value);scheduleBg();};
-    g('s_ch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_cp').value=v;setCV('--pk-set-accent',v);}else if(/^#[0-9a-fA-F]{3}$/.test(v)){var h='#'+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];g('s_cp').value=h;setCV('--pk-set-accent',h);}markDirty();};
-    g('s_tcp').oninput=function(){g('s_tch').value=this.value;setCV('--pk-set-text',this.value);markDirty();};
-    g('s_tch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_tcp').value=v;setCV('--pk-set-text',v);markDirty();}};
-    // Load font preview
-    var fontLink=document.getElementById('fontPreviewLink');
-    if(!fontLink){fontLink=document.createElement('link');fontLink.rel='stylesheet';fontLink.id='fontPreviewLink';document.head.appendChild(fontLink);}
-    fontLink.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(curFont)+':wght@400;500;600&display=swap';
-  } else {
-    wireBgCtrls();
-    setTimeout(renderBgPreview,80);
-  }
+  g('s_cp').oninput=function(){g('s_ch').value=this.value;setCV('--pk-set-accent',this.value);scheduleBg();};
+  g('s_ch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_cp').value=v;setCV('--pk-set-accent',v);scheduleBg();}markDirty();};
+  g('s_tcp').oninput=function(){g('s_tch').value=this.value;setCV('--pk-set-text',this.value);markDirty();};
+  g('s_tch').oninput=function(){var v=this.value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v)){g('s_tcp').value=v;setCV('--pk-set-text',v);markDirty();}};
+
+  var fontLink=document.getElementById('fontPreviewLink');
+  if(!fontLink){fontLink=document.createElement('link');fontLink.rel='stylesheet';fontLink.id='fontPreviewLink';document.head.appendChild(fontLink);}
+  fontLink.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(curFont)+':wght@400;500;600&display=swap';
+
+  wireBgCtrls();
+  setTimeout(renderBgPreview,80);
 }
 function setFontLive(val){
   setCV('--pk-font',val);markDirty();
@@ -1275,13 +1256,27 @@ function buildInst(target){
       '<div class="backPrev" style="'+(o.v==='blank'?'background:'+blankColor:o.v==='mirror'?'background:linear-gradient(135deg,#e8f4f6,#d0eaee)':'background:#f8f8f8')+'">'+o.icon+'</div>'+
       '<div class="backFoot">'+esc(o.l)+'</div></div>';
   }).join('')+'</div>';
-  // Extra options for blank
-  var blankExtra='<div id="blankOpts" style="'+(backMode==='blank'?'':'display:none')+';margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:7px;border:1px solid var(--br)">'+
-    '<div class="fRow" style="margin-bottom:8px"><label class="fLbl">Tekst op achterkant</label>'+
+  // Extra options for blank — per theme thumbnail + color
+  var themes2=S.d.meta.themes||[];
+  var blankExtra='<div id="blankOpts" style="'+(backMode==='blank'?'':'display:none')+';margin-top:10px;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--br)">'+
+    '<div class="fRow" style="margin-bottom:10px"><label class="fLbl">Tekst op achterkant (alle kaarten)</label>'+
     '<input type="text" class="fIn" id="i_blankTxt" value="'+esc(blankText)+'" placeholder="bijv. Neem even de tijd…" oninput="S.d.meta.blankBackText=this.value;markDirty()"></div>'+
-    '<div class="fRow" style="margin-bottom:0"><label class="fLbl">Achtergrondkleur</label>'+
-    '<div class="palSwatch">'+FULL_PAL.slice(0,18).map(function(p){var sel2=blankColor.toLowerCase()===p.a.toLowerCase();return'<div class="palSw'+(sel2?' sel':'')+'" style="background:'+p.a+';height:20px" title="'+esc(p.n)+'" data-action="setblankc" data-hex="'+p.a+'"></div>';}).join('')+'</div>'+
-    '<div style="display:flex;align-items:center;gap:7px;margin-top:5px"><input type="color" id="i_blankCol" value="'+esc(blankColor)+'" oninput="S.d.meta.blankBackColor=this.value;markDirty()"><span style="font-size:11px;color:var(--k3)">'+esc(blankColor)+'</span></div></div></div>';
+    '<label class="fLbl" style="margin-bottom:6px;display:block">Kleur per thema</label>'+
+    (themes2.length?
+      themes2.map(function(th){
+        var tp='sets/'+S.activeId+'/cards/'+(th.card||(th.key+'.svg'));
+        var ca=CC[tp];
+        var tPrev=ca&&ca.dataUrl
+          ?'<div style="width:40px;height:26px;border-radius:3px;overflow:hidden;border:1px solid var(--br);flex-shrink:0"><img src="'+ca.dataUrl+'" style="width:100%;height:100%;object-fit:cover"></div>'
+          :'<div style="width:40px;height:26px;border-radius:3px;background:var(--bg2);border:1px solid var(--br);flex-shrink:0"></div>';
+        var thColor=(m.blankBackColors&&m.blankBackColors[th.key])||blankColor;
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'+tPrev+
+          '<span style="font-size:12px;color:var(--k2);flex:1;min-width:60px">'+esc(th.label||th.key)+'</span>'+
+          '<input type="color" value="'+esc(thColor)+'" title="'+esc(th.label||th.key)+'" onchange="setBlankThemeColor(\''+esc(th.key)+'\',this.value)" style="width:28px;height:28px;border:none;cursor:pointer;border-radius:4px;flex-shrink:0">'+
+          '</div>';
+      }).join('')
+    :'<p style="font-size:11px;color:var(--k3)">Maak eerst thema\'s aan.</p>')+
+    '</div>';
 
   target.innerHTML='<div class="panel">'+
     '<div class="sLbl" style="margin-top:0">Menu</div>'+
@@ -1319,6 +1314,14 @@ function buildInst(target){
       obj[parts[parts.length-1]]=this.checked;markDirty();
     };
   });
+}
+function setBlankThemeColor(key,color){
+  S.d.meta.blankBackColors=S.d.meta.blankBackColors||{};
+  S.d.meta.blankBackColors[key]=color;
+  markDirty();
+  // Update the backOpt preview if blank is selected
+  var bk=document.querySelector('.backOpt[data-v="blank"] .backPrev');
+  if(bk)bk.style.background=color;
 }
 
 // ═══════════════════════════════════════════
@@ -1403,10 +1406,10 @@ document.addEventListener('click',function(ev){
   if(a==='delth'){delTh(parseInt(el2.dataset.i,10));return;}
   if(a==='delsl'){delSl(parseInt(el2.dataset.i,10));return;}
   if(a==='bulk'){showBulkImport(el2.dataset.key);return;}
-  if(a==='setl'){var m=S.d.meta;m.ui=m.ui||{};m.ui.index=m.ui.index||{};m.ui.index.layout=el2.dataset.id;markDirty();buildStijl(g('pw'),'layout');return;}
-  if(a==='setv'){S.d.meta.viewerTemplate=el2.dataset.id;markDirty();buildStijl(g('pw'),'layout');return;}
-  if(a==='setc'){var p=FULL_PAL[parseInt(el2.dataset.i,10)];if(p){setCV('--pk-set-accent',p.a);markDirty();buildStijl(g('pw'),'layout');setTimeout(renderBgPreview,60);}return;}
-  if(a==='settc'){var p2=FULL_PAL[parseInt(el2.dataset.i,10)];if(p2){setCV('--pk-set-text',p2.a);markDirty();buildStijl(g('pw'),'layout');}return;}
+  if(a==='setl'){var m=S.d.meta;m.ui=m.ui||{};m.ui.index=m.ui.index||{};m.ui.index.layout=el2.dataset.id;markDirty();buildStijl(g('pw'));return;}
+  if(a==='setv'){S.d.meta.viewerTemplate=el2.dataset.id;markDirty();buildStijl(g('pw'));return;}
+  if(a==='setc'){var p=FULL_PAL[parseInt(el2.dataset.i,10)];if(p){setCV('--pk-set-accent',p.a);markDirty();g('pw').querySelectorAll('[data-action="setc"]').forEach(function(d){d.style.border='2px solid '+(d.dataset.i==el2.dataset.i?'var(--ac)':'transparent');});scheduleBg();}return;}
+  if(a==='settc'){var p2=FULL_PAL[parseInt(el2.dataset.i,10)];if(p2){setCV('--pk-set-text',p2.a);markDirty();g('pw').querySelectorAll('[data-action="settc"]').forEach(function(d){d.style.border='2px solid '+(d.dataset.i==el2.dataset.i?'var(--ac)':'transparent');});}return;}
   if(a==='setfs'){setCV('--pk-font-size',el2.dataset.v);markDirty();g('pw').querySelectorAll('.sizePill').forEach(function(b){b.classList.toggle('sel',b.dataset.v===el2.dataset.v);});return;}
   if(a==='setblankc'){S.d.meta.blankBackColor=el2.dataset.hex;markDirty();buildInst(g('pw'));return;}
   if(a==='spread'){bgCfg().blobSpread=el2.dataset.v;markDirty();g('pw').querySelectorAll('.shPill').forEach(function(b){b.classList.toggle('sel',b.dataset.v===el2.dataset.v);});scheduleBg();return;}
