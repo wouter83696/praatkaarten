@@ -318,10 +318,9 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .cTile.droptarget{border:2px dashed var(--tl)!important;background:var(--tlp)!important}
 .cTile.droptarget .cMt{background:var(--tlp)}
 
-.cFoot{padding:4px 6px;border-top:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;gap:3px}
-.cLbl{font-size:10px;font-weight:500;color:var(--k2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.cDesc{font-size:9px;color:var(--k3);display:block;margin-bottom:1px;line-height:1.2}
-.cLbl{font-size:10.5px;font-weight:600;color:var(--k)}
+.cFoot{padding:5px 7px;border-top:1px solid var(--br);display:flex;flex-direction:column;gap:1px}
+.cLbl{font-size:11px;font-weight:600;color:var(--k);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cFile{font-size:9px;color:var(--k3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:monospace}
 .cLnk{font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--tlp);color:var(--tld);border:none;cursor:pointer;font-family:inherit;flex-shrink:0}
 .cLnk:hover{background:var(--tlp2)}
 .cBadge{position:absolute;top:3px;right:3px;background:rgba(26,26,46,.48);color:rgba(255,255,255,.92);font-size:8.5px;padding:1px 4px;border-radius:5px;max-width:86%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
@@ -1392,16 +1391,20 @@ function startLooseUpload(file,folderName){
 }
 function buildCTile(card,folder,path){
   var sid=safeid(path),cached=CC[path];
-  // For cards/ tiles prefer cards_rect/ preview (correct aspect ratio for landscape tile)
   if(folder==='cards'){var rp=path.replace('/cards/','/cards_rect/');if(CC[rp]&&CC[rp].dataUrl)cached=CC[rp];}
   var isSq=false;
-  var sqCls=isSq?' sq':'';
-  var prev=cached&&cached.dataUrl?'<div class="cPrev'+sqCls+'"><img src="'+cached.dataUrl+'" alt="'+esc(card.label)+'"></div>':'<div class="cMt'+sqCls+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9l4-4 4 4 4-6 6 8"/></svg><span>Sleep bestand hierheen<br>of klik om te uploaden</span></div>';
-  var lnk=(!card.ic&&typeof card.ti==='number')?'<button class="cLnk" data-action="lnk" data-ti="'+card.ti+'" data-folder="'+folder+'">Koppel</button>':'';
-  var delBtn=(cached&&cached.sha)?'<button class="cDel" data-action="delfile" data-path="'+esc(path)+'" data-sid="'+sid+'" title="Verwijder bestand">✕</button>':'';
-  var recrp=(cached&&cached.dataUrl)?'<button class="cRecrop" data-action="recrop" data-path="'+esc(path)+'" data-sid="'+sid+'" title="Bijsnijden / schalen">✂</button>':'';
-  var desc=card.desc?'<span class="cDesc">'+esc(card.desc)+'</span>':'';
-  return '<div class="cTile" id="ct-'+sid+'" data-path="'+esc(path)+'" data-sid="'+sid+'" data-sq="'+isSq+'">'+prev+recrp+delBtn+'<div class="cFoot">'+desc+'<span class="cLbl">'+esc(card.label)+'</span>'+lnk+'</div><input type="file" id="fi-'+sid+'" accept=".svg,.png,image/svg+xml,image/png" data-path="'+esc(path)+'" data-sid="'+sid+'"></div>';
+  var prev=cached&&cached.dataUrl
+    ?'<div class="cPrev"><img src="'+cached.dataUrl+'" alt="'+esc(card.label)+'"></div>'
+    :'<div class="cMt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Klik om<br>te koppelen</span></div>';
+  var recrp=(cached&&cached.dataUrl)?'<button class="cRecrop" data-action="recrop" data-path="'+esc(path)+'" data-sid="'+sid+'" title="Bijsnijden">✂</button>':'';
+  var fname=path.split('/').pop();
+  var linkedBadge=(cached&&cached.dataUrl)?'<span class="cFile">'+esc(fname)+'</span>':'';
+  var tiAttr=(typeof card.ti==='number')?' data-ti="'+card.ti+'"':'';
+  var icAttr=card.ic?' data-ic="1"':'';
+  return '<div class="cTile" id="ct-'+sid+'" data-path="'+esc(path)+'" data-sid="'+sid+'"'+tiAttr+icAttr+' style="cursor:pointer">'+
+    prev+recrp+
+    '<div class="cFoot"><span class="cLbl">'+esc(card.label)+'</span>'+linkedBadge+'</div>'+
+  '</div>';
 }
 function loadCardPreviews(){
   var id=S.activeId,themes=S.d.meta.themes||[];
@@ -2545,24 +2548,6 @@ document.addEventListener('click',function(ev){
       return;
     }
     if(a==='recrop'){ev.stopPropagation();var rp=el2.dataset.path,rs=el2.dataset.sid,ca=CC[rp];if(ca&&ca.dataUrl)showCropModal(ca.dataUrl,rp,rs,false);return;}
-    if(a==='lnk'){ev.stopPropagation();
-      // Show image picker to assign a library file to this theme tile
-      var ti2=parseInt(el2.dataset.ti,10);
-      var id2=S.activeId;
-      var fp2='sets/'+id2+'/cards';
-      // Get all files in library
-      listFolder(fp2).then(function(files){
-        var items=files.map(function(f){
-          var p=fp2+'/'+f.name,ca3=CC[p];
-          var thumb=ca3&&ca3.dataUrl?'<img src="'+ca3.dataUrl+'" style="width:44px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">':'<span style="display:inline-block;width:44px;height:28px;background:var(--bg);border:1px solid var(--br);border-radius:3px;vertical-align:middle;margin-right:6px"></span>';
-          return '<button class="bs gh" style="display:flex;align-items:center;width:100%;text-align:left;margin-bottom:4px" onclick="assignToTheme('+ti2+',\''+esc(f.name)+'\');closeModal()">'+thumb+esc(f.name)+'</button>';
-        }).join('');
-        showModal('<p style="font-size:12px;font-weight:600;margin-bottom:10px">Kies een afbeelding voor <em>'+esc((S.d.meta.themes[ti2]||{}).label||'thema')+'</em>:</p>'+
-          (items||'<p style="font-size:11.5px;color:var(--k3)">Geen bestanden gevonden. Upload eerst een afbeelding.</p>')+
-          '<div class="mAct"><button class="mCa" onclick="closeModal()">Annuleren</button></div>');
-      });
-      return;
-    }
     if(a==='lcard'){ev.stopPropagation();linkCard(parseInt(el2.dataset.ti,10),el2.dataset.folder,el2.dataset.file);return;}
     if(a==='addq'){addQ(el2.dataset.key);return;}
     if(a==='delq'){delQ(el2.dataset.key,parseInt(el2.dataset.qi,10));return;}
@@ -2606,7 +2591,32 @@ document.addEventListener('click',function(ev){
     return;
   }
   hideFloatingTextBar(true);
-  if(!ev.target.closest('button')&&!ev.target.closest('label')&&!ev.target.closest('input')&&!ev.target.closest('textarea')){var tile=ev.target.closest('.cTile');if(tile){var fi=g('fi-'+tile.dataset.sid);if(fi)fi.click();}}
+  // Tile click → open assign popup
+  var tile=ev.target.closest('.cTile');
+  if(tile&&!ev.target.closest('button')&&!ev.target.closest('input')){
+    var id2=S.activeId;
+    var ti3=tile.dataset.ti!==undefined?parseInt(tile.dataset.ti,10):-1;
+    var isCover3=tile.dataset.ic==='1';
+    var fp3='sets/'+id2+'/cards';
+    listFolder(fp3).then(function(files){
+      if(!files.length){toast('Geen bestanden — upload eerst een afbeelding','amber');return;}
+      var tileLabel=isCover3?'Cover':(ti3>=0?(S.d.meta.themes[ti3]||{}).label||'thema':'Kaartafbeelding');
+      var items=files.map(function(f){
+        var p=fp3+'/'+f.name,ca3=CC[p];
+        var curFile=isCover3?'voorkant.svg':(ti3>=0?(S.d.meta.themes[ti3]||{}).card||(S.d.meta.themes[ti3]||{}).key+'.svg':'kaart.svg');
+        var cur=f.name===curFile;
+        var thumb=ca3&&ca3.dataUrl
+          ?'<img src="'+ca3.dataUrl+'" style="width:44px;height:28px;object-fit:cover;border-radius:3px;flex-shrink:0">'
+          :'<div style="width:44px;height:28px;border-radius:3px;background:var(--bg);flex-shrink:0;border:1px solid var(--br)"></div>';
+        var action=isCover3?'assignCover(\''+esc(p)+'\')':(ti3>=0?'assignToTheme('+ti3+',\''+esc(f.name)+'\')':'assignToTheme(-1,\''+esc(f.name)+'\')');
+        return '<button class="bs '+(cur?'tl':'gh')+'" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;margin-bottom:4px" onclick="'+action+';closeModal()">'+
+          thumb+'<span style="flex:1;font-size:12px">'+esc(f.name)+'</span>'+(cur?'<span style="font-size:9.5px">✓</span>':'')+
+          '</button>';
+      }).join('');
+      showModal('<p style="font-size:11px;color:var(--k3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:10px">'+esc(tileLabel)+'</p>'+items+
+        '<div class="mAct"><button class="mCa" onclick="closeModal()">Annuleren</button></div>');
+    });
+  }
 });
 document.addEventListener('change',function(ev){
   if(ev.target.type!=='file')return;
