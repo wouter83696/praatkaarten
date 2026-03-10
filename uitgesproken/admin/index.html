@@ -285,7 +285,7 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .kUploadZone{border:1.5px dashed var(--br);border-radius:10px;padding:22px 20px;background:var(--sf);display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .16s;margin-bottom:14px;position:relative}
 .kUploadZone:hover,.kUploadZone.dragover{border-color:var(--tl);background:var(--tlp)}
 .kUploadZone.dragover{box-shadow:0 0 0 3px rgba(79,142,158,.18)}
-.kUploadZone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.kUploadZone input[type=file]{display:none}
 .kUzIcon{width:36px;height:36px;border-radius:8px;background:var(--tlp);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .16s}
 .kUploadZone:hover .kUzIcon,.kUploadZone.dragover .kUzIcon{background:var(--tlp2)}
 .kUzIcon svg{width:17px;height:17px;stroke:var(--tl);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -600,8 +600,11 @@ function listFolder(fp){
   }).catch(function(){return[];});
 }
 function ensureSha(path){
-  if(CC[path]&&CC[path].sha)return Promise.resolve(CC[path].sha);
-  return api('/contents/'+path).then(function(r){CC[path]=CC[path]||{};CC[path].sha=r.sha;return r.sha;}).catch(function(){return null;});
+  // Always fetch fresh SHA from GitHub — never use cached SHA for uploads
+  // (cached SHA goes stale after any previous upload)
+  return api('/contents/'+path).then(function(r){
+    CC[path]=CC[path]||{};CC[path].sha=r.sha;return r.sha;
+  }).catch(function(){return null;}); // null = new file, no SHA needed
 }
 function decode(s){return decodeURIComponent(escape(s));}
 function encode(s){return unescape(encodeURIComponent(s));}
@@ -1143,15 +1146,16 @@ function buildKaarten(target){
 
   // ── 1. UPLOAD ZONE (GitHub-stijl) ─────────────────────────────────────
   var uploadZone=
-    '<label class="kUploadZone" id="kUploadZone">'+
-      '<input type="file" accept=".svg,.png,image/svg+xml,image/png" id="looseFileIn" onchange="uploadLooseFile(this,\'cards\')">'+
+    '<div class="kUploadZone" id="kUploadZone">'+
       '<div class="kUzIcon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>'+
       '<div class="kUzText">'+
         '<div class="kUzTitle">Sleep een afbeelding hierheen of klik om te uploaden</div>'+
         '<div class="kUzSub">SVG of PNG · Bestanden worden opgeslagen in de kaartmap</div>'+
       '</div>'+
-      '<span class="kUzBtn">Bestand kiezen</span>'+
-    '</label>';
+      '<label class="kUzBtn" style="pointer-events:all;cursor:pointer">Bestand kiezen'+
+        '<input type="file" accept=".svg,.png,image/svg+xml,image/png" id="looseFileIn" style="display:none" onchange="uploadLooseFile(this,\'cards\')">'+
+      '</label>'+
+    '</div>';
 
   // ── 2. BIBLIOTHEEK ─────────────────────────────────────────────────────
   var library=
@@ -1186,12 +1190,19 @@ function buildKaarten(target){
 
 function initUploadZoneDrag(id){
   var zone=g('kUploadZone');if(!zone)return;
+  // Click on zone (not the button) → trigger file input
+  zone.addEventListener('click',function(e){
+    if(e.target.closest('label'))return; // already handled by label
+    var fi=g('looseFileIn');if(fi)fi.click();
+  });
   zone.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
-  zone.addEventListener('dragleave',function(){this.classList.remove('dragover');});
+  zone.addEventListener('dragleave',function(e){if(!this.contains(e.relatedTarget))this.classList.remove('dragover');});
   zone.addEventListener('drop',function(e){
     e.preventDefault();this.classList.remove('dragover');
     var files=e.dataTransfer.files;
-    if(files&&files.length){Array.from(files).forEach(function(f){startLooseUpload(f,'cards');});}
+    if(files&&files.length){Array.from(files).forEach(function(f){
+      if(/\.(svg|png)$/i.test(f.name))startLooseUpload(f,'cards');
+    });}
   });
 }
 
@@ -1315,8 +1326,10 @@ function assignToTheme(ti,fname){
     if(!ca||!ca.dataUrl){toast('Bestand niet geladen','amber');return;}
     var b64=ca.dataUrl.split(',')[1];
     var body={message:'Set kaart: kaart.svg',content:b64};
-    var ex=CC[dest];if(ex&&ex.sha)body.sha=ex.sha;
-    api('/contents/'+dest,'PUT',body).then(function(res){
+    ensureSha(dest).then(function(sha){
+      if(sha)body.sha=sha;
+      return api('/contents/'+dest,'PUT',body);
+    }).then(function(res){
       CC[dest]={sha:(res.content||{}).sha,dataUrl:ca.dataUrl};
       toast('Kaartafbeelding ingesteld: '+fname,'green');
       var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
@@ -1335,12 +1348,12 @@ function assignCover(srcPath){
   var destPath='sets/'+id+'/cards/voorkant.svg';
   if(srcPath===destPath){toast('Al de cover');return;}
   var ca=CC[srcPath];if(!ca||!ca.dataUrl){toast('Bestand niet geladen','amber');return;}
-  // Upload as voorkant.svg
-  var isPng=/\.png$/i.test(srcPath);
   var b64=ca.dataUrl.split(',')[1];
   var body={message:'Set cover: voorkant.svg',content:b64};
-  var ex=CC[destPath];if(ex&&ex.sha)body.sha=ex.sha;
-  api('/contents/'+destPath,'PUT',body).then(function(res){
+  ensureSha(destPath).then(function(sha){
+    if(sha)body.sha=sha;
+    return api('/contents/'+destPath,'PUT',body);
+  }).then(function(res){
     CC[destPath]={sha:(res.content||{}).sha,dataUrl:ca.dataUrl};
     toast('Cover bijgewerkt','green');
     var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
