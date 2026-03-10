@@ -1,0 +1,12 @@
+{
+  "slides": [
+    {
+      "key": "cover",
+      "title": "testen",
+      "body": "",
+      "img": "cards/voorkant.svg",
+      "alt": "testen"
+    }
+  ],
+  "hint": "← → swipe"
+}
