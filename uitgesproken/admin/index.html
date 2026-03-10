@@ -576,7 +576,9 @@ var STEPS=[
 // API
 // ═══════════════════════════════════════════
 function api(path,method,body){
-  return fetch('https://api.github.com/repos/'+S.repo+path,{method:method||'GET',
+  return fetch('https://api.github.com/repos/'+S.repo+path,{
+    method:method||'GET',
+    cache:'no-store',
     headers:{'Authorization':'token '+S.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
     body:body?JSON.stringify(body):undefined
   }).then(function(r){
@@ -598,6 +600,13 @@ function listFolder(fp){
     var f=Array.isArray(r)?r.filter(function(x){return x.type==='file'&&/\.(svg|png)$/i.test(x.name);}).map(function(x){return{name:x.name,sha:x.sha};}):[];
     KF[fp]=f;return f;
   }).catch(function(){return[];});
+}
+function clearFolderCache(path){
+  // Clear KF for the folder containing this path, and all parent folders
+  var parts=path.split('/');
+  for(var i=1;i<=parts.length;i++){delete KF[parts.slice(0,i).join('/')];}
+  // Also clear the exact path
+  delete KF[path];
 }
 function ensureSha(path){
   // Always fetch fresh SHA from GitHub — never use cached SHA for uploads
@@ -1390,7 +1399,7 @@ function startLooseUpload(file,folderName){
       var body={message:'Upload: '+fn,content:b64};
       ensureSha(path).then(function(sha){if(sha)body.sha=sha;return api('/contents/'+path,'PUT',body);}).then(function(res){
         CC[path]={sha:(res.content||{}).sha,dataUrl:dataUrl};
-        delete KF['sets/'+id+'/'+folderName];
+        clearFolderCache('sets/'+id+'/'+folderName);
         toast('✓ '+fn+' geüpload','green');
         refreshLibGrid(id);
         setTimeout(loadCardPreviews,80);
@@ -1593,7 +1602,7 @@ function confirmCrop(){
       var body={message:'Upload: '+path.split('/').pop(),content:b64};
       ensureSha(path).then(function(sha){if(sha)body.sha=sha;return api('/contents/'+path,'PUT',body);}).then(function(res){
         CC[path]={sha:(res.content||{}).sha,dataUrl:dataUrl};
-        delete KF[path.split('/').slice(0,-1).join('/')];
+        clearFolderCache(path);
         if(ld.parentNode)ld.remove();updateTile(path,dataUrl);toast('✓ Bijgesneden en geüpload','green');renderSidebar();
         var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
         setTimeout(loadCardPreviews,50);
@@ -1630,7 +1639,7 @@ function uploadAndLink(input,ti,folder){
     var dataUrl=isBin?'data:image/png;base64,'+b64:'data:image/svg+xml;base64,'+b64;
     var body={message:'Upload: '+fn,content:b64};
     ensureSha(path).then(function(sha){if(sha)body.sha=sha;return api('/contents/'+path,'PUT',body);}).then(function(res){
-      CC[path]={sha:(res.content||{}).sha,dataUrl:dataUrl};delete KF['sets/'+id+'/'+folder];
+      CC[path]={sha:(res.content||{}).sha,dataUrl:dataUrl};clearFolderCache(path);
       if(theme)theme.card=fn;markDirty();
       var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
       setTimeout(loadCardPreviews,50);toast('Geüpload en gekoppeld: '+fn,'green');
@@ -2486,19 +2495,18 @@ function execDup(){
 }
 function mkMeta(id,title){return{id:id,title:title||id,cover:'voorkant.svg',viewerTemplate:'classic',flipAnim:true,doubleSided:true,backMode:'mirror',cssVars:{'--pk-set-accent':'#F3D7A3','--pk-set-bg':'#FFFFFF','--pk-set-card':'rgba(255,255,255,1)'},ui:{menu:{showInfo:true,showShuffle:true,showAllSets:true},sheet:{enabled:true,defaultMode:'cards'},index:{layout:'hero-grid'},themeCss:'theme.css'},themes:[]};}
 function deleteCardFile(path,sid){
-  var cached=CC[path];
-  if(!cached||!cached.sha){toast('Bestand niet gevonden','amber');return;}
   if(!confirm('Bestand verwijderen van GitHub?\n'+path.split('/').pop()))return;
-  api('/contents/'+path,'DELETE',{message:'Remove card: '+path,sha:cached.sha}).then(function(){
+  api('/contents/'+path).then(function(info){
+    return api('/contents/'+path,'DELETE',{message:'Remove card: '+path,sha:info.sha});
+  }).then(function(){
     delete CC[path];
+    clearFolderCache(path);
     var tile=g('ct-'+sid);
     if(tile){
       var old=tile.querySelector('.cPrev,.cMt');
-      if(old){var d=document.createElement('div');d.className='cMt';d.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9l4-4 4 4 4-6 6 8"/></svg><span>Klik of sleep</span>';old.replaceWith(d);}
-      var badge=tile.querySelector('.cBadge');if(badge)badge.remove();
-      var del=tile.querySelector('.cDel');if(del)del.remove();
+      if(old){var d=document.createElement('div');d.className='cMt';d.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Klik om te koppelen</span>';old.replaceWith(d);}
     }
-    toast('Verwijderd');
+    toast('Verwijderd','green');
   }).catch(function(e){toast('Fout: '+e.message,'red');});
 }
 function deleteGhFolder(folderPath){  return api('/contents/'+folderPath).then(function(items){
@@ -2546,15 +2554,20 @@ document.addEventListener('click',function(ev){
     if(a==='fmt'){applyTextFormat(el2.dataset.target,el2.dataset.fmt);return;}
     if(a==='delfile'){ev.stopPropagation();deleteCardFile(el2.dataset.path,el2.dataset.sid);return;}
     if(a==='dellib'){ev.stopPropagation();
-      var lpath=el2.dataset.path,leid=el2.dataset.eid,ca2=CC[lpath];
-      if(!ca2||!ca2.sha){toast('Kan niet verwijderen: sha niet gevonden','amber');return;}
+      var lpath=el2.dataset.path,leid=el2.dataset.eid;
+      // Always fetch fresh SHA before deleting
       if(!confirm('Bestand verwijderen?\n'+lpath.split('/').pop()))return;
-      api('/contents/'+lpath,'DELETE',{message:'Remove: '+lpath,sha:ca2.sha}).then(function(){
+      api('/contents/'+lpath).then(function(info){
+        return api('/contents/'+lpath,'DELETE',{message:'Remove: '+lpath,sha:info.sha});
+      }).then(function(){
         delete CC[lpath];
+        clearFolderCache(lpath);
         var el3=g(leid);if(el3)el3.remove();
-        var grid=g('libGrid');if(grid&&!grid.querySelector('div[id^="lib-"]')){var em=g('libEmpty');if(em)em.style.display='';}
-        toast('Verwijderd');
-      }).catch(function(e){toast('Fout: '+e.message,'red');});
+        updateLibCount();
+        var grid=g('libGrid');
+        if(grid&&!grid.querySelector('.kLibItem')){var em=g('libEmpty');if(em)em.style.display='';}
+        toast('Verwijderd','green');
+      }).catch(function(e){toast('Fout bij verwijderen: '+e.message,'red');});
       return;
     }
     if(a==='recrop'){ev.stopPropagation();var rp=el2.dataset.path,rs=el2.dataset.sid,ca=CC[rp];if(ca&&ca.dataUrl)showCropModal(ca.dataUrl,rp,rs,false);return;}
