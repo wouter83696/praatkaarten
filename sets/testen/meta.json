@@ -1,0 +1,30 @@
+{
+  "id": "testen",
+  "title": "testen",
+  "cover": "voorkant.svg",
+  "viewerTemplate": "classic",
+  "flipAnim": true,
+  "doubleSided": true,
+  "backMode": "mirror",
+  "cssVars": {
+    "--pk-set-accent": "#F3D7A3",
+    "--pk-set-bg": "#FFFFFF",
+    "--pk-set-card": "rgba(255,255,255,1)"
+  },
+  "ui": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "hero-grid"
+    },
+    "themeCss": "theme.css"
+  },
+  "themes": []
+}
