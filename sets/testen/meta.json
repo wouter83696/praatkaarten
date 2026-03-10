@@ -9,7 +9,9 @@
   "cssVars": {
     "--pk-set-accent": "#F3D7A3",
     "--pk-set-bg": "#FFFFFF",
-    "--pk-set-card": "rgba(255,255,255,1)"
+    "--pk-set-card": "rgba(255,255,255,1)",
+    "--pk-set-text": "#2C3E6B",
+    "--pk-font-size": "12"
   },
   "ui": {
     "menu": {
@@ -22,7 +24,12 @@
       "defaultMode": "cards"
     },
     "index": {
-      "layout": "hero-grid"
+      "layout": "hero-grid",
+      "background": {
+        "palette": [
+          "#F3D7A3"
+        ]
+      }
     },
     "themeCss": "theme.css"
   },
