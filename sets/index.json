@@ -4,6 +4,11 @@
     {
       "id": "samenwerken",
       "title": "Samen onderzoeken",
+      "_pct": 67
+    },
+    {
+      "id": "testen",
+      "title": "testen",
       "_pct": 83
     }
   ],
