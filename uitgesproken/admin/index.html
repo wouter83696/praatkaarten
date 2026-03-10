@@ -281,18 +281,43 @@ html,body{height:100%;font-family:'IBM Plex Sans',system-ui,sans-serif;backgroun
 .cMt.sq{aspect-ratio:1/1}
 .cMt{width:100%;aspect-ratio:85/55;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#f7fafb,#eef4f6);color:var(--k3);font-size:10px;gap:4px;text-align:center;padding:10px;line-height:1.4}
 .cMt svg{opacity:.18;width:17px;height:17px}
-.thumbAdv{margin-top:16px;border-top:1px solid rgba(26,26,46,.06);padding-top:14px}
-.thumbToggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border:1px solid var(--br);border-radius:10px;background:rgba(255,255,255,.78);color:var(--k);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .12s,background .12s}
-.thumbToggle:hover{border-color:var(--tl);background:#fff}
-.thumbToggleSub{display:block;font-size:11.5px;font-weight:400;color:var(--k3);margin-top:2px;line-height:1.45}
-.thumbChevron{font-size:12px;color:var(--k3);transition:transform .16s}
-.thumbAdv.open .thumbChevron{transform:rotate(90deg)}
-.thumbBody{margin-top:10px;padding:14px 14px 12px;border:1px solid rgba(26,26,46,.06);border-radius:12px;background:rgba(255,255,255,.55)}
-.thumbBody p{font-size:12px;color:var(--k2);line-height:1.6;margin-bottom:12px}
-.uploadDrop.sm{min-height:98px;padding:18px}
-.uploadDrop.sm .uploadDropTitle{font-size:14px}
-.uploadDrop.sm .uploadDropSub{font-size:11.5px}
-.thumbBody.hidden{display:none}
+/* ── KAARTEN UPLOAD ZONE (GitHub-style) ── */
+.kUploadZone{border:1.5px dashed var(--br);border-radius:10px;padding:22px 20px;background:var(--sf);display:flex;align-items:center;gap:16px;cursor:pointer;transition:all .16s;margin-bottom:14px;position:relative}
+.kUploadZone:hover,.kUploadZone.dragover{border-color:var(--tl);background:var(--tlp)}
+.kUploadZone.dragover{box-shadow:0 0 0 3px rgba(79,142,158,.18)}
+.kUploadZone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.kUzIcon{width:36px;height:36px;border-radius:8px;background:var(--tlp);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .16s}
+.kUploadZone:hover .kUzIcon,.kUploadZone.dragover .kUzIcon{background:var(--tlp2)}
+.kUzIcon svg{width:17px;height:17px;stroke:var(--tl);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kUzText{flex:1;min-width:0}
+.kUzTitle{font-size:13px;font-weight:600;color:var(--k);margin-bottom:2px}
+.kUzSub{font-size:11.5px;color:var(--k3);line-height:1.45}
+.kUzBtn{flex-shrink:0;padding:6px 13px;border-radius:6px;border:1.5px solid var(--tl);background:transparent;color:var(--tld);font:inherit;font-size:12px;font-weight:500;cursor:pointer;pointer-events:none;white-space:nowrap;transition:all .12s}
+.kUploadZone:hover .kUzBtn{background:var(--tl);color:#fff}
+
+/* ── BIBLIOTHEEK ── */
+.kLib{margin-bottom:18px}
+.kLibHdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.kLibTitle{font-size:10px;font-weight:600;color:var(--k3);letter-spacing:.07em;text-transform:uppercase}
+.kLibCount{font-size:10px;color:var(--k3);background:var(--bg);border-radius:99px;padding:1px 7px;border:1px solid var(--br)}
+.kLibGrid{display:flex;flex-wrap:wrap;gap:6px;min-height:44px;padding:8px;background:var(--bg);border:1px solid var(--br);border-radius:8px;align-items:flex-start;transition:all .16s}
+.kLibGrid.dragover{border-color:var(--tl);background:var(--tlp);box-shadow:0 0 0 3px rgba(79,142,158,.15)}
+.kLibEmpty{font-size:11.5px;color:var(--k3);align-self:center;padding:4px 2px;pointer-events:none}
+.kLibItem{position:relative;width:70px;flex-shrink:0;cursor:grab;border-radius:6px;overflow:hidden;border:1.5px solid var(--br);background:white;transition:all .15s;user-select:none}
+.kLibItem:hover{border-color:var(--tl);box-shadow:0 2px 8px rgba(79,142,158,.18);transform:translateY(-1px)}
+.kLibItem.dragging{opacity:.45;cursor:grabbing}
+.kLibItem.linked{border-color:var(--gn)}
+.kLibThumb{width:100%;aspect-ratio:85/55;overflow:hidden;background:#eee;display:flex;align-items:center;justify-content:center}
+.kLibThumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.kLibName{font-size:8.5px;color:var(--k3);padding:2px 5px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.kLibDel{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;font-size:8px;display:none;align-items:center;justify-content:center;padding:0;line-height:1;pointer-events:all;transition:background .1s}
+.kLibDel:hover{background:var(--rd)}
+.kLibItem:hover .kLibDel{display:flex}
+
+/* ── CARD TILES drag-target ── */
+.cTile.droptarget{border:2px dashed var(--tl)!important;background:var(--tlp)!important}
+.cTile.droptarget .cMt{background:var(--tlp)}
+
 .cFoot{padding:4px 6px;border-top:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;gap:3px}
 .cLbl{font-size:10px;font-weight:500;color:var(--k2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .cDesc{font-size:9px;color:var(--k3);display:block;margin-bottom:1px;line-height:1.2}
@@ -1117,46 +1142,66 @@ function initThDrag(){
 function buildKaarten(target){
   var themes=S.d.meta.themes||[],id=S.activeId;
 
-  // ── UPLOAD BALK ─────────────────────────────────────────────────────────
-  var uploadSection=
-    '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:1.5px dashed var(--br);border-radius:8px;margin-bottom:14px">'+
-      '<label class="btn" style="cursor:pointer;padding:6px 13px;font-size:12px;white-space:nowrap;flex-shrink:0">'+
-        '+ Afbeelding uploaden'+
-        '<input type="file" accept=".svg,.png,image/svg+xml,image/png" id="looseFileIn" style="display:none" onchange="uploadLooseFile(this,\'cards\')">'+
-      '</label>'+
-      '<span style="font-size:11.5px;color:var(--k3);line-height:1.4">SVG of PNG. Gekoppeld of ongekoppeld — je kunt de afbeelding daarna koppelen aan een thema.</span>'+
+  // ── 1. UPLOAD ZONE (GitHub-stijl) ─────────────────────────────────────
+  var uploadZone=
+    '<label class="kUploadZone" id="kUploadZone">'+
+      '<input type="file" accept=".svg,.png,image/svg+xml,image/png" id="looseFileIn" onchange="uploadLooseFile(this,\'cards\')">'+
+      '<div class="kUzIcon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>'+
+      '<div class="kUzText">'+
+        '<div class="kUzTitle">Sleep een afbeelding hierheen of klik om te uploaden</div>'+
+        '<div class="kUzSub">SVG of PNG · Bestanden worden opgeslagen in de kaartmap</div>'+
+      '</div>'+
+      '<span class="kUzBtn">Bestand kiezen</span>'+
+    '</label>';
+
+  // ── 2. BIBLIOTHEEK ─────────────────────────────────────────────────────
+  var library=
+    '<div class="kLib">'+
+      '<div class="kLibHdr">'+
+        '<span class="kLibTitle">Geüploade bestanden</span>'+
+        '<span class="kLibCount" id="kLibCount">0</span>'+
+      '</div>'+
+      '<div class="kLibGrid" id="libGrid">'+
+        '<span class="kLibEmpty" id="libEmpty">Nog geen bestanden — upload hierboven of sleep een afbeelding in dit vlak.</span>'+
+      '</div>'+
+      '<p style="font-size:10.5px;color:var(--k3);margin-top:5px">Sleep een afbeelding vanuit de bibliotheek naar een kaartafbeelding hieronder om te koppelen.</p>'+
     '</div>';
 
-  // ── BIBLIOTHEEK (compact) ─────────────────────────────────────────────
-  var libSection=
-    '<div class="sLbl" style="margin-top:2px;margin-bottom:6px">Geüploade bestanden</div>'+
-    '<div id="libGrid" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:16px;padding:8px;background:var(--bg);border:1px solid var(--br);border-radius:7px">'+
-      '<span id="libEmpty" style="font-size:11.5px;color:var(--k3);align-self:center">Nog geen bestanden. Upload hierboven.</span>'+
-    '</div>';
-
-  // ── KAARTAFBEELDINGEN ─────────────────────────────────────────────────
+  // ── 3. KAART-TILES ─────────────────────────────────────────────────────
   var coverPath='sets/'+id+'/cards/voorkant.svg';
-  var coverCache=CC[coverPath]||CC['sets/'+id+'/cards_rect/voorkant.svg'];
-  var coverImg=coverCache&&coverCache.dataUrl?coverCache.dataUrl:'';
-
-  var cardsSection='<div class="sLbl" style="margin-bottom:8px">🃏 Kaartafbeeldingen</div>'+
+  var tiles=
+    '<div style="font-size:10px;font-weight:600;color:var(--k3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px">🃏 Kaartafbeeldingen</div>'+
     '<div class="cGrid" id="cg-cards">'+
-    // Cover tile
     buildCTile({key:'voorkant',label:'Cover',cf:'voorkant.svg',ic:true},'cards',coverPath)+
-    // Per-thema tiles
-    themes.map(function(t,i){
-      return buildCTile({key:t.key,label:t.label||t.key,cf:t.card||(t.key+'.svg'),ti:i},'cards','sets/'+id+'/cards/'+(t.card||(t.key+'.svg')));
-    }).join('')+
-    (themes.length===0?buildCTile({key:'kaart',label:'Kaartafbeelding',cf:'kaart.svg',desc:'Achtergrond op de kaarten'},'cards','sets/'+id+'/cards/kaart.svg'):'')+
+    (themes.length
+      ? themes.map(function(t,i){return buildCTile({key:t.key,label:t.label||t.key,cf:t.card||(t.key+'.svg'),ti:i},'cards','sets/'+id+'/cards/'+(t.card||(t.key+'.svg')));}).join('')
+      : buildCTile({key:'kaart',label:'Kaartafbeelding',cf:'kaart.svg',desc:'Achtergrond op de kaarten'},'cards','sets/'+id+'/cards/kaart.svg')
+    )+
     '</div>';
 
-  target.innerHTML='<div class="panel">'+uploadSection+libSection+cardsSection+'</div>';
+  target.innerHTML='<div class="panel">'+uploadZone+library+tiles+'</div>';
+  initUploadZoneDrag(id);
   refreshLibGrid(id);
+  wireCardTileDrops(id);
+}
+
+function initUploadZoneDrag(id){
+  var zone=g('kUploadZone');if(!zone)return;
+  zone.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
+  zone.addEventListener('dragleave',function(){this.classList.remove('dragover');});
+  zone.addEventListener('drop',function(e){
+    e.preventDefault();this.classList.remove('dragover');
+    var files=e.dataTransfer.files;
+    if(files&&files.length){Array.from(files).forEach(function(f){startLooseUpload(f,'cards');});}
+  });
 }
 
 function refreshLibGrid(id){
   var fp='sets/'+id+'/cards';
   var grid=g('libGrid');if(!grid)return;
+  var linked=new Set((S.d.meta.themes||[]).map(function(t){return t.card||(t.key+'.svg');}));
+  linked.add('voorkant.svg');
+
   function addLibItem(fname,sha,dataUrl){
     var path=fp+'/'+fname;
     var eid='lib-'+safeid(path);
@@ -1165,61 +1210,122 @@ function refreshLibGrid(id){
     if(!CC[path])CC[path]={};
     if(sha&&!CC[path].sha)CC[path].sha=sha;
     if(dataUrl&&!CC[path].dataUrl)CC[path].dataUrl=dataUrl;
+    var isLinked=linked.has(fname);
     var el=document.createElement('div');
-    el.id=eid;
-    el.style.cssText='position:relative;width:72px;flex-shrink:0;cursor:pointer;border-radius:5px;overflow:hidden;border:1.5px solid var(--br);background:#f5f5f5';
-    el.title=fname;
+    el.id=eid;el.className='kLibItem'+(isLinked?' linked':'');
+    el.draggable=true;
+    el.dataset.fname=fname;el.dataset.path=path;
+    el.title=fname+(isLinked?' (gekoppeld)':'');
     el.innerHTML=
-      '<div style="aspect-ratio:85/55;overflow:hidden;background:#eee">'+
-        (CC[path].dataUrl?'<img src="'+CC[path].dataUrl+'" style="width:100%;height:100%;object-fit:cover">':
-          '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center"><span class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(0,0,0,.15);border-top-color:var(--tl)"></span></div>')+
+      '<div class="kLibThumb">'+
+        (CC[path].dataUrl
+          ?'<img src="'+CC[path].dataUrl+'" draggable="false">'
+          :'<span class="spinner" style="width:12px;height:12px;border-width:1.5px;border-color:rgba(0,0,0,.1);border-top-color:var(--tl)"></span>')+
       '</div>'+
-      '<div style="font-size:9px;color:var(--k3);padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(fname)+'</div>'+
-      '<button data-action="dellib" data-path="'+esc(path)+'" data-eid="'+eid+'" style="position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;border:none;cursor:pointer;font-size:9px;line-height:1;display:none;align-items:center;justify-content:center;padding:0" title="Verwijder">✕</button>';
-    el.addEventListener('mouseenter',function(){var b=this.querySelector('[data-action="dellib"]');if(b)b.style.display='flex';});
-    el.addEventListener('mouseleave',function(){var b=this.querySelector('[data-action="dellib"]');if(b)b.style.display='none';});
-    // Click on lib item → open crop/scale modal
-    el.addEventListener('click',function(e){if(e.target.closest('[data-action="dellib"]'))return;var ca=CC[path];if(ca&&ca.dataUrl)showImgPicker(path);});
+      '<div class="kLibName">'+esc(fname)+'</div>'+
+      '<button class="kLibDel" data-action="dellib" data-path="'+esc(path)+'" data-eid="'+eid+'" title="Verwijder">✕</button>';
+
+    // Drag van bibliotheek naar tile
+    el.addEventListener('dragstart',function(e){
+      e.dataTransfer.setData('text/plain',fname);
+      e.dataTransfer.setData('libpath',path);
+      e.dataTransfer.effectAllowed='copy';
+      this.classList.add('dragging');
+    });
+    el.addEventListener('dragend',function(){this.classList.remove('dragging');});
+
+    // Klik → koppel-popup
+    el.addEventListener('click',function(e){
+      if(e.target.closest('[data-action="dellib"]'))return;
+      showLibAssignPopup(fname,path,el);
+    });
+
     grid.appendChild(el);
-    // Load image if not yet loaded
+    updateLibCount();
+
+    // Laad afbeelding als nog niet gecached
     if(!CC[path].dataUrl&&CC[path].sha){
       api('/contents/'+path).then(function(res){
         var isSvg=/\.svg$/i.test(fname);
         var du=isSvg?'data:image/svg+xml;base64,'+btoa(encode(atob(res.content.replace(/\s/g,'')))):'data:image/png;base64,'+res.content.replace(/\s/g,'');
         CC[path]={sha:res.sha,dataUrl:du};
-        var imgEl=el.querySelector('img');
-        if(!imgEl){var wrap=el.querySelector('div');if(wrap)wrap.innerHTML='<img src="'+du+'" style="width:100%;height:100%;object-fit:cover">';}
-        else imgEl.src=du;
+        var th=el.querySelector('.kLibThumb');
+        if(th){th.innerHTML='<img src="'+du+'" draggable="false">';}
       }).catch(function(){});
     }
   }
-  // From cache
+
+  // Vanuit cache
   Object.keys(CC).forEach(function(p){
     if(p.indexOf(fp+'/')===0){var fn=p.slice(fp.length+1);if(fn&&fn.indexOf('/')===-1)addLibItem(fn,CC[p].sha,CC[p].dataUrl);}
   });
-  // From GitHub
-  listFolder(fp).then(function(files){files.forEach(function(f){addLibItem(f.name,f.sha,null);});});
+  // Vanuit GitHub
+  listFolder(fp).then(function(files){
+    files.forEach(function(f){addLibItem(f.name,f.sha,null);});
+    // Allow dropping into lib grid itself (for uploading)
+    var grid2=g('libGrid');if(grid2){
+      grid2.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
+      grid2.addEventListener('dragleave',function(e){if(!this.contains(e.relatedTarget))this.classList.remove('dragover');});
+      grid2.addEventListener('drop',function(e){
+        e.preventDefault();this.classList.remove('dragover');
+        var files=e.dataTransfer.files;
+        if(files&&files.length){Array.from(files).forEach(function(f){startLooseUpload(f,'cards');});}
+      });
+    }
+  });
 }
 
-// Show image picker when clicking a lib thumbnail — lets user assign it to a theme tile
-function showImgPicker(srcPath){
+function updateLibCount(){
+  var grid=g('libGrid');var c=g('kLibCount');
+  if(grid&&c){var n=grid.querySelectorAll('.kLibItem').length;c.textContent=n;c.style.display=n?'':'none';}
+}
+
+function showLibAssignPopup(fname,path,fromEl){
   var themes=S.d.meta.themes||[],id=S.activeId;
-  var fname=srcPath.split('/').pop();
-  var ca=CC[srcPath];
-  var preview=ca&&ca.dataUrl?'<img src="'+ca.dataUrl+'" style="width:120px;height:auto;border-radius:6px;border:1px solid var(--br);margin-bottom:10px">':'';
+  var ca=CC[path];
+  var preview=ca&&ca.dataUrl?'<div style="margin-bottom:10px"><img src="'+ca.dataUrl+'" style="max-width:100%;border-radius:6px;border:1px solid var(--br)"></div>':'';
   var opts=themes.map(function(t,i){
-    var isCurrent=(t.card||t.key+'.svg')===fname;
-    return '<button class="bs '+(isCurrent?'tl':'gh')+'" style="display:block;width:100%;text-align:left;margin-bottom:4px" onclick="assignToTheme('+i+',\''+esc(fname)+'\');closeModal()">'+
-      (isCurrent?'✓ ':'')+esc(t.label||t.key)+'</button>';
+    var cur=(t.card||t.key+'.svg')===fname;
+    return '<button class="bs '+(cur?'tl':'gh')+'" style="display:flex;align-items:center;gap:7px;width:100%;text-align:left;margin-bottom:4px" onclick="assignToTheme('+i+',\''+esc(fname)+'\');closeModal()">'+
+      '<span style="flex:1">'+esc(t.label||t.key)+'</span>'+(cur?'<span style="font-size:9.5px">✓ huidig</span>':'')+
+      '</button>';
   }).join('');
-  var coverCurrent=(CC['sets/'+id+'/cards/voorkant.svg']&&srcPath===('sets/'+id+'/cards/voorkant.svg'));
   showModal(
+    '<p style="font-size:11px;font-weight:600;color:var(--k3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Koppelen</p>'+
     preview+
-    '<p style="font-size:12px;font-weight:600;margin-bottom:8px">Koppel <em>'+esc(fname)+'</em> aan:</p>'+
-    '<button class="bs gh" style="display:block;width:100%;text-align:left;margin-bottom:8px" onclick="assignCover(\''+esc(srcPath)+'\');closeModal()">Cover (voorkant.svg)</button>'+
-    (opts||'<p style="font-size:11.5px;color:var(--k3)">Voeg thema\'s toe bij Basis om per thema een kaartafbeelding in te stellen.</p>')+
-    '<div class="mAct"><button class="mCa" onclick="closeModal()">Sluiten</button></div>'
+    '<p style="font-size:12px;font-weight:500;margin-bottom:10px">Koppel <em style="font-style:normal;color:var(--tld)">'+esc(fname)+'</em> aan:</p>'+
+    '<button class="bs gh" style="display:flex;align-items:center;width:100%;text-align:left;margin-bottom:4px" onclick="assignCover(\''+esc(path)+'\');closeModal()">Cover</button>'+
+    (opts||'<p style="font-size:11.5px;color:var(--k3);padding:4px 0">Geen thema\'s. Voeg thema\'s toe bij Basis.</p>')+
+    '<div class="mAct"><button class="mCa" onclick="closeModal()">Annuleren</button></div>'
   );
+}
+
+function wireCardTileDrops(id){
+  // Called after buildKaarten — adds drop handlers to all .cTile
+  function setupTile(tile){
+    if(tile._dropWired)return;tile._dropWired=true;
+    tile.addEventListener('dragover',function(e){
+      if(!e.dataTransfer.types.includes('text/plain'))return;
+      e.preventDefault();this.classList.add('droptarget');
+    });
+    tile.addEventListener('dragleave',function(e){
+      if(!this.contains(e.relatedTarget))this.classList.remove('droptarget');
+    });
+    tile.addEventListener('drop',function(e){
+      e.preventDefault();this.classList.remove('droptarget');
+      var fname=e.dataTransfer.getData('text/plain');
+      if(!fname)return;
+      var ti=this.querySelector('.cLnk')?parseInt(this.querySelector('.cLnk').dataset.ti,10):-1;
+      var isIc=!this.querySelector('.cLnk')&&this.id.indexOf('voorkant')>=0;
+      if(ti>=0){assignToTheme(ti,fname);}
+      else{
+        // Cover tile
+        var srcPath='sets/'+id+'/cards/'+fname;
+        assignCover(srcPath);
+      }
+    });
+  }
+  var cg=g('cg-cards');if(cg)cg.querySelectorAll('.cTile').forEach(setupTile);
 }
 function assignToTheme(ti,fname){
   var t=S.d.meta.themes[ti];if(!t)return;
@@ -1278,8 +1384,6 @@ function startLooseUpload(file,folderName){
         delete KF['sets/'+id+'/'+folderName];
         toast('✓ '+fn+' geüpload','green');
         refreshLibGrid(id);
-        // Also rebuild the tab so tiles update
-        var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
         setTimeout(loadCardPreviews,80);
       }).catch(function(err){toast('Fout: '+err.message,'red');});
     };
