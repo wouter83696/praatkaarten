@@ -1197,7 +1197,8 @@ function initUploadZoneDrag(id){
 
 function refreshLibGrid(id){
   var fp='sets/'+id+'/cards';
-  var grid=g('libGrid');if(!grid)return;
+  var grid=g('libGrid');
+  if(!grid)return; // Not on kaarten tab, skip silently
   var linked=new Set((S.d.meta.themes||[]).map(function(t){return t.card||(t.key+'.svg');}));
   linked.add('voorkant.svg');
 
@@ -1300,33 +1301,29 @@ function showLibAssignPopup(fname,path,fromEl){
 }
 
 function wireCardTileDrops(id){
-  // Called after buildKaarten — adds drop handlers to all .cTile
-  function setupTile(tile){
-    if(tile._dropWired)return;tile._dropWired=true;
-    tile.addEventListener('dragover',function(e){
-      if(!e.dataTransfer.types.includes('text/plain'))return;
-      e.preventDefault();this.classList.add('droptarget');
-    });
-    tile.addEventListener('dragleave',function(e){
-      if(!this.contains(e.relatedTarget))this.classList.remove('droptarget');
-    });
-    tile.addEventListener('drop',function(e){
-      e.preventDefault();this.classList.remove('droptarget');
-      var fname=e.dataTransfer.getData('text/plain');
-      if(!fname)return;
-      var ti=this.querySelector('.cLnk')?parseInt(this.querySelector('.cLnk').dataset.ti,10):-1;
-      var isIc=!this.querySelector('.cLnk')&&this.id.indexOf('voorkant')>=0;
-      if(ti>=0){assignToTheme(ti,fname);}
-      else{
-        // Cover tile
-        var srcPath='sets/'+id+'/cards/'+fname;
-        assignCover(srcPath);
-      }
-    });
-  }
-  var cg=g('cg-cards');if(cg)cg.querySelectorAll('.cTile').forEach(setupTile);
+  // Visual droptarget is handled by global dragover/dragleave handlers
+  // Actual drop logic is in the global drop handler
+  // Nothing needed here anymore - keep for future use
 }
 function assignToTheme(ti,fname){
+  if(ti<0){
+    // No themes — assign as generic kaart.svg by copying
+    var id=S.activeId;
+    var src='sets/'+id+'/cards/'+fname;
+    var dest='sets/'+id+'/cards/kaart.svg';
+    var ca=CC[src];
+    if(!ca||!ca.dataUrl){toast('Bestand niet geladen','amber');return;}
+    var b64=ca.dataUrl.split(',')[1];
+    var body={message:'Set kaart: kaart.svg',content:b64};
+    var ex=CC[dest];if(ex&&ex.sha)body.sha=ex.sha;
+    api('/contents/'+dest,'PUT',body).then(function(res){
+      CC[dest]={sha:(res.content||{}).sha,dataUrl:ca.dataUrl};
+      toast('Kaartafbeelding ingesteld: '+fname,'green');
+      var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
+      setTimeout(loadCardPreviews,50);
+    }).catch(function(e){toast('Fout: '+e.message,'red');});
+    return;
+  }
   var t=S.d.meta.themes[ti];if(!t)return;
   t.card=fname;markDirty();
   var pw=g('pw');if(pw){if(S.mode==='wizard')buildKaarten(pw);else renderClPanel();}
@@ -2623,34 +2620,48 @@ document.addEventListener('change',function(ev){
   var a=ev.target.dataset.action;
   if(a==='ulink'){uploadAndLink(ev.target,parseInt(ev.target.dataset.ti,10),ev.target.dataset.folder);return;}
   if(a==='palc'){var bc=bgCfg();bc.palette=bc.palette||[];bc.palette[parseInt(ev.target.dataset.i,10)]=ev.target.value;markDirty();scheduleBg();return;}
+  // looseFileIn — upload to library
+  if(ev.target.id==='looseFileIn'||ev.target.id==='looseThumbIn'){return;} // handled by onchange attribute
+  // Legacy: tiles no longer have file inputs, this is a fallback
   if(ev.target.dataset.path){uploadFile(ev.target.files[0],ev.target.dataset.path,ev.target.dataset.sid);ev.target.value='';}
 });
 document.addEventListener('dragover',function(ev){
   var tile=ev.target.closest('.cTile');
-  var loose=ev.target.closest('[data-loose-drop]');
-  if(tile||loose)ev.preventDefault();
-  if(tile)tile.style.borderColor='var(--tl)';
-  if(loose)loose.classList.add('drag');
+  var uploadZone=ev.target.closest('.kUploadZone,.kLibGrid');
+  if(tile||uploadZone)ev.preventDefault();
+  if(tile)tile.classList.add('droptarget');
 });
 document.addEventListener('dragleave',function(ev){
   var tile=ev.target.closest('.cTile');
-  var loose=ev.target.closest('[data-loose-drop]');
-  if(tile&&!tile.contains(ev.relatedTarget))tile.style.borderColor='';
-  if(loose&&!loose.contains(ev.relatedTarget))loose.classList.remove('drag');
+  if(tile&&!tile.contains(ev.relatedTarget))tile.classList.remove('droptarget');
 });
 document.addEventListener('drop',function(ev){
   var tile=ev.target.closest('.cTile');
-  var loose=ev.target.closest('[data-loose-drop]');
-  if(!tile&&!loose)return;
+  var uploadZone=ev.target.closest('.kUploadZone');
+  var libGrid=ev.target.closest('.kLibGrid');
+  if(!tile&&!uploadZone&&!libGrid)return;
   ev.preventDefault();
-  if(tile)tile.style.borderColor='';
-  if(loose)loose.classList.remove('drag');
-  var f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
-  if(!f)return;
-  if(!/\.(svg|png)$/i.test(f.name)){toast('Alleen SVG of PNG','red');return;}
-  if(tile){uploadFile(f,tile.dataset.path,tile.dataset.sid);return;}
-  var folderName=(loose&&loose.dataset&&loose.dataset.folder)||'cards';
-  startLooseUpload(f,folderName);
+  if(tile)tile.classList.remove('droptarget');
+
+  var fname=ev.dataTransfer&&ev.dataTransfer.getData('text/plain');
+  var files=ev.dataTransfer&&ev.dataTransfer.files;
+
+  // Lib-item dragged onto tile → assign
+  if(tile&&fname&&!(files&&files.length)){
+    var ti4=tile.dataset.ti!==undefined&&tile.dataset.ti!==''?parseInt(tile.dataset.ti,10):-1;
+    var isCov=tile.dataset.ic==='1';
+    if(isCov){var p4='sets/'+S.activeId+'/cards/'+fname;assignCover(p4);}
+    else if(ti4>=0){assignToTheme(ti4,fname);}
+    return;
+  }
+
+  // File dropped → always goes to library (not directly to tile)
+  if(files&&files.length){
+    var f=files[0];
+    if(!/\.(svg|png)$/i.test(f.name)){toast('Alleen SVG of PNG','red');return;}
+    startLooseUpload(f,'cards');
+    return;
+  }
 });
 document.addEventListener('focusin',function(ev){
   if(isTextToolbarTarget(ev.target)) showFloatingTextBar(ev.target);
