@@ -1,0 +1,70 @@
+{
+  "id": "testen",
+  "title": "testen",
+  "cover": "voorkant.svg",
+  "viewerTemplate": "classic",
+  "flipAnim": true,
+  "doubleSided": true,
+  "backMode": "mirror",
+  "cssVars": {
+    "--pk-set-accent": "#CFE6DF",
+    "--pk-set-bg": "#FFFFFF",
+    "--pk-set-card": "rgba(255,255,255,1)"
+  },
+  "ui": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "hero-grid",
+      "background": {
+        "palette": [
+          "#CFE6DF"
+        ]
+      }
+    },
+    "themeCss": "theme.css",
+    "cardModes": {},
+    "coverTexts": [
+      {
+        "text": "",
+        "x": 50,
+        "y": 34,
+        "valign": "top",
+        "size": 18,
+        "align": "left",
+        "weight": "regular",
+        "italic": false,
+        "underline": false,
+        "font": "IBM Plex Sans",
+        "color": "#1a1a2e",
+        "bg": ""
+      },
+      {
+        "text": "",
+        "x": 50,
+        "y": 68,
+        "valign": "bottom",
+        "size": 12,
+        "align": "left",
+        "weight": "regular",
+        "italic": false,
+        "underline": false,
+        "font": "IBM Plex Sans",
+        "color": "#1a1a2e",
+        "bg": ""
+      }
+    ],
+    "cardShapes": {
+      "cover": [],
+      "algemeen": []
+    }
+  },
+  "themes": []
+}
