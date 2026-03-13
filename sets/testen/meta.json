@@ -62,20 +62,7 @@
       }
     ],
     "cardShapes": {
-      "cover": [
-        {
-          "type": "star",
-          "fill": "#CFE6DF",
-          "stroke": "#FFFFFF",
-          "fillOpacity": 1,
-          "strokeOpacity": 1,
-          "strokeWidth": 0,
-          "size": 42,
-          "x": 74,
-          "y": 24,
-          "rotate": 0
-        }
-      ],
+      "cover": [],
       "algemeen": []
     },
     "previewNight": false
