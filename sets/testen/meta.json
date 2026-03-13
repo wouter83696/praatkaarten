@@ -64,18 +64,16 @@
     "cardShapes": {
       "cover": [
         {
-          "type": "slope",
+          "type": "band",
           "fill": "#CFE6DF",
           "stroke": "#FFFFFF",
           "fillOpacity": 1,
           "strokeOpacity": 1,
           "strokeWidth": 0,
           "size": 42,
-          "x": 43,
-          "y": 49,
-          "rotate": 0,
-          "deform": 0,
-          "blobSeed": 58374
+          "x": 19,
+          "y": 87,
+          "rotate": 0
         }
       ],
       "algemeen": []
