@@ -49,6 +49,101 @@ var DEFAULT_CARDS_INDEX_BACKGROUND = {
   autoMode: true
 };
 
+
+var BACKGROUND_SHAPE_OPTIONS = [
+  {v:'organic',l:'Organisch'},
+  {v:'circle',l:'Cirkel'},
+  {v:'rounded',l:'Afgerond'},
+  {v:'oval',l:'Ovaal'},
+  {v:'pill',l:'Pil'},
+  {v:'triangle',l:'Driehoek'},
+  {v:'diamond',l:'Ruit'},
+  {v:'star',l:'Ster'},
+  {v:'heart',l:'Hart'},
+  {v:'hexagon',l:'Zeshoek'},
+  {v:'octagon',l:'Achthoek'},
+  {v:'cloud',l:'Wolk'},
+  {v:'leaf',l:'Blad'},
+  {v:'drop',l:'Druppel'},
+  {v:'arch',l:'Boog'},
+  {v:'spark',l:'Spark'},
+  {v:'burst',l:'Burst'},
+  {v:'grid',l:'Raster'}
+];
+
+var BACKGROUND_SHAPE_WEIGHT = {
+  organic: 1,
+  circle: 1,
+  rounded: 0.95,
+  oval: 0.9,
+  pill: 0.9,
+  triangle: 0.9,
+  diamond: 0.82,
+  star: 0.52,
+  heart: 0.46,
+  hexagon: 0.8,
+  octagon: 0.78,
+  cloud: 0.58,
+  leaf: 0.62,
+  drop: 0.62,
+  arch: 0.7,
+  spark: 0.56,
+  burst: 0.42,
+  grid: 0.35
+};
+
+function normalizeBackgroundShapeType(type){
+  var v = String(type || '').toLowerCase().trim();
+  if(!v) return '';
+  var map = {
+    blob:'organic',
+    band:'rounded',
+    bar:'rounded',
+    column:'pill',
+    side:'oval',
+    hill:'arch',
+    star4:'star',
+    spark4:'spark',
+    petal:'leaf',
+    crescent:'organic',
+    slope:'triangle',
+    cornerwide:'rounded',
+    corner:'rounded',
+    shield:'rounded',
+    parallelogram:'diamond',
+    plus:'diamond',
+    wave:'organic',
+    arrow:'diamond'
+  };
+  return map[v] || v;
+}
+
+function backgroundShapeWeight(type){
+  var key = normalizeBackgroundShapeType(type);
+  return Object.prototype.hasOwnProperty.call(BACKGROUND_SHAPE_WEIGHT, key) ? BACKGROUND_SHAPE_WEIGHT[key] : 0;
+}
+
+function expandWeightedShapes(shapeCount){
+  var entries = Object.keys(shapeCount || {}).map(function(key){
+    var normalized = normalizeBackgroundShapeType(key);
+    return {
+      shape: normalized,
+      count: shapeCount[key] || 0,
+      weight: backgroundShapeWeight(normalized)
+    };
+  }).filter(function(item){ return !!item.shape && item.weight > 0 && item.count > 0; });
+
+  entries.sort(function(a,b){ return (b.count * b.weight) - (a.count * a.weight); });
+  var ordered = entries.map(function(item){ return item.shape; });
+  var expanded = [];
+  entries.forEach(function(item){
+    var repeats = Math.max(1, Math.min(5, Math.round(item.count * item.weight)));
+    for(var i=0;i<repeats;i++) expanded.push(item.shape);
+  });
+  if(!expanded.length) expanded = ['organic'];
+  return { ordered: ordered.slice(0, 8), expanded: expanded.slice(0, 24) };
+}
+
 function getMetaBackground(meta){
   var ui = meta && meta.ui;
   if(ui && ui.cardsIndex && ui.cardsIndex.background) return ui.cardsIndex.background;
@@ -114,13 +209,17 @@ function derivePaletteAndShapesFromLayers(input){
     });
   });
   var palette = Object.keys(paletteCount).sort(function(a,b){ return paletteCount[b]-paletteCount[a]; }).slice(0,6);
-  var shapes = Object.keys(shapeCount).sort(function(a,b){ return shapeCount[b]-shapeCount[a]; }).slice(0,4);
+  var expandedShapes = expandWeightedShapes(shapeCount);
+  var shapes = expandedShapes.ordered;
+  var weightedShapes = expandedShapes.expanded;
   if(!palette.length) palette = fallbackPalette.slice();
   if(!shapes.length) shapes = ['organic'];
+  if(!weightedShapes.length) weightedShapes = ['organic'];
   return {
     palette: palette,
     shapes: shapes,
-    seedKey: themeKeys.join('|') + '__' + palette.join('|') + '__' + shapes.join('|')
+    weightedShapes: weightedShapes,
+    seedKey: themeKeys.join('|') + '__' + palette.join('|') + '__' + weightedShapes.join('|')
   };
 }
 
@@ -130,7 +229,10 @@ const autoBackground = {
   normalizeBackgroundConfig: normalizeBackgroundConfig,
   getMetaBackground: getMetaBackground,
   resolveCardsIndexBackground: resolveCardsIndexBackground,
-  derivePaletteAndShapesFromLayers: derivePaletteAndShapesFromLayers
+  derivePaletteAndShapesFromLayers: derivePaletteAndShapesFromLayers,
+  normalizeBackgroundShapeType: normalizeBackgroundShapeType,
+  backgroundShapeWeight: backgroundShapeWeight,
+  BACKGROUND_SHAPE_OPTIONS: BACKGROUND_SHAPE_OPTIONS
 };
 
 if(typeof window !== 'undefined'){
@@ -138,4 +240,4 @@ if(typeof window !== 'undefined'){
   window.PK.autoBackground = autoBackground;
 }
 
-export { DEFAULT_CARDS_INDEX_BACKGROUND, normalizeBackgroundConfig, getMetaBackground, resolveCardsIndexBackground, derivePaletteAndShapesFromLayers, autoBackground };
+export { DEFAULT_CARDS_INDEX_BACKGROUND, normalizeBackgroundConfig, getMetaBackground, resolveCardsIndexBackground, derivePaletteAndShapesFromLayers, normalizeBackgroundShapeType, backgroundShapeWeight, BACKGROUND_SHAPE_OPTIONS, autoBackground };
