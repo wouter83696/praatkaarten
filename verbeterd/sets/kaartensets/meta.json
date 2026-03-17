@@ -11,6 +11,9 @@
   },
   "themes": [],
   "ui": {
-    "themeCss": "theme.css"
+    "themeCss": "theme.css",
+    "cardsIndex": {
+      "background": {}
+    }
   }
 }

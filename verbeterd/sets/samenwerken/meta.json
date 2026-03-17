@@ -22,7 +22,10 @@
     "index": {
       "layout": "hero-grid"
     },
-    "themeCss": "theme.css"
+    "themeCss": "theme.css",
+    "cardsIndex": {
+      "background": {}
+    }
   },
   "themes": [
     {
