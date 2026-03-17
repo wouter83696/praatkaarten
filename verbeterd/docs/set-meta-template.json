@@ -6,6 +6,9 @@
     "index": {
       "layout": "carousel",
       "gridLimit": 6
+    },
+    "cardsIndex": {
+      "background": {}
     }
   }
 }

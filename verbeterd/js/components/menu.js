@@ -1,140 +1,159 @@
-// Praatkaartjes – Menu component (ES5)
-// Doel: menu open/close/toggle centraal beheren.
-(function(w){
-  'use strict';
-  var PK = w.PK = w.PK || {};
+// Praatkaartjes – Menu component
+import { PATHS } from '../core/paths.js';
 
-  function goHome(){
-    var target = '';
-    try{
-      if(PK && PK.PATHS && PK.PATHS.gridPage){
-        target = String(PK.PATHS.gridPage || '');
-      }
-    }catch(_ePath){}
-    if(!target){
-      var p = '';
-      try{ p = String((w.location && w.location.pathname) || ''); }catch(_eLoc){ p = ''; }
-      target = (p.indexOf('/kaarten/') !== -1 || p.indexOf('/uitleg/') !== -1) ? '../index.html' : './index.html';
+function goHome(){
+  var target = '';
+  try{
+    if(PK && PK.PATHS && PK.PATHS.gridPage){
+      target = String(PK.PATHS.gridPage || '');
     }
-    try{ w.location.href = target; }catch(_eNav){}
+  }catch(_ePath){}
+  if(!target){
+    var p = '';
+    try{ p = String((window.location && window.location.pathname) || ''); }catch(_eLoc){ p = ''; }
+    target = (p.indexOf('/kaarten/') !== -1 || p.indexOf('/uitleg/') !== -1) ? '../index.html' : './index.html';
   }
+  try{ window.location.href = target; }catch(_eNav){}
+}
 
-  function isHomeAreaClick(trigger, ev){
-    if(!trigger || !ev) return false;
-    var t = ev.target || null;
-    if(!t || !t.closest) return false;
-    var main = t.closest('.themePillMain');
-    return !!(main && trigger.contains(main));
-  }
+function isHomeAreaClick(trigger, ev){
+  if(!trigger || !ev) return false;
+  var t = ev.target || null;
+  if(!t || !t.closest) return false;
+  var main = t.closest('.themePillMain');
+  return !!(main && trigger.contains(main));
+}
 
-  function bindTopBarHome(trigger){
-    if(!trigger || trigger.__pkTopBarHomeBound) return;
-    trigger.__pkTopBarHomeBound = true;
-    trigger.addEventListener('click', function(ev){
-      if(!isHomeAreaClick(trigger, ev)) return;
-      if(ev && ev.preventDefault) ev.preventDefault();
-      if(ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-      else if(ev && ev.stopPropagation) ev.stopPropagation();
-      goHome();
-    }, true);
-  }
+function bindTopBarHome(trigger){
+  if(!trigger || trigger.__pkTopBarHomeBound) return;
+  trigger.__pkTopBarHomeBound = true;
+  trigger.addEventListener('click', function(ev){
+    if(!isHomeAreaClick(trigger, ev)) return;
+    if(ev && ev.preventDefault) ev.preventDefault();
+    if(ev && ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    else if(ev && ev.stopPropagation) ev.stopPropagation();
+    goHome();
+  }, true);
+}
 
-  PK.createMenu = function(options){
-    options = options || {};
-    var menu = options.menu || w.document.getElementById('themeMenu');
-    var overlay = options.overlay || w.document.getElementById('themeMenuOverlay');
-    var trigger = options.trigger || w.document.getElementById('themePill');
-    var api = null;
+export function createMenu(options) {
+  options = options || {};
+  var menu = options.menu || document.getElementById('themeMenu');
+  var overlay = options.overlay || document.getElementById('themeMenuOverlay');
+  var trigger = options.trigger || document.getElementById('themePill');
+  var closeTimer = 0;
+  var MENU_CLOSE_MS = 260;
+  var api = null;
 
-    if(menu && menu.__pkMenuApi) return menu.__pkMenuApi;
+  if(menu && menu.__pkMenuApi) return menu.__pkMenuApi;
 
-    if(!menu){
-      return {
-        open: function(){}, close: function(){}, toggle: function(){}, isOpen: function(){ return false; }
-      };
-    }
-
-    function open(){
-      menu.hidden = false;
-      if(overlay) overlay.hidden = true;
-      if(trigger) trigger.setAttribute('aria-expanded','true');
-      // Focus eerste focusbare knop in het menu (toegankelijkheid)
-      w.requestAnimationFrame(function(){
-        var first = menu.querySelector('button:not([hidden]), [tabindex]:not([tabindex="-1"]):not([hidden])');
-        if(first && first.focus) first.focus();
-      });
-    }
-
-    function close(){
-      menu.hidden = true;
-      if(overlay) overlay.hidden = true;
-      if(trigger) trigger.setAttribute('aria-expanded','false');
-      // Focus terug naar de trigger (toegankelijkheid)
-      if(trigger && trigger.focus) trigger.focus();
-    }
-
-    function isOpen(){
-      return !menu.hidden;
-    }
-
-    function toggle(){
-      if(isOpen()) close(); else open();
-    }
-
-    function onTriggerClick(ev){
-      if(isHomeAreaClick(trigger, ev)){
-        close();
-        goHome();
-        return;
-      }
-      toggle();
-    }
-
-    function onDocPointerDown(ev){
-      var t = ev && ev.target ? ev.target : null;
-      if(!isOpen() || !t) return;
-      if(menu.contains(t)) return;
-      if(trigger && trigger.contains(t)) return;
-      close();
-    }
-
-    function onDocClick(ev){
-      var t = ev && ev.target ? ev.target : null;
-      if(!t) return;
-      if(!isOpen()) return;
-      if(menu.contains(t)) return;
-      if(trigger && trigger.contains(t)) return;
-      close();
-    }
-
-    function onKeyDown(ev){
-      ev = ev || w.event;
-      if(ev && ev.key === 'Escape') close();
-    }
-
-    bindTopBarHome(trigger);
-    if(trigger) trigger.addEventListener('click', onTriggerClick);
-    if(overlay){
-      overlay.hidden = true;
-      overlay.setAttribute('aria-hidden', 'true');
-    }
-    w.document.addEventListener('pointerdown', onDocPointerDown, true);
-    w.document.addEventListener('click', onDocClick, true);
-    w.document.addEventListener('keydown', onKeyDown);
-
-    api = {
-      open: open,
-      close: close,
-      toggle: toggle,
-      isOpen: isOpen,
-      destroy: function(){
-        if(trigger) trigger.removeEventListener('click', onTriggerClick);
-        w.document.removeEventListener('pointerdown', onDocPointerDown, true);
-        w.document.removeEventListener('click', onDocClick, true);
-        w.document.removeEventListener('keydown', onKeyDown);
-      }
+  if(!menu){
+    return {
+      open: function(){}, close: function(){}, toggle: function(){}, isOpen: function(){ return false; }
     };
-    menu.__pkMenuApi = api;
-    return api;
+  }
+
+  function clearCloseTimer(){
+    if(!closeTimer) return;
+    try{ window.clearTimeout(closeTimer); }catch(_eClr){}
+    closeTimer = 0;
+  }
+
+  function finishClose(){
+    clearCloseTimer();
+    if(menu && menu.classList) menu.classList.remove('is-closing');
+    if(menu) menu.hidden = true;
+  }
+
+  function open(){
+    clearCloseTimer();
+    menu.hidden = false;
+    if(menu.classList) menu.classList.remove('is-closing');
+    if(overlay) overlay.hidden = true;
+    if(trigger) trigger.setAttribute('aria-expanded','true');
+  }
+
+  function close(opts){
+    opts = opts || {};
+    var immediate = !!opts.immediate;
+    clearCloseTimer();
+    if(overlay) overlay.hidden = true;
+    if(trigger) trigger.setAttribute('aria-expanded','false');
+    if(menu.hidden){
+      if(menu.classList) menu.classList.remove('is-closing');
+      return;
+    }
+    if(immediate || !menu.classList){
+      finishClose();
+      return;
+    }
+    menu.classList.add('is-closing');
+    closeTimer = window.setTimeout(finishClose, MENU_CLOSE_MS);
+  }
+
+  function isOpen(){
+    return !menu.hidden;
+  }
+
+  function toggle(){
+    if(isOpen()) close(); else open();
+  }
+
+  function onTriggerClick(ev){
+    if(isHomeAreaClick(trigger, ev)){
+      close({ immediate: true });
+      goHome();
+      return;
+    }
+    toggle();
+  }
+
+  function onDocPointerDown(ev){
+    var t = ev && ev.target ? ev.target : null;
+    if(!isOpen() || !t) return;
+    if(menu.contains(t)) return;
+    if(trigger && trigger.contains(t)) return;
+    close();
+  }
+
+  function onDocClick(ev){
+    var t = ev && ev.target ? ev.target : null;
+    if(!t) return;
+    if(!isOpen()) return;
+    if(menu.contains(t)) return;
+    if(trigger && trigger.contains(t)) return;
+    close();
+  }
+
+  function onKeyDown(ev){
+    ev = ev || window.event;
+    if(ev && ev.key === 'Escape') close();
+  }
+
+  bindTopBarHome(trigger);
+  if(trigger) trigger.addEventListener('click', onTriggerClick);
+  if(overlay){
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+  document.addEventListener('pointerdown', onDocPointerDown, true);
+  document.addEventListener('click', onDocClick, true);
+  document.addEventListener('keydown', onKeyDown);
+
+  api = {
+    open: open,
+    close: close,
+    closeImmediate: function(){ close({ immediate: true }); },
+    toggle: toggle,
+    isOpen: isOpen,
+    destroy: function(){
+      clearCloseTimer();
+      if(trigger) trigger.removeEventListener('click', onTriggerClick);
+      document.removeEventListener('pointerdown', onDocPointerDown, true);
+      document.removeEventListener('click', onDocClick, true);
+      document.removeEventListener('keydown', onKeyDown);
+    }
   };
-})(window);
+  menu.__pkMenuApi = api;
+  return api;
+};

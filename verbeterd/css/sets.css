@@ -17,6 +17,16 @@
   --setsGridBg: transparent;
 }
 
+/* Main index: topbar moet boven de sheet-overlay blijven zodat menu direct klikbaar is. */
+body.setsIndex .topBar{
+  z-index: calc(var(--z-menu, 50) + 3);
+}
+
+/* Main index: menu mag tijdens sheet-close boven de sheet verschijnen. */
+body.setsIndex .themeMenu{
+  z-index: calc(var(--z-menu, 50) + 2);
+}
+
 html, body{
   background: var(--setsBaseBg, var(--setsHeaderBg, #FAFAF8));
   height: 100%;
@@ -149,9 +159,6 @@ body.setsIndex[data-index-layout="grid"] .setsHero{
 .setsHeroCard{
   width: 100%;
   margin: 0;
-}
-
-.setsHeroCard{
   position: relative;
   display: block;
   text-decoration: none;
@@ -226,6 +233,21 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   text-decoration: none;
   color: inherit;
   --setGridCardOpacity: 0.90;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: gridCardIn 0.4s var(--ui-ease, cubic-bezier(0.22,1,0.36,1)) forwards;
+}
+
+@keyframes gridCardIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger per positie — JS zet --card-i op elk element */
+.setGridCard { animation-delay: calc(var(--card-i, 0) * 55ms); }
+
+/* Placeholder kaarten: iets later, subtiel */
+.setGridCard.is-placeholder {
+  animation-delay: calc(var(--card-i, 0) * 55ms + 80ms);
 }
 
 .setGridCard .cardInner{
@@ -235,6 +257,16 @@ body.setsIndex[data-index-layout="hero-grid"] .setsGridSection{
   border: 0 !important;
   box-shadow: none !important;
   opacity: var(--setGridCardOpacity, 0.90);
+  transition: transform 0.22s var(--ui-ease, cubic-bezier(0.22,1,0.36,1)),
+              box-shadow 0.22s ease,
+              opacity 0.22s ease;
+}
+
+.setGridCard:hover .cardInner,
+.setGridCard:focus-visible .cardInner {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: none !important;
+  opacity: 1;
 }
 .setGridCard .cardInner::before{
   content: "";
@@ -334,4 +366,238 @@ html[data-contrast="dark"] .indexBgSvg{
   .setsHeroSlideInner{
     width: min(860px, 92%);
   }
+}
+
+/* ============================================================
+   Index Info Sheet — zelfde opbouw als kaartenindex, eigen gedrag
+   ============================================================ */
+
+.indexInfoSheet[hidden],
+.indexInfoOverlay[hidden] {
+  display: none !important;
+}
+
+.indexInfoCarousel {
+  width: 100%;
+  display: block;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding-top: 10px;
+  padding-left: var(--sheetContentInset, 14px);
+  padding-right: var(--sheetContentInset, 14px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+  box-sizing: border-box;
+}
+.indexInfoCarousel .infoSlide{
+  width: min(100%, var(--floatingSurfaceWidth, 760px));
+  margin: 0 auto;
+  padding: 0;
+}
+.indexInfoCarousel .infoSlideInner{
+  width: 100%;
+  margin: 0 auto;
+}
+
+.indexInfoClose{
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(11,18,32,0.36);
+}
+.indexInfoClose .gmIcon{
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.6;
+}
+.indexInfoClose:active{
+  background: transparent;
+}
+html[data-contrast="dark"] .indexInfoClose{
+  background: transparent;
+  color: rgba(245,250,255,0.72);
+}
+
+/* Main index: kruisje op uitleg-sheet verbergen. */
+body.setsIndex #indexInfoClose{
+  display: none !important;
+}
+
+
+.indexInfoSlideCard {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.03) 0%,
+      rgba(0,0,0,0.03) 100%
+    ),
+    rgba(168,225,221,0.98);
+
+}
+.indexInfoSlideCard::after{
+  content: none;
+}
+.indexInfoCover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 0.9vw, 10px);
+  padding: clamp(14px, 3.4%, 28px) 16px;
+  text-align: center;
+  user-select: none;
+  pointer-events: none;
+  transform: translateY(-10px);
+}
+
+.indexInfoBubbleIcon {
+  width: clamp(108px, 26%, 172px);
+  height: auto;
+  display: block;
+  margin-bottom: 0;
+}
+.indexInfoSlideCard .indexInfoBubbleIcon{
+  position: relative;
+  inset: auto;
+  width: clamp(108px, 26%, 172px) !important;
+  height: auto !important;
+  max-width: 100%;
+  margin: 0;
+  object-fit: contain;
+  object-position: center;
+  transform: none !important;
+}
+
+.indexInfoCoverTitle {
+  margin: 0;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: clamp(calc(24px * 1.03), calc(4.8vw * 1.03), calc(46px * 1.03));
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: 0.003em;
+  color: #4f8e9e;
+  max-width: 92%;
+}
+
+.indexInfoCoverSub {
+  margin: 0;
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: clamp(8px, 0.86vw, 10px);
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: 0.12em;
+  color: #4f8e9e;
+  opacity: 0.84;
+  text-transform: uppercase;
+  max-width: 92%;
+}
+
+.indexInfoSlideText {
+  margin-bottom: 0;
+  padding: 16px 20px 20px;
+  line-height: 1.56;
+}
+
+.indexInfoSlideText .infoTextIntro{
+  margin-bottom: 10px;
+  color: rgba(11,18,32,0.88);
+}
+
+.indexInfoUsageText{
+  margin: 14px 0 12px;
+  color: rgba(11,18,32,0.74);
+  line-height: 1.48;
+}
+
+.indexInfoUsageLead{
+  font-weight: 500;
+}
+
+.indexInfoDivider {
+  width: 100%;
+  height: 1px;
+  background: rgba(var(--menuSurface, 0, 0, 0), 0.08);
+  margin: 1px 0 2px;
+}
+
+html[data-contrast="dark"] .indexInfoDivider{
+  display: none;
+}
+
+.indexInfoContact {
+  margin-bottom: 18px;
+}
+.indexInfoContact p {
+  font-size: 0.88rem;
+  color: #8C949B;
+  margin: 0;
+  line-height: 1.42;
+}
+.indexInfoLink {
+  font-family: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  display: block;
+  font-size: var(--topBarBrandSize, 15px);
+  font-weight: var(--topBarBrandWeight, 400);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--topBarBrandColor, #4F8E9E);
+  text-decoration: none;
+  opacity: 0.92;
+}
+.indexInfoLink:hover {
+  text-decoration: none;
+}
+
+.indexInfoCredits {
+  display: block;
+  font-size: 0.68rem;
+  color: rgba(11,18,32,0.22);
+  margin-top: 4px;
+  letter-spacing: 0.01em;
+}
+
+html[data-contrast="dark"] .indexInfoCredits {
+  color: rgba(255,255,255,0.52);
+}
+
+html[data-contrast="dark"] .indexInfoUsageText{
+  color: rgba(244,246,250,0.87);
+  margin: 14px 0 14px;
+}
+
+html[data-contrast="dark"] .indexInfoSlideText .infoTextIntro{
+  color: rgba(244,246,250,0.93);
+}
+
+html[data-contrast="dark"] .indexInfoSlideText{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.010) 0%,
+      rgba(255,255,255,0.003) 14%,
+      rgba(255,255,255,0.000) 32%
+    ),
+    rgba(20,23,49,0.94);
+  box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.018);
+  padding: 16px 20px 26px;
+}
+
+html[data-contrast="dark"] .indexInfoUsageLead{
+  color: rgba(245,250,255,0.91);
+}
+
+html[data-contrast="dark"] .indexInfoContact{
+  margin-bottom: 22px;
+}
+
+html[data-contrast="dark"] .indexInfoContact p{
+  color: rgba(244,246,250,0.80);
+}
+
+html[data-contrast="dark"] .indexInfoLink{
+  color: rgba(122,204,206,0.96);
+  opacity: 1;
 }

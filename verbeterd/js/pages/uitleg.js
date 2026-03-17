@@ -1,54 +1,47 @@
-// Praatkaartjes – uitleg pagina (ES5)
-// Doel:
-// - 1 SVG tonen in hetzelfde frame als het grid (img in cardInner)
-// - uitlegtekst eronder tonen
-// - tik links/rechts op de kaart om te navigeren
-// - tekstvak gebruikt een vaste, rustige sheet-kleur (geen dominante kaart-tint)
+// Praatkaartjes – uitleg pagina
 
-(function(w){
-  'use strict';
-  var PK = w.PK || {};
-
+export function initUitleg() {
+  
   // --- elements ---
-  var imgEl = w.document.getElementById('uitlegImg');
-  var kaartThemaEl = w.document.getElementById('kaartThema');
-  var descEl = w.document.getElementById('desc');
-  var closeHelp = w.document.getElementById('closeHelp');
-  var uitlegTextEl = w.document.querySelector ? w.document.querySelector('.uitlegText') : null;
-  var cardTapEl = w.document.querySelector ? w.document.querySelector('.uitlegCardInner') : null;
-
+  var imgEl = document.getElementById('uitlegImg');
+  var kaartThemaEl = document.getElementById('kaartThema');
+  var descEl = document.getElementById('desc');
+  var closeHelp = document.getElementById('closeHelp');
+  var uitlegTextEl = document.querySelector ? document.querySelector('.uitlegText') : null;
+  var cardTapEl = document.querySelector ? document.querySelector('.uitlegCardInner') : null;
+  
   if(!imgEl || !descEl) return;
-
-  var setName = (PK.getQueryParam('set') || 'samenwerken');
+  
+  var setName = (window.PK.getQueryParam('set') || 'samenwerken');
   setName = String(setName).replace(/^\s+|\s+$/g,'') || 'samenwerken';
   var encSet = encodeURIComponent(setName);
-
+  
   // embed-mode (in bottom sheet): transparant + geen extra UI
-  var isEmbed = String(PK.getQueryParam('embed') || '').replace(/\s+/g,'') === '1';
+  var isEmbed = String(window.PK.getQueryParam('embed') || '').replace(/\s+/g,'') === '1';
   try{
-    if(isEmbed && w.document && w.document.body && w.document.body.classList){
-      w.document.body.classList.add('embed');
+    if(isEmbed && document && document.body && document.body.classList){
+      document.body.classList.add('embed');
     }
   }catch(_e){}
-
+  
   // paden
   var BASE = '..';
   function cardPathRect(file){ return BASE + '/sets/' + encSet + '/cards_rect/' + file; }
   function cardPathSquare(file){ return BASE + '/sets/' + encSet + '/cards/' + file; }
   var uitlegPath = BASE + '/sets/' + encSet + '/uitleg.json';
-
+  
   // slides (wordt opgebouwd uit meta.json zodat elke set werkt)
   var slides = [];
-
+  
   var uitlegData = {};
   var index = 0;
-
+  
   function getDesc(key){
     var v = (uitlegData && typeof uitlegData==='object') ? uitlegData[key] : '';
     v = (v==null) ? '' : String(v);
     return v.replace(/^\s+|\s+$/g,'');
   }
-
+  
   function escapeHtml(v){
     var s = String(v == null ? '' : v);
     return s
@@ -58,7 +51,7 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-
+  
   function formatInlineInfoText(raw, opts){
     var txt = escapeHtml(raw).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
     if(!txt) return '';
@@ -71,7 +64,7 @@
     }
     return txt;
   }
-
+  
   function getInfoHeadingText(line){
     var t = String(line || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
     var m = t.match(/^\*\*(.+?)\*\*$/);
@@ -80,6 +73,7 @@
     }
     if(
       t === 'Systemisch werken' ||
+      t === 'Teamrollen van Belbin' ||
       t === 'Rollen van Belbin' ||
       t === 'In beweging' ||
       t === 'Waarom werkwoorden?' ||
@@ -89,11 +83,11 @@
     }
     return '';
   }
-
+  
   function isInfoHeadingLine(line){
     return !!getInfoHeadingText(line);
   }
-
+  
   function setDescContent(el, raw){
     if(!el) return;
     var text = String(raw == null ? '' : raw).replace(/\r\n?/g, '\n');
@@ -101,7 +95,7 @@
     var html = [];
     var para = [];
     var introAssigned = false;
-
+  
     function flushParagraph(){
       if(!para.length) return;
       var lineParts = [];
@@ -139,7 +133,7 @@
       }
       html.push('<p' + cls + '>' + body + '</p>');
     }
-
+  
     var i = 0;
     while(i < lines.length){
       var line = String(lines[i] || '').replace(/^\s+|\s+$/g, '');
@@ -176,18 +170,18 @@
     flushParagraph();
     el.innerHTML = html.join('');
   }
-
+  
   function applyDominantTint(svgUrl){
     if(!uitlegTextEl) return;
     var isDark = false;
     try{
-      isDark = !!(w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
+      isDark = !!(document && document.documentElement && document.documentElement.getAttribute('data-contrast') === 'dark');
     }catch(_eDark){}
     uitlegTextEl.style.background = isDark
       ? 'rgba(23, 22, 50, 0.86)'
       : 'rgba(255, 255, 255, 0.975)';
   }
-
+  
   function render(){
     var s = slides[index];
     if(!s){ return; }
@@ -205,8 +199,8 @@
     setDescContent(descEl, getDesc(s.key));
     applyDominantTint(s.src);
     // update sheet hoogte (in embed)
-    try{ w.setTimeout(reportHeight, 0); }catch(_e){}
-
+    try{ window.setTimeout(reportHeight, 0); }catch(_e){}
+  
     // Themanaam midden op kaart (behalve voorkant)
     if(kaartThemaEl){
       if(s.key==='cover'){
@@ -218,64 +212,73 @@
       }
     }
   }
-
+  
   function go(delta){
     index = index + delta;
     if(index<0) index = 0;
     if(index>slides.length-1) index = slides.length-1;
     render();
   }
-
+  
   function requestClose(){
-    if(w.parent && w.parent !== w && w.parent.postMessage){
-      w.parent.postMessage({ type:'pk_close_help' }, '*');
+    if(window.parent && window.parent !== w && window.parent.postMessage){
+      window.parent.postMessage({ type:'pk_close_help' }, '*');
       return;
     }
-    w.location.href = '../kaarten/?set=' + encodeURIComponent(setName);
+    window.location.href = '../kaarten/?set=' + encodeURIComponent(setName);
   }
-
-  function buildSlidesFromMeta(meta){
+  
+  function buildSlidesFromMeta(meta, intro){
     var out = [];
     var coverFile = (meta && meta.cover) ? meta.cover : 'voorkant.svg';
-    out.push({ key:'cover', src: PK.withV(cardPathRect(coverFile)), fallback: PK.withV(cardPathSquare(coverFile)), alt:'Voorkant' });
+    out.push({ key:'cover', src: window.PK.withV(cardPathRect(coverFile)), fallback: window.PK.withV(cardPathSquare(coverFile)), alt:'Voorkant' });
+  
+    var themes = (meta && Array.isArray(meta.themes)) ? meta.themes : [];
+    var mode = String((intro&&intro.mode) || '').replace(/^\s+|\s+$/g,'') || (themes.length ? 'themes' : 'single');
+    if(mode !== 'themes') return out;
+    var activeThemes = Array.isArray(intro.activeThemes) && intro.activeThemes.length
+      ? intro.activeThemes.map(function(v){ return String(v || '').replace(/^\s+|\s+$/g,''); }).filter(Boolean)
+      : themes.map(function(t){ return String((t && t.key) || '').replace(/^\s+|\s+$/g,''); }).filter(Boolean);
 
     if(meta && Array.isArray(meta.themes)){
       for(var i=0;i<meta.themes.length;i++){
         var t = meta.themes[i] || {};
         var key = String(t.key||'').replace(/^\s+|\s+$/g,'');
         if(!key) continue;
+        if(activeThemes.indexOf(key) === -1) continue;
         var label = (t.label || key);
         var file = t.card || (key + '.svg');
-        out.push({ key: key, src: PK.withV(cardPathRect(file)), fallback: PK.withV(cardPathSquare(file)), alt: label });
+        out.push({ key: key, src: window.PK.withV(cardPathRect(file)), fallback: window.PK.withV(cardPathSquare(file)), alt: label });
       }
     }
     return out;
   }
-
+  
   function loadMeta(){
-    return PK.getJson(PK.withV(BASE + '/sets/' + encSet + '/meta.json'));
+    return window.PK.getJson(window.PK.withV(BASE + '/sets/' + encSet + '/meta.json'));
   }
-
+  
   // data laden (mag falen)
   Promise.all([
     loadMeta(),
-    PK.getJson(PK.withV(uitlegPath)).catch(function(){ return {}; })
+    window.PK.getJson(window.PK.withV(uitlegPath)).catch(function(){ return {}; }),
+    window.PK.getJson(window.PK.withV(BASE + '/sets/' + encSet + '/intro.json')).catch(function(){ return {}; })
   ]).then(function(res){
     var meta = res && res[0] ? res[0] : {};
     uitlegData = res && res[1] ? res[1] : {};
-    slides = buildSlidesFromMeta(meta);
-    if(!slides.length){ slides = [{ key:'cover', src: PK.withV(cardPathRect('voorkant.svg')), fallback: PK.withV(cardPathSquare('voorkant.svg')), alt:'Voorkant' }]; }
+    slides = buildSlidesFromMeta(meta, res && res[2] ? res[2] : {});
+    if(!slides.length){ slides = [{ key:'cover', src: window.PK.withV(cardPathRect('voorkant.svg')), fallback: window.PK.withV(cardPathSquare('voorkant.svg')), alt:'Voorkant' }]; }
     index = 0;
     render();
   }).catch(function(){
-    slides = [{ key:'cover', src: PK.withV(cardPathRect('voorkant.svg')), fallback: PK.withV(cardPathSquare('voorkant.svg')), alt:'Voorkant' }];
+    slides = [{ key:'cover', src: window.PK.withV(cardPathRect('voorkant.svg')), fallback: window.PK.withV(cardPathSquare('voorkant.svg')), alt:'Voorkant' }];
     uitlegData = {};
     index = 0;
     render();
   });
-
+  
   if(closeHelp) closeHelp.onclick = requestClose;
-
+  
   // tik links/rechts op de kaart
   if(cardTapEl && cardTapEl.addEventListener){
     cardTapEl.addEventListener('click', function(e){
@@ -286,4 +289,4 @@
       if(rel < rect.width * 0.5) go(-1); else go(1);
     });
   }
-})(window);
+}

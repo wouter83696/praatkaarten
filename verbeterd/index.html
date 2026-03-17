@@ -49,6 +49,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/logo-icons/app/android-chrome-192x192.png?v=icon-36">
   <link rel="icon" type="image/png" sizes="512x512" href="./assets/logo-icons/app/android-chrome-512x512.png?v=icon-36">
   <link rel="shortcut icon" type="image/png" href="./assets/logo-icons/favicon/favicon-tab-32x32.png?v=icon-36">
+  <link rel="icon" href="./assets/logo-icons/favicon/favicon.ico">
   <meta name="apple-mobile-web-app-title" content="Uitgesproken">
   <meta name="application-name" content="Uitgesproken">
   <link rel="apple-touch-icon" sizes="120x120" href="./assets/logo-icons/app/apple-touch-icon-120.png?v=ios-15">
@@ -58,7 +59,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=optional" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- Zet contrast-modus vroeg (SESSION), om flash te voorkomen -->
   <script>
@@ -67,22 +68,22 @@
     })();
   </script>
 
-  <link rel="stylesheet" href="./css/shell.css?v=4.0.55">
-  <link rel="stylesheet" href="./css/sets.css?v=3.7.1.95">
-  <link rel="stylesheet" href="./templates/ui-base.css?v=3.7.1.15">
+  <link rel="stylesheet" href="./css/shell.css?v=4.0.72">
+  <link rel="stylesheet" href="./css/sets.css?v=3.7.2.49">
+  <link rel="stylesheet" href="./templates/ui-base.css?v=3.7.1.16">
   <link rel="stylesheet" href="./templates/main-index.css?v=3.7.1.46">
 </head>
 <body data-page="grid" class="setsIndex" data-brand-icon="1">
-  <a href="#setsGrid" class="skipLink srOnly">Ga naar inhoud</a>
+<a href="#setsGrid" class="skipLink srOnly">Ga naar inhoud</a>
   <canvas id="indexBg" class="indexBg" aria-hidden="true"></canvas>
 
   <header class="topBar" aria-label="Menu">
     <button id="themePill" class="themePill glassSurface" type="button" aria-haspopup="dialog" aria-expanded="false">
       <span class="themePillMain" aria-hidden="true">
         <span class="setCoverWrap">
-          <img id="setCoverIcon" class="setCoverIcon" src="./assets/logo-icons/masters/master-transparent.svg" alt="">
+          <img id="setCoverIcon" class="setCoverIcon" src="./assets/logo-icons/masters/logo-ballon-vlak.svg" alt="">
         </span>
-        <span class="themePillBrand">Uitgesproken</span>
+        <span id="themePillBrand" class="themePillBrand">Uitgesproken</span>
       </span>
       <span class="themePillMenuIcon" aria-hidden="true">
         <svg class="gmIcon" viewBox="0 0 24 24">
@@ -99,7 +100,7 @@
   <section id="themeMenu" class="themeMenu" role="dialog" aria-label="Kaartensets" hidden>
     <div class="menuCard glassSurface">
       <div class="menuHeaderRow">
-        <div id="menuSetTitle" class="menuHeader">Kaartensets</div>
+        <div id="menuHeaderTitle" class="menuHeader">Kaartensets</div>
         <div class="menuHeaderTools" aria-label="Acties">
           <button id="menuContrastToggle" class="menuMiniBtn" type="button" aria-label="Contrastmodus" aria-pressed="false">
             <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
@@ -126,7 +127,7 @@
         </div>
       </div>
       <div id="menuList" class="menuList"></div>
-      <div class="menuFooter">
+      <div class="menuFooter" hidden>
         <button id="naarOverzicht" class="menuLink" type="button">Alle kaartensets</button>
       </div>
     </div>
@@ -142,6 +143,50 @@
     </section>
   </main>
 
-  <script src="./js/main.js?v=1.38" defer></script>
+
+  <!-- Index info sheet (volledig los van kaarten-sheet) -->
+  <div id="indexInfoOverlay" class="sheetOverlay indexInfoOverlay" hidden></div>
+  <section id="indexInfoSheet" class="infoSheet indexInfoSheet" role="dialog" aria-label="Over Uitgesproken" hidden>
+    <div class="infoCard indexInfoCard" data-top="help" data-mode="help">
+      <div class="sheetHandle" aria-hidden="true"></div>
+      <button id="indexInfoClose" class="infoClose indexInfoClose menuMiniBtn" type="button" aria-label="Sluiten">
+        <svg class="gmIcon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18"/><path d="M6 6l12 12"/>
+        </svg>
+      </button>
+      <div class="sheetViewport indexInfoViewport">
+        <div class="sheetStack">
+          <div class="sheetPage sheetPageHelp">
+            <div class="infoCarousel indexInfoCarousel" aria-label="Over Uitgesproken">
+              <div class="infoSlide">
+                <div class="infoSlideInner indexInfoSlideInner">
+                  <div class="infoSlideCard indexInfoSlideCard">
+                    <div class="indexInfoCover">
+                      <img src="./assets/logo-icons/masters/logo-ballon-gradient.svg" alt="" class="indexInfoBubbleIcon" aria-hidden="true">
+                      <h2 class="indexInfoCoverTitle">Uitgesproken</h2>
+                      <p class="indexInfoCoverSub">RUIMTE OM TE VERKENNEN</p>
+                    </div>
+                  </div>
+                  <div class="infoSlideText indexInfoSlideText" id="indexInfoSlideText">
+                    <p class="infoTextIntro">Samen vertragen en verdiepen, met thema&#8217;s en vragen die uitnodigen tot dialoog en verbinding.</p>
+                    <p class="indexInfoUsageText"><strong class="indexInfoUsageLead">Ontdek de set op jouw manier</strong><br>Swipe om te bladeren. Tik om te draaien.</p>
+                    <div class="indexInfoContact">
+                      <p>Vragen of feedback?</p>
+                      <a href="mailto:info@uitgesproken.me" class="indexInfoLink">info@uitgesproken.me</a>
+                    </div>
+                    <div class="indexInfoCredits">
+                      <span>Uitgesproken &copy; 2026</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="./js/main.js?v=2.06"></script>
 </body>
 </html>

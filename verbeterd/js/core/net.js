@@ -1,46 +1,39 @@
-// Praatkaartjes – netwerk helpers (ES5)
-(function(w){
-  'use strict';
-  var PK = w.PK = w.PK || {};
+// Praatkaartjes – netwerk helpers
+import { DEBUG } from './paths.js';
 
-  PK.getText = function(url){
-    try{
-      if(PK.DEBUG && w.console && w.console.log){
-        w.console.log('[DEBUG] fetch', url);
-      }
-    }catch(_eDbg){}
-    if(w.fetch){
-      return fetch(url, { cache:'default' }).then(function(r){
-        if(!r.ok) throw new Error('HTTP '+r.status+' '+url);
-        return r.text();
-      });
-    }
-    // XHR fallback
-    return new Promise(function(resolve, reject){
-      try{
-        var x = new XMLHttpRequest();
-        x.open('GET', url, true);
-        x.onreadystatechange = function(){
-          if(x.readyState===4){
-            if(x.status>=200 && x.status<300) resolve(x.responseText);
-            else reject(new Error('HTTP '+x.status+' '+url));
-          }
-        };
-        x.send(null);
-      }catch(e){ reject(e); }
+export function getText(url) {
+  try {
+    if (DEBUG && window.console) window.console.log('[DEBUG] fetch', url);
+  } catch (_e) {}
+  if (window.fetch) {
+    return fetch(url, { cache: 'default' }).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + url);
+      return r.text();
     });
-  };
+  }
+  // XHR fallback
+  return new Promise((resolve, reject) => {
+    try {
+      const x = new XMLHttpRequest();
+      x.open('GET', url, true);
+      x.onreadystatechange = function() {
+        if (x.readyState === 4) {
+          if (x.status >= 200 && x.status < 300) resolve(x.responseText);
+          else reject(new Error('HTTP ' + x.status + ' ' + url));
+        }
+      };
+      x.send(null);
+    } catch (e) { reject(e); }
+  });
+}
 
-  PK.getJson = function(url){
-    return PK.getText(url).then(function(t){
-      try{ return JSON.parse(t); }catch(e){ return {}; }
-    }, function(){
-      return {};
-    });
-  };
+export function getJson(url) {
+  return getText(url).then(
+    t => { try { return JSON.parse(t); } catch (_e) { return {}; } },
+    () => ({})
+  );
+}
 
-  PK.loadJson = function(url){
-    // Alias voor index: harde fout bij HTTP errors (catch in page)
-    return PK.getText(url).then(function(t){ return JSON.parse(t); });
-  };
-})(window);
+export function loadJson(url) {
+  return getText(url).then(t => JSON.parse(t));
+}

@@ -1,20 +1,17 @@
-// Praatkaartjes – index pagina (ES5)
-(function(w){
-  'use strict';
-  var PK = w.PK = w.PK || {};
-  PK.pages = PK.pages || {};
-  if(!PK.pages.initKaarten){
-    PK.pages.initKaarten = function(){ /* kaarten pagina init gebeurt in dit bestand */ };
-  }
+// Praatkaartjes – kaarten.page.js
+
+import { resolveCardsIndexBackground, DEFAULT_CARDS_INDEX_BACKGROUND } from '../components/autoBackground.js';
+
+export function initKaarten() {
   var DEBUG_BUILD = '';
 
   // Desktop/iPad landing: app niet initialiseren
   try{
-    var dl = w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-layout');
+    var dl = document && document.documentElement && document.documentElement.getAttribute('data-layout');
     if(dl === 'landing') return;
   }catch(_e){}
 
-  var mainCarousel = w.document.getElementById('mainCarousel');
+  var mainCarousel = document.getElementById('mainCarousel');
   if(!mainCarousel) return;
 
   // debug badge removed
@@ -23,10 +20,10 @@
   var THEME_LABELS = {};
 
   function pathForSet(setId, rel){
-    if(PK.pathForSet) return PK.pathForSet(setId, rel);
+    if(window.PK.pathForSet) return window.PK.pathForSet(setId, rel);
     var s = String(setId||'').replace(/^\s+|\s+$/g,'') || 'samenwerken';
     var r = String(rel||'').replace(/^\//,'');
-    var base = (PK.PATHS && PK.PATHS.setsDir) ? PK.PATHS.setsDir : '.';
+    var base = (window.PK.PATHS && window.PK.PATHS.setsDir) ? window.PK.PATHS.setsDir : '.';
     return base + '/' + encodeURIComponent(s) + '/' + r;
   }
 
@@ -38,7 +35,7 @@
   var CURRENT_BACK_MODE = 'mirror';
   var PENDING_THEME = '';
   try{
-    PENDING_THEME = (PK.getQueryParam && PK.getQueryParam('theme')) ? String(PK.getQueryParam('theme')) : '';
+    PENDING_THEME = (window.PK.getQueryParam && window.PK.getQueryParam('theme')) ? String(window.PK.getQueryParam('theme')) : '';
     PENDING_THEME = PENDING_THEME.replace(/^\s+|\s+$/g,'');
   }catch(_eTheme){ PENDING_THEME = ''; }
   // Huidige data-volgorde (grid + carrousel)
@@ -51,38 +48,56 @@
   var infoAPI = null;
   var UI_DEFAULTS = {};
   var CARDS_INDEX_PAGE_BG = null;
-  var doc = w.document;
+  var doc = document;
+  var __cardsPageIntroPlayed = false;
+  var __cardsPageIntroTimer = 0;
 
-  // Kleurconversie helper: elke CSS-kleurstring → 'r, g, b' CSV string voor --menuSurface etc.
-  // Hergebruikt PK.dominantColorFromSvgText intern parseerhulp, maar met directe conversie.
+  function playCardsPageIntro(){
+    if(__cardsPageIntroPlayed) return;
+    __cardsPageIntroPlayed = true;
+    if(!doc || !doc.body || !doc.body.classList) return;
+    try{ doc.body.classList.add('pkCardsIntro'); }catch(_eAdd){}
+    if(__cardsPageIntroTimer){
+      try{ window.clearTimeout(__cardsPageIntroTimer); }catch(_eClr){}
+      __cardsPageIntroTimer = 0;
+    }
+    __cardsPageIntroTimer = window.setTimeout(function(){
+      __cardsPageIntroTimer = 0;
+      try{ if(doc && doc.body && doc.body.classList) doc.body.classList.remove('pkCardsIntro'); }catch(_eRem){}
+    }, 620);
+  }
+
+  function parseHexToRgbCsv(input){
+    var hex = String(input || '').replace(/^\s+|\s+$/g,'').replace('#','');
+    if(hex.length === 3){
+      hex = hex.charAt(0)+hex.charAt(0)+hex.charAt(1)+hex.charAt(1)+hex.charAt(2)+hex.charAt(2);
+    }
+    if(hex.length !== 6) return '';
+    var r = parseInt(hex.slice(0,2),16);
+    var g = parseInt(hex.slice(2,4),16);
+    var b = parseInt(hex.slice(4,6),16);
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return r + ', ' + g + ', ' + b;
+  }
+
+  function parseRgbFuncToCsv(input){
+    var m = String(input || '').match(/rgba?\(([^)]+)\)/i);
+    if(!m || !m[1]) return '';
+    var p = m[1].split(',');
+    if(p.length < 3) return '';
+    var r = Math.max(0, Math.min(255, parseFloat(String(p[0]).replace(/^\s+|\s+$/g,''))));
+    var g = Math.max(0, Math.min(255, parseFloat(String(p[1]).replace(/^\s+|\s+$/g,''))));
+    var b = Math.max(0, Math.min(255, parseFloat(String(p[2]).replace(/^\s+|\s+$/g,''))));
+    if(!isFinite(r) || !isFinite(g) || !isFinite(b)) return '';
+    return Math.round(r) + ', ' + Math.round(g) + ', ' + Math.round(b);
+  }
+
   function colorToRgbCsv(input){
     var raw = String(input || '').replace(/^\s+|\s+$/g,'');
     if(!raw) return '';
-    var r, g, b, hex, m, p;
-    // Al in csv-formaat (bijv. "255, 128, 64")
+    if(raw.charAt(0) === '#') return parseHexToRgbCsv(raw);
+    if(/^rgba?\(/i.test(raw)) return parseRgbFuncToCsv(raw);
     if(/^\d+\s*,\s*\d+\s*,\s*\d+/.test(raw)) return raw.replace(/\s+/g,'');
-    // Hex (#rgb of #rrggbb)
-    if(raw.charAt(0) === '#'){
-      hex = raw.replace('#','').replace(/^\s+|\s+$/g,'');
-      if(hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-      if(hex.length !== 6) return '';
-      r = parseInt(hex.slice(0,2),16);
-      g = parseInt(hex.slice(2,4),16);
-      b = parseInt(hex.slice(4,6),16);
-      if(!isFinite(r)||!isFinite(g)||!isFinite(b)) return '';
-      return r + ', ' + g + ', ' + b;
-    }
-    // rgb()/rgba()
-    m = raw.match(/rgba?\(([^)]+)\)/i);
-    if(m && m[1]){
-      p = m[1].split(',');
-      if(p.length < 3) return '';
-      r = Math.max(0,Math.min(255,parseFloat(p[0])));
-      g = Math.max(0,Math.min(255,parseFloat(p[1])));
-      b = Math.max(0,Math.min(255,parseFloat(p[2])));
-      if(!isFinite(r)||!isFinite(g)||!isFinite(b)) return '';
-      return Math.round(r)+', '+Math.round(g)+', '+Math.round(b);
-    }
     return '';
   }
 
@@ -100,8 +115,8 @@
       candidates.push(cssVars['pk-set-card']);
     }
     try{
-      var activeBg = PK && PK.UI_ACTIVE && PK.UI_ACTIVE.cardsIndex && PK.UI_ACTIVE.cardsIndex.background
-        ? PK.UI_ACTIVE.cardsIndex.background
+      var activeBg = PK && window.PK.UI_ACTIVE && window.PK.UI_ACTIVE.cardsIndex && window.PK.UI_ACTIVE.cardsIndex.background
+        ? window.PK.UI_ACTIVE.cardsIndex.background
         : null;
       if(activeBg){
         if(typeof activeBg.baseColor === 'string') candidates.push(activeBg.baseColor);
@@ -109,7 +124,7 @@
       }
     }catch(_eBg){}
     try{
-      var rs = w.getComputedStyle ? w.getComputedStyle(w.document.documentElement) : null;
+      var rs = window.getComputedStyle ? window.getComputedStyle(document.documentElement) : null;
       if(rs){
         candidates.push(rs.getPropertyValue('--pk-set-bg'));
         candidates.push(rs.getPropertyValue('--bg-base-color'));
@@ -125,7 +140,7 @@
   }
 
   function applyMenuSurfaceTint(meta){
-    var root = w.document && w.document.documentElement;
+    var root = document && document.documentElement;
     if(!root || !root.style || !root.style.setProperty) return;
     var rgb = resolveMenuBaseRgb(meta);
     try{
@@ -141,52 +156,34 @@
     var id = String(setId || '').replace(/^\s+|\s+$/g,'');
     if(!id) return;
     try{
-      var raw = w.localStorage.getItem('pk_set_counts') || '';
+      var raw = window.localStorage.getItem('pk_set_counts') || '';
       var data = raw ? JSON.parse(raw) : {};
       if(!data || typeof data !== 'object') data = {};
       var cur = parseInt(data[id], 10);
       if(!isFinite(cur)) cur = 0;
       data[id] = cur + 1;
-      w.localStorage.setItem('pk_set_counts', JSON.stringify(data));
+      window.localStorage.setItem('pk_set_counts', JSON.stringify(data));
     }catch(_e){}
   }
 
   function getIndexBackgroundConfig(){
-    var cfg = null;
     try{
-      // Hard gescheiden: kaartenindex gebruikt alleen kaartenindex-keys.
-      if(PK && PK.UI_ACTIVE && PK.UI_ACTIVE.cardsIndex && PK.UI_ACTIVE.cardsIndex.background){
-        cfg = PK.UI_ACTIVE.cardsIndex.background;
-      }else if(UI_DEFAULTS && UI_DEFAULTS.cardsIndex && UI_DEFAULTS.cardsIndex.background){
-        cfg = UI_DEFAULTS.cardsIndex.background;
-      }else if(CARDS_INDEX_PAGE_BG){
-        cfg = CARDS_INDEX_PAGE_BG;
-      }
-    }catch(_e){}
-    return cfg || null;
+      return resolveCardsIndexBackground({
+        defaults: (UI_DEFAULTS && UI_DEFAULTS.cardsIndex && UI_DEFAULTS.cardsIndex.background) ? UI_DEFAULTS.cardsIndex.background : null,
+        setMeta: CURRENT_META,
+        activeUi: (PK && window.PK.UI_ACTIVE) ? window.PK.UI_ACTIVE : null,
+        legacyPageBg: CARDS_INDEX_PAGE_BG || null
+      });
+    }catch(_e){
+      return DEFAULT_CARDS_INDEX_BACKGROUND;
+    }
   }
 
   function renderIndexBackground(){
-    var bgApi = (PK && PK.cardsBackground && PK.cardsBackground.render) ? PK.cardsBackground : null;
+    var bgApi = (PK && window.PK.cardsBackground && window.PK.cardsBackground.render) ? window.PK.cardsBackground : null;
     if(!bgApi) return;
     var opts = { cardBase: CARD_BASE };
-    var bg = getIndexBackgroundConfig();
-    if(!bg){
-      // Compacte stable-1107 default voor kaartenindex.
-      bg = {
-        blobCount: 7,
-        alphaBoost: 1.05,
-        blobIrregularity: 0.35,
-        blobPointsMin: 8,
-        blobPointsMax: 12,
-        sizeScale: 0.85,
-        blobSpread: 'grid',
-        blobSpreadMargin: 0.08,
-        sizeLimit: 1.4,
-        baseWash: false,
-        shapeEnabled: false
-      };
-    }
+    var bg = getIndexBackgroundConfig() || DEFAULT_CARDS_INDEX_BACKGROUND;
     if(bg){
       if(Array.isArray(bg.palette)) opts.palette = bg.palette;
       if(Array.isArray(bg.darkPalette)) opts.darkPalette = bg.darkPalette;
@@ -227,13 +224,32 @@
     return a;
   }
 
+  function disableInfiniteCarousel(container){
+    if(!container) return;
+    try{
+      if(container.__pkInfiniteOnScroll){
+        container.removeEventListener('scroll', container.__pkInfiniteOnScroll);
+        container.__pkInfiniteOnScroll = null;
+      }
+    }catch(_eL){}
+    try{ container.removeAttribute('data-infinite'); }catch(_eA){}
+    try{
+      var clones = container.querySelectorAll('.is-clone');
+      for(var i=0;i<clones.length;i++){
+        var n = clones[i];
+        if(n && n.parentNode === container) container.removeChild(n);
+      }
+    }catch(_eC){}
+  }
+
   // Infinite scroll helper (clones first/last)
   function enableInfiniteCarousel(container, slideClass){
     if(!container) return { hasClones:false };
+    // Reset eerder infinite-gedrag om dubbele listeners/jumps te voorkomen.
+    disableInfiniteCarousel(container);
+
     var slides = container.querySelectorAll('.' + slideClass);
     if(!slides || slides.length < 2) return { hasClones:false };
-    // voorkom dubbel toepassen
-    if(container.getAttribute('data-infinite') === '1') return { hasClones:true };
 
     var first = slides[0].cloneNode(true);
     var last  = slides[slides.length-1].cloneNode(true);
@@ -252,13 +268,15 @@
     }
 
     // Start op eerste echte slide
-    w.requestAnimationFrame(function(){
+    window.requestAnimationFrame(function(){
       var w1 = slideWidth();
       if(w1) container.scrollLeft = w1;
     });
 
     var jumping = false;
-    container.addEventListener('scroll', function(){
+    var onScroll = function(){
+      // Alleen actief zolang deze carousel expliciet infinite staat.
+      if(container.getAttribute('data-infinite') !== '1') return;
       if(jumping) return;
       var all = container.querySelectorAll('.' + slideClass);
       if(!all || all.length < 3) return;
@@ -271,16 +289,18 @@
       if(left <= sw * 0.25){
         jumping = true;
         container.scrollLeft = sw * nReal;
-        w.requestAnimationFrame(function(){ jumping = false; });
+        window.requestAnimationFrame(function(){ jumping = false; });
         return;
       }
       // dicht bij clone rechts
       if(left >= sw * (nReal + 1 - 0.25)){
         jumping = true;
         container.scrollLeft = sw;
-        w.requestAnimationFrame(function(){ jumping = false; });
+        window.requestAnimationFrame(function(){ jumping = false; });
       }
-    }, { passive:true });
+    };
+    container.__pkInfiniteOnScroll = onScroll;
+    container.addEventListener('scroll', onScroll, { passive:true });
 
     return { hasClones:true };
   }
@@ -294,55 +314,56 @@
     if(cardsCarousel && cardsCarousel.children && cardsCarousel.children.length){
       renderCards(ITEMS);
       // terug naar eerste kaart (voorspelbaar)
-      w.setTimeout(function(){ goToCardIndex(0); }, 30);
+      window.setTimeout(function(){ goToCardIndex(0); }, 30);
     }
   }
 
   function setThemePillText(txt){
-    var pillText = w.document.getElementById('themePillText');
-    if(pillText) pillText.textContent = (txt || PK.prettyName(PK.getActiveSet()));
+    var pillText = document.getElementById('themePillText');
+    var next = (txt || window.PK.prettyName(window.PK.getActiveSet()));
+    if(pillText) pillText.textContent = next;
   }
 
   function openMenu(){
   if(sheetAPI && sheetAPI.open){ sheetAPI.open(); return; }
-  var menu = w.document.getElementById('themeMenu');
-  var overlay = w.document.getElementById('themeMenuOverlay');
-  var pill = w.document.getElementById('themePill');
+  var menu = document.getElementById('themeMenu');
+  var overlay = document.getElementById('themeMenuOverlay');
+  var pill = document.getElementById('themePill');
   if(menu) menu.hidden = false;
   if(overlay) overlay.hidden = false;
   if(pill) pill.setAttribute('aria-expanded','true');
-}
+  }
 
-function closeMenu(){
+  function closeMenu(){
   if(sheetAPI && sheetAPI.close){ sheetAPI.close(); return; }
-  var menu = w.document.getElementById('themeMenu');
-  var overlay = w.document.getElementById('themeMenuOverlay');
-  var pill = w.document.getElementById('themePill');
+  var menu = document.getElementById('themeMenu');
+  var overlay = document.getElementById('themeMenuOverlay');
+  var pill = document.getElementById('themePill');
   if(menu) menu.hidden = true;
   if(overlay) overlay.hidden = true;
   if(pill) pill.setAttribute('aria-expanded','false');
-}
+  }
 
 
   function parseInlineQuestions(){
     try{
-      var el = w.document.getElementById('questions-json');
+      var el = document.getElementById('questions-json');
       if(el && el.textContent && el.textContent.replace(/\s+/g,'').length) return JSON.parse(el.textContent);
     }catch(e){}
     return null;
   }
 
   function resolveActiveSet(){
-    var fromUrl = (PK.getQueryParam('set') || PK.getQueryParam('s') || '').replace(/\s+$/,'').replace(/^\s+/,'');
-    return PK.loadJson(PK.PATHS.setsIndex).then(function(idx){
+    var fromUrl = (window.PK.getQueryParam('set') || window.PK.getQueryParam('s') || '').replace(/\s+$/,'').replace(/^\s+/,'');
+    return window.PK.loadJson(window.PK.PATHS.setsIndex).then(function(idx){
       UI_DEFAULTS = (idx && idx.uiDefaults) ? idx.uiDefaults : {};
       CARDS_INDEX_PAGE_BG = (idx && idx.cardsIndexPage && idx.cardsIndexPage.background)
         ? idx.cardsIndexPage.background
         : null;
-      try{ PK.UI_DEFAULTS = UI_DEFAULTS; }catch(_eU){}
+      try{ window.PK.UI_DEFAULTS = UI_DEFAULTS; }catch(_eU){}
       try{ renderIndexBackground(); }catch(_eBg1){}
       var sets = Array.isArray(idx.sets) ? idx.sets : [];
-      var available = sets.map(function(x){ return x.id; });
+      var available = sets.filter(function(x){ return x && !x.placeholder; }).map(function(x){ return x.id; });
       var def = (idx.default || '').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'');
       if(fromUrl && available.indexOf(fromUrl)!==-1) return fromUrl;
       if(def && available.indexOf(def)!==-1) return def;
@@ -359,46 +380,48 @@ function closeMenu(){
     CURRENT_COVER = (meta && meta.cover) ? meta.cover : 'voorkant.svg';
     CURRENT_BACK_MODE = normalizeBackMode(meta && meta.backMode);
     CARD_BASE = pathForSet(setId, 'cards_rect/');
-    try{ w.localStorage.setItem('pk_last_set', String(setId || '').replace(/^\s+|\s+$/g,'')); }catch(_eStore){}
+    try{ window.localStorage.setItem('pk_last_set', String(setId || '').replace(/^\s+|\s+$/g,'')); }catch(_eStore){}
 
-    var icon = w.document.getElementById('setCoverIcon');
+    var icon = document.getElementById('setCoverIcon');
     var brandIcon = false;
     try{
-      brandIcon = !!(w.document && w.document.body && w.document.body.getAttribute('data-brand-icon') === '1');
+      brandIcon = !!(document && document.body && document.body.getAttribute('data-brand-icon') === '1');
     }catch(_e0){}
     if(icon && !brandIcon){
       icon.setAttribute('src', CARD_BASE + CURRENT_COVER);
     }
 
-    var pill = w.document.getElementById('themePill');
+    var pill = document.getElementById('themePill');
     if(pill){ pill.setAttribute('aria-label', (meta && meta.name) ? meta.name : setId); }
 
     // Menu titel: kaartenset naam (ipv "Thema's")
-    var menuTitle = w.document.getElementById('menuSetTitle');
-    if(menuTitle){
-      menuTitle.textContent = (meta && meta.name) ? meta.name : PK.prettyName(setId);
+    var menuHeaderTitle = document.getElementById('menuHeaderTitle');
+    var menuSetName = (meta && meta.name) ? meta.name : window.PK.prettyName(setId);
+    if(menuHeaderTitle){
+      menuHeaderTitle.textContent = menuSetName;
     }
+    setThemePillText(menuSetName);
     trackSetVisit(setId);
 
     // Per-set CSS vars (meta.cssVars)
     try{
-      if(PK.shell && PK.shell.applyCssVars && meta && meta.cssVars){
-        PK.shell.applyCssVars(meta.cssVars);
+      if(window.PK.shell && window.PK.shell.applyCssVars && meta && meta.cssVars){
+        window.PK.shell.applyCssVars(meta.cssVars);
       }
     }catch(_eVars){}
     try{ applyMenuSurfaceTint(meta); }catch(_eMenuTint){}
 
     // Viewer template hint (voor CSS)
     try{
-      if(meta && meta.viewerTemplate && w.document && w.document.body){
-        w.document.body.setAttribute('data-viewer-template', String(meta.viewerTemplate));
+      if(meta && meta.viewerTemplate && document && document.body){
+        document.body.setAttribute('data-viewer-template', String(meta.viewerTemplate));
       }
     }catch(_eTpl){}
 
     try{
-      if(PK.DEBUG && w.console && w.console.log){
-        w.console.log('[DEBUG] active set', setId);
-        w.console.log('[DEBUG] viewer template', (meta && meta.viewerTemplate) ? meta.viewerTemplate : 'classic');
+      if(window.PK.DEBUG && window.console && window.console.log){
+        window.console.log('[DEBUG] active set', setId);
+        window.console.log('[DEBUG] viewer template', (meta && meta.viewerTemplate) ? meta.viewerTemplate : 'classic');
       }
     }catch(_eDbg){}
 
@@ -415,7 +438,7 @@ function closeMenu(){
       }
     }
 
-    var menuList = w.document.getElementById('menuList');
+    var menuList = document.getElementById('menuList');
     if(menuList){
       menuList.innerHTML = '';
       if(meta && Array.isArray(meta.themes)){
@@ -423,30 +446,37 @@ function closeMenu(){
           var th = meta.themes[j] || {};
           var key = String(th.key||'').replace(/^\s+|\s+$/g,'');
           if(!key) continue;
-var cardFile = th.card || (key + '.svg');
-if(PK.createMenuItem){
-  menuList.appendChild(PK.createMenuItem({ setId: setId, key: key, label: (th.label || key), cardFile: cardFile, cover: CURRENT_COVER }));
-}else{
-  var btn = w.document.createElement('button');
+  var cardFile = th.card || (key + '.svg');
+  if(window.PK.createMenuItem){
+  menuList.appendChild(window.PK.createMenuItem({
+    setId: setId,
+    key: key,
+    label: (th.label || key),
+    thumbFile: (th && th.thumb) ? String(th.thumb) : '',
+    cardFile: cardFile,
+    cover: CURRENT_COVER
+  }));
+  }else{
+  var btn = document.createElement('button');
   btn.className = 'menuItem themeItem';
   btn.type = 'button';
   btn.setAttribute('data-set', key);
 
-  var lab = w.document.createElement('span');
+  var lab = document.createElement('span');
   lab.className = 'miLabel';
   lab.textContent = (th.label || key);
 
-  var thumb = w.document.createElement('span');
+  var thumb = document.createElement('span');
   thumb.className = 'miThumbRight';
   thumb.setAttribute('aria-hidden','true');
 
-  var mini = w.document.createElement('div');
+  var mini = document.createElement('div');
   mini.className = 'menuThumbCard';
 
-  var miniImg = w.document.createElement('img');
+  var miniImg = document.createElement('img');
   miniImg.className = 'bg';
   var miniSrc = pathForSet(setId, 'cards_rect/' + cardFile);
-  miniImg.src = PK.withV ? PK.withV(miniSrc) : miniSrc;
+  miniImg.src = window.PK.withV ? window.PK.withV(miniSrc) : miniSrc;
   miniImg.alt = '';
 
   mini.appendChild(miniImg);
@@ -455,14 +485,14 @@ if(PK.createMenuItem){
   btn.appendChild(lab);
   btn.appendChild(thumb);
   menuList.appendChild(btn);
-}
+  }
         }
       }
     }
 
     // UI overrides: defaults uit sets/index.json + per-set meta.ui
-    if(PK.applyUiConfig){
-      try{ PK.applyUiConfig(setId, meta && meta.ui ? meta.ui : null, UI_DEFAULTS); }catch(_eUi){}
+    if(window.PK.applyUiConfig){
+      try{ window.PK.applyUiConfig(setId, meta && meta.ui ? meta.ui : null, UI_DEFAULTS); }catch(_eUi){}
     }
     try{ applyMenuSurfaceTint(meta); }catch(_eMenuTint2){}
     try{ renderIndexBackground(); }catch(_eBg){}
@@ -477,20 +507,20 @@ if(PK.createMenuItem){
   }
 
   function loadMeta(setId){
-    return PK.loadJson(PK.pathForSet ? PK.pathForSet(setId, 'meta.json') : pathForSet(setId, 'meta.json'));
+    return window.PK.loadJson(window.PK.pathForSet ? window.PK.pathForSet(setId, 'meta.json') : pathForSet(setId, 'meta.json'));
   }
 
   function loadQuestions(setId){
-    var indexUrl = PK.pathForSet ? PK.pathForSet(setId, 'cards_rect/index.json') : pathForSet(setId, 'cards_rect/index.json');
-    var questionsUrl = PK.pathForSet ? PK.pathForSet(setId, 'questions.json') : pathForSet(setId, 'questions.json');
+    var indexUrl = window.PK.pathForSet ? window.PK.pathForSet(setId, 'cards_rect/index.json') : pathForSet(setId, 'cards_rect/index.json');
+    var questionsUrl = window.PK.pathForSet ? window.PK.pathForSet(setId, 'questions.json') : pathForSet(setId, 'questions.json');
 
     function buildFromCardFiles(list){
       if(!Array.isArray(list) || !list.length) return Promise.reject(new Error('empty cards index'));
-      var basePath = PK.pathForSet ? null : (PK.PATHS && PK.PATHS.setsDir ? PK.PATHS.setsDir : '.');
+      var basePath = window.PK.pathForSet ? null : (window.PK.PATHS && window.PK.PATHS.setsDir ? window.PK.PATHS.setsDir : '.');
       var tasks = list.map(function(file){
         var rel = 'cards_rect/' + String(file || '').replace(/^\//,'');
-        var url = PK.pathForSet ? PK.pathForSet(setId, rel) : (basePath + '/' + encodeURIComponent(setId) + '/' + rel);
-        return PK.loadJson(url).then(function(card){
+        var url = window.PK.pathForSet ? window.PK.pathForSet(setId, rel) : (basePath + '/' + encodeURIComponent(setId) + '/' + rel);
+        return window.PK.loadJson(url).then(function(card){
           card = card || {};
           card.__file = String(file||'');
           return card;
@@ -511,16 +541,16 @@ if(PK.createMenuItem){
     }
 
     // Nieuwe structuur: cards_rect/index.json + per-kaart json
-    return PK.loadJson(indexUrl).then(buildFromCardFiles).catch(function(){
+    return window.PK.loadJson(indexUrl).then(buildFromCardFiles).catch(function(){
       // Fallback: oude questions.json of inline
-      return PK.loadJson(questionsUrl).catch(function(){
+      return window.PK.loadJson(questionsUrl).catch(function(){
         return parseInlineQuestions();
       });
     });
   }
 
   function loadBacks(setId){
-    return PK.loadJson(PK.pathForSet ? PK.pathForSet(setId, 'backs.json') : pathForSet(setId, 'backs.json')).catch(function(){
+    return window.PK.loadJson(window.PK.pathForSet ? window.PK.pathForSet(setId, 'backs.json') : pathForSet(setId, 'backs.json')).catch(function(){
       return null;
     });
   }
@@ -562,7 +592,7 @@ if(PK.createMenuItem){
         }
         out.push({
           theme: theme,
-          themeLabel: (THEME_LABELS[theme] || PK.prettyName(theme)),
+          themeLabel: (THEME_LABELS[theme] || window.PK.prettyName(theme)),
           q: norm.q,
           voorkant: norm.q,
           back: backTxt,
@@ -591,7 +621,7 @@ if(PK.createMenuItem){
       if((ITEMS[i]||{}).theme === themeKey){ idx = i; break; }
     }
     if(idx >= 0){
-      w.setTimeout(function(){ goToCardIndex(idx); }, 40);
+      window.setTimeout(function(){ goToCardIndex(idx); }, 40);
     }
   }
 
@@ -599,8 +629,8 @@ if(PK.createMenuItem){
     var key = String(PENDING_THEME || '').replace(/^\s+|\s+$/g,'');
     if(!key) return;
     PENDING_THEME = '';
-    if(PK.setActiveTheme) PK.setActiveTheme(key);
-    var label = (THEME_LABELS && THEME_LABELS[key]) ? THEME_LABELS[key] : PK.prettyName(key);
+    if(window.PK.setActiveTheme) window.PK.setActiveTheme(key);
+    var label = (THEME_LABELS && THEME_LABELS[key]) ? THEME_LABELS[key] : window.PK.prettyName(key);
     setThemePillText(label);
     scrollToTheme(key);
   }
@@ -608,7 +638,7 @@ if(PK.createMenuItem){
   // init
   resolveActiveSet()
     .then(function(setId){
-      if(PK.setActiveSet) PK.setActiveSet(setId);
+      if(window.PK.setActiveSet) window.PK.setActiveSet(setId);
       return loadMeta(setId).then(function(meta){
         applySetMeta(setId, meta);
         return Promise.all([loadQuestions(setId), loadBacks(setId)]);
@@ -628,19 +658,19 @@ if(PK.createMenuItem){
     })
     .catch(function(e){
       showError('Fout bij laden.');
-      if(w.console && w.console.error) w.console.error(e);
+      if(window.console && window.console.error) window.console.error(e);
     });
 
   setThemePillText();
 
   // Menu wiring
-  var pillBtn = w.document.getElementById('themePill');
-  var overlay = w.document.getElementById('themeMenuOverlay');
-  var menuEl = w.document.getElementById('themeMenu');
-  if(PK.createMenu){
-    sheetAPI = PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
-  }else if(PK.createBottomSheet){
-    sheetAPI = PK.createBottomSheet({ sheet: menuEl, overlay: overlay, trigger: pillBtn });
+  var pillBtn = document.getElementById('themePill');
+  var overlay = document.getElementById('themeMenuOverlay');
+  var menuEl = document.getElementById('themeMenu');
+  if(window.PK.createMenu){
+    sheetAPI = window.PK.createMenu({ menu: menuEl, overlay: overlay, trigger: pillBtn });
+  }else if(window.PK.createBottomSheet){
+    sheetAPI = window.PK.createBottomSheet({ sheet: menuEl, overlay: overlay, trigger: pillBtn });
   }else if(pillBtn){
     pillBtn.onclick = function(){
       var expanded = pillBtn.getAttribute('aria-expanded') === 'true';
@@ -650,7 +680,7 @@ if(PK.createMenuItem){
   }
 
   // Menu acties: info (open sheet in uitleg) + shuffle toggle (alleen state/UI)
-  var menuInfoBtn = w.document.getElementById('menuInfoBtn');
+  var menuInfoBtn = document.getElementById('menuInfoBtn');
   if(menuInfoBtn){
     menuInfoBtn.onclick = function(ev){
       if(ev && ev.preventDefault) ev.preventDefault();
@@ -661,8 +691,27 @@ if(PK.createMenuItem){
     };
   }
 
+  // Als uitleg-sheet open staat: 1 tap op de topbar-pill (menu/logo) sluit de sheet
+  // en opent direct het menu (in plaats van eerst sheet sluiten en opnieuw tikken).
+  if(pillBtn && !pillBtn.__pkInfoSheetMenuBridgeBound){
+    pillBtn.__pkInfoSheetMenuBridgeBound = true;
+    pillBtn.addEventListener('click', function(ev){
+      var sheetOpen = !!(infoSheet && !infoSheet.hidden);
+      if(!sheetOpen) return;
+      if(ev){
+        if(ev.preventDefault) ev.preventDefault();
+        if(ev.stopPropagation) ev.stopPropagation();
+        if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+      }
+      try{ peekInfo(); }catch(_ePeek){}
+      window.requestAnimationFrame(function(){
+        try{ openMenu(); }catch(_eOpen){}
+      });
+    }, true);
+  }
+
   // Contrast (licht/donker) – icon-only toggle in het menu
-  var contrastBtn = w.document.getElementById('menuContrastToggle');
+  var contrastBtn = document.getElementById('menuContrastToggle');
   var CONTRAST = 'light';
   function applyContrast(mode){
     var nextContrast = (mode === 'dark') ? 'dark' : 'light';
@@ -670,9 +719,9 @@ if(PK.createMenuItem){
     CONTRAST = nextContrast;
     // Session-only: default altijd LIGHT bij een nieuwe sessie,
     // maar na klikken mag DARK de rest van de sessie blijven.
-    try{ w.sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
-    if(w.document && w.document.documentElement){
-      w.document.documentElement.setAttribute('data-contrast', CONTRAST);
+    try{ window.sessionStorage.setItem('pk_contrast_session', CONTRAST); }catch(_e){}
+    if(document && document.documentElement){
+      document.documentElement.setAttribute('data-contrast', CONTRAST);
     }
     if(contrastBtn) contrastBtn.setAttribute('aria-pressed', (CONTRAST === 'dark') ? 'true' : 'false');
     if(changed){
@@ -681,7 +730,7 @@ if(PK.createMenuItem){
       // een zichtbare paars/wit-flits terwijl alle content al in beeld blijft.
       try{ renderIndexBackground(); }catch(_e3){}
       try{
-        w.requestAnimationFrame(function(){
+        window.requestAnimationFrame(function(){
           try{ refreshActiveTintForContrast(); }catch(_eTint){}
           try{ retintInfoSlideTexts && retintInfoSlideTexts(); }catch(_e0){}
         });
@@ -697,7 +746,7 @@ if(PK.createMenuItem){
   }
   if(contrastBtn){
     var savedC = 'light';
-    try{ savedC = w.sessionStorage.getItem('pk_contrast_session') || 'light'; }catch(_e){}
+    try{ savedC = window.sessionStorage.getItem('pk_contrast_session') || 'light'; }catch(_e){}
     applyContrast(savedC === 'dark' ? 'dark' : 'light');
     contrastBtn.onclick = function(ev){
       if(ev && ev.preventDefault) ev.preventDefault();
@@ -705,15 +754,15 @@ if(PK.createMenuItem){
     };
   }
 
-  var shuffleBtn = w.document.getElementById('menuShuffleToggle');
+  var shuffleBtn = document.getElementById('menuShuffleToggle');
   function setShuffleEnabled(on){
     on = !!on;
     SHUFFLE_ON = on;
     if(shuffleBtn) shuffleBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    if(w.document && w.document.body && w.document.body.classList){
-      w.document.body.classList.toggle('shuffleOn', on);
+    if(document && document.body && document.body.classList){
+      document.body.classList.toggle('shuffleOn', on);
     }
-    try{ w.localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
+    try{ window.localStorage.setItem('pk_shuffle', on ? '1' : '0'); }catch(_e){}
     // Echte shuffle: pas de volgorde aan in grid + carrousel.
     // (We gebruiken ORIGINAL_ITEMS als bron, zodat 'uit' weer exact terug kan.)
     if(ORIGINAL_ITEMS && ORIGINAL_ITEMS.length){
@@ -722,7 +771,7 @@ if(PK.createMenuItem){
   }
   if(shuffleBtn){
     var saved = '0';
-    try{ saved = w.localStorage.getItem('pk_shuffle') || '0'; }catch(_e){}
+    try{ saved = window.localStorage.getItem('pk_shuffle') || '0'; }catch(_e){}
     setShuffleEnabled(saved === '1');
     shuffleBtn.onclick = function(ev){
       if(ev && ev.preventDefault) ev.preventDefault();
@@ -732,7 +781,7 @@ if(PK.createMenuItem){
   }
 
 
-  var menuList = w.document.getElementById('menuList');
+  var menuList = document.getElementById('menuList');
   if(menuList){
     menuList.addEventListener('click', function(e){
       var btn = e.target && (e.target.closest ? e.target.closest('button[data-set]') : null);
@@ -740,10 +789,10 @@ if(PK.createMenuItem){
       var themeKey = (btn.getAttribute('data-set') || '').replace(/^\s+|\s+$/g,'');
       if(!themeKey) return;
 
-      if(PK.setActiveTheme) PK.setActiveTheme(themeKey);
+      if(window.PK.setActiveTheme) window.PK.setActiveTheme(themeKey);
 
       var labelEl = btn.querySelector('.miLabel');
-      var labelTxt = labelEl ? (labelEl.textContent || '').replace(/^\s+|\s+$/g,'') : PK.prettyName(themeKey);
+      var labelTxt = labelEl ? (labelEl.textContent || '').replace(/^\s+|\s+$/g,'') : window.PK.prettyName(themeKey);
       setThemePillText(labelTxt);
 
       scrollToTheme(themeKey);
@@ -751,15 +800,15 @@ if(PK.createMenuItem){
   }
 
 
-  var naarOverzicht = w.document.getElementById('naarOverzicht');
+  var naarOverzicht = document.getElementById('naarOverzicht');
   if(naarOverzicht){
     naarOverzicht.onclick = function(){
       closeMenu();
-      if(PK.PATHS && PK.PATHS.gridPage){
-        w.location.href = PK.PATHS.gridPage;
+      if(window.PK.PATHS && window.PK.PATHS.gridPage){
+        window.location.href = window.PK.PATHS.gridPage;
       }else{
-        var base = (PK.PATHS && PK.PATHS.base) ? PK.PATHS.base : '.';
-        w.location.href = base.replace(/\/$/,'') + '/index.html';
+        var base = (window.PK.PATHS && window.PK.PATHS.base) ? window.PK.PATHS.base : '.';
+        window.location.href = base.replace(/\/$/,'') + '/index.html';
       }
     };
   }
@@ -775,18 +824,28 @@ if(PK.createMenuItem){
   // - tekstvlak kleurt mee op dominante kaartkleur
   // ------------------------------------------------------------
 
-  var infoSheet = w.document.getElementById('infoSheet');
-  var infoOverlay = w.document.getElementById('infoOverlay');
-  var infoCarousel = w.document.getElementById('infoCarousel');
+  var infoSheet = document.getElementById('infoSheet');
+  var infoOverlay = document.getElementById('infoOverlay');
+  var infoClose = document.getElementById('infoClose');
+  var infoCarousel = document.getElementById('infoCarousel');
   // De kaarten-carrousel staat nu centraal op de pagina.
-  var cardsCarousel = w.document.getElementById('mainCarousel');
-  var sheetStack = w.document.getElementById('sheetStack');
-  var sheetPageCards = w.document.getElementById('sheetPageCards');
-  var sheetPageHelp = w.document.getElementById('sheetPageHelp');
+  var cardsCarousel = document.getElementById('mainCarousel');
+  var sheetStack = document.getElementById('sheetStack');
+  var sheetPageCards = document.getElementById('sheetPageCards');
+  var sheetPageHelp = document.getElementById('sheetPageHelp');
   var sheetViewport = infoSheet ? infoSheet.querySelector('.sheetViewport') : null;
   var infoCard = infoSheet ? infoSheet.querySelector('.infoCard') : null;
   var handle = infoSheet ? infoSheet.querySelector('.sheetHandle') : null;
   var topPage = 'cards';
+  var __infoOpenedOnce = false;
+  var __infoResetOnNextOpen = false;
+  var __infoReturnAnimRaf = 0;
+
+  function cancelInfoReturnAnim(){
+    if(!__infoReturnAnimRaf) return;
+    try{ window.cancelAnimationFrame(__infoReturnAnimRaf); }catch(_e){}
+    __infoReturnAnimRaf = 0;
+  }
 
   // ------------------------------------------------------------
   // Scroll-lock (Google Maps-achtig)
@@ -799,12 +858,12 @@ if(PK.createMenuItem){
     enable = !!enable;
     if(enable === __pkScrollLock.on) return;
 
-    var docEl = w.document.documentElement;
-    var body = w.document.body;
+    var docEl = document.documentElement;
+    var body = document.body;
 
     if(enable){
       __pkScrollLock.on = true;
-      __pkScrollLock.y = (w.pageYOffset || docEl.scrollTop || body.scrollTop || 0);
+      __pkScrollLock.y = (window.pageYOffset || docEl.scrollTop || body.scrollTop || 0);
 
       // Zet body vast op huidige scrollpositie
       body.style.position = 'fixed';
@@ -824,28 +883,57 @@ if(PK.createMenuItem){
       body.style.width = '';
       docEl.style.overflow = '';
       // Scroll herstellen
-      try{ w.scrollTo(0, __pkScrollLock.y || 0); }catch(_e){}
+      try{ window.scrollTo(0, __pkScrollLock.y || 0); }catch(_e){}
     }
   }
 
   // --- Dynamic height helpers (compact kaarten -> max uitleg) ---
   function readCssPx(el, name, fallback){
     try{
-      var v = w.getComputedStyle(el || w.document.documentElement).getPropertyValue(name);
+      var v = window.getComputedStyle(el || document.documentElement).getPropertyValue(name);
       var n = parseFloat(String(v||'').replace('px',''));
       return isNaN(n) ? fallback : n;
     }catch(_e){ return fallback; }
   }
 
+  function getHelpOpenH(){
+    var fallback = readCssPx(document.documentElement, '--sheetPageH', 520);
+    var topBar = document.querySelector ? document.querySelector('.topBar') : null;
+    var barBottom = 0;
+    if(topBar && topBar.getBoundingClientRect){
+      var topBarRect = topBar.getBoundingClientRect();
+      if(topBarRect && isFinite(topBarRect.bottom)) barBottom = topBarRect.bottom;
+    }
+    if(!(barBottom > 0)){
+      barBottom = readCssPx(document.documentElement, '--topBarInset', 16)
+        + readCssPx(document.documentElement, '--topBarHeight', 64);
+    }
+    var available = Math.round((window.innerHeight || 0) - barBottom - 8);
+    if(!isFinite(available) || available < 240) available = fallback;
+    return Math.max(240, available || fallback || 240);
+  }
+
+  function syncHelpSheetMaxH(){
+    var px = getHelpOpenH();
+    if(infoSheet && infoSheet.style && infoSheet.style.setProperty){
+      infoSheet.style.setProperty('--sheetMaxH', px + 'px');
+    }
+    return px;
+  }
+
   function getMaxH(){
     // Max hoogte komt uit CSS var op .infoSheet (fallback op root var)
-    return readCssPx(infoSheet || w.document.documentElement, '--sheetMaxH', readCssPx(w.document.documentElement, '--sheetPageH', 520));
+    return readCssPx(
+      infoSheet || document.documentElement,
+      '--sheetMaxH',
+      syncHelpSheetMaxH() || readCssPx(document.documentElement, '--sheetPageH', 520)
+    );
   }
   function getCompactH(){
-    return readCssPx(infoSheet || w.document.documentElement, '--sheetCompactH', Math.min(getMaxH(), 460));
+    return readCssPx(infoSheet || document.documentElement, '--sheetCompactH', Math.min(getMaxH(), 460));
   }
   function getCurH(){
-    return readCssPx(infoSheet || w.document.documentElement, '--sheetCurH', getCompactH());
+    return readCssPx(infoSheet || document.documentElement, '--sheetCurH', getCompactH());
   }
   function setCurH(px){
     if(!infoSheet) return;
@@ -861,10 +949,10 @@ if(PK.createMenuItem){
   var helpMeasureTimer = 0;
   function scheduleHelpMeasure(){
     if(!infoSheet) return;
-    if(helpMeasureTimer) w.clearTimeout(helpMeasureTimer);
-    helpMeasureTimer = w.setTimeout(function(){
+    if(helpMeasureTimer) window.clearTimeout(helpMeasureTimer);
+    helpMeasureTimer = window.setTimeout(function(){
       helpMeasureTimer = 0;
-      setCurH(measureHelpH() || getMaxH());
+      setCurH(syncHelpSheetMaxH() || getMaxH());
     }, 60);
   }
 
@@ -894,8 +982,7 @@ if(PK.createMenuItem){
 
     // Viewport hoogte:
     // - kaarten = compact (kaart)
-    // - uitleg  = "fit" (kaart + tekst), NIET altijd max hoogte
-    //   -> voorkomt enorme lege ruimte boven de kaart en houdt de top mooi in lijn.
+    // - uitleg  = dezelfde open hoogte als de main index
     var compactH = getCompactH();
     if(mode === 'help'){
       scheduleHelpMeasure();
@@ -905,158 +992,114 @@ if(PK.createMenuItem){
       setTopPage('cards');
     }
   }
-  try{ PK.setSheetMode = setSheetMode; }catch(_eSetMode){}
+  try{ window.PK.setSheetMode = setSheetMode; }catch(_eSetMode){}
 
-  // Meet de benodigde hoogte voor de uitleg-sheet (kaart + tekst) zodat
-  // de bovenkant van de sheet niet onnodig hoog uitkomt.
+  // Kaartenindex gebruikt voor uitleg dezelfde open hoogte als de main index.
   function measureHelpH(){
-    if(!infoSheet) return 0;
-    var slideInner = infoSheet.querySelector ? infoSheet.querySelector('.infoSlideInner') : null;
-    if(!slideInner || !slideInner.getBoundingClientRect) return 0;
-    var r = slideInner.getBoundingClientRect();
-    if(!r || !r.height) return 0;
-    // Handle + ondermarge + safe-area
-    var handleH = 18;
-    var pad = 18;
-    // env(safe-area-inset-bottom) is niet betrouwbaar via getComputedStyle;
-    // de CSS regelt safe-area al. Hier dus geen extra.
-    var h = Math.round(r.height + handleH + pad);
-
-    // Extra: zorg dat de sheet hoog genoeg is om de centrale index-kaart volledig te bedekken.
-    // Top(sheet) = window.innerHeight - h. We willen: top(sheet) <= top(index-kaart).
-    // => h >= window.innerHeight - top(index-kaart)
-    try{
-      var main = w.document.getElementById('mainCarousel');
-      if(main){
-        var slides = Array.prototype.slice.call(main.children || []);
-        var cx = w.innerWidth / 2;
-        var best = null;
-        var bestDist = Infinity;
-        for(var i=0;i<slides.length;i++){
-          var sl = slides[i];
-          if(!sl || sl.nodeType !== 1) continue;
-          var rr = sl.getBoundingClientRect();
-          var mx = rr.left + rr.width/2;
-          var d = Math.abs(mx - cx);
-          if(d < bestDist){ bestDist = d; best = sl; }
-        }
-        var mainCard = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
-        if(mainCard && mainCard.getBoundingClientRect){
-          var rMain = mainCard.getBoundingClientRect();
-          var needed = Math.round(w.innerHeight - rMain.top);
-          // kleine extra marge zodat hij écht over de kaart valt
-          needed += 14;
-          if(needed > h) h = needed;
-        }
-      }
-    }catch(_eCover){}
-
-    var maxH = getMaxH();
-    // Clamp: nooit kleiner dan 320 (stabiel) en nooit groter dan max.
-    h = Math.max(320, Math.min(maxH, h));
-    return h;
+    return syncHelpSheetMaxH() || getMaxH();
   }
 
-  
-  // --- Align uitleg-inhoud precies over de centrale kaart op de index ---
-  // Belangrijk: de sheet zelf moet altijd aan de onderrand blijven 'haken'.
-  // Daarom verplaatsen we NIET de hele sheet (dat gaf soms een gap op iOS),
-  // maar schuiven we alleen de uitleg-inhoud (CSS var --helpShift).
+
+  // Kaartenindex gebruikt hier dezelfde rustige sheet-opbouw als de main index.
+  // Daarom geen extra verticale content-shift meer binnen de sheet.
   function alignInfoSheetToMainCard(){
-    if(!infoSheet || !infoCarousel) return;
-
-    // Centrale kaart (index)
-    var main = w.document.getElementById('mainCarousel');
-    if(!main) return;
-    var mainSlides = Array.prototype.slice.call(main.children || []);
-    if(!mainSlides.length) return;
-
-    var cx = w.innerWidth / 2;
-    var best = null;
-    var bestDist = Infinity;
-    for(var i=0;i<mainSlides.length;i++){
-      var sl = mainSlides[i];
-      if(!sl || sl.nodeType !== 1) continue;
-      var r = sl.getBoundingClientRect();
-      var mx = r.left + r.width/2;
-      var d = Math.abs(mx - cx);
-      if(d < bestDist){ bestDist = d; best = sl; }
-    }
-    var mainCard = best && best.querySelector ? best.querySelector('.cardsSlideCard') : null;
-    if(!mainCard) return;
-    var rMain = mainCard.getBoundingClientRect();
-
-    // Zichtbare kaart (uitleg)
-    var infoSlides = Array.prototype.slice.call(infoCarousel.children || []);
-    if(!infoSlides.length) return;
-    var bestI = null;
-    var bestIDist = Infinity;
-    for(var j=0;j<infoSlides.length;j++){
-      var isl = infoSlides[j];
-      if(!isl || isl.nodeType !== 1) continue;
-      var ir = isl.getBoundingClientRect();
-      var imx = ir.left + ir.width/2;
-      var id = Math.abs(imx - cx);
-      if(id < bestIDist){ bestIDist = id; bestI = isl; }
-    }
-    // Gebruik de kaart-container (niet het <img>) zodat de maat altijd gelijk is
-    // aan de index-kaart (aspect-ratio) en niet varieert per SVG.
-    var infoCardEl = bestI && bestI.querySelector ? bestI.querySelector('.infoSlideCard') : null;
-    if(!infoCardEl) return;
-    var rInfo = infoCardEl.getBoundingClientRect();
-
-    // Doel: bovenkant van uitleg-kaart uitlijnen op de centrale index-kaart.
-    // shift (px) = gewensteTop - huidigeTop.
-    var shift = Math.round(rMain.top - rInfo.top);
-
-    // Guardrails: laat de kaart nooit uit de sheet-viewport 'knippen'.
-    // (Dit was de oorzaak van "alleen een strook" van de kaart zien.)
-    if(sheetViewport && sheetViewport.getBoundingClientRect){
-      var vp = sheetViewport.getBoundingClientRect();
-      var pad = 12; // visuele marge boven/onder
-      var topLimit = vp.top + pad;
-      var bottomLimit = vp.bottom - pad;
-
-      var topAfter = rInfo.top + shift;
-      var bottomAfter = rInfo.bottom + shift;
-
-      if(topAfter < topLimit){
-        shift += (topLimit - topAfter);
-      }
-      if(bottomAfter > bottomLimit){
-        shift -= (bottomAfter - bottomLimit);
-      }
-    }
-
-    // Extra clamp tegen extreme values bij rare metingen (iOS rotate / rubberband)
-    if(shift > 140) shift = 140;
-    if(shift < -140) shift = -140;
-
-    try{ infoSheet.style.setProperty('--helpShift', shift + 'px'); }catch(_e){}
+    if(!infoSheet || !infoSheet.style || !infoSheet.style.setProperty) return;
+    try{ infoSheet.style.setProperty('--helpShift', '0px'); }catch(_e){}
   }
 
-  // Zorg dat uitleg altijd op de voorkant start (voorspelbaar).
-  function resetInfoCarouselToCover(){
-    if(!infoCarousel) return;
+  function getInfoSlides(){
+    if(!infoCarousel) return [];
     try{
-      var all = infoCarousel.querySelectorAll('.infoSlide');
-      if(!all || all.length < 1) return;
-      // Infinite modus: clones aan begin/eind, eerste echte slide op 1 slideWidth.
-      var hasClones = (infoCarousel.getAttribute('data-infinite') === '1');
-      if(hasClones && all.length >= 3){
-        var r = all[1].getBoundingClientRect();
-        var w1 = (r && r.width) ? r.width : 0;
-        if(w1) infoCarousel.scrollLeft = w1;
-        else infoCarousel.scrollLeft = 0;
+      // Sluit clones uit (infinite carousel voegt clones toe aan begin/eind)
+      return Array.prototype.slice.call(infoCarousel.querySelectorAll('.infoSlide:not(.is-clone)') || []);
+    }catch(_e){ return []; }
+  }
+
+  function getInfoActiveIndex(){
+    if(!infoCarousel) return 0;
+    var all = getInfoSlides();
+    if(!all.length) return 0;
+    var center = (infoCarousel.scrollLeft || 0) + (infoCarousel.clientWidth || 0) / 2;
+    var bestIdx = 0;
+    var bestDist = Infinity;
+    for(var i=0;i<all.length;i++){
+      var sl = all[i];
+      if(!sl) continue;
+      var slCenter = (sl.offsetLeft || 0) + (sl.offsetWidth || 0) / 2;
+      var d = Math.abs(slCenter - center);
+      if(d < bestDist){
+        bestDist = d;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }
+
+  function getInfoSlideTargetLeft(index){
+    if(!infoCarousel) return 0;
+    var all = getInfoSlides();
+    if(!all.length) return 0;
+    var idx = Math.max(0, Math.min(all.length - 1, index|0));
+    var slide = all[idx];
+    if(!slide) return 0;
+    var cw = infoCarousel.clientWidth || 0;
+    var sw = slide.offsetWidth || 0;
+    var left = (slide.offsetLeft || 0) - ((cw - sw) / 2);
+    if(!isFinite(left)) left = (slide.offsetLeft || 0);
+    if(left < 0) left = 0;
+    return Math.round(left);
+  }
+
+  function isInfoCarouselAtCover(){
+    return getInfoActiveIndex() === 0;
+  }
+
+  // Zet uitleg-carrousel terug op voorkant (optioneel smooth).
+  function scrollInfoCarouselToCover(opts){
+    opts = opts || {};
+    var smooth = !!opts.smooth;
+    var direction = String(opts.direction || '');
+    if(!infoCarousel) return;
+
+    // Eenvoudig terugscrollen naar links (natuurlijk 'terugspoelen')
+    if(smooth && direction === 'right'){
+      var targetLeft = getInfoSlideTargetLeft(0);
+      if((infoCarousel.scrollLeft || 0) < 2) return;
+      try{
+        infoCarousel.scrollTo({ left: targetLeft, behavior: 'smooth' });
+      }catch(_e){
+        infoCarousel.scrollLeft = targetLeft;
+      }
+      return;
+    }
+
+    try{
+      // Zet scroll-behavior tijdelijk, zodat we gecontroleerd kunnen animeren.
+      var prevBehavior = infoCarousel.style.scrollBehavior;
+      infoCarousel.style.scrollBehavior = smooth ? 'smooth' : 'auto';
+
+      var targetLeft = getInfoSlideTargetLeft(0);
+      try{
+        infoCarousel.scrollTo({ left: targetLeft, behavior: smooth ? 'smooth' : 'auto' });
+      }catch(_eScroll){
+        infoCarousel.scrollLeft = targetLeft;
+      }
+
+      // Herstel scroll-behavior
+      if(smooth){
+        window.setTimeout(function(){
+          try{ infoCarousel.style.scrollBehavior = prevBehavior || ''; }catch(_eRestore){}
+        }, 280);
       }else{
-        infoCarousel.scrollLeft = 0;
+        infoCarousel.style.scrollBehavior = prevBehavior || '';
       }
     }catch(_e){}
   }
 
 
-function openInfo(){
+  function openInfo(){
     if(!infoSheet) return;
+    var shouldAnimateBackToCover = !!__infoResetOnNextOpen;
 
     // Reset eventuele drag/transforms uit oude sessies
     infoSheet.style.transition = '';
@@ -1071,32 +1114,45 @@ function openInfo(){
       if(infoOverlay.classList) infoOverlay.classList.remove('open');
     }
 
-    // 2) Zet meteen naar uitleg + cover, zodat DOM-sizes kloppen vóór de open-animatie
+    // 2) Zet meteen naar uitleg, zodat DOM-sizes kloppen vóór de open-animatie
     try{ setSheetMode('help'); }catch(_e0){}
-    try{ resetInfoCarouselToCover(); }catch(_e3){}
 
-    // Force reflow zodat measureHelpH betrouwbare waarden geeft (ook op iOS)
+    // Force reflow zodat de definitieve sheethoogte stabiel is (ook op iOS)
     try{ infoSheet.offsetHeight; }catch(_eR){}
 
     // 3) Bepaal de definitieve sheet hoogte vóór het openen (voorkomt 'top-down' krimp)
     try{
-      var h = measureHelpH();
+      var h = syncHelpSheetMaxH();
       if(h) setCurH(h);
     }catch(_eH){}
 
     // 4) Open van onder naar boven (altijd bottom-up)
-    w.requestAnimationFrame(function(){
+    window.requestAnimationFrame(function(){
       if(infoSheet.classList) infoSheet.classList.add('open');
       if(infoOverlay && infoOverlay.classList) infoOverlay.classList.add('open');
+      __infoOpenedOnce = true;
+      __infoResetOnNextOpen = false;
+
+      // Altijd bij openen naar de cover-slide:
+      // - eerste open: direct (voorkomt starten op clone/laatste kaart als sheet hidden was)
+      // - heropen na sluiten op andere slide: geanimeerd terug naar rechts
+      window.requestAnimationFrame(function(){
+        try{
+          scrollInfoCarouselToCover({
+            smooth: shouldAnimateBackToCover,
+            direction: shouldAnimateBackToCover ? 'right' : ''
+          });
+        }catch(_e3){}
+      });
 
       // Init gestures 1x
-      if(!w.__pkInfoDragInited){
+      if(!window.__pkInfoDragInited){
         try{ initDrag(); }catch(_e){}
-        w.__pkInfoDragInited = true;
+        window.__pkInfoDragInited = true;
       }
 
       // 5) Na het openen (transform=0) pas de optische align toe (zonder hoogte-wijziging)
-      w.requestAnimationFrame(function(){
+      window.requestAnimationFrame(function(){
         try{ alignInfoSheetToMainCard(); }catch(_e2){}
       });
     });
@@ -1104,13 +1160,20 @@ function openInfo(){
   function peekInfo(){
     // Sluit uitleg-sheet volledig (geen 'peek' meer)
     if(!infoSheet) return;
+    cancelInfoReturnAnim();
+    try{
+      __infoResetOnNextOpen = !isInfoCarouselAtCover();
+    }catch(_eTrack){
+      __infoResetOnNextOpen = false;
+    }
     if(infoSheet.classList) infoSheet.classList.remove('open');
     if(infoOverlay){
       infoOverlay.hidden = true;
       infoOverlay.style.pointerEvents = 'none';
     }
+    // Kaarten-carousel blijft op huidige positie bij sluiten uitleg-sheet.
     // wacht transition uit en verberg dan echt
-    w.setTimeout(function(){
+    window.setTimeout(function(){
       infoSheet.hidden = true;
       infoSheet.style.transform = '';
       infoSheet.style.transition = '';
@@ -1154,6 +1217,7 @@ function openInfo(){
     }
     if(
       t === 'Systemisch werken' ||
+      t === 'Teamrollen van Belbin' ||
       t === 'Rollen van Belbin' ||
       t === 'In beweging' ||
       t === 'Waarom werkwoorden?' ||
@@ -1252,40 +1316,100 @@ function openInfo(){
 
     el.innerHTML = html.join('');
   }
+
+  function appendCoverFooterHint(el, hintText){
+    if(!el || !el.appendChild) return;
+    if(el.querySelector && el.querySelector('.infoCoverFooter')) return;
+    var txt = String(hintText || '').replace(/^\s+|\s+$/g,'');
+    if(!txt) return;
+
+    var footer = document.createElement('div');
+    footer.className = 'infoCoverFooter';
+
+    var hint = document.createElement('p');
+    hint.className = 'infoCoverHint';
+    hint.textContent = txt;
+
+    var topBtn = document.createElement('button');
+    topBtn.type = 'button';
+    topBtn.className = 'infoScrollTopBtn';
+    topBtn.setAttribute('aria-label', 'Naar boven');
+    topBtn.textContent = '⌃';
+
+    footer.appendChild(hint);
+    footer.appendChild(topBtn);
+    el.appendChild(footer);
+  }
+
+  var __infoUiHandlersBound = false;
+  function scrollHelpViewportToTop(smooth){
+    var vp = sheetViewport || (infoSheet && infoSheet.querySelector ? infoSheet.querySelector('.sheetViewport') : null);
+    if(!vp) return;
+    if((vp.scrollTop || 0) <= 1) return;
+    try{
+      vp.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+    }catch(_eVp){
+      vp.scrollTop = 0;
+    }
+  }
+  function ensureInfoUiHandlers(){
+    if(__infoUiHandlersBound || !infoCarousel) return;
+    __infoUiHandlersBound = true;
+
+    infoCarousel.addEventListener('click', function(ev){
+      var target = ev && ev.target;
+      var btn = target && target.closest ? target.closest('.infoScrollTopBtn') : null;
+      if(!btn) return;
+      if(ev.preventDefault) ev.preventDefault();
+      if(ev.stopPropagation) ev.stopPropagation();
+      scrollHelpViewportToTop(true);
+    }, false);
+  }
   function cardPathRect(setId, file){
     return pathForSet(setId, 'cards_rect/' + file);
   }
   function cardPathSquare(setId, file){
     return pathForSet(setId, 'cards/' + file);
   }
-
-  function buildSlides(setId, meta, uitleg){
+  function buildSlides(setId, meta, uitleg, intro){
     var slides = [];
     meta = meta || {};
     uitleg = uitleg || {};
+    intro = intro || {};
     var coverFile = meta.cover || 'voorkant.svg';
+    var themes = Array.isArray(meta.themes) ? meta.themes : [];
+    var mode = String(intro.mode || '').replace(/^\s+|\s+$/g,'') || (themes.length ? 'themes' : 'single');
+    var activeThemes = Array.isArray(intro.activeThemes) && intro.activeThemes.length
+      ? intro.activeThemes.map(function(v){ return String(v || '').replace(/^\s+|\s+$/g,''); }).filter(Boolean)
+      : themes.map(function(t){ return String((t && t.key) || '').replace(/^\s+|\s+$/g,''); }).filter(Boolean);
+    var hintText = mode === 'themes'
+      ? String(intro.hint || 'Swipe naar links of rechts voor verdere uitleg per thema.').replace(/^\s+|\s+$/g,'')
+      : '';
     slides.push({
       key: 'cover',
       isCover: true,
       title: '',
-      srcRect: (PK.withV ? PK.withV(cardPathRect(setId, coverFile)) : cardPathRect(setId, coverFile)),
-      srcFallback: (PK.withV ? PK.withV(cardPathSquare(setId, coverFile)) : cardPathSquare(setId, coverFile)),
-      text: safeText(uitleg.cover || '')
+      srcRect: (window.PK.withV ? window.PK.withV(cardPathRect(setId, coverFile)) : cardPathRect(setId, coverFile)),
+      srcFallback: (window.PK.withV ? window.PK.withV(cardPathSquare(setId, coverFile)) : cardPathSquare(setId, coverFile)),
+      text: safeText(uitleg.cover || ''),
+      footerHint: hintText
     });
 
-    var themes = Array.isArray(meta.themes) ? meta.themes : [];
+    if(mode !== 'themes') return slides;
+
     for(var i=0;i<themes.length;i++){
       var t = themes[i] || {};
       var key = safeText(t.key || '').replace(/^\s+|\s+$/g,'');
       if(!key) continue;
+      if(activeThemes.indexOf(key) === -1) continue;
       var label = safeText(t.label || key);
       var file = safeText(t.card || (key + '.svg'));
       slides.push({
         key: key,
         isCover: false,
         title: label,
-        srcRect: (PK.withV ? PK.withV(cardPathRect(setId, file)) : cardPathRect(setId, file)),
-        srcFallback: (PK.withV ? PK.withV(cardPathSquare(setId, file)) : cardPathSquare(setId, file)),
+        srcRect: (window.PK.withV ? window.PK.withV(cardPathRect(setId, file)) : cardPathRect(setId, file)),
+        srcFallback: (window.PK.withV ? window.PK.withV(cardPathSquare(setId, file)) : cardPathSquare(setId, file)),
         text: safeText(uitleg[key] || '')
       });
     }
@@ -1294,20 +1418,22 @@ function openInfo(){
 
   function renderSlides(slides){
     if(!infoCarousel) return;
+    // Reset vorige staat
+    disableInfiniteCarousel(infoCarousel);
     infoCarousel.innerHTML = '';
     for(var i=0;i<slides.length;i++){
       var s = slides[i];
 
-      var slide = w.document.createElement('div');
+      var slide = document.createElement('div');
       slide.className = 'infoSlide';
 
-      var inner = w.document.createElement('div');
+      var inner = document.createElement('div');
       inner.className = 'infoSlideInner';
 
-      var card = w.document.createElement('div');
+      var card = document.createElement('div');
       card.className = 'infoSlideCard';
 
-      var img = w.document.createElement('img');
+      var img = document.createElement('img');
       img.alt = s.isCover ? 'Voorkant' : (s.title || s.key);
       img.src = s.srcRect;
       img.onerror = function(){
@@ -1323,55 +1449,57 @@ function openInfo(){
 
       // Thema-naam in het midden (niet op de cover)
       if(!s.isCover && s.title){
-        var mid = w.document.createElement('div');
+        var mid = document.createElement('div');
         mid.className = 'infoSlideMidTitle';
         mid.textContent = s.title;
         card.appendChild(mid);
       }
 
-      var text = w.document.createElement('div');
-      text.className = 'infoSlideText';
+      var text = document.createElement('div');
+      text.className = 'infoSlideText indexInfoSlideText';
       setInfoTextContent(text, s.text);
-
-      var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute("data-contrast") === "dark");
-      var baseTint = isDark
-        ? "rgba(var(--darkBaseRgb, 24, 18, 60), 0.86)"
-        : "rgba(255,255,255,0.975)";
-      text.style.background = baseTint;
+      if(s.isCover){
+        appendCoverFooterHint(text, s.footerHint);
+      }
       inner.appendChild(card);
       inner.appendChild(text);
 
       slide.appendChild(inner);
       infoCarousel.appendChild(slide);
     }
-    // Infinite loop (clone first/last)
-    enableInfiniteCarousel(infoCarousel, 'infoSlide');
+    // Infinite carousel voor uitleg: peek links/rechts zoals de main carrousel.
+    try{ enableInfiniteCarousel(infoCarousel, 'infoSlide'); }catch(_eInf){}
+    ensureInfoUiHandlers();
+    // Start op de eerste echte slide (na de clone aan de linkerkant).
+    try{
+      var firstReal = infoCarousel.querySelector('.infoSlide:not(.is-clone)');
+      if(firstReal){ infoCarousel.scrollLeft = firstReal.offsetLeft; }
+    }catch(_e0){}
   }
 
-  // Houd uitleg-tekstvlakken per modus consistent (zonder dominante kaart-tint).
+  // Laat het uitleg-tekstvlak volledig door CSS sturen, zodat kaartenindex
+  // exact dezelfde afwerking kan delen als het main-index tekstvak.
   function retintInfoSlideTexts(){
-    var isDark = (w.document && w.document.documentElement && w.document.documentElement.getAttribute('data-contrast') === 'dark');
-    var base = isDark
-      ? 'rgba(var(--darkBaseRgb, 24, 18, 60), 0.86)'
-      : 'rgba(255,255,255,0.975)';
-    var nodes = (w.document && w.document.querySelectorAll) ? w.document.querySelectorAll('.infoSlideText') : [];
+    var nodes = (document && document.querySelectorAll) ? document.querySelectorAll('.infoSlideText') : [];
     for(var i=0;i<nodes.length;i++){
       var t = nodes[i];
-      try{ t.style.background = base; }catch(_e2){}
+      try{ t.style.background = ''; }catch(_e2){}
     }
   }
 
   function loadAndRender(){
-    if(!PK.loadJson) return;
-    var setId = (PK.getActiveSet ? PK.getActiveSet() : 'samenwerken') || 'samenwerken';
+    if(!window.PK.loadJson) return;
+    var setId = (window.PK.getActiveSet ? window.PK.getActiveSet() : 'samenwerken') || 'samenwerken';
     var metaUrl = pathForSet(setId, 'meta.json');
     var uitlegUrl = pathForSet(setId, 'uitleg.json');
+    var introUrl = pathForSet(setId, 'intro.json');
 
     return Promise.all([
-      PK.loadJson(metaUrl).catch(function(){ return {}; }),
-      PK.loadJson(uitlegUrl).catch(function(){ return {}; })
+      window.PK.loadJson(metaUrl).catch(function(){ return {}; }),
+      window.PK.loadJson(uitlegUrl).catch(function(){ return {}; }),
+      window.PK.loadJson(introUrl).catch(function(){ return {}; })
     ]).then(function(res){
-      var slides = buildSlides(setId, res[0], res[1]);
+      var slides = buildSlides(setId, res[0], res[1], res[2]);
       renderSlides(slides);
     });
   }
@@ -1443,27 +1571,6 @@ function openInfo(){
         ev.preventDefault();
         toggleFlip(card);
       }
-      // Pijltoetsen: navigeer naar vorige/volgende kaart
-      if(ev.key === 'ArrowLeft' || ev.key === 'ArrowRight'){
-        ev.preventDefault();
-        var curIdx = getActiveCardIndex();
-        var total = ITEMS ? ITEMS.length : 0;
-        if(!total) return;
-        var newIdx = ev.key === 'ArrowRight'
-          ? Math.min(curIdx + 1, total - 1)
-          : Math.max(curIdx - 1, 0);
-        goToCardIndex(newIdx);
-        // Focus de nieuwe actieve kaart na scroll
-        w.requestAnimationFrame(function(){
-          w.requestAnimationFrame(function(){
-            var slides = cardsCarousel.children || [];
-            var hasClones = slides[0] && slides[0].classList && slides[0].classList.contains('is-clone');
-            var targetSlide = slides[hasClones ? newIdx + 1 : newIdx];
-            var focusEl = targetSlide && (targetSlide.querySelector ? targetSlide.querySelector('[tabindex]') : null);
-            if(focusEl && focusEl.focus) focusEl.focus();
-          });
-        });
-      }
     });
   }
 
@@ -1474,43 +1581,38 @@ function openInfo(){
     for(var i=0;i<(items||[]).length;i++){
       var it = items[i] || {};
 
-      var slide = w.document.createElement('div');
+      var slide = document.createElement('div');
       slide.className = 'cardsSlide';
 
-      var inner = w.document.createElement('div');
+      var inner = document.createElement('div');
       inner.className = 'cardsSlideInner';
 
-      var card = w.document.createElement('div');
+      var card = document.createElement('div');
       card.className = 'cardsSlideCard pkFlip';
       card.setAttribute('role','button');
       card.setAttribute('tabindex','0');
       card.setAttribute('aria-pressed','false');
-      if(it.q || it.voorkant){
-        card.setAttribute('aria-label', (it.q || it.voorkant) + ' – druk Enter om te draaien');
-      }
 
-      var flip = w.document.createElement('div');
+      var flip = document.createElement('div');
       flip.className = 'pkFlipInner';
 
-      var front = w.document.createElement('div');
+      var front = document.createElement('div');
       front.className = 'pkFace pkFront';
 
-      var img = w.document.createElement('img');
+      var img = document.createElement('img');
       img.className = 'bg';
-      img.loading = 'lazy';
-      img.decoding = 'async';
       var rectSrc = it.bg || '';
       var fullSrc = rectSrc.indexOf('/cards_rect/') !== -1 ? rectSrc.replace('/cards_rect/','/cards/') : rectSrc;
       img.setAttribute('data-src-rect', rectSrc);
       img.setAttribute('data-src-full', fullSrc);
-      img.src = PK.withV ? PK.withV(rectSrc) : rectSrc;
+      img.src = window.PK.withV ? window.PK.withV(rectSrc) : rectSrc;
       img.onerror = function(){
         var tried1 = this.getAttribute('data-fallback') === '1';
         if(!tried1){
           this.setAttribute('data-fallback','1');
           var next = this.getAttribute('data-src-full') || '';
           if(next && next !== this.src){
-            this.src = PK.withV ? PK.withV(next) : next;
+            this.src = window.PK.withV ? window.PK.withV(next) : next;
             return;
           }
         }
@@ -1518,7 +1620,7 @@ function openInfo(){
         this.setAttribute('data-fallback2','1');
         if(CURRENT_SET && CURRENT_COVER){
           var coverRect = pathForSet(CURRENT_SET, 'cards_rect/' + CURRENT_COVER);
-          this.src = PK.withV ? PK.withV(coverRect) : coverRect;
+          this.src = window.PK.withV ? window.PK.withV(coverRect) : coverRect;
         }
       };
       img.alt = '';
@@ -1529,16 +1631,16 @@ function openInfo(){
 
       var frontText = (it && (it.q || it.voorkant)) ? (it.q || it.voorkant) : '';
       if(frontText){
-        var q = w.document.createElement('div');
+        var q = document.createElement('div');
         q.className = 'cardsSlideQ';
-        var qSpan = w.document.createElement('span');
+        var qSpan = document.createElement('span');
         qSpan.className = 'cardsSlideQText';
         qSpan.textContent = safeText(frontText);
         q.appendChild(qSpan);
         front.appendChild(q);
       }
 
-      var back = w.document.createElement('div');
+      var back = document.createElement('div');
       back.className = 'pkFace pkBack';
 
       var backMode = CURRENT_BACK_MODE || 'mirror';
@@ -1550,14 +1652,12 @@ function openInfo(){
         if(backMode === 'cover'){
           backSrc = pathForSet(CURRENT_SET, 'cards/' + CURRENT_COVER);
           backSrcRect = pathForSet(CURRENT_SET, 'cards_rect/' + CURRENT_COVER);
-          var backImg = w.document.createElement('img');
+          var backImg = document.createElement('img');
           backImg.className = 'bg pkBackImg';
-          backImg.loading = 'lazy';
-          backImg.decoding = 'async';
-          backImg.src = PK.withV ? PK.withV(backSrcRect) : backSrcRect;
+          backImg.src = window.PK.withV ? window.PK.withV(backSrcRect) : backSrcRect;
           backImg.onerror = function(){
             this.onerror = null;
-            this.src = PK.withV ? PK.withV(backSrc) : backSrc;
+            this.src = window.PK.withV ? window.PK.withV(backSrc) : backSrc;
           };
           backImg.alt = '';
           back.appendChild(backImg);
@@ -1571,15 +1671,13 @@ function openInfo(){
             backSrcRect = backSrc.replace('/cards/','/cards_rect/');
           }
 
-          var backImg2 = w.document.createElement('img');
+          var backImg2 = document.createElement('img');
           backImg2.className = 'bg pkBackImg' + (mirrorBack ? ' is-mirror' : '');
-          backImg2.loading = 'lazy';
-          backImg2.decoding = 'async';
-          backImg2.src = PK.withV ? PK.withV(backSrc) : backSrc;
+          backImg2.src = window.PK.withV ? window.PK.withV(backSrc) : backSrc;
           if(backSrcRect){
             backImg2.onerror = function(){
               this.onerror = null;
-              this.src = PK.withV ? PK.withV(backSrcRect) : backSrcRect;
+              this.src = window.PK.withV ? window.PK.withV(backSrcRect) : backSrcRect;
             };
           }
           backImg2.alt = '';
@@ -1589,9 +1687,9 @@ function openInfo(){
 
       var backText = (it && (it.back || it.achterkant)) ? (it.back || it.achterkant) : '';
       if(backText){
-        var bt = w.document.createElement('div');
+        var bt = document.createElement('div');
         bt.className = 'cardsSlideBackText';
-        var btSpan = w.document.createElement('span');
+        var btSpan = document.createElement('span');
         btSpan.className = 'cardsSlideBackTextInner';
         btSpan.textContent = safeText(backText);
         bt.appendChild(btSpan);
@@ -1610,10 +1708,14 @@ function openInfo(){
     ensureFlipHandlers();
     __activeCarouselIdx = 0;
     resetAllFlippedCards();
+    playCardsPageIntro();
     // Tint direct laten meekleuren met de eerste kaart.
-    w.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
+    window.setTimeout(function(){ setActiveTintByIndex(0); }, 0);
     // Houd de sheet compact zolang alleen de kaart zichtbaar is.
-    w.setTimeout(measureAndSetCompactH, 0);
+    window.setTimeout(function(){
+      syncHelpSheetMaxH();
+      measureAndSetCompactH();
+    }, 0);
   }
 
   // -----------------------------
@@ -1638,7 +1740,7 @@ function openInfo(){
 
       try{
         if(!__tintCanvas){
-          __tintCanvas = w.document.createElement('canvas');
+          __tintCanvas = document.createElement('canvas');
           __tintCanvas.width = 64;
           __tintCanvas.height = 64;
           __tintCtx = __tintCanvas.getContext('2d', { willReadFrequently: true });
@@ -1694,10 +1796,10 @@ function openInfo(){
   // de originele dominante kleur beschikbaar houden.
   function setCssTint(bgRgbCsv, hueRgbCsv){
     try{
-      w.document.documentElement.style.setProperty('--activeTintRgb', bgRgbCsv || '255, 255, 255');
-      w.document.documentElement.style.setProperty('--activeHueRgb', hueRgbCsv || bgRgbCsv || '255, 255, 255');
+      document.documentElement.style.setProperty('--activeTintRgb', bgRgbCsv || '255, 255, 255');
+      document.documentElement.style.setProperty('--activeHueRgb', hueRgbCsv || bgRgbCsv || '255, 255, 255');
       // Backward compat (oude css gebruikte alpha). Niet meer leidend.
-      w.document.documentElement.style.setProperty('--activeTintA','1');
+      document.documentElement.style.setProperty('--activeTintA','1');
     }catch(_e){}
   }
 
@@ -1772,7 +1874,7 @@ function openInfo(){
     var idx = getActiveCardIndex ? getActiveCardIndex() : 0;
     var it = (ITEMS && ITEMS[idx]) ? ITEMS[idx] : null;
     if(!it || !it.bg) return;
-    var url = PK.withV ? PK.withV(it.bg) : it.bg;
+    var url = window.PK.withV ? window.PK.withV(it.bg) : it.bg;
     var mode = ((CONTRAST || 'light') === 'dark') ? 'dark' : 'light';
     if(__tintRgbCache[url]){
       var tint = tintFromDominantRgb(__tintRgbCache[url], mode);
@@ -1798,7 +1900,7 @@ function openInfo(){
     var reqId = ++__tintReqId;
     var it = (ITEMS && ITEMS[idx]) ? ITEMS[idx] : null;
     if(!it || !it.bg){ setCssTint('255, 255, 255'); return; }
-    var url = PK.withV ? PK.withV(it.bg) : it.bg;
+    var url = window.PK.withV ? window.PK.withV(it.bg) : it.bg;
 
     // cache per modus
     var cacheKey = url + '|' + contrastAtCall;
@@ -1818,9 +1920,9 @@ function openInfo(){
     getDominantRgbFromSvgUrl(url).then(function(dom){
       if(!dom){
         // 2) Fallback: tekst-parsing
-        if(PK.getText && PK.dominantColorFromSvgText){
-          return PK.getText(url).then(function(txt){
-            var d2 = PK.dominantColorFromSvgText(txt);
+        if(window.PK.getText && window.PK.dominantColorFromSvgText){
+          return window.PK.getText(url).then(function(txt){
+            var d2 = window.PK.dominantColorFromSvgText(txt);
             return d2 || null;
           });
         }
@@ -1902,7 +2004,7 @@ function openInfo(){
     var __tintRaf = 0;
     function scheduleTintUpdate(){
       if(__tintRaf) return;
-      __tintRaf = w.requestAnimationFrame(function(){
+      __tintRaf = window.requestAnimationFrame(function(){
         __tintRaf = 0;
         var idx = getActiveCardIndex();
         if(idx !== __activeCarouselIdx){
@@ -1916,11 +2018,31 @@ function openInfo(){
       });
     }
     cardsCarousel.addEventListener('scroll', scheduleTintUpdate, { passive: true });
-    w.addEventListener('resize', function(){
-      w.requestAnimationFrame(function(){
+    window.addEventListener('resize', function(){
+      window.setTimeout(function(){
         var idx = getActiveCardIndex();
         setActiveTintByIndex(idx);
-      });
+        syncHelpSheetMaxH();
+        measureAndSetCompactH();
+        if(sheetMode === 'help' || isInfoOpen()){
+          setCurH(syncHelpSheetMaxH() || getMaxH());
+          window.requestAnimationFrame(function(){
+            try{ alignInfoSheetToMainCard(); }catch(_eAlign){}
+          });
+        }
+      }, 30);
+    });
+    window.addEventListener('orientationchange', function(){
+      window.setTimeout(function(){
+        syncHelpSheetMaxH();
+        measureAndSetCompactH();
+        if(sheetMode === 'help' || isInfoOpen()){
+          setCurH(syncHelpSheetMaxH() || getMaxH());
+          window.requestAnimationFrame(function(){
+            try{ alignInfoSheetToMainCard(); }catch(_eAlign){}
+          });
+        }
+      }, 60);
     });
   }
 
@@ -1930,7 +2052,7 @@ function openInfo(){
   // --- Sheet hoogte helpers (compact kaarten -> max uitleg) ---
   function getCssPx(el, name, fallback){
     try{
-      var cs = w.getComputedStyle(el || w.document.documentElement);
+      var cs = window.getComputedStyle(el || document.documentElement);
       var v = cs.getPropertyValue(name);
       var n = parseFloat(String(v || '').replace('px',''));
       return isNaN(n) ? fallback : n;
@@ -1938,7 +2060,11 @@ function openInfo(){
   }
 
   function getSheetMaxH(){
-    return getCssPx(infoSheet, '--sheetMaxH', getCssPx(w.document.documentElement, '--sheetPageH', 520) || 520);
+    return getCssPx(
+      infoSheet,
+      '--sheetMaxH',
+      syncHelpSheetMaxH() || getCssPx(document.documentElement, '--sheetPageH', 520) || 520
+    );
   }
 
   function getSheetCurH(){
@@ -1958,6 +2084,7 @@ function openInfo(){
 
   function measureAndSetCompactH(){
     if(!infoSheet || !sheetViewport) return;
+    syncHelpSheetMaxH();
     // Neem de eerste slide als referentie (kaart + kleine marge)
     var first = cardsCarousel ? cardsCarousel.querySelector('.cardsSlideInner') : null;
     if(!first || !first.getBoundingClientRect) return;
@@ -2021,7 +2148,7 @@ function openInfo(){
 
     function currentTranslateY(el){
       try{
-        var st = w.getComputedStyle(el);
+        var st = window.getComputedStyle(el);
         var tr = st.transform || st.webkitTransform || 'none';
         if(!tr || tr === 'none') return 0;
         // matrix(a,b,c,d,tx,ty)
@@ -2070,6 +2197,8 @@ function openInfo(){
       var t = ev && ev.target;
       var inCarousel = !!(t && t.closest && (t.closest('.infoCarousel') || t.closest('.cardsCarousel')));
       var inHandle = !!(t && t.closest && t.closest('.sheetHandle'));
+      var inClose = !!(t && t.closest && t.closest('.infoClose'));
+      if(inClose) return;
       if(inCarousel && !inHandle) return;
 
       dragging = true;
@@ -2097,10 +2226,10 @@ function openInfo(){
 
       if(ev && ev.preventDefault) ev.preventDefault();
 
-      w.addEventListener('touchmove', onMove, { passive:false });
-      w.addEventListener('touchend', onUp, { passive:true });
-      w.addEventListener('pointermove', onMove);
-      w.addEventListener('pointerup', onUp);
+      window.addEventListener('touchmove', onMove, { passive:false });
+      window.addEventListener('touchend', onUp, { passive:true });
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
     }
 
     function onMove(ev){
@@ -2150,7 +2279,7 @@ function openInfo(){
       if(ev && ev.preventDefault) ev.preventDefault();
 
       if(!raf){
-        raf = w.requestAnimationFrame(function(){
+        raf = window.requestAnimationFrame(function(){
           raf = 0;
           applySheet(targetY);
         });
@@ -2162,10 +2291,10 @@ function openInfo(){
       dragging = false;
 
       // cleanup listeners
-      w.removeEventListener('touchmove', onMove);
-      w.removeEventListener('touchend', onUp);
-      w.removeEventListener('pointermove', onMove);
-      w.removeEventListener('pointerup', onUp);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onUp);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
 
       // Google Maps-achtig rubber-band gedrag:
       // - omhoog trekken geeft alleen weerstand en veert altijd terug naar open
@@ -2186,7 +2315,7 @@ function openInfo(){
       infoSheet.style.transition = 'transform 280ms cubic-bezier(0.2, 0.85, 0.2, 1)';
       applySheet(sheetTargetY);
 
-      w.setTimeout(function(){
+      window.setTimeout(function(){
         infoSheet.style.transition = '';
         infoSheet.style.transform = '';
         if(infoCard && infoCard.classList){
@@ -2216,18 +2345,42 @@ function openInfo(){
   if(infoSheet){
     // start altijd volledig dicht; alleen openen via info-knop
     infoSheet.hidden = true;
+    syncHelpSheetMaxH();
     loadAndRender();
     // Kaartenpagina bestaat altijd: bouw de carrousel zodra items geladen zijn.
     // (Geen dynamisch mounten na interactie.)
-    w.setTimeout(function(){
+    window.setTimeout(function(){
       if(cardsCarousel && !cardsCarousel.children.length && ITEMS && ITEMS.length){
         renderCards(ITEMS);
       }
     }, 260);
     // Overlay click = sluit volledig
     if(infoOverlay) infoOverlay.onclick = peekInfo;
+    if(infoClose){
+      infoClose.onclick = function(ev){
+        if(ev && ev.preventDefault) ev.preventDefault();
+        if(ev && ev.stopPropagation) ev.stopPropagation();
+        peekInfo();
+      };
+    }
     // Gestures activeren (Google Maps-achtig) zodra de sheet wordt geopend.
     // (We initialiseren hier alvast zodat de handle meteen werkt als de sheet open is.)
-    try{ initDrag(); w.__pkInfoDragInited = true; }catch(_e){}
+    try{ initDrag(); window.__pkInfoDragInited = true; }catch(_e){}
+
+  // Toetsenbordnavigatie: pijltoetsen door kaarten-carrousel
+  document.addEventListener('keydown', function(ev) {
+    var key = ev && (ev.key || '');
+    var code = ev && (ev.keyCode || 0);
+    if (key === 'ArrowLeft' || code === 37) {
+      ev.preventDefault();
+      var cur = getActiveCardIndex ? getActiveCardIndex() : 0;
+      goToCardIndex(cur - 1);
+    } else if (key === 'ArrowRight' || code === 39) {
+      ev.preventDefault();
+      var cur2 = getActiveCardIndex ? getActiveCardIndex() : 0;
+      goToCardIndex(cur2 + 1);
+    }
+  });
+
   }
-})(window);
+}

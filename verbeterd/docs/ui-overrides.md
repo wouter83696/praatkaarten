@@ -1,11 +1,11 @@
-# UI Overrides (menu / sheet / index)
+# UI Overrides — menu / sheet / layout / achtergrond
 
-Dit project gebruikt **centrale pagina-templates** (bijv. `kaarten/index.html`) en laat per set kleine afwijkingen toe via config. Daardoor kun je de look & feel globaal aanpassen zonder elke set handmatig te wijzigen.
+Per set kun je kleine afwijkingen instellen via `meta.json`. Globale defaults staan in `sets/index.json`.
 
 ## 1. Globale defaults (voor alle sets)
-Bewerk `sets/index.json` onder `uiDefaults`.
 
-Voorbeeld:
+Bewerk `sets/index.json` onder `uiDefaults`:
+
 ```json
 "uiDefaults": {
   "menu": {
@@ -23,11 +23,10 @@ Voorbeeld:
 }
 ```
 
-## 2. Per‑set overrides
-Bewerk `sets/<set>/meta.json` en voeg een `ui`‑blok toe.
-Alleen afwijkingen hoeven erin.
+## 2. Per-set overrides
 
-Voorbeeld:
+Voeg een `ui`-blok toe aan `sets/<set>/meta.json`. Alleen wat afwijkt hoeft erin:
+
 ```json
 "ui": {
   "menu": {
@@ -37,7 +36,8 @@ Voorbeeld:
     "defaultMode": "help"
   },
   "index": {
-    "layout": "grid"
+    "layout": "hero-grid",
+    "gridLimit": 6
   },
   "themeCss": true,
   "vars": {
@@ -47,41 +47,51 @@ Voorbeeld:
 }
 ```
 
-## 3. Beschikbare opties
+## 3. Alle opties
 
 ### menu
-- `showInfo` (boolean)
-- `showShuffle` (boolean)
-- `showAllSets` (boolean)
+| Optie | Type | Omschrijving |
+|---|---|---|
+| `showInfo` | boolean | Toon info-knop in menu |
+| `showShuffle` | boolean | Toon shuffle-schakelaar |
+| `showAllSets` | boolean | Toon "Alle kaartensets" link |
 
 ### sheet
-- `enabled` (boolean)
-- `defaultMode` ("cards" | "help")
+| Optie | Type | Omschrijving |
+|---|---|---|
+| `enabled` | boolean | Sheet aan/uit |
+| `defaultMode` | `"cards"` \| `"help"` | Standaard tabblad |
 
 ### index
-- `layout` ("carousel" | "hero-grid" | "empty" | "grid") → wordt als `data-index-layout` op `<body>` gezet.
-  - `carousel`: alleen hero/carrousel (standaard).
-  - `hero-grid`: hero bovenaan + grid eronder.
-  - `empty`: geen hero/grid, alleen achtergrond + topbar.
-  - `grid`: alleen grid (legacy/optioneel).
-- `gridLimit` (number, optioneel) → max. aantal kaarten in het grid.
-  - Handig voor `hero-grid` als je op de front page bijv. 6 tegels wilt.
-  - `0` of weglaten = geen limiet (alle sets tonen).
-- `background` (object, optioneel) → palette/instellingen voor blobs.
-  - `palette` (array of hex)
-  - `darkPalette` (array of hex)
-  - `blobCount`, `alphaBoost`, `darkAlphaBoost`, `sizeScale`, `darkSizeScale`,
-    `blobIrregularity`, `blobPointsMin`, `blobPointsMax`, `darkMix`
+| Optie | Type | Omschrijving |
+|---|---|---|
+| `layout` | zie hieronder | Lay-out van de index pagina |
+| `gridLimit` | number | Max. sets in grid (0 = geen limiet) |
+
+**Layout opties:**
+- `carousel` — alleen hero/carrousel (standaard)
+- `hero-grid` — hero bovenaan + grid eronder
+- `grid` — alleen grid
+- `empty` — geen hero/grid, alleen achtergrond en topbar
 
 ### themeCss
-- `true` → laadt automatisch `sets/<set>/theme.css`
-- of geef een pad als string: `"themeCss": "custom/theme.css"`
+- `true` → laadt `sets/<set>/theme.css` automatisch
+- of een pad als string: `"themeCss": "custom/theme.css"`
 
 ### vars
-- CSS‑variabelen die je wilt zetten op `:root`.
-  Schrijf zonder `--`, dat wordt automatisch toegevoegd.
+CSS-variabelen op `:root`. Schrijf zonder `--`, dat wordt automatisch toegevoegd.
 
-## 4. Wat dit oplevert
-- **Globale wijzigingen** (menu, sheet, index) doe je in 1 plek (CSS/JS)
-- **Per set** kun je alleen afwijken waar nodig
-- Je hoeft geen losse templates per set bij te houden
+### background (onder index)
+Optionele blob-achtergrond instellingen:
+
+```json
+"index": {
+  "background": {
+    "palette": ["#7fcfc9", "#f5a623"],
+    "darkPalette": ["#3d8a85", "#c47800"],
+    "blobCount": 5,
+    "alphaBoost": 1.0,
+    "sizeScale": 1.0
+  }
+}
+```
