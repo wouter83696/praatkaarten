@@ -20,9 +20,54 @@
       "defaultMode": "cards"
     },
     "index": {
-      "layout": "hero-grid"
+      "layout": "hero-grid",
+      "background": {
+        "palette": [
+          "#F3D7A3"
+        ]
+      }
     },
-    "themeCss": "theme.css"
+    "themeCss": "theme.css",
+    "cardModes": {},
+    "cardShapes": {
+      "cover": [],
+      "verkennen": [],
+      "duiden": [],
+      "verbinden": [],
+      "verhelderen": [],
+      "vertragen": [],
+      "bewegen": []
+    },
+    "coverTexts": [
+      {
+        "text": "Samen onderzoeken",
+        "x": 12,
+        "y": 24,
+        "valign": "top",
+        "size": 18,
+        "align": "left",
+        "weight": "regular",
+        "italic": false,
+        "underline": false,
+        "font": "IBM Plex Sans",
+        "color": "#1a1a2e",
+        "bg": ""
+      },
+      {
+        "text": "",
+        "x": 12,
+        "y": 50,
+        "valign": "center",
+        "size": 14,
+        "align": "left",
+        "weight": "regular",
+        "italic": false,
+        "underline": false,
+        "font": "IBM Plex Sans",
+        "color": "#1a1a2e",
+        "bg": ""
+      }
+    ]
   },
   "themes": [
     {
