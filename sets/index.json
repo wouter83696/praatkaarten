@@ -4,12 +4,12 @@
     {
       "id": "samenwerken",
       "title": "Samen onderzoeken",
-      "_pct": 75
+      "_pct": 50
     },
     {
       "id": "testen",
       "title": "testen",
-      "_pct": 100
+      "_pct": 50
     }
   ],
   "available": [
