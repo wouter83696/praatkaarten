@@ -37,38 +37,11 @@
       "verbinden": [],
       "verhelderen": [],
       "vertragen": [],
-      "bewegen": []
+      "bewegen": [],
+      "thema-7": []
     },
-    "coverTexts": [
-      {
-        "text": "Dit is een test",
-        "x": 12,
-        "y": 24,
-        "valign": "top",
-        "size": 18,
-        "align": "left",
-        "weight": "regular",
-        "italic": false,
-        "underline": false,
-        "font": "IBM Plex Sans",
-        "color": "#1a1a2e",
-        "bg": ""
-      },
-      {
-        "text": "",
-        "x": 12,
-        "y": 50,
-        "valign": "center",
-        "size": 14,
-        "align": "left",
-        "weight": "regular",
-        "italic": false,
-        "underline": false,
-        "font": "IBM Plex Sans",
-        "color": "#1a1a2e",
-        "bg": ""
-      }
-    ]
+    "coverTexts": [],
+    "previewTexts": {}
   },
   "themes": [
     {
