@@ -31,7 +31,22 @@
     },
     "themeCss": "theme.css",
     "cardModes": {},
-    "coverTexts": [],
+    "coverTexts": [
+      {
+        "text": "Dit is een test ",
+        "x": 12,
+        "y": 24,
+        "valign": "top",
+        "size": 18,
+        "align": "left",
+        "weight": "regular",
+        "italic": false,
+        "underline": false,
+        "font": "IBM Plex Sans",
+        "color": "#1a1a2e",
+        "bg": ""
+      }
+    ],
     "cardShapes": {
       "cover": [
         {
