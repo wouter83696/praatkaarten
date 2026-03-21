@@ -6,7 +6,8 @@
   "cssVars": {
     "--pk-set-accent": "#F3D7A3",
     "--pk-set-bg": "#FFFFFF",
-    "--pk-set-card": "rgba(255,255,255,1)"
+    "--pk-set-card": "rgba(255,255,255,1)",
+    "--pk-font-italic": "0"
   },
   "backMode": "mirror",
   "ui": {
