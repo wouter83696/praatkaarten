@@ -1,0 +1,57 @@
+{
+  "id": "testen9",
+  "title": "testen9",
+  "cover": "voorkant.svg",
+  "viewerTemplate": "classic",
+  "flipAnim": true,
+  "doubleSided": true,
+  "backMode": "mirror",
+  "cssVars": {
+    "--pk-set-accent": "#CFE6DF",
+    "--pk-set-bg": "#FAFAF8",
+    "--pk-set-card": "#FAFAF8"
+  },
+  "ui": {
+    "menu": {
+      "showInfo": true,
+      "showShuffle": true,
+      "showAllSets": true
+    },
+    "sheet": {
+      "enabled": true,
+      "defaultMode": "cards"
+    },
+    "index": {
+      "layout": "hero-grid",
+      "background": {
+        "palette": [
+          "#CFE6D8",
+          "#CAD6EF",
+          "#E7E1F5",
+          "#F8E4D2",
+          "#A8D8D6",
+          "#F4E2A5",
+          "#F2C8D2"
+        ]
+      }
+    },
+    "themeCss": "theme.css",
+    "cardModes": {},
+    "coverTexts": [],
+    "cardShapes": {
+      "cover": [],
+      "algemeen": []
+    }
+  },
+  "themes": [],
+  "infoPages": [
+    {
+      "key": "custom_p1_2347",
+      "label": "Pagina 1"
+    },
+    {
+      "key": "custom_p2_717",
+      "label": "Pagina 2"
+    }
+  ]
+}
